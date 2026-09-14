@@ -115,13 +115,13 @@ def test_parts_layout_main_nose_after_30s_and_side_rois():
     nose = [900, 400, 1000, 460]
     wing_left, wing_right = [1300, 300, 1800, 500], [100, 300, 700, 500]
     jitter = [row([50, 900, 120, 940], 9), row([50, 700, 400, 800], 7), row([1500, 700, 1850, 800], 7)]
-    layout.update(1, jitter, CM)                              # one-frame buckets (count 1) as in real videos
+    layout.update(1, jitter, CM)  # one-frame buckets (count 1) as in real videos
     decided_at = None
     for f in range(2, 301):
         d = layout.update(f, [row(nose, 9), row(wing_left, 7), row(wing_right, 7)], CM)
         if d:
             decided_at = f
-    assert decided_at == 242                                  # stable bucket count > 30·8 = 240 first true on frame 242
+    assert decided_at == 242  # stable bucket count > 30·8 = 240 first true on frame 242
     s = layout.snapshot()
     assert s["main_nose"] == tuple(nose)
     assert s["main_left_wing"] == wing_left and s["main_right_wing"] == wing_right
