@@ -65,6 +65,37 @@ Exact (bitwise) frame parity of the compat file on this prefix: 60.7 % — the r
 (three heads + noise estimator, batch 1): decode 3.2 ms, GM 9.8 ms, chocks 16.7 ms, vehicle 30.6 ms inference,
 end-to-end 73.3 ms/frame = 1.7× real-time at 8 fps on the RTX 5070 Ti.
 
+## Full-video L1 parity of the regenerated second-run file (37 530 frames, ALL rows incl. synthesized)
+
+Run: `scripts/gm_v2_run.py` on the whole `DjwtQRdZyt0sSk.mp4` (three heads, production preprocessing), then
+`scripts/gm_v2_replay.py` on the recorded first-run rows with the current context (norfair 0.2.0 main-aircraft
+tracking, parts layout, obstacle logic) → `general_modelDjwtQRdZyt0sSk.mp4-second_run.ndjson`, compared with the
+production file `general_modela0157a4.ndjson` (`docs/analysis/parity/gm_v2_replayDjwtQRdZyt0sSk.mp4.json`):
+
+| rows | prod / v2 | pairs (IoU ≥ 0.5, same class) | bit-exact | within ±2 px / ±0.02 | frames within tolerance |
+|---|---|---|---|---|---|
+| all classes | 723 542 / 723 526 | 722 833 (99.90 %) | 405 975 (56 %) | 716 568 (99.1 %) | 32 095 / 37 530 = 85.5 % |
+| class 2 main aircraft (height mode in conf) | 17 673 / 17 671 | 17 667 (99.97 %) | 14 193 (80 %) | 17 397 | 99.25 % |
+| class 29 obstacle | 60 081 / 60 074 | 60 030 (99.92 %) | 24 864 | 59 291 | 98.3 % |
+| class 30 side_obstacle | 41 600 / 41 563 | 41 473 (99.69 %) | 20 676 | 40 832 | 98.0 % |
+
+Context reproduced from the rows alone: main aircraft first seen at frame 3 457, first track at 3 465 (norfair delay),
+class-2 rows on 17 671 frames vs 17 673 in production; parts layout frozen at 3 933; side ROIs left x ≥ 1 414.4 /
+right x ≤ 265.2 (identical obstacle assignment on 98 % of frames). Unmatched rows (709 / 693 ≈ 0.1 %) are threshold
+flicker of small objects (class 24 air_conditioning alone 185 / 241) and a handful of main-aircraft frames where a
+different candidate box won the merge (coord p99 56 px on class 2 only). The `conf` of obstacle rows can differ by up to
+0.56 because v1 writes the stale loop variable — the last row's confidence — which flips with detection order; the
+compat writer reproduces the quirk, the value is inherently non-deterministic across hardware.
+
+Speed on the full turnaround (RTX 5070 Ti, batch 1, fp16): decode 2.5 ms, GM 9.5 + 4.3, chocks 16.4 + 3.7,
+vehicle 30.2 + 3.7 (inference + pre/post) → **79.3 ms/frame end-to-end = 1.58× real-time at 8 fps**; the vehicle head
+is 43 % of the budget.
+
+Verdict for PF-Q1-16 acceptance (measurement_plan.md §3.1): **met** on the tolerant criterion for all row types
+(pair recall ≥ 99.5 %, frames within tolerance ≥ 97 % for the synthesized classes; 85.5 % for "every row in the frame
+within tolerance" because a single flickering small object fails the whole frame). Bitwise parity is expected only on
+the production hardware/runtime.
+
 ## Tracker bd43c3c (branch `optimization`, 2026-02-28)
 
 `git diff --stat b5d350c bd43c3c`: tracker.py +115/−?, local_config.yaml +2, weights.dvc changed, `scripts/tracker_clips.py`

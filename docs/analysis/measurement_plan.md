@@ -47,7 +47,7 @@ only where fail labels exist.
 
 ## 5. Order of work
 
-1. `contract_observed.md` → pin the fields for L1-tracker and the class-id inventory for L1-GM.
+1. ~~`contract_observed.md` → pin the fields for L1-tracker and the class-id inventory for L1-GM.~~ done (`pf/tracker/contract.py`, str2id from cv_common). L1-GM measured on 1 full video — `gm_prod_delta.md`.
 2. Port `runner.py` → `pf/eval/run_module.py` (path `external/<repo>`, `--no-video` for modules without pixels);
    run 2–3 pixel-free modules (beltloader-chocks, pushback-pathway, bl_rear_cone) on the v1 ndjson of ATL-C5 = L2 baseline.
 3. v1 speed baseline: measure GM v1 on 1 full video (after `dvc pull`).
