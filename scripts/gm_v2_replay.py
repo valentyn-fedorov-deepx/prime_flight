@@ -19,10 +19,10 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from pf.eval.parity import compare_gm_ndjson, compare_gm_ndjson_tolerant, iter_ndjson  # noqa: E402
-from pf.gm.rows import ClassMap  # noqa: E402
-from pf.pipeline import GmStream  # noqa: E402
-from scripts.gm_v2_run import load_str2id  # noqa: E402
+from pf.eval.parity import compare_gm_ndjson, compare_gm_ndjson_tolerant, iter_ndjson
+from pf.gm.rows import ClassMap
+from pf.pipeline import GmStream
+from scripts.gm_v2_run import load_str2id
 
 
 def main() -> int:
@@ -33,8 +33,12 @@ def main() -> int:
     ap.add_argument("--fps", type=int, default=8)
     ap.add_argument("--out-dir", default="out/replay")
     ap.add_argument("--compare", default=None, help="production second-run ndjson")
-    ap.add_argument("--arrived-at", type=int, default=None,
-                    help="frame of T_arr to gate camera/aircraft-type votes (until the stage detector exists)")
+    ap.add_argument(
+        "--arrived-at",
+        type=int,
+        default=None,
+        help="frame of T_arr to gate camera/aircraft-type votes (until the stage detector exists)",
+    )
     ap.add_argument("--departured-at", type=int, default=None)
     a = ap.parse_args()
 
@@ -50,8 +54,12 @@ def main() -> int:
     stream.context.variant = a.variant
     t0 = time.perf_counter()
     for f in frames:
-        stream.process(f, None, arrived=(a.arrived_at is not None and f >= a.arrived_at),
-                       departured=(a.departured_at is not None and f >= a.departured_at))
+        stream.process(
+            f,
+            None,
+            arrived=(a.arrived_at is not None and f >= a.arrived_at),
+            departured=(a.departured_at is not None and f >= a.departured_at),
+        )
     compat_path = os.path.join(a.out_dir, f"general_model{video_name}-second_run.ndjson")
     stream.write_v1_compat(compat_path)
     elapsed = time.perf_counter() - t0
@@ -60,25 +68,49 @@ def main() -> int:
     report["replay_seconds"] = round(elapsed, 1)
     report["frames"] = len(frames)
     snap = stream.context.snapshot()
-    report["context"] = {k: snap.get(k) for k in ("main_plane_track", "mode_plane_height", "frame_of_beginning",
-                                                  "frame_of_ending", "first_aircraft_track", "main_front_wheel",
-                                                  "main_nose", "left_side_obstacles_roi", "right_side_obstacles_roi")}
+    report["context"] = {
+        k: snap.get(k)
+        for k in (
+            "main_plane_track",
+            "mode_plane_height",
+            "frame_of_beginning",
+            "frame_of_ending",
+            "first_aircraft_track",
+            "main_front_wheel",
+            "main_nose",
+            "left_side_obstacles_roi",
+            "right_side_obstacles_roi",
+        )
+    }
     report["events"] = [vars(e) for e in stream.events]
     if a.compare:
         report["parity_exact_all_classes"] = compare_gm_ndjson(a.compare, compat_path).summary()
         report["parity_tolerant_all_classes"] = compare_gm_ndjson_tolerant(a.compare, compat_path).summary()
-        for name, classes in (("class2_main_aircraft", (2,)), ("class29_obstacle", (29,)), ("class30_side_obstacle", (30,))):
-            ignore = tuple(sorted(set(range(0, 32)) - set(classes)))
-            report[f"parity_{name}"] = compare_gm_ndjson_tolerant(a.compare, compat_path, ignore_classes=ignore).summary()
+        for name, classes in (
+            ("class2_main_aircraft", (2,)),
+            ("class29_obstacle", (29,)),
+            ("class30_side_obstacle", (30,)),
+        ):
+            ignore = tuple(sorted(set(range(32)) - set(classes)))
+            report[f"parity_{name}"] = compare_gm_ndjson_tolerant(
+                a.compare, compat_path, ignore_classes=ignore
+            ).summary()
     with open(os.path.join(a.out_dir, f"gm_v2_replay{video_name}.json"), "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=1, default=str)
     keys = ["frames", "replay_seconds", "context", "decided_at"]
     print(json.dumps({k: report[k] for k in keys}, indent=1, default=str))
     if a.compare:
-        for k in ("parity_exact_all_classes", "parity_tolerant_all_classes", "parity_class2_main_aircraft",
-                  "parity_class29_obstacle", "parity_class30_side_obstacle"):
+        for k in (
+            "parity_exact_all_classes",
+            "parity_tolerant_all_classes",
+            "parity_class2_main_aircraft",
+            "parity_class29_obstacle",
+            "parity_class30_side_obstacle",
+        ):
             s = dict(report[k])
-            s.pop("first_diffs", None); s.pop("per_class_a", None); s.pop("per_class_b", None)
+            s.pop("first_diffs", None)
+            s.pop("per_class_a", None)
+            s.pop("per_class_b", None)
             print(k, json.dumps(s))
     return 0
 

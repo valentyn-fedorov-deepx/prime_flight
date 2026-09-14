@@ -1,26 +1,54 @@
-"""YOLOv8 ONNX detector — numerically faithful port of `general_model/scripts/new_model.py:231-439` (`YOLOv8_onnx`).
+"""YOLOv8 ONNX detector — numerically faithful port of `general_model/scripts/new_model.py:231-439` (`YOLOv8_onnx`,
+production commit a0157a4) with zero-output-change speedups.
 
-What is kept identical (required for bitwise parity of raw rows, ADR-001 §2):
-  * static square input (1088 for GM / vehicle, 1280 for chocks), letterbox geometry computed once from the first frame
-    (`pf.gm.geometry.letterbox_geometry`), bilinear resize with `align_corners=False`, pad value 114/255;
+Kept identical (required for parity of raw rows, ADR-001 §2):
+  * static square input (1088 GM / vehicle, 1280 chocks), letterbox geometry computed once from the first frame
+    (`pf.gm.geometry.letterbox_geometry`), BGR→RGB (production), /255 in fp16, bilinear resize `align_corners=False`,
+    pad value 114/255;
   * fp16 input via IO binding, fp16 output tensor;
-  * confidence = max over class scores (columns 4:), threshold `>` conf_thres, boxes rebuilt from cx/cy/w/h in the
-    SAME dtype order as v1 (fp16 arithmetic, then `- padding` and `* factor` → float32);
-  * class-agnostic `torchvision.ops.nms` at iou_thres (v1: 0.7), detections ordered by NMS output (score-descending).
+  * confidence = max over class scores, threshold `>` conf_thres, boxes rebuilt in the SAME dtype order as v1
+    (fp16 arithmetic, then `- padding`, `* factor` → float32);
+  * class-agnostic `torchvision.ops.nms` at iou_thres (0.7), detections in NMS order (score-descending).
 
-What changed (no effect on values): a single vectorized gather + one device→host copy instead of a Python loop over
-indices with per-element synchronisations; no per-frame prints; optional timing counters. torch / onnxruntime are
-imported lazily so the package stays importable on machines without a GPU stack (fast CI gates).
+Speedups that do not change values:
+  * the frame is uploaded as uint8 (6 MB) and converted to fp16 on the GPU — v1 converted to float32 on the CPU and
+    uploaded 24 MB (uint8 → fp16 is exact either way);
+  * a letterboxed input tensor can be shared by heads with the same input size (`prepare()` / `predict_prepared()`),
+    so GM and the vehicle head preprocess once;
+  * the output buffer is allocated once and rebound, not allocated per frame;
+  * a vectorized gather + one device→host copy instead of a Python loop with per-element synchronisations.
+`provider="tensorrt"` is an EXPERIMENT (different kernels → small numeric differences; validate with the tolerant parity
+metric); `provider="cuda"` is the production path. torch / onnxruntime are imported lazily.
 """
 
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import dataclass, field
 
 import numpy as np
 
 from pf.gm.geometry import Letterbox, letterbox_geometry
+
+CUDA_PROVIDER = (
+    "CUDAExecutionProvider",
+    {"cudnn_conv_use_max_workspace": "1", "cudnn_conv_algo_search": "DEFAULT"},
+)
+
+
+def tensorrt_provider(cache_dir: str) -> tuple:
+    os.makedirs(cache_dir, exist_ok=True)
+    return (
+        "TensorrtExecutionProvider",
+        {
+            "trt_fp16_enable": True,
+            "trt_engine_cache_enable": True,
+            "trt_engine_cache_path": cache_dir,
+            "trt_timing_cache_enable": True,
+            "trt_timing_cache_path": cache_dir,
+        },
+    )
 
 
 @dataclass
@@ -47,22 +75,23 @@ class YoloV8OnnxConfig:
     iou_thres: float = 0.7
     device_type: str = "cuda"
     device_id: int = 0
+    provider: str = "cuda"  # "cuda" (production path) | "tensorrt" (experiment)
+    trt_cache_dir: str = "out/trt_cache"
     # production GM (commit a0157a4, deployment_v_py3_10) converts BGR→RGB before normalisation
     # (`scripts/new_model.py:308-309`); the reviewed master pin (13a4ddc) fed BGR. Default = production.
     bgr_to_rgb: bool = True
-    providers: list = field(
-        default_factory=lambda: [
-            (
-                "CUDAExecutionProvider",
-                {"cudnn_conv_use_max_workspace": "1", "cudnn_conv_algo_search": "DEFAULT"},
-            ),
-            "CPUExecutionProvider",
-        ]
-    )
+    providers: list = field(default_factory=list)
+
+    def resolved_providers(self) -> list:
+        if self.providers:
+            return self.providers
+        if self.provider == "tensorrt":
+            return [tensorrt_provider(self.trt_cache_dir), CUDA_PROVIDER, "CPUExecutionProvider"]
+        return [CUDA_PROVIDER, "CPUExecutionProvider"]
 
 
 class YoloV8Onnx:
-    """Stateless per frame except the cached letterbox geometry (v1 caches it from the first frame too)."""
+    """One ONNX head. Stateless per frame except the cached letterbox geometry and the reusable output buffer."""
 
     def __init__(self, cfg: YoloV8OnnxConfig, session_options=None):
         import onnxruntime  # lazy
@@ -74,7 +103,7 @@ class YoloV8Onnx:
         if opts is None:
             opts = onnxruntime.SessionOptions()
             opts.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.session = onnxruntime.InferenceSession(cfg.weights, opts, providers=cfg.providers)
+        self.session = onnxruntime.InferenceSession(cfg.weights, opts, providers=cfg.resolved_providers())
         self.binding = self.session.io_binding()
         self._input_name = self.session.get_inputs()[0].name
         self._output_name = self.session.get_outputs()[0].name
@@ -82,13 +111,17 @@ class YoloV8Onnx:
         self.geometry: Letterbox | None = None
         self._x_factor = None
         self._y_factor = None
-        self._iou_t = torch.tensor(cfg.iou_thres, dtype=torch.float32, device=self._device)
+        self._pred = torch.empty(self._output_shape, dtype=torch.float16, device=self._device).contiguous()
         self.timings = DetectorTimings()
 
     # ---------------------------------------------------------------- helpers
     @property
     def _device(self):
         return self._torch.device(self.cfg.device_type, self.cfg.device_id)
+
+    @property
+    def input_size(self) -> tuple:
+        return tuple(self.cfg.input_shape)
 
     def _ensure_geometry(self, img_h: int, img_w: int) -> Letterbox:
         if self.geometry is None:
@@ -99,14 +132,21 @@ class YoloV8Onnx:
         return self.geometry
 
     def to_device_tensor(self, image_bgr_hwc: np.ndarray):
-        """Same conversion as v1 `main.py:529-532`: numpy HWC uint8 → float32 → device → float16."""
+        """uint8 HWC → device → fp16 (same values as v1's `float().cuda().half()`, a quarter of the PCIe traffic)."""
         t = self._torch
-        return t.from_numpy(image_bgr_hwc).float().to(self._device).half()
+        return t.from_numpy(image_bgr_hwc).to(self._device).half()
 
-    def preprocess(self, image_hwc_half, geom: Letterbox):
-        """Exact op sequence of v1 `preprocess()`: clone, HWC→CHW, [BGR→RGB in production], /255 in fp16, bilinear resize, constant pad."""
+    def prepare(self, image):
+        """Letterboxed model input for this head's input size; shareable by every head with the same size.
+
+        `image`: numpy HWC uint8 BGR frame or a device fp16 HWC tensor from `to_device_tensor`.
+        Exact op sequence of v1 `preprocess()`: clone, HWC→CHW, [BGR→RGB], /255 in fp16, bilinear resize, constant pad.
+        """
         t = self._torch
-        x = image_hwc_half.clone().permute(2, 0, 1)
+        if isinstance(image, np.ndarray):
+            image = self.to_device_tensor(image)
+        geom = self._ensure_geometry(int(image.shape[0]), int(image.shape[1]))
+        x = image.clone().permute(2, 0, 1)
         if self.cfg.bgr_to_rgb:
             x = x[[2, 1, 0], :, :]
         x /= 255.0
@@ -116,19 +156,21 @@ class YoloV8Onnx:
         x = t.nn.functional.pad(x, geom.padding, value=114 / 255)
         return x.contiguous()
 
+    def adopt_geometry(self, other: YoloV8Onnx) -> None:
+        """Share the letterbox geometry of a head with the same input size (needed before `predict_prepared`)."""
+        if self.geometry is None and other.geometry is not None:
+            self._ensure_geometry(other.geometry.img_h, other.geometry.img_w)
+
     # ---------------------------------------------------------------- inference
     def predict(self, image) -> np.ndarray:
-        """image: numpy HWC uint8 BGR frame, or a device tensor already produced by `to_device_tensor`.
-
-        Returns float32 ndarray (N, 6): [x1, y1, x2, y2, conf, class_id] in source pixels, NMS order.
-        """
-        t = self._torch
+        """Full path for one head: preprocess → run → postprocess. Returns float32 (N, 6) rows in NMS order."""
         t0 = time.perf_counter()
-        if isinstance(image, np.ndarray):
-            image = self.to_device_tensor(image)
-        geom = self._ensure_geometry(int(image.shape[0]), int(image.shape[1]))
-        x = self.preprocess(image, geom)
+        x = self.prepare(image)
+        self.timings.preprocess_s += time.perf_counter() - t0
+        return self.predict_prepared(x)
 
+    def run(self, x) -> None:
+        """Bind the prepared input and run the session; the result lands in `self._pred` (fp16, output shape)."""
         self.binding.bind_input(
             name=self._input_name,
             device_type=self.cfg.device_type,
@@ -137,24 +179,25 @@ class YoloV8Onnx:
             shape=tuple(x.shape),
             buffer_ptr=x.data_ptr(),
         )
-        pred = t.empty(self._output_shape, dtype=t.float16, device=self._device).contiguous()
         self.binding.bind_output(
             name=self._output_name,
             device_type=self.cfg.device_type,
             device_id=self.cfg.device_id,
             element_type=np.float16,
-            shape=tuple(pred.shape),
-            buffer_ptr=pred.data_ptr(),
+            shape=tuple(self._pred.shape),
+            buffer_ptr=self._pred.data_ptr(),
         )
         self.binding.synchronize_inputs()
-        t1 = time.perf_counter()
         self.session.run_with_iobinding(self.binding)
-        t2 = time.perf_counter()
 
-        rows = self.postprocess(pred, geom)
+    def predict_prepared(self, x) -> np.ndarray:
+        """Run + postprocess on an input prepared by `prepare()` of a head with the same input size."""
+        t1 = time.perf_counter()
+        self.run(x)
+        t2 = time.perf_counter()
+        rows = self.postprocess(self._pred, self.geometry)
         t3 = time.perf_counter()
         self.timings.frames += 1
-        self.timings.preprocess_s += t1 - t0
         self.timings.inference_s += t2 - t1
         self.timings.postprocess_s += t3 - t2
         return rows
@@ -181,7 +224,7 @@ class YoloV8Onnx:
         y2 = (((fb[:, 1] + fb[:, 3] / 2) - py) * self._y_factor).float()
         boxes = t.stack([x, y, x2, y2], dim=1).float()
 
-        keep = torchvision.ops.nms(boxes, filtered_scores.float(), float(self._iou_t))
+        keep = torchvision.ops.nms(boxes, filtered_scores.float(), float(self.cfg.iou_thres))
         out = t.cat(
             [
                 boxes[keep],

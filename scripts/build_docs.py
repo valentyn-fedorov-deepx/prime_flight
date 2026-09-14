@@ -8,6 +8,7 @@ from the source-of-truth artefacts kept in this workspace:
 Run:  python scripts/build_docs.py
 Idempotent; safe to re-run after any source is updated.
 """
+
 from __future__ import annotations
 
 import json
@@ -97,12 +98,17 @@ def read_logic(sheet_name: str):
         if not head.lstrip().startswith("-"):
             continue
         title = norm(head)
-        rows.append({
-            "stage": stage,
-            "check": title,
-            "pass": cell(r[1]), "fail": cell(r[2]), "no": cell(r[3]),
-            "no_obst": cell(r[4]), "comment": cell(r[5]),
-        })
+        rows.append(
+            {
+                "stage": stage,
+                "check": title,
+                "pass": cell(r[1]),
+                "fail": cell(r[2]),
+                "no": cell(r[3]),
+                "no_obst": cell(r[4]),
+                "comment": cell(r[5]),
+            }
+        )
     return rows
 
 
@@ -120,10 +126,16 @@ for r in wb["Edge-Friendly"].iter_rows(values_only=True):
         tier[t] = "real-time"
     elif "streaming" in labels:
         tier[t] = "streaming"
-post_set = {norm(str(r[0])) for r in wb["Post analytics"].iter_rows(values_only=True)
-            if r and r[0] and str(r[0]).lstrip().startswith("-")}
-stream_set = {norm(str(r[0])) for r in wb["StreamingInternet Coverage Boun"].iter_rows(values_only=True)
-              if r and r[0] and str(r[0]).lstrip().startswith("-")}
+post_set = {
+    norm(str(r[0]))
+    for r in wb["Post analytics"].iter_rows(values_only=True)
+    if r and r[0] and str(r[0]).lstrip().startswith("-")
+}
+stream_set = {
+    norm(str(r[0]))
+    for r in wb["StreamingInternet Coverage Boun"].iter_rows(values_only=True)
+    if r and r[0] and str(r[0]).lstrip().startswith("-")
+}
 for row in logic_rows:
     t = row["check"]
     if t not in tier:
@@ -147,21 +159,25 @@ def cam_lookup(check: str) -> dict:
 
 
 # ---------------------------------------------------------------- 03 components
-out = ["# Shared components (E01–E33)\n",
-       f"Source: `docs/arch_review/essential_inventory.json` (baseline {inv['manifest']['baseline_date']}, "
-       "32 components after excluding E23/M25). Full text — `docs/arch_review/ESSENTIALS.md`, "
-       "interactive — `docs/arch_review/components.html` and `hierarchy.html`.\n",
-       "Boundary rules (from the review): task lists contain only the evidence the policy needs; thresholds, deadlines, "
-       "eligibility and the final Pass/Fail stay local to the module; one ID = one contract.\n",
-       "| ID | Group | Component | Impl | Contract | Consumed by |",
-       "|---|---|---|---|---|---|"]
+out = [
+    "# Shared components (E01–E33)\n",
+    f"Source: `docs/arch_review/essential_inventory.json` (baseline {inv['manifest']['baseline_date']}, "
+    "32 components after excluding E23/M25). Full text — `docs/arch_review/ESSENTIALS.md`, "
+    "interactive — `docs/arch_review/components.html` and `hierarchy.html`.\n",
+    "Boundary rules (from the review): task lists contain only the evidence the policy needs; thresholds, deadlines, "
+    "eligibility and the final Pass/Fail stay local to the module; one ID = one contract.\n",
+    "| ID | Group | Component | Impl | Contract | Consumed by |",
+    "|---|---|---|---|---|---|",
+]
 consumers: dict[str, list[str]] = {c: [] for c in components}
 for v in inv["review_views"]:
     for c in v["component_ids"]:
         consumers.setdefault(c, []).append(v["id"])
 for c in inv["manifest"]["components"]:
-    out.append(f"| {c['id']} | {c['group']} | **{md_escape(c['title'])}** | {c['implementation']} | "
-               f"{md_escape(c['contract'])} | {', '.join(consumers.get(c['id'], []))} |")
+    out.append(
+        f"| {c['id']} | {c['group']} | **{md_escape(c['title'])}** | {c['implementation']} | "
+        f"{md_escape(c['contract'])} | {', '.join(consumers.get(c['id'], []))} |"
+    )
 out += ["", "## Groups", ""]
 for g in sorted({c["group"] for c in components.values()}):
     ids = [c["id"] for c in components.values() if c["group"] == g]
@@ -169,15 +185,25 @@ for g in sorted({c["group"] for c in components.values()}):
 (DOCS / "03_components.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 
 # ---------------------------------------------------------------- 04 modules
-STAGE_ORDER = ["Pre-arrival", "Arrival", "Post-arrival", "Download", "Upload", "Pre-departure",
-               "Departure (Tow-Bar disconnect)", ""]
-out = ["# Modules (M01–M27) and pipeline repositories (U01–U05)\n",
-       "A merge of three sources: the architecture review (inputs/outputs/attention/local policy), "
-       "the code audit for streaming (`streaming_ref/module_map.json`: stage/opens/closes/decision/verdict) "
-       "and the client xlsx (tier, cameras, ProdReady). Pass/Fail logic — in `05_module_logic.md`.\n",
-       "Verdict legend (streaming readiness): NOW = streams without code changes · NOW_PX = without changes, but needs frames · "
-       "PATCH = 3-hunk fix as in aircraft-chocks · RETHINK = two-pass, the first pass determines the geometry · POST = in essence post-processing.\n",
-       "Tier (client split, xlsx Edge-Friendly/Post analytics/Streaming): real-time · streaming · post.\n"]
+STAGE_ORDER = [
+    "Pre-arrival",
+    "Arrival",
+    "Post-arrival",
+    "Download",
+    "Upload",
+    "Pre-departure",
+    "Departure (Tow-Bar disconnect)",
+    "",
+]
+out = [
+    "# Modules (M01–M27) and pipeline repositories (U01–U05)\n",
+    "A merge of three sources: the architecture review (inputs/outputs/attention/local policy), "
+    "the code audit for streaming (`streaming_ref/module_map.json`: stage/opens/closes/decision/verdict) "
+    "and the client xlsx (tier, cameras, ProdReady). Pass/Fail logic — in `05_module_logic.md`.\n",
+    "Verdict legend (streaming readiness): NOW = streams without code changes · NOW_PX = without changes, but needs frames · "
+    "PATCH = 3-hunk fix as in aircraft-chocks · RETHINK = two-pass, the first pass determines the geometry · POST = in essence post-processing.\n",
+    "Tier (client split, xlsx Edge-Friendly/Post analytics/Streaming): real-time · streaming · post.\n",
+]
 
 by_stage: dict[str, list] = {}
 for v in inv["review_views"]:
@@ -196,19 +222,31 @@ for stage in STAGE_ORDER:
         check = xrow["check"] if xrow else v["title"]
         cm = cam_lookup(check)
         out.append(f"### {v['id']} · {md_escape(v['title'])}")
-        out.append(f"- **Repo**: [{repo}]({v['repository_url']}) · local `external\\{repo}` (read-only clone) · pinned `{v['commit'][:8]}`")
+        out.append(
+            f"- **Repo**: [{repo}]({v['repository_url']}) · local `external\\{repo}` (read-only clone) · pinned `{v['commit'][:8]}`"
+        )
         if v.get("stage"):
-            out.append(f"- **Tier / cameras / ProdReady**: {tier.get(check, '?')} · Aircraft={cm['aircraft']}, Jet={cm['jet']} · ProdReady={cm['prod']}")
+            out.append(
+                f"- **Tier / cameras / ProdReady**: {tier.get(check, '?')} · Aircraft={cm['aircraft']}, Jet={cm['jet']} · ProdReady={cm['prod']}"
+            )
         if mm:
-            out.append(f"- **Streaming audit**: stage={mm.get('stage')} · opens=\"{mm.get('opens')}\" → closes=\"{mm.get('closes')}\" · "
-                       f"decision={mm.get('decision')} · preventive={mm.get('preventive')} · passes={mm.get('passes')}, "
-                       f"pixels={mm.get('pixels')}, models={mm.get('models')} · deps={', '.join(mm.get('deps', []))} · **verdict={mm.get('verdict')}**")
+            out.append(
+                f'- **Streaming audit**: stage={mm.get("stage")} · opens="{mm.get("opens")}" → closes="{mm.get("closes")}" · '
+                f"decision={mm.get('decision')} · preventive={mm.get('preventive')} · passes={mm.get('passes')}, "
+                f"pixels={mm.get('pixels')}, models={mm.get('models')} · deps={', '.join(mm.get('deps', []))} · **verdict={mm.get('verdict')}**"
+            )
             if mm.get("why"):
                 out.append(f"  - why: {md_escape(mm['why'])}")
             if mm.get("measured"):
                 out.append(f"  - measured: {md_escape(mm['measured'])}")
-        out.append(f"- **Components**: {', '.join(v['component_ids'])}"
-                   + (f" (+proposed: {', '.join(v['supporting_component_ids'])})" if v.get("supporting_component_ids") else ""))
+        out.append(
+            f"- **Components**: {', '.join(v['component_ids'])}"
+            + (
+                f" (+proposed: {', '.join(v['supporting_component_ids'])})"
+                if v.get("supporting_component_ids")
+                else ""
+            )
+        )
         out.append(f"- **Inputs**: {md_escape(v['inputs'])}")
         out.append(f"- **Outputs**: {md_escape(v['outputs'])}")
         if v.get("local_policy"):
@@ -221,42 +259,87 @@ extra = [m for m in mmap["modules"] if m["name"] not in {v["repo"] for v in inv[
 if extra:
     out.append("\n## Outside the active review scope, but present in the code audit\n")
     for m in extra:
-        out.append(f"- `{m['name']}` — {m.get('check')} · verdict={m.get('verdict')} · {md_escape(m.get('why', ''))}")
+        out.append(
+            f"- `{m['name']}` — {m.get('check')} · verdict={m.get('verdict')} · {md_escape(m.get('why', ''))}"
+        )
 (DOCS / "04_modules.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 
 # ---------------------------------------------------------------- 05 module logic
-out = ["# Client module logic (DX_Modules logic.xlsx, sheet \"Updated logic 2025\")\n",
-       "This is the **contract with the client** on when a module says Pass / Fail / Not observed / Not observed with obstacles. "
-       "Any trigger change when porting to real-time must preserve this semantics or be explicitly agreed. "
-       "Source file: `docs/DX_Modules_logic.xlsx`.\n",
-       "| Stage | Check | Repo | Tier | Cam A/J | Prod | Pass | Fail | Not observed | NO with obstacles | Comment |",
-       "|---|---|---|---|---|---|---|---|---|---|---|"]
+out = [
+    '# Client module logic (DX_Modules logic.xlsx, sheet "Updated logic 2025")\n',
+    "This is the **contract with the client** on when a module says Pass / Fail / Not observed / Not observed with obstacles. "
+    "Any trigger change when porting to real-time must preserve this semantics or be explicitly agreed. "
+    "Source file: `docs/DX_Modules_logic.xlsx`.\n",
+    "| Stage | Check | Repo | Tier | Cam A/J | Prod | Pass | Fail | Not observed | NO with obstacles | Comment |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
+]
 for r in logic_rows:
     cm = cam_lookup(r["check"])
-    out.append("| " + " | ".join(md_escape(x) for x in [
-        r["stage"], r["check"], CHECK_TO_REPO.get(r["check"], "?"), tier.get(r["check"], "?"),
-        f"{cm['aircraft']}/{cm['jet']}", cm["prod"], r["pass"], r["fail"], r["no"], r["no_obst"], r["comment"]]) + " |")
+    out.append(
+        "| "
+        + " | ".join(
+            md_escape(x)
+            for x in [
+                r["stage"],
+                r["check"],
+                CHECK_TO_REPO.get(r["check"], "?"),
+                tier.get(r["check"], "?"),
+                f"{cm['aircraft']}/{cm['jet']}",
+                cm["prod"],
+                r["pass"],
+                r["fail"],
+                r["no"],
+                r["no_obst"],
+                r["comment"],
+            ]
+        )
+        + " |"
+    )
 
-out += ["", "## Merge logic (two cameras → one verdict)", "",
-        "Priority: **Fail → Pass → Not observed**. If the task ran on both cameras, Fail on either = Fail; "
-        "Pass on one + Not observed on the other = Pass; Not observed only when both are Not observed.", "",
-        "| Wing \\ Cone | fail | pass | notObserved |", "|---|---|---|---|",
-        "| fail | fail | fail | fail |", "| pass | fail | pass | pass |", "| notObserved | fail | pass | notObserved |", "",
-        "## Task split by cameras (sheet \"Tasks by cameras\")", "",
-        "| Check | Aircraft | Jet | ProdReady |", "|---|---|---|---|"]
+out += [
+    "",
+    "## Merge logic (two cameras → one verdict)",
+    "",
+    "Priority: **Fail → Pass → Not observed**. If the task ran on both cameras, Fail on either = Fail; "
+    "Pass on one + Not observed on the other = Pass; Not observed only when both are Not observed.",
+    "",
+    "| Wing \\ Cone | fail | pass | notObserved |",
+    "|---|---|---|---|",
+    "| fail | fail | fail | fail |",
+    "| pass | fail | pass | pass |",
+    "| notObserved | fail | pass | notObserved |",
+    "",
+    '## Task split by cameras (sheet "Tasks by cameras")',
+    "",
+    "| Check | Aircraft | Jet | ProdReady |",
+    "|---|---|---|---|",
+]
 for k, v in cams.items():
     out.append(f"| {md_escape(k)} | {v['aircraft']} | {v['jet']} | {v['prod']} |")
-out += ["", "Summary from the sheet: Aircraft — 12 tasks on both cameras, 18 cone only, 0 wing only; "
-        "Jet — 3 on both, 13 cone only, 8 wing only.", "",
-        "## Tier by the client split", ""]
+out += [
+    "",
+    "Summary from the sheet: Aircraft — 12 tasks on both cameras, 18 cone only, 0 wing only; "
+    "Jet — 3 on both, 13 cone only, 8 wing only.",
+    "",
+    "## Tier by the client split",
+    "",
+]
 for t in ["real-time", "streaming", "post", "?"]:
     names = [c for c, tt in tier.items() if tt == t]
     if names:
         out.append(f"- **{t}** ({len(names)}): " + "; ".join(names))
 (DOCS / "05_module_logic.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 
-print("written:", *(p.name for p in [DOCS / "03_components.md", DOCS / "04_modules.md", DOCS / "05_module_logic.md"]))
-print("logic rows:", len(logic_rows), "| tiers:", {t: sum(1 for x in tier.values() if x == t) for t in set(tier.values())})
+print(
+    "written:",
+    *(p.name for p in [DOCS / "03_components.md", DOCS / "04_modules.md", DOCS / "05_module_logic.md"]),
+)
+print(
+    "logic rows:",
+    len(logic_rows),
+    "| tiers:",
+    {t: sum(1 for x in tier.values() if x == t) for t in set(tier.values())},
+)
 unmapped = [r["check"] for r in logic_rows if r["check"] not in CHECK_TO_REPO]
 if unmapped:
     print("UNMAPPED checks:", unmapped, file=sys.stderr)

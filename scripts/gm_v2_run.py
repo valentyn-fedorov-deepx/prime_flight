@@ -24,11 +24,11 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from pf.eval.parity import compare_gm_ndjson, compare_gm_ndjson_tolerant  # noqa: E402
-from pf.gm.compat_writer import ndjson_line  # noqa: E402
-from pf.gm.onnx_detector import YoloV8Onnx, YoloV8OnnxConfig  # noqa: E402
-from pf.gm.rows import ClassMap  # noqa: E402
-from pf.pipeline import Detectors, GmStream  # noqa: E402
+from pf.eval.parity import compare_gm_ndjson, compare_gm_ndjson_tolerant
+from pf.gm.compat_writer import ndjson_line
+from pf.gm.onnx_detector import YoloV8Onnx, YoloV8OnnxConfig
+from pf.gm.rows import ClassMap
+from pf.pipeline import Detectors, GmStream
 
 
 def load_str2id(path: str) -> dict:
@@ -63,30 +63,60 @@ def frames_from_video(path: str, max_frames: int | None = None):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", required=True)
-    ap.add_argument("--weights-dir", required=True, help="folder with the three ONNX files (DVC pull of general_model)")
+    ap.add_argument(
+        "--weights-dir", required=True, help="folder with the three ONNX files (DVC pull of general_model)"
+    )
     ap.add_argument("--gm-weights", default="GM_yolov8m_best_augmentation_march2024.onnx")
     ap.add_argument("--chocks-weights", default="chocks_v4.3_200ep_yolov8.onnx")
     ap.add_argument("--vehicle-weights", default="VM_yolov8m_last_september2023.onnx")
-    ap.add_argument("--str2id", default=os.path.join(ROOT, "external", "cv_common", "global_config.yaml"),
-                    help="json/yaml with the cv_common str2id mapping (default: external/cv_common/global_config.yaml)")
+    ap.add_argument(
+        "--str2id",
+        default=os.path.join(ROOT, "external", "cv_common", "global_config.yaml"),
+        help="json/yaml with the cv_common str2id mapping (default: external/cv_common/global_config.yaml)",
+    )
     ap.add_argument("--conf-thres", type=float, default=0.35)
-    ap.add_argument("--chock-conf-thres", type=float, default=0.10, help="cv_common global_config chock_conf_thres")
-    ap.add_argument("--vehicle-conf-thres", type=float, default=0.40, help="cv_common global_config vehicle_conf_thres")
+    ap.add_argument(
+        "--chock-conf-thres", type=float, default=0.10, help="cv_common global_config chock_conf_thres"
+    )
+    ap.add_argument(
+        "--vehicle-conf-thres", type=float, default=0.40, help="cv_common global_config vehicle_conf_thres"
+    )
     ap.add_argument("--fps", type=int, default=8)
     ap.add_argument("--max-frames", type=int, default=None)
     ap.add_argument("--out-dir", default="out")
-    ap.add_argument("--compare", default=None, help="production second-run ndjson to compare the compat file against")
+    ap.add_argument(
+        "--compare", default=None, help="production second-run ndjson to compare the compat file against"
+    )
     ap.add_argument("--device", default="cuda")
-    ap.add_argument("--compare-ignore-classes", default="", help="comma-separated class ids to ignore in --compare (e.g. 2,29,30 for a partial run)")
+    ap.add_argument(
+        "--parallel-heads", action="store_true", help="run the three heads concurrently (same rows)"
+    )
+    ap.add_argument("--provider", default="cuda", choices=["cuda", "tensorrt"])
+    ap.add_argument(
+        "--compare-ignore-classes",
+        default="",
+        help="comma-separated class ids to ignore in --compare (e.g. 2,29,30 for a partial run)",
+    )
     a = ap.parse_args()
 
     cm = ClassMap(load_str2id(a.str2id))
     wd = a.weights_dir
-    mk = lambda w, shape, thr: YoloV8Onnx(YoloV8OnnxConfig(  # noqa: E731
-        weights=os.path.join(wd, w), input_shape=shape, conf_thres=thr, iou_thres=0.7, device_type=a.device))
-    dets = Detectors(gm=mk(a.gm_weights, (1088, 1088), a.conf_thres),
-                     chocks=mk(a.chocks_weights, (1280, 1280), a.chock_conf_thres),
-                     vehicle=mk(a.vehicle_weights, (1088, 1088), a.vehicle_conf_thres))
+    mk = lambda w, shape, thr: YoloV8Onnx(
+        YoloV8OnnxConfig(
+            weights=os.path.join(wd, w),
+            input_shape=shape,
+            conf_thres=thr,
+            iou_thres=0.7,
+            device_type=a.device,
+            provider=a.provider,
+        )
+    )
+    dets = Detectors(
+        gm=mk(a.gm_weights, (1088, 1088), a.conf_thres),
+        chocks=mk(a.chocks_weights, (1280, 1280), a.chock_conf_thres),
+        vehicle=mk(a.vehicle_weights, (1088, 1088), a.vehicle_conf_thres),
+        parallel=a.parallel_heads,
+    )
 
     video_name = os.path.basename(a.video)
     os.makedirs(a.out_dir, exist_ok=True)
@@ -119,19 +149,27 @@ def main() -> int:
         "end_to_end": round(1000 * total / max(n, 1), 3),
         "realtime_factor_at_fps": round((n / a.fps) / total, 3) if total else None,
     }
-    report["letterbox"] = {k: vars(getattr(dets, k).geometry) for k in ("gm", "chocks", "vehicle")
-                           if getattr(dets, k).geometry}
+    report["letterbox"] = {
+        k: vars(getattr(dets, k).geometry) for k in ("gm", "chocks", "vehicle") if getattr(dets, k).geometry
+    }
+    report["timings_ms_per_frame"]["runner"] = dets.timings()
     report["events"] = [vars(e) for e in stream.events]
     if a.compare:
         ignore = [int(x) for x in a.compare_ignore_classes.split(",") if x.strip()]
         report["parity_vs_production"] = compare_gm_ndjson(
-            a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)).summary()
+            a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)
+        ).summary()
         report["parity_vs_production"]["ignore_classes"] = ignore
         report["parity_vs_production_tolerant"] = compare_gm_ndjson_tolerant(
-            a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)).summary()
+            a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)
+        ).summary()
     with open(report_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=1, default=str)
-    print(json.dumps({k: report[k] for k in ("number_of_frames", "timings_ms_per_frame", "decided_at")}, indent=1))
+    print(
+        json.dumps(
+            {k: report[k] for k in ("number_of_frames", "timings_ms_per_frame", "decided_at")}, indent=1
+        )
+    )
     if a.compare:
         print("parity (exact):", json.dumps(report["parity_vs_production"], indent=1)[:600])
         print("parity (tolerant):", json.dumps(report["parity_vs_production_tolerant"], indent=1)[:1200])

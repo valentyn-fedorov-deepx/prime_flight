@@ -27,17 +27,38 @@ RowsProvider = Callable[[int, object], list]  # (frame_id, image) -> first-run r
 
 @dataclass
 class Detectors:
-    """The three v1 detector heads. Any of them may be None (then it contributes no rows)."""
+    """The three v1 detector heads. Any of them may be None (then it contributes no rows).
+
+    Runs through `MultiHeadRunner`: one upload per frame, one letterbox per input size, optional thread parallelism
+    (`parallel=True`) — byte-identical rows to running each head on its own.
+    """
 
     gm: object = None
     chocks: object = None
     vehicle: object = None
+    parallel: bool = False
+    _runner: object = field(default=None, repr=False)
+
+    def _heads(self) -> dict:
+        return {
+            n: h
+            for n, h in (("gm", self.gm), ("chocks", self.chocks), ("vehicle", self.vehicle))
+            if h is not None
+        }
 
     def rows(self, image, cm: ClassMap) -> list:
-        gm = self.gm.predict(image) if self.gm is not None else None
-        ch = self.chocks.predict(image) if self.chocks is not None else None
-        ve = self.vehicle.predict(image) if self.vehicle is not None else None
-        return first_run_rows(gm, ch, ve, cm)
+        heads = self._heads()
+        if not heads:
+            return []
+        if self._runner is None:
+            from pf.gm.heads import MultiHeadRunner  # lazy
+
+            self._runner = MultiHeadRunner(heads, parallel=self.parallel)
+        out = self._runner.predict_all(image)
+        return first_run_rows(out.get("gm"), out.get("chocks"), out.get("vehicle"), cm)
+
+    def timings(self) -> dict:
+        return self._runner.timings() if self._runner is not None else {}
 
 
 @dataclass
