@@ -14,7 +14,8 @@ aircraft type: plan.json per event, overridden by `out/testset/airplane_override
 The same flags feed the tracker and both module labels. A result produced with other flags is stale and is redone.
 
 Live control: `out/testset/orchestrator_control.json` is re-read every loop:
-  {"steps": [...], "limits": {"fetch", "gm", "tracker", "mod", "mod_gpu"}, "disabled_modules": [...], "min_free_gb": 60,
+  {"steps": [...], "limits": {"fetch", "gm", "tracker", "mod", "mod_gpu", "mod_cpu"}, "disabled_modules": [...],
+   "min_free_gb": 60,
    "cleanup": false, "retry_failed": false, "stop": false}
 `stop` drains (no new jobs, exit when the running ones finish); `retry_failed` resets failed steps once; `cleanup` deletes the
 mp4 and the v2 bus file of a video once all its enabled module jobs have finished.
@@ -48,7 +49,7 @@ CONTROL = os.path.join(TS, "orchestrator_control.json")
 GM_WEIGHTS = os.path.join(ROOT, "external", "general_model_prod", "weights")
 DEFAULT_CONTROL = {
     "steps": ["fetch", "gm", "tracker", "mod:ctl", "mod:v2"],
-    "limits": {"fetch": 2, "gm": 1, "tracker": 2, "mod": 3, "mod_gpu": 1},
+    "limits": {"fetch": 2, "gm": 1, "tracker": 2, "mod": 3, "mod_gpu": 1, "mod_cpu": 1},
     "disabled_modules": [],
     "min_free_gb": 60.0,
     "cleanup": False,
@@ -174,7 +175,8 @@ def step_enabled(step: str, ctl: dict) -> bool:
 
 def job_class(step: str) -> str:
     if step.startswith("mod:"):
-        return "mod" if profiles.profile(step.split(":", 2)[2])["pixel_free"] else "mod_gpu"
+        prof = profiles.profile(step.split(":", 2)[2])
+        return prof.get("job_class") or ("mod" if prof["pixel_free"] else "mod_gpu")
     return step
 
 
@@ -282,11 +284,14 @@ def build_cmd(step: str, video: str, plan: Plan):
     _, label, module = step.split(":", 2)
     prof = profiles.profile(module)
     inf = p["prod_dir"] if label == "ctl" else p["v2_inf"]
-    cmd = [PY, "scripts/run_module.py", "--module", module, "--video", video, "--inferences-dir", inf,
-           "--device", prof["device"], "--cone-camera", "true" if plan.cone(video) else "false",
-           "--out", module_out(label, video, module)]
+    launcher = prof.get("launcher")
+    rel = (lambda x: os.path.relpath(x, ROOT).replace("\\", "/")) if launcher else (lambda x: x)
+    cmd = (list(launcher) if launcher else [PY, "scripts/run_module.py"]) + [
+        "--module", module, "--video", video, "--inferences-dir", rel(inf),
+        "--device", prof["device"], "--cone-camera", "true" if plan.cone(video) else "false",
+        "--out", rel(module_out(label, video, module))]
     if os.path.exists(p["video"]):
-        cmd += ["--videos-dir", os.path.join(TS, "videos")]
+        cmd += ["--videos-dir", rel(os.path.join(TS, "videos"))]
     else:
         cmd.append("--no-video")
     if prof["numpy1"]:
@@ -393,7 +398,7 @@ def run(a) -> int:
         ctl["steps"] = a.steps.split(",")
     if a.disabled_modules is not None:
         ctl["disabled_modules"] = [m for m in a.disabled_modules.split(",") if m]
-    for k in ("gm", "tracker", "fetch", "mod", "mod_gpu"):
+    for k in ("gm", "tracker", "fetch", "mod", "mod_gpu", "mod_cpu"):
         v = getattr(a, f"limit_{k}")
         if v is not None:
             ctl["limits"][k] = v
@@ -476,7 +481,7 @@ def run(a) -> int:
                         os.path.exists(p["part"]) and time.time() - os.path.getmtime(p["part"]) < 180)):
                     continue
                 klass = job_class(step)
-                if counts[klass] >= ctl["limits"][klass]:
+                if counts[klass] >= ctl["limits"].get(klass, 1):
                     continue
                 cmd, env = build_cmd(step, video, plan)
                 counts[klass] += 1
@@ -547,7 +552,7 @@ def main() -> int:
     r.add_argument("--disabled-modules", default=None)
     r.add_argument("--videos", default=None, help="comma list or @file")
     r.add_argument("--limit", type=int, default=None, help="first N videos in plan order")
-    for k in ("gm", "tracker", "fetch", "mod", "mod_gpu"):
+    for k in ("gm", "tracker", "fetch", "mod", "mod_gpu", "mod_cpu"):
         r.add_argument(f"--limit-{k.replace('_', '-')}", dest=f"limit_{k}", type=int, default=None)
     r.add_argument("--cleanup", action="store_true")
     r.add_argument("--keep-control", action="store_true", help="start from the existing control file")

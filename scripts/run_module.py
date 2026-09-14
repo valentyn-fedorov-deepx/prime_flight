@@ -26,8 +26,9 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
     builtins. Opt-in with --numpy1-scalars, used only for the modules that need it.
   * `--drop-state-keys`: tracker files carry the stage fields of cv_common's newer `transport.Airplane`
     (`_moving_counter`, `_stopped_counter`, `have_pre_arrival_stage`, `have_arrival_stage`, `departure_frame`,
-    `_height_mode`); the `TrackedObject.from_state_dict` of an older cv_common copy raises on them. Modules that define
-    their own `Airplane(TrackedObject)` and never read those fields (the post-arrival and pre-departure walk-arounds)
+    `_height_mode`) and, on beltloader / gse records, `_bl_type_bbox` / `_bl_type_frames`; the
+    `TrackedObject.from_state_dict` of an older cv_common copy raises on them. Modules that define their own
+    `Airplane` / `Beltloader(TrackedObject)` and never read those fields (the post-arrival and pre-departure walk-arounds)
     get them removed before the call - the treatment that copy already gives `arrival_frame`. Recorded in the JSON.
 """
 
