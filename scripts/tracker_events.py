@@ -44,9 +44,9 @@ def main() -> int:
         keyed[label] = groups
     ref = labels[0]
     keys = sorted({k for g in keyed.values() for k in g}, key=lambda k: (k[0], str(k[1])))
-    header = "| event | door | " + " | ".join(labels) + " | " + " | ".join(f"Δ {l}" for l in labels[1:]) + " |"
-    print(header)
-    print("|" + "---|" * (2 + len(labels) + len(labels) - 1))
+    columns = ["event", "door", *labels, *[f"Δ {l}" for l in labels[1:]]]
+    print("| " + " | ".join(columns) + " |")
+    print("|" + "---|" * len(columns))
     comparison = []
     for key in keys:
         n = max(len(keyed[l].get(key, [])) for l in labels)
@@ -58,8 +58,8 @@ def main() -> int:
             deltas = [(f - frames[0]) if (f is not None and frames[0] is not None) else None for f in frames[1:]]
             comparison.append({"event": key[0], "door": key[1], "index": i, "frames": dict(zip(labels, frames)),
                                "delta_to_" + ref: dict(zip(labels[1:], deltas))})
-            print(f"| {key[0]} | {key[1] or ''} | " + " | ".join(str(f) for f in frames) + " | "
-                  + " | ".join("—" if d is None else f"{d:+d}" for d in deltas) + " |")
+            cells = [key[0], key[1] or "", *[str(f) for f in frames], *["—" if d is None else f"{d:+d}" for d in deltas]]
+            print("| " + " | ".join(cells) + " |")
     for label, res in derived.items():
         print(f"{label}: re-identifications {res['reidentifications'][:6]} open doors at end {res['open_doors_at_end']}")
     if a.out:
