@@ -40,15 +40,22 @@ SUFFIX = ".mp4.ndjson"
 # Nominal frame size used only for the "coordinates are absolute pixels" check.
 NOMINAL_W, NOMINAL_H = 1920, 1080
 
-# Airplane state fields with event semantics: sampled at every change + every SAMPLE_EVERY frames.
+# Airplane state fields with event semantics: a change of any of them triggers a sample (plus every SAMPLE_EVERY frames).
 AIRPLANE_EVENT_FIELDS = (
-    "_status", "_is_stopped", "_stops_count", "_stop_point", "_prev_stop_point",
+    "_status", "_prev_status", "_is_stopped", "_stops_count",
     "have_pre_arrival_stage", "have_arrival_stage", "arrival_frame", "departure_frame",
 )
-# Counters that change (almost) every frame: sampled every SAMPLE_EVERY frames only, never on change.
+# Fields recorded in every sample but never used as a change trigger (they jitter / count every frame).
 AIRPLANE_COUNTER_FIELDS = (
+    "_stop_point", "_prev_stop_point", "to_numpy",
     "_moving_counter", "_stopped_counter", "_static_frames", "_moving_frames",
     "_of_dots_lifetime", "_height_mode",
+)
+# Snapshot taken at the frame where an event field is first set (to infer the trigger condition).
+AIRPLANE_SNAPSHOT_FIELDS = (
+    "_status", "_prev_status", "_is_stopped", "_stops_count", "_static_frames", "_moving_frames",
+    "_moving_counter", "_stopped_counter", "have_pre_arrival_stage", "have_arrival_stage",
+    "arrival_frame", "departure_frame",
 )
 EVENT_FIELD_RE = re.compile(r"arriv|depart|stage|status|stopped|parked", re.I)
 SAMPLE_EVERY = 500
@@ -59,6 +66,7 @@ SMALL_LIST_MAX = 8              # lists up to this length are compared element-w
 MAX_DISTINCT_VALUES = 24        # per (class, key): keep at most this many distinct scalar values
 LIST_WALK_ELEMS = 3             # type inventory looks at the first N elements of every list
 VEHICLE_ONLY_KEYS = ("_bl_type_bbox", "_bl_type_frames")
+STANDARD_ENVELOPE_KEYS = ("tr_id", "xyxy", "cls_str", "conf", "state_dict", "data")
 SCALAR_TYPES = (type(None), bool, int, float, str)
 
 
@@ -319,9 +327,11 @@ def inspect_gm(path, max_frames=None):
                     w["position_first"] += 1
                 if pos == n - 1:
                     w["position_last"] += 1
+            nonint = False
             for v in (x1, y1, x2, y2):
                 if isinstance(v, float) and not v.is_integer():
                     n_nonint_coord += 1
+                    nonint = True
                     break
             if x2 <= x1:
                 n_x2_le_x1 += 1
@@ -358,8 +368,10 @@ def inspect_gm(path, max_frames=None):
                 cs = per_class[cid] = {"count": 0, "count_conf_valid": 0, "conf_min": None, "conf_max": None, "conf_sum": 0.0,
                                        "w_min": w, "w_max": w, "w_sum": 0.0, "h_min": h, "h_max": h, "h_sum": 0.0,
                                        "max_per_frame": 0, "frames_present": 0, "first_frame": k, "last_frame": k,
-                                       "id_type": type(cid).__name__}
+                                       "id_type": type(cid).__name__, "nonint": 0}
             cs["count"] += 1
+            if nonint:
+                cs["nonint"] += 1
             if conf_valid:
                 cs["count_conf_valid"] += 1
                 cs["conf_sum"] += c
@@ -391,6 +403,7 @@ def inspect_gm(path, max_frames=None):
         classes[str(cid)] = {
             "class_id": cid, "id_type": cs["id_type"], "count": cs["count"],
             "count_conf_valid": cs["count_conf_valid"],
+            "non_integer_coord_records": cs["nonint"],
             "share_of_detections": round(cs["count"] / n_det, 5) if n_det else None,
             "conf_min": cs["conf_min"], "conf_max": cs["conf_max"],
             "conf_mean": round(cs["conf_sum"] / cs["count_conf_valid"], 5) if cs["count_conf_valid"] else None,
@@ -512,7 +525,7 @@ class LockstepGM:
 def new_class_stats():
     return {
         "object_frames": 0, "empty_state": 0, "obj_ids": set(), "tr_ids": set(),
-        "envelope_orders": Counter(),
+        "envelope_orders": Counter(), "extra_env_keys": {}, "obj_to_tr": defaultdict(set),
         "join": {"objects": 0, "exact_bbox": 0, "iou_bins": Counter(), "no_match_ge05": 0,
                  "class_id_by_iou": Counter(), "matched_conf": {}},
         "first_frame": None, "last_frame": None, "max_per_frame": 0,
@@ -565,7 +578,8 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
     first_nonempty = None
     nonempty_frames = 0
     max_objs = (0, None)
-    dup_id_in_frame = 0
+    dup_id_in_frame = 0              # same (cls_str, tr_id) twice in one frame
+    shared_id_in_frame = 0           # same tr_id under different cls_str in one frame
     envelope_keys = Counter()
     envelope_key_orders = Counter()
     id_classes = defaultdict(set)    # tr_id -> classes
@@ -622,6 +636,7 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
             size_sample["bytes_total"] += nb
         per_frame_cls = Counter()
         ids_in_frame = set()
+        raw_ids_in_frame = set()
         for obj in objs:
             if not isinstance(obj, dict):
                 walk_types(obj, "<non-dict object>", paths)
@@ -668,9 +683,20 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
                 else:
                     js["no_match_ge05"] += 1
             id_classes[tr_id].add(cls)
-            if tr_id in ids_in_frame:
+            if (cls, tr_id) in ids_in_frame:
                 dup_id_in_frame += 1
-            ids_in_frame.add(tr_id)
+            elif tr_id in raw_ids_in_frame:
+                shared_id_in_frame += 1
+            ids_in_frame.add((cls, tr_id))
+            raw_ids_in_frame.add(tr_id)
+            for ek in obj.keys():
+                if ek not in STANDARD_ENVELOPE_KEYS:
+                    ee = cs["extra_env_keys"].get(ek)
+                    if ee is None:
+                        cs["extra_env_keys"][ek] = [k, k, 1]
+                    else:
+                        ee[1] = k
+                        ee[2] += 1
             conf = obj.get("conf")
             if isinstance(conf, (int, float)):
                 if conf != 0:
@@ -714,6 +740,7 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
             cs["class_name_in_state"][str(cname)] += 1
             obj_id = state.get("_obj_id")
             cs["obj_ids"].add(obj_id)
+            cs["obj_to_tr"][obj_id].add(tr_id)
             if obj_id != tr_id:
                 cs["tr_id_ne_obj_id"] += 1
             if state.get("_xyxy") != obj.get("xyxy"):
@@ -761,9 +788,13 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
                         "obj_id": obj_id, "cls_str": cls, "first_frame": k, "last_frame": k, "n_frames": 0,
                         "samples": [], "truncated": False, "_last_ev": None,
                         "status_counter": Counter(), "status_transitions": 0, "_last_status": None,
-                        "arrival_frame": {"first_set_at_frame": None, "value_when_set": None, "distinct_values": Counter()},
-                        "departure_frame": {"first_set_at_frame": None, "value_when_set": None, "distinct_values": Counter()},
-                        "have_arrival_stage_first_true": None, "have_pre_arrival_stage_first_true": None,
+                        "arrival_frame": {"first_set_at_frame": None, "value_when_set": None, "distinct_values": Counter(),
+                                          "state_at_set": None},
+                        "departure_frame": {"first_set_at_frame": None, "value_when_set": None, "distinct_values": Counter(),
+                                            "state_at_set": None},
+                        "have_arrival_stage_first_true": None, "have_arrival_stage_state_at_true": None,
+                        "have_pre_arrival_stage_first_true": None, "have_pre_arrival_stage_state_at_true": None,
+                        "status_first_frames": {},
                         "leaked_vehicle_keys": Counter(), "n_keys": Counter(),
                         "_prev_frame": None, "_run_start": k, "runs": [], "n_runs": 1,
                     }
@@ -781,21 +812,27 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
                         ap["leaked_vehicle_keys"][vk] += 1
                 st = state.get("_status")
                 ap["status_counter"][str(st)] += 1
+                if str(st) not in ap["status_first_frames"]:
+                    ap["status_first_frames"][str(st)] = k
                 if ap["_last_status"] is not None and st != ap["_last_status"]:
                     ap["status_transitions"] += 1
                 ap["_last_status"] = st
+                snapshot = None
                 for fld in ("arrival_frame", "departure_frame"):
                     val = state.get(fld)
                     if val is not None:
                         if ap[fld]["first_set_at_frame"] is None:
                             ap[fld]["first_set_at_frame"] = k
                             ap[fld]["value_when_set"] = val
+                            snapshot = snapshot or {x: state.get(x, "<absent>") for x in AIRPLANE_SNAPSHOT_FIELDS}
+                            ap[fld]["state_at_set"] = snapshot
                         if len(ap[fld]["distinct_values"]) < 20 or str(val) in ap[fld]["distinct_values"]:
                             ap[fld]["distinct_values"][str(val)] += 1
-                if state.get("have_arrival_stage") is True and ap["have_arrival_stage_first_true"] is None:
-                    ap["have_arrival_stage_first_true"] = k
-                if state.get("have_pre_arrival_stage") is True and ap["have_pre_arrival_stage_first_true"] is None:
-                    ap["have_pre_arrival_stage_first_true"] = k
+                for fld in ("have_arrival_stage", "have_pre_arrival_stage"):
+                    if state.get(fld) is True and ap[fld + "_first_true"] is None:
+                        ap[fld + "_first_true"] = k
+                        snapshot = snapshot or {x: state.get(x, "<absent>") for x in AIRPLANE_SNAPSHOT_FIELDS}
+                        ap[fld + "_state_at_true"] = snapshot
                 ev_keys = list(AIRPLANE_EVENT_FIELDS) + [x for x in state if EVENT_FIELD_RE.search(x)
                                                          and x not in AIRPLANE_EVENT_FIELDS
                                                          and x not in AIRPLANE_COUNTER_FIELDS]
@@ -859,8 +896,12 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
             "data_values": dict(cs["data"].most_common(50)),
             "envelope_conf": {"nonzero": cs["conf_nonzero"], "min": cs["conf_min"], "max": cs["conf_max"]},
             "tr_id_ne_state_obj_id": cs["tr_id_ne_obj_id"],
+            "obj_ids_with_multiple_tr_ids": sum(1 for s in cs["obj_to_tr"].values() if len(s) > 1),
+            "max_tr_ids_per_obj_id": max((len(s) for s in cs["obj_to_tr"].values()), default=0),
             "xyxy_ne_state_xyxy": cs["xyxy_ne_state_xyxy"],
             "envelope_key_orders": {json.dumps(list(o)): c for o, c in cs["envelope_orders"].most_common()},
+            "extra_envelope_keys": {ek: {"first_frame": v[0], "last_frame": v[1], "object_frames": v[2]}
+                                    for ek, v in cs["extra_env_keys"].items()},
             "join_with_gm": {
                 "objects": cs["join"]["objects"],
                 "exact_bbox_match": cs["join"]["exact_bbox"],
@@ -925,7 +966,8 @@ def inspect_tracker(path, max_frames=None, gm_path=None):
             "histogram": {str(n): objs_hist[n] for n in sorted(objs_hist)},
         },
         "envelope": {"keys": dict(envelope_keys), "key_orders": {json.dumps(list(o)): c for o, c in envelope_key_orders.items()}},
-        "duplicate_tr_id_within_frame": dup_id_in_frame,
+        "duplicate_cls_tr_id_within_frame": dup_id_in_frame,
+        "tr_id_shared_across_classes_within_frame": shared_id_in_frame,
         "distinct_tr_ids_total": len(id_classes),
         "tr_ids_with_multiple_classes": multi_class_ids,
         "key_paths": paths_out,

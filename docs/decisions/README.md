@@ -3,6 +3,7 @@
 | # | Назва | Статус | Дата | Зона |
 |---|---|---|---|---|
 | ADR-000 | Шаблон | — | — | — |
+| ADR-001 | GM v2 / Tracker v2: стратегія сумісності з 27 модулями і по-чанкова обробка (v1-compat + v2 шина, gm_core/gm_context, state_dict заморожено, stage detector = власник якорів) | proposed | 2026-09-14 | GM / Tracker / контракт |
 
 Кандидати на перші ADR (з `docs/02_target_architecture.md` і борду):
 - Контракт кадру v1.0 (`schema_version`, `frame_id`, `stage/events/anchors`) — PF-Q1-02/03.

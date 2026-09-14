@@ -1,0 +1,2887 @@
+{
+ "_meta": {
+  "generated_by": "docs/analysis build (read-only audit of G:/prime_flight/external/<repo>/main.py at default-branch HEAD, 2026-09-14)",
+  "sources": "27 module repos + db_worker/ML_worker.py + general_model/main.py; cv_common submodules empty at every pin",
+  "line_refs": "file:line refer to <repo>/main.py unless another file is named",
+  "delivery_contract_from_code": {
+   "gm_ndjson_row": "{'<frame_ii>': [[x1,y1,x2,y2,conf,cls_id], ...]} — key is db_worker's own 1-based counter frame_ii, NOT the frame_id passed to model_pub (ML_worker.py:223,:286,:309,:321)",
+   "gm_row_producer": "general_model/main.py: [*xyxy float, float(conf), int(cls_id)] (:551,:774); chocks_model -> str2id['chock'] (:586); vehicle_model -> str2id['vehicle'] (:592); synthesized side_obstacle/obstacle rows with stale conf (:823,:829); airplane row [*bbox, int(mode_plane_height), str2id['airplane']] (:854) — height in the conf slot, computed over the whole first run (:701-702)",
+   "gm_two_runs": "GM itself is two-pass: first run publishes raw dets (:517-595), computes mode_plane_height and the longest-lived plane track (:671-704); second run re-reads its own output (:711,:765), drops raw airplane rows (:773) and writes the consumed file (:871)",
+   "tracker_ndjson_row": "{'<frame_ii>': [ {cls_str, tr_id, xyxy, state_dict{...}, data{bl_type}|null}, ... ]} — shape inferred from Track().from_json usage (all modules), raw access hand-signals:772-774, gat-streaming simulate.py:90-103",
+   "frame_join": "db_worker zips GM and tracker streams by position and discards the keys: zip(metadatas['general_model'], metadatas['trackers']) -> list(j.values())[0] (ML_worker.py:244-248); modules number frames with enumerate(metadata, 1)",
+   "state_dict_restore": "modules call cv_common TrackedObject/Vehicle/Airplane.from_state_dict(state_dict) or Airplane.update_inner_state(state_dict); cv_common source not available at any pin — key set (38 for airplane per gat-streaming sanitize_tracks.py:6) unverified",
+   "status_serialization": "state_dict['_status'] is compared to Status.STOPPED.value (hand-signals:463,:503,:524) -> serialized as enum value; 5 members used: MOVING, STOPPED, STOPPING, PROCEEDING, UNOBSERVED"
+  },
+  "cross_check_prod_ndjson": {
+   "source": "G:/gat_stages/atlc5_inferences/{general_model,trackers}AIjEAz70OfWCYG.mp4.ndjson (one prod video, read-only scan)",
+   "track_top_level_keys": [
+    "tr_id",
+    "xyxy",
+    "cls_str",
+    "conf",
+    "state_dict",
+    "data"
+   ],
+   "data_keys": [
+    "bl_type (dict only on beltloader/gse rows; null otherwise)"
+   ],
+   "status_values_seen": [
+    "stopped",
+    "proceeding",
+    "moving",
+    "stopping",
+    "None (person: empty state_dict)"
+   ],
+   "person_state_dict": "empty {} (0 keys)",
+   "gse_beltloader_state_dict_keys_34": [
+    "_bl_type_bbox",
+    "_bl_type_frames",
+    "_class_name",
+    "_color",
+    "_display_proceeding_time_thres",
+    "_from_x",
+    "_from_y",
+    "_init_dots_lifetime",
+    "_init_xyxy",
+    "_is_stopped",
+    "_mask",
+    "_moving_frames",
+    "_moving_time_thres",
+    "_obj_id",
+    "_of_dots_lifetime",
+    "_p0",
+    "_prev_color",
+    "_prev_status",
+    "_prev_stop_point",
+    "_previous_xyxy",
+    "_proceeding_time_thres",
+    "_segm_points",
+    "_st",
+    "_static_frames",
+    "_static_points_thres",
+    "_status",
+    "_stop_point",
+    "_stopping_time_thres",
+    "_stops_count",
+    "_to_x",
+    "_to_y",
+    "_xyxy",
+    "to_numpy",
+    "to_status"
+   ],
+   "ndjson_keys": "1-based consecutive; GM and tracker files have the same number of rows (39360)",
+   "video": "AIjEAz70OfWCYG",
+   "tracker_frames": 39360,
+   "gm_frames": 39360,
+   "airplane_keys": [
+    "_class_name",
+    "_color",
+    "_display_proceeding_time_thres",
+    "_from_x",
+    "_from_y",
+    "_height_mode",
+    "_init_dots_lifetime",
+    "_init_xyxy",
+    "_is_stopped",
+    "_mask",
+    "_moving_counter",
+    "_moving_frames",
+    "_moving_time_thres",
+    "_obj_id",
+    "_of_dots_lifetime",
+    "_p0",
+    "_prev_color",
+    "_prev_status",
+    "_prev_stop_point",
+    "_previous_xyxy",
+    "_proceeding_time_thres",
+    "_segm_points",
+    "_st",
+    "_static_frames",
+    "_static_points_thres",
+    "_status",
+    "_stop_point",
+    "_stopped_counter",
+    "_stopping_time_thres",
+    "_stops_count",
+    "_to_x",
+    "_to_y",
+    "_xyxy",
+    "arrival_frame",
+    "departure_frame",
+    "have_arrival_stage",
+    "have_pre_arrival_stage",
+    "to_numpy",
+    "to_status"
+   ],
+   "airplane_key_types": {
+    "to_numpy": "list",
+    "to_status": "list",
+    "_obj_id": "int",
+    "_class_name": "str",
+    "_xyxy": "list",
+    "_previous_xyxy": "list",
+    "_init_xyxy": "list",
+    "_status": "str",
+    "_color": "list",
+    "_prev_status": "NoneType",
+    "_prev_color": "NoneType",
+    "_static_frames": "int",
+    "_moving_frames": "int",
+    "_is_stopped": "bool",
+    "_prev_stop_point": "NoneType",
+    "_stop_point": "NoneType",
+    "_stops_count": "int",
+    "_p0": "NoneType",
+    "_st": "NoneType",
+    "_of_dots_lifetime": "int",
+    "_init_dots_lifetime": "int",
+    "_mask": "NoneType",
+    "_segm_points": "NoneType",
+    "_static_points_thres": "float",
+    "_stopping_time_thres": "int",
+    "_moving_time_thres": "int",
+    "_proceeding_time_thres": "int",
+    "_display_proceeding_time_thres": "int",
+    "_from_x": "float",
+    "_to_x": "float",
+    "_from_y": "float",
+    "_to_y": "float",
+    "_moving_counter": "int",
+    "_stopped_counter": "int",
+    "have_pre_arrival_stage": "bool",
+    "have_arrival_stage": "bool",
+    "arrival_frame": "NoneType",
+    "departure_frame": "NoneType",
+    "_height_mode": "float"
+   },
+   "p0_shape": [
+    "NoneType",
+    null,
+    null
+   ],
+   "st_shape": [
+    "NoneType",
+    "None",
+    "None",
+    "None"
+   ],
+   "arrival_frames": [
+    11151
+   ],
+   "departure_frames": [
+    36154
+   ],
+   "gm_class_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    23,
+    24,
+    25,
+    29,
+    30,
+    31
+   ],
+   "gm_row_lengths": {
+    "6": 930527
+   },
+   "gm_conf_gt1_by_class": {
+    "2": 25280
+   },
+   "first_airplane_frame": 11150,
+   "leak_rows": 0
+  }
+ },
+ "modules": {
+  "3-stop-brake-check": {
+   "m_id": "M01",
+   "checks": [
+    "3 stop brake check"
+   ],
+   "entry": "main.py:224 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "gse",
+     "pushback",
+     "trailer"
+    ],
+    "class_names_cosmetic": [
+     "obstacle",
+     "beltloader"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "det=frame_metadata['general_model'] (main.py:268); `for *xyxy, conf, cls_id in det` (:280); ids via config['str2id'][name] (:288)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.update_inner_state(state_dict) (:318)",
+     "arrived (:321)",
+     "departured (:325)",
+     "xyxy",
+     "Vehicle.from_state_dict (:68,:366)",
+     "_status (:76,:77,:130)",
+     "center (:73)",
+     "init_xyxy (:134,:185)",
+     "stops_count (:111)",
+     "status (:379)",
+     "_xyxy (:136)",
+     "_obj_id (:114)",
+     "_color (:135)",
+     "draw_OF_points (:382)"
+    ],
+    "private_fields": [
+     "_status",
+     "_xyxy",
+     "_obj_id",
+     "_color"
+    ],
+    "events_recomputed_locally": [
+     "BL fully_stopped / re-init from _status counters (:76-102)",
+     "BL at door = get_relative_intersection(airplane.xyxy, bl.xyxy) > 0.2 (:190)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "dataset.get_im0s only if write_video (:264)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:260)",
+   "config": {
+    "fps_assumption": "config['fps'] (writer only, :240); thresholds in frames, comments assume 8 fps (local_config.yaml:13-15)",
+    "camera": "both (config['cone'|'wing'] :226-227)",
+    "cv_common_pin": "86731e4c",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "14685f4",
+    "pinned_in_04_modules": "3a2337c1",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "set_logging file (:232)"
+   ],
+   "chunkwise_blockers": [],
+   "notes": "Causal, per-BL verdict latched in-stream (:395-403); final aggregation get_reports at end (:444). Breaks on airplane.departured (:333). Loader.stops_count is a cv_common Vehicle property (semantics unseen)."
+  },
+  "aircraft-chocks": {
+   "m_id": "M02A/M02B/M02C",
+   "checks": [
+    "Nose gear chocks applied immediately",
+    "Main gear chocks removed only after aircraft is attached to pushback",
+    "Nose wheel chock removed from aircraft"
+   ],
+   "entry": "main.py:1214 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None, save_diff=False, debug_all=False)",
+   "gm": {
+    "class_ids": [
+     0,
+     2,
+     3,
+     4,
+     29,
+     30
+    ],
+    "class_ids_note": "literal ids only in a debug filter with comment 'obs, side_obs, pers, airp, bl, gse' (:1386) -> obstacle=29, side_obstacle=30, person=0, airplane=2, beltloader=3, gse=4 (inferred from comment, not verified)",
+    "class_names": [
+     "pushback",
+     "chock",
+     "cone",
+     "trailer",
+     "fuel_truck",
+     "ladder",
+     "front_wheel",
+     "vehicle",
+     "tow_bar",
+     "airplane_nose",
+     "back_wheel",
+     "obstacle"
+    ],
+    "class_names_cosmetic": [
+     "beltloader",
+     "chock",
+     "obstacle",
+     "front_wheel"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "conf (airplane_nose sorted by conf :1377,:1520)",
+     "class"
+    ],
+    "conf_used": true,
+    "via": "`for *xyxy, conf, cls_id in det` (:1276 pass1, :1361 pass2); config['str2id'][name]"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person",
+     "gse",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "data['bl_type'] (:1568,:1573; value 'undefined' compared)",
+     "Airplane.from_state_dict (:1262)",
+     "update_inner_state (:1264,:1435,:1443)",
+     "departured (:1266)",
+     "arrival_frame (:1471,:1475 frame_number==)",
+     "departure_frame (:1480 frame_number==)",
+     "status (:1463,:1580)",
+     "xyxy (:1494,:1541)",
+     "state_dict['_obj_id'] (:1416-1420)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime",
+     "_obj_id (raw key)"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:1445-1472)",
+     "pushback_attached: IoU>0.8 with median_pushback from pass 1 for >5*FPS frames, or nose-geometry fallback (:1524-1548)",
+     "BL in safety zone / removal frame from bl_type!='undefined' + rear-wheel geometry, in/out thresholds 16/40 (:1561-1612)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) every frame per rear wheel (:1653); frame buffers _stop_frames(80)/_main_frames(80)/_diff_frames(16)/_sup_frames(16) of full frames (:539,:700,:620,:810)",
+    "own_models": [
+     "effnetb0 difference classifier (timm, config difference_classifier :1227-1231)",
+     "complex_difference.test_chocks_difference / simple_difference.test_env_static"
+    ]
+   },
+   "passes": 2,
+   "frame_numbering": "enumerate(metadata, 1) twice (:1246, :1323)",
+   "config": {
+    "fps_assumption": "FPS = config['fps'] (:31); hard-coded //8 for plot names (:639,:729,:829)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "ac5098d2",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "fa00478",
+    "pinned_in_04_modules": "fa00478f",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (difference_classifier)",
+    "result.csv (--save-csv)",
+    "diff_data/diff_plots (--save-diff)"
+   ],
+   "chunkwise_blockers": [
+    "pass 1 needs the whole event to compute median_pushback before pass 2 (:1240-1291)",
+    "video_worker.number_of_frames used as end-of-video anchor (:1266)",
+    "frame_number == aircraft.arrival_frame / departure_frame equality (:1475,:1480) -> breaks if position != absolute id (X2)",
+    "full-frame buffers per wheel (~1 GB) (:453-478)"
+   ],
+   "notes": "Returns 3 statuses (:1781-1783). Main-gear per-wheel result latches in-stream (:858), nose placed at T_arr+30s (:1027-1032), nose removed judged after pushback attach (:1045-1060). Already ported as main_stream.py in gat-streaming (3 hunks)."
+  },
+  "all-cargo-bin-doors-opened-and-verified": {
+   "m_id": "M03",
+   "checks": [
+    "All cargo bin doors opened and verified"
+   ],
+   "entry": "main.py:22 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=False, weights_dir='weights', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "front_door",
+     "back_door",
+     "gse",
+     "pushback",
+     "trailer",
+     "fuel_truck",
+     "vehicle",
+     "obstacle"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls in reversed(det)` (:156); config['str2id'][name] (:160,:164,:168); note GM 'obstacle' rows counted as obstacles (:168)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.from_state_dict (:99)",
+     "update_inner_state (:107)",
+     "arrival_frame (:109,:138)",
+     "status (:130,:146,:149)",
+     "departured (:195)",
+     "departure_frame (:195)",
+     "arrived (:202)",
+     "draw_OF_points (:108)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:112-139)",
+     "local stop_frame from status==STOPPED (:146-148)",
+     "local depart_frame from 5*fps MOVING frames (:149-152)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:72)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:68)",
+   "config": {
+    "fps_assumption": "config['fps'] (:31)",
+    "camera": "both (cone->front_door, wing->back_door :217-234)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "6efc0b05",
+    "repo_head": "c60aed2",
+    "pinned_in_04_modules": "ac2707cb",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "mkdir output (:24-25)"
+   ],
+   "chunkwise_blockers": [],
+   "notes": "Pass latches after 480 door frames (:237-244), Fail/NO only at end (:269-293). Largest airplane by width chosen (:93-95). Final verdict dereferences main_plane.have_arrival_stage_custom (:275) -> AttributeError if no airplane track ever seen."
+  },
+  "beltloader-chocks": {
+   "m_id": "M04",
+   "checks": [
+    "Belt loader forward chock remained in place until unit is backed up clear of aircraft"
+   ],
+   "entry": "main.py:371 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "chock",
+     "cone",
+     "back_wheel",
+     "airplane_engine",
+     "back_door",
+     "airplane_wing",
+     "pushback",
+     "trailer",
+     "gse",
+     "fuel_truck",
+     "beltloader",
+     "ladder",
+     "person"
+    ],
+    "class_names_cosmetic": [
+     "obstacle"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "collect_frame_detections: `for i, (*xyxy, conf, cls) in enumerate(dets)` (:180); class_ids={str2id[name]:name} dict membership (:171,:183); config['colors'][cls] (:187)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "data['bl_type'] == 'front'|'back' (:234, :215)",
+     "state_dict['_status'] (label :216)",
+     "state_dict['_obj_id'] (:484)",
+     "Airplane.update_inner_state (:226)",
+     "arrived (:450)",
+     "departured (:456)",
+     "Vehicle.from_state_dict (:70)",
+     "xyxy (:79)",
+     "status in [STOPPING, STOPPED] (:490)",
+     "_obj_id (:156)",
+     "_color (:158)"
+    ],
+    "private_fields": [
+     "_status (raw key)",
+     "_obj_id",
+     "_color",
+     "_xyxy (written in dead code :288)"
+    ],
+    "events_recomputed_locally": [
+     "BL at door = bl_type==needed + stopped (:234,:490)",
+     "aircraft type jet/airplane from wing/engine y2 (:326-368, min_plane_type_frames_eval 40)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:404)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:400)",
+   "config": {
+    "fps_assumption": "config['fps'] (writer only); thresholds in frames (local_config.yaml:3-11, 80 = 10 s @8fps)",
+    "camera": "both (front/back bl_type :387; chock ROI per plane_type :98-132)",
+    "cv_common_pin": "ac5098d2",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "7056099",
+    "pinned_in_04_modules": "7056099b",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "result.csv (--save-csv)"
+   ],
+   "chunkwise_blockers": [],
+   "notes": "chock_registered latches in-stream (:149-151); bl.confirmed needs last_frame-first_frame>480 (:166); make_inference at end (:515). VideoWorker model_name='safety-handrails-fully-extended' copy-paste (:543)."
+  },
+  "bl_rear_cone": {
+   "m_id": "M05",
+   "checks": [
+    "Beltloader rear cone positioned after BL is in place"
+   ],
+   "entry": "main.py:330 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "beltloader_cone",
+     "engine_cone",
+     "wing_cone",
+     "cone",
+     "back_wheel",
+     "airplane_engine",
+     "back_door",
+     "pushback",
+     "trailer",
+     "gse",
+     "fuel_truck",
+     "beltloader",
+     "ladder",
+     "person"
+    ],
+    "class_names_cosmetic": [
+     "obstacle"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "collect_frame_detections (:199-233), same pattern as beltloader-chocks; all cone subclasses merged into 'cone' (:397-402)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "data['bl_type'] (:264,:245)",
+     "state_dict['_status'] (label :246)",
+     "state_dict['_obj_id'] (:440)",
+     "Airplane.update_inner_state (:256)",
+     "arrived (:413)",
+     "departured (:419)",
+     "Vehicle.from_state_dict (:73)",
+     "xyxy (:82)",
+     "status in [STOPPING, STOPPED] (:446)",
+     "_obj_id (:186)",
+     "_color (:188)"
+    ],
+    "private_fields": [
+     "_status (raw key)",
+     "_obj_id",
+     "_color"
+    ],
+    "events_recomputed_locally": [
+     "BL at door = bl_type==needed + stopped (:264,:446)",
+     "BL view side / enface from back_door geometry (:100-127)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:361)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:357)",
+   "config": {
+    "fps_assumption": "config['fps'] (writer only); frames thresholds local_config.yaml:4-11",
+    "camera": "both (:345-346)",
+    "cv_common_pin": "86731e4c",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "12429f5",
+    "pinned_in_04_modules": "d75f1f8b",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "result.csv (--save-csv)"
+   ],
+   "chunkwise_blockers": [],
+   "notes": "Same skeleton as beltloader-chocks; cone_registered latches in-stream (:179-181). Repo HEAD 12429f5 != pinned d75f1f8b in 04_modules."
+  },
+  "chocks-and-cones-available-and-staged-for-arrival": {
+   "m_id": "M06",
+   "checks": [
+    "Chocks and cones available and staged for arrival"
+   ],
+   "entry": "main.py:40 detect(source, output_path, device, video_worker=None, cone_camera=False, weights_dir='weights', write_video=False, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "obstacle",
+     "side_obstacle",
+     "beltloader",
+     "gse",
+     "pushback",
+     "cone",
+     "chock"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls in reversed(det)` (:96); GM-synthesized 'obstacle'/'side_obstacle' rows compared as detections (:100,:105); cone needs height>30 (:114)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:30,:132)",
+     "_status == MOVING (:31)",
+     "status (:161,:175)",
+     "arrival_frame (:169,:179)",
+     "draw_OF_points (:141)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime",
+     "_status"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:143-170)",
+     "HAD_ARRIVAL from 5 s of moving (:172-176, unused in verdict)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:71)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:67)",
+   "config": {
+    "fps_assumption": "config['fps'] (:27,:139,:170,:172,:220)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "1413225",
+    "pinned_in_04_modules": "1413225f",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "mkdir output (:42-43)"
+   ],
+   "chunkwise_blockers": [],
+   "notes": "Tracks parsed only when det non-empty (:89-94). Verdict at T_arr: breaks on arrival_frame (:179-182). Counts hard-coded >6 cones / >5 chocks (:195,:206), YAML 6/4 unused (local_config.yaml:4-5). main_plane None at end -> AttributeError (:267)."
+  },
+  "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed": {
+   "m_id": "M07",
+   "checks": [
+    "Conditioned air removed 10 mins prior to departure and properly stowed"
+   ],
+   "entry": "main.py:229 detect(source, output_path, device=None, weights_dir=None, video_worker=None, cone_camera=True, json_fn=None, write_video=False, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "trailer",
+     "gse",
+     "beltloader",
+     "front_wheel",
+     "airplane_nose",
+     "pushback"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls) in enumerate(det)` (:336); reverse lookup list(str2id.values()).index(cls) (:339-340) -> ValueError on unknown id"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.update_inner_state (:364)",
+     "arrival_frame (:417 frame_number==)",
+     "departure_frame (:421 frame_number==)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "none: T_arr/T_dep taken from tracker anchors by frame equality (:417,:421)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) every inference_interval=40 frames (:308-313)",
+    "own_models": [
+     "YOLOv8 ONNX best28_full.onnx (air_conditioning=0) via util/yolov8_onnx (:261, local_config.yaml:3-7)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:283)",
+   "config": {
+    "fps_assumption": "config['fps'] (:236; 10*60*fps windows in get_decision :25-26)",
+    "camera": "cone (no wing branch)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "940fdfc",
+    "pinned_in_04_modules": "940fdfc5",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger (use_ndjson)",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (ONNX)",
+    "onnxruntime"
+   ],
+   "chunkwise_blockers": [
+    "whole-event history lists air_cond/air_nose/pushback (:276-278,:325,:351,:353) — unbounded but needed only from stop_frame",
+    "decision fires only when frame_number == main_plane.departure_frame (:421): a lost chunk silently yields 'Plane departure was not captured' (:429-432)"
+   ],
+   "notes": "LOOKBACK at T_dep: get_decision uses [stop, dep-10min] and [dep-10min, dep] windows (:44-227). main_plane reset after departure (:368-369). Tracks parsed only if det non-empty (:302)."
+  },
+  "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked": {
+   "m_id": "M08",
+   "checks": [
+    "Cones removed only after all GSE is clear and chocked"
+   ],
+   "entry": "main.py:65 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "engine_cone",
+     "wing_cone",
+     "tail_cone",
+     "gse",
+     "pushback",
+     "trailer",
+     "beltloader",
+     "fuel_truck",
+     "front_door",
+     "back_wheel",
+     "vehicle"
+    ],
+    "class_names_cosmetic": [
+     "airplane"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls_id) in enumerate(det)` (:160); id2str = {v:k for k,v in str2id.items()} then id2str[int(cls_id)] (:90,:162) -> KeyError on unknown id"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:29,:142)",
+     "arrival_frame (:152 frame_number==)",
+     "departure_frame (:154 frame_number==)",
+     "xyxy (:223)",
+     "data['bl_type'] (label :218)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "none for T_arr/T_dep (tracker anchors by equality); local 'transport near door' via BL track vs door distance (:222-229)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:102)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:97)",
+   "config": {
+    "fps_assumption": "config['fps'] (:25,:94)",
+    "camera": "both (cone_camera in validate_cone_detection :50-56 and rear-BL check :228; default None)",
+    "cv_common_pin": "33c188d0",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "e2a25ba",
+    "pinned_in_04_modules": "e2a25ba3",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger (use_ndjson)",
+    "cv2.VideoWriter (write_video)"
+   ],
+   "chunkwise_blockers": [
+    "frame_number == arrival_frame / departure_frame equality (:152,:154)"
+   ],
+   "notes": "Second load_metadata commented out (:86). Verdict at T_dep: last_frame_detected_cone vs last_frame_detected_transport (:355-378); needs plane_departured else NO (:349-352). 16-frame cone bbox window (:73-74). Does not test chocked GSE."
+  },
+  "cones-placed-in-proper-positions-and-timely": {
+   "m_id": "M09",
+   "checks": [
+    "Cones placed in proper positions and timely"
+   ],
+   "entry": "main.py:110 detect(source, output_path, device, video_worker=None, weights_dir='', write_video=False, cone_camera=True, json_logger=None, airplane_type=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "wing_cone",
+     "engine_cone",
+     "tail_cone",
+     "airplane_tail",
+     "gse",
+     "pushback",
+     "trailer",
+     "beltloader",
+     "fuel_truck",
+     "ladder",
+     "person"
+    ],
+    "class_names_cosmetic": [
+     "airplane_engine",
+     "airplane_wing"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls_id) in enumerate(det)` (:183); reverse lookup list(str2id.values()).index(cls_id) (:185)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:60,:240)",
+     "arrived (:61-62)",
+     "_status == MOVING (:71, property unused)",
+     "status == MOVING (:252)",
+     "have_pre_arrival_stage (cv_common property, :332)",
+     "draw_OF_points (:244)"
+    ],
+    "private_fields": [
+     "_status"
+    ],
+    "events_recomputed_locally": [
+     "T_arr = first frame with arrived (:62-63,:245-247)",
+     "T_dep = 30*fps MOVING frames after arrival (:252-258)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:158)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:154)",
+   "config": {
+    "fps_assumption": "config['fps'] (:115,:257)",
+    "camera": "both (cone: Wing+Engine cones; wing: Tail cone :141-146); --airplane_type JET",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "b2c53f6",
+    "pinned_in_04_modules": "b2c53f69",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)"
+   ],
+   "chunkwise_blockers": [
+    "no in-code deadline: Fail decided only at end of stream (:330); Pass latches in-stream when counters >100 (:266-273)"
+   ],
+   "notes": "Returns 5-tuple on normal path (:348-349) vs 3-tuple on obstacle early return (:324). cones_helpers.py (maskrcnn, Hough) is not imported by main.py -> dead. Uses tracker-provided have_pre_arrival_stage instead of the custom block."
+  },
+  "crew-present-10-minutes-prior-to-aircraft-arrival": {
+   "m_id": "M10",
+   "checks": [
+    "Crew present 10 minutes prior to aircraft arrival"
+   ],
+   "entry": "main.py:29 detect(source, output_path, device=None, weights_dir=None, video_worker=None, write_video=False, cone_camera=True, json_fn=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "person",
+     "gse",
+     "pushback",
+     "trailer"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class",
+     "conf cast to float but unused (:89)"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls) in enumerate(det)` (:87); reverse lookup (:90)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.from_state_dict (:155)",
+     "update_inner_state (:165)",
+     "to_state_dict (:157,:168)",
+     "status (:191)",
+     "arrival_frame (:199,:211-306)",
+     "draw_OF_points (:167)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:170-202, thresholds from crew_presence config)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:64)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:60)",
+   "config": {
+    "fps_assumption": "config['fps'] (:42)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "6efc0b05",
+    "repo_head": "5cfd25c",
+    "pinned_in_04_modules": "5cfd25c9",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger (use_ndjson)",
+    "cv2.VideoWriter (write_video)"
+   ],
+   "chunkwise_blockers": [
+    "obst_counter/main_plane.arrival_frame and 'Start':'1' assume stream position 1 == video start (:232,:237,:250)"
+   ],
+   "notes": "LOOKBACK at T_arr (:224); crew_dict keeps person bboxes per frame for the whole pre-arrival (:143). Tracks parsed only if det non-empty (:81)."
+  },
+  "fod-walk-completed": {
+   "m_id": "M11",
+   "checks": [
+    "FOD walk completed"
+   ],
+   "entry": "main.py:252 detect(source, output_path, device=None, write_video=False, weights_dir=None, video_worker=None, cone_camera=True, json_fn=None, json_logger=None)",
+   "gm": {
+    "class_ids": [
+     19
+    ],
+    "class_ids_note": "config['colors'][19] color index (:276), class unknown",
+    "class_names": [
+     "front_wheel",
+     "gse",
+     "beltloader",
+     "pushback",
+     "airplane_tail",
+     "airplane_nose"
+    ],
+    "class_names_cosmetic": [
+     "airplane"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class",
+     "conf cast unused (:325)"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls) in enumerate(det)` (:323, no None guard); config['str2id'][name]"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.update_inner_state (:380)",
+     "to_state_dict (:383)",
+     "status (:403)",
+     "arrival_frame (:411,:416)",
+     "xyxy (:459-479)",
+     "person tr_id/xyxy (:319,:426-454)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:385-412)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number)[y1:y2,x1:x2] per person track per frame before airplane appears (:431); find_fod_walks draws on get_im0s (:145)",
+    "own_models": [
+     "movenet_singlepose_thunder_4.onnx PoseEstimation.is_backside (:286-287, onnx_thunder_inference.py)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:290)",
+   "config": {
+    "fps_assumption": "config['fps'] (:181,:267)",
+    "camera": "cone (cone_camera unused); camera intrinsics config['pixel_size','focal_length','camera_angle','airplane_height'] (:451,:466,:477)",
+    "cv_common_pin": "ac5098d2",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "b923b5c",
+    "pinned_in_04_modules": "b923b5c8",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger (use_ndjson)",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (movenet ONNX)"
+   ],
+   "chunkwise_blockers": [
+    "obst_counter / airplane_stop_frame assumes position 1 == video start (:501)"
+   ],
+   "notes": "LOOKBACK at T_arr (:488-536): ROI built from last 30 m of front-wheel/airplane approach (:112-141). Worker paths only collected while main_plane is None (:422)."
+  },
+  "gse-chocks": {
+   "m_id": "M12",
+   "checks": [
+    "Motorized GSE parked and properly chocked"
+   ],
+   "entry": "main.py:1341 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None, save_diff=False, save_full_diff=False, debug_*=False)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "chock",
+     "pushback",
+     "trailer",
+     "fuel_truck",
+     "cone",
+     "ladder"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls_id in dets` (:1400); config['str2id'][name] (:1404-1408)"
+   },
+   "tracker": {
+    "classes": [
+     "gse",
+     "person",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "state_dict['_obj_id'] (:1418,:1420,:1438)",
+     "Vehicle.from_state_dict (:100)",
+     "_xyxy (:95,:102)",
+     "_p0 (:97,:105 reshaped (-1,2))",
+     "_st (:154-165 boolean mask over _prev_p0)",
+     "_status (:98,:337,:401,:475,:538,:898,:1135,:1150,:1244,:1300,:1331)",
+     "_static_frames (:299,:912,:917,:928,:964,:1253,:1327)",
+     "_stopping_time_thres (:912,:964,:1253)",
+     "_moving_frames (:987,:1135,:1150,:1331)",
+     "_display_proceeding_time_thres (:1150,:1331)",
+     "_of_dots_lifetime/_init_dots_lifetime (:150)",
+     "_obj_id (:120,:709)",
+     "to_state_dict (:116)",
+     "person/beltloader tr_id+xyxy (:1416,:1420)"
+    ],
+    "private_fields": [
+     "_xyxy",
+     "_p0",
+     "_st",
+     "_status",
+     "_static_frames",
+     "_stopping_time_thres",
+     "_moving_frames",
+     "_display_proceeding_time_thres",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime",
+     "_obj_id"
+    ],
+    "events_recomputed_locally": [
+     "GSE stop/departure moments from _static_frames==1 and _moving_frames==_display_proceeding_time_thres+1 (:1327-1336,:1135,:1150)",
+     "no airplane anchors used at all"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) per gse track per frame (:1455,:1460); per-GSE frame buffers (_diff_frames 24, _stop_frames 8)",
+    "own_models": [
+     "rtmpose-l ONNX (onnx_pose_checkpoint, :1354-1355)",
+     "effnetb0 difference classifier (timm, :1358-1362)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:1374)",
+   "config": {
+    "fps_assumption": "config['fps'] (writer only); thresholds in frames (local_config.yaml:36,:41,:50,:66); hard-coded //8 (:1067,:1202)",
+    "camera": "camera-agnostic (cone_camera unused)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "3160b87",
+    "pinned_in_04_modules": "3160b871",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (2 models)",
+    "result.csv",
+    "diff_data/ (--save-diff)"
+   ],
+   "chunkwise_blockers": [
+    "end-of-video finalization for GSEs still parked: update_difference_result(end_of_video=True)/aggregate_results(end_of_video=True) (:1514-1517)",
+    "get_gse_report needs video_last_frame for timeline clipping (:1524, :59)"
+   ],
+   "notes": "Deepest coupling to tracker internals (11 private fields). Fuses chock detection, pose bend, and frame-difference (:1313-1324)."
+  },
+  "hand-signals": {
+   "m_id": "M13",
+   "checks": [
+    "All GSE guided into aircraft using approved hand signals"
+   ],
+   "entry": "main.py:720 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "front_door",
+     "back_door",
+     "pushback",
+     "back_wheel",
+     "airplane_engine",
+     "airplane_wing",
+     "trailer",
+     "gse",
+     "fuel_truck",
+     "ladder",
+     "person"
+    ],
+    "class_names_cosmetic": [
+     "obstacle"
+    ],
+    "fields": [
+     "bbox xyxy",
+     "class",
+     "positional det[5] / det[:4] in pass 1 (:785-786)"
+    ],
+    "conf_used": false,
+    "via": "pass 1: raw list `det[5] == str2id[door]` (:784-786); pass 2: collect_frame_detections (:391-425)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "beltloader",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "RAW track['cls_str'] (:772)",
+     "RAW track['state_dict']['arrival_frame'] (:773-774)",
+     "state_dict['_status'] compared with Status.STOPPED.value (:463,:503,:524)",
+     "state_dict['_obj_id'] (:463,:904)",
+     "data['bl_type'] (label :437)",
+     "Airplane.update_inner_state (:452)",
+     "arrived (:142,:861)",
+     "departured (:867)",
+     "xyxy mutated (:138)",
+     "Vehicle.from_state_dict (:249)",
+     "status (:912)",
+     "_obj_id (:375)",
+     "_color (:374)",
+     "person tr_id/xyxy (:533-534)"
+    ],
+    "private_fields": [
+     "_status (raw, compared to enum .value)",
+     "_obj_id",
+     "_color",
+     "_xyxy (dead code :627)"
+    ],
+    "events_recomputed_locally": [
+     "plane_stopped from raw arrival_frame <= frame_number (:771-777)",
+     "BL approach/stop from _status + workers ROI (:461-520)",
+     "aircraft type jet/airplane (:675-717)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) buffered into workers_image_buffer deque(240 full frames) while BL not moving (:549,:758) and for pose inference (:554)",
+    "own_models": [
+     "mmpose HRNet-w48 td-hm (pose_config/pose_checkpoint, :735-739)"
+    ]
+   },
+   "passes": 2,
+   "frame_numbering": "enumerate(metadata, 1) twice (:765, :800)",
+   "config": {
+    "fps_assumption": "config['fps'] (:103,:106,:321,:762)",
+    "camera": "both (front_door/back_door :148,:782; bl_type front/back :745)",
+    "cv_common_pin": "8e3a7bf6",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "60c0faf",
+    "pinned_in_04_modules": "6bd027f2",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (HRNet)",
+    "result.csv"
+   ],
+   "chunkwise_blockers": [
+    "pass 1 computes average_door from 60 s of door boxes after arrival before pass 2 (:761-797); used as fallback when _door_window empty (:158-161)",
+    "workers_image_buffer keeps 240 raw frames (~1.5 GB) (:758,:549)",
+    "check_hand_signals looks back 5-30 s at BL stop (:282) — needs 240-frame history kept across chunks"
+   ],
+   "notes": "module_map says models=0 but HRNet is loaded (:735). Repo HEAD 60c0faf != pinned 6bd027f2."
+  },
+  "handrails-on-gse-being-used": {
+   "m_id": "M14",
+   "checks": [
+    "Handrails on GSE being used"
+   ],
+   "entry": "main.py:589 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "person",
+     "trailer",
+     "gse",
+     "airplane_engine",
+     "back_wheel",
+     "back_door"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls) in enumerate(det)` (:688); config['str2id'][name]"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.update_inner_state (:669)",
+     "arrived (:675)",
+     "departured (:681)",
+     "xyxy (:697-701)",
+     "data['bl_type'] (:726)",
+     "Vehicle.from_state_dict (:100,:758)",
+     "xyxy mutated (:103-104)",
+     "is_stopped (cv_common property, :764)",
+     "_obj_id (:175)",
+     "_color (:177)",
+     "TrackedObject.from_state_dict(person.state_dict) (:231,:889)",
+     "person tr_id/xyxy (:888,:894)"
+    ],
+    "private_fields": [
+     "_obj_id",
+     "_color"
+    ],
+    "events_recomputed_locally": [
+     "BL active = bl_type==needed + is_stopped (:726,:764)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) every frame with stopped BL: BL crop for classifier+segmentation (:772), warpPerspective per check point (:870), pose (:897), hand trajectory (:906)",
+    "own_models": [
+     "EfficientNetB0 handrail classifier",
+     "MixVisionTransformer segmentation",
+     "DWpose ONNX (dw-ll_ucoco_384)",
+     "EfficientNetB0WithRegularization hand classifier (local_config.yaml:3-6, :600-614)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:637)",
+   "config": {
+    "fps_assumption": "config['fps'] (:622, unused)",
+    "camera": "both (cone/wing; bl_type front/back :624)",
+    "cv_common_pin": "33c188d0",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "59fbced",
+    "pinned_in_04_modules": "59fbced4",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (4 models)",
+    "result.csv"
+   ],
+   "chunkwise_blockers": [
+    "assess_coverage(end_of_video=True) finalizes climbers only after the loop (:926-927); no 'BL left' event in code",
+    "climbers_dict never reset between BL visits; single beltloader object re-created each frame (:757)"
+   ],
+   "notes": "module_map says models=1, code loads 4. device overridden to cuda if available (:591)."
+  },
+  "lead-marshaller-and-wing-walkers-in-position": {
+   "m_id": "M15",
+   "checks": [
+    "Lead marshaller and wing walkers in correct position"
+   ],
+   "entry": "main.py:224 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=True, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "airplane_tail",
+     "airplane_wing",
+     "beltloader",
+     "gse",
+     "pushback",
+     "trailer",
+     "obstacle"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls_id in det` (:319); GM 'obstacle' rows used as side obstacle (:333)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.from_state_dict each frame (:387,:393)",
+     "status (:413,:434,:452)",
+     "arrival_frame (:421,:425)",
+     "obj_id (:377)",
+     "xyxy (:441)",
+     "person tr_id/xyxy (:356-368)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:395-422)",
+     "start_moving from first STOPPING/MOVING frame (:434-438)",
+     "departured_frame from 30*fps MOVING after arrival (:452-458, unused)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:288); dataset.nframes as default stop_frame (:250)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:284)",
+   "config": {
+    "fps_assumption": "config['fps'] (:422,:457)",
+    "camera": "both (only obstacle thresholds differ :256-263); intrinsics config['camera_angle','worker_height','pixel_size','focal_length','airplane_height']",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "9b37ccf",
+    "pinned_in_04_modules": "9b37ccff",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "set_logging file (:232)",
+    "trajectory_plot.png in cwd (:166)",
+    "get_hashes() git read (:278)"
+   ],
+   "chunkwise_blockers": [
+    "blocked_counter / stop_frame assumes position 1 == video start (:177)",
+    "dataset.nframes needed for default stop_frame (:250)"
+   ],
+   "notes": "LOOKBACK at T_arr (:467-472). post_arrival_counter used before assignment (:453) — latent UnboundLocalError. Tracks parsed only if det non-empty (:309)."
+  },
+  "pin-verification": {
+   "m_id": "M16",
+   "checks": [
+    "Pushback operator verifies steering bypass pin installation"
+   ],
+   "entry": "main.py:480 detect(source, output_path, device, video_worker, write_video=False, weights_dir=None, cone_camera: bool=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "pushback",
+     "airplane_nose",
+     "front_wheel",
+     "beltloader",
+     "gse",
+     "trailer",
+     "obstacle",
+     "side_obstacle",
+     "vehicle"
+    ],
+    "class_names_cosmetic": [
+     "roi",
+     "airplane_nose",
+     "obstacle"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "pass 1 `for *xyxy, conf, cls_id in det` (:539); pass 2 `for *xyxy, _, cls_id in det` (:616); obstacles need bbox_w>500 & h>400 px (:627-630, local_config.yaml:3-4)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:526,:638)",
+     "update_inner_state (:528,:640)",
+     "to_state_dict (:101)",
+     "departured (:530,:645,:734)",
+     "arrived (:645,:741)",
+     "departure_frame (:735,:924-927)",
+     "is_stopped (:769,:870)",
+     "xyxy (:647)",
+     "_status == MOVING (:105)",
+     "draw_OF_points (:642)",
+     "person tr_id/xyxy (:781)"
+    ],
+    "private_fields": [
+     "_status"
+    ],
+    "events_recomputed_locally": [
+     "pushback_attached: pushback_frames > 10*fps with IoU>0.8 to median_pushback (pass 1) or nose geometry (:663-681)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) for pose inference when workers near front wheel (:814-818)",
+    "own_models": [
+     "mmpose simcc_res50 (hard-coded config path and weights/simcc_res50...pth, device 'cuda:0', :496-499)"
+    ]
+   },
+   "passes": 2,
+   "frame_numbering": "enumerate(metadata, 1) twice (:510, :585)",
+   "config": {
+    "fps_assumption": "config['fps'] (:127,:158,:317-319,:505,:562)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "6efc0b05",
+    "repo_head": "8e1863c",
+    "pinned_in_04_modules": "8e1863c7",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights/ relative path (:498)",
+    "result.csv"
+   ],
+   "chunkwise_blockers": [
+    "pass 1 computes median_pushback over the event (:504-549)",
+    "video_worker.number_of_frames as end anchor (:530)",
+    "hard-coded cuda:0 device (:499)"
+   ],
+   "notes": "Fail set at pushback attach (:679), Pass when worker action near wheel (:860); Fail without departure -> NO (:919-921). Same 3-hunk pattern as aircraft-chocks; 'TODO: review and rework' (:677)."
+  },
+  "post-arrival-aircraft-walk-around-inspection-completed-accurately": {
+   "m_id": "M17",
+   "checks": [
+    "Post-arrival walk around inspection completed accurately",
+    "(also returns Pre-departure walk around in the same detect :650-652)"
+   ],
+   "entry": "main.py:270 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "beltloader",
+     "fuel_truck",
+     "gse",
+     "ladder",
+     "trailer",
+     "back_wheel",
+     "airplane_tail",
+     "airplane_wing",
+     "airplane_engine",
+     "front_door",
+     "back_door"
+    ],
+    "class_names_cosmetic": [
+     "airplane",
+     "roi",
+     "person",
+     "beltloader"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls_id in det` (:362); reverse lookup list(str2id.values()).index(cls_id) (:365-366)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane(TrackedObject).from_state_dict (:139,:394,:396)",
+     "status (:397,:422)",
+     "to_state_dict (:401)",
+     "Beltloader(TrackedObject).from_state_dict (:536-540)",
+     "state_dict['_obj_id'] (:534)",
+     "data['bl_type'] (:541,:552)",
+     "loader.status (:130,:550)",
+     "loader.data (:550-552)",
+     "person tr_id/xyxy (:573-577)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "T_arr = first status==STOPPED (:397-399)",
+     "T_dep = 3*fps MOVING/STOPPING after stop (:422-426)",
+     "BL entering/leaving area from own velocity direction (:236-246,:543-555)",
+     "tail_left camera side (:452-458)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "iterates the decoded video `for frame_number, (path, img, im0s, vid_cap) in enumerate(dataset, 1)` and pulls metadata with next(metadata) (:325,:329); im0s used only for drawing",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(dataset, 1) + next(metadata) (:325,:329)",
+   "config": {
+    "fps_assumption": "config['fps'] (:299,:305-306,:425,:560)",
+    "camera": "cone (cone_camera unused); intrinsics in local_config.yaml:10-14",
+    "cv_common_pin": "bb0b1746",
+    "db_worker_pin": "0248146c",
+    "repo_head": "7112c99",
+    "pinned_in_04_modules": "a0d9ee4f",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)"
+   ],
+   "chunkwise_blockers": [
+    "structurally iterates video frames (needs decoded pixels even with no pixel logic) (:325)",
+    "dataset.nframes as default frame_airplane_stopped (:286)"
+   ],
+   "notes": "Airplane restored via TrackedObject (not cv_common Airplane) — depends on base-class from_state_dict accepting airplane keys at pin bb0b1746. HEAD 7112c99 != pinned a0d9ee4f (tdv_cone rework lives on another branch)."
+  },
+  "pre-arrival-safety-huddle": {
+   "m_id": "M18",
+   "checks": [
+    "Safety huddle conducted at huddle cone"
+   ],
+   "entry": "main.py:292 detect(source, output_path, device, video_worker=None, write_video=False, weights_dir='', cone_camera=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "cone",
+     "beltloader",
+     "gse",
+     "pushback",
+     "trailer",
+     "fuel_truck"
+    ],
+    "class_names_cosmetic": [
+     "person",
+     "obstacle"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls in reversed(det)` (:359); config['str2id'][name]; obstacle if >600x400 px and center<0.75W (:369)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:55,:390)",
+     "status (:75)",
+     "arrival_frame (:83,:397,:484,:495)",
+     "xyxy",
+     "draw_OF_points (:394)",
+     "person tr_id/xyxy (:354-356,:439-441)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (inside Plane.update_inner_state :57-84)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "iterates decoded video + next(metadata) (:328,:340); isValid() checks cone HSV hue on im0s (:258-268,:363)",
+    "own_models": [
+     "none (HSV colour rule + norfair cone tracker :305-311)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(dataset, 1) + next(metadata) (:328,:340)",
+   "config": {
+    "fps_assumption": "config['fps'] (:295)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "acfc0808",
+    "db_worker_pin": "6efc0b05",
+    "repo_head": "9b61d2e",
+    "pinned_in_04_modules": "5c8a7599",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter via write_image (write_video)"
+   ],
+   "chunkwise_blockers": [
+    "pixel-based decision (green cone hue) requires decoded frames (:363)",
+    "camera_obstacle_counter > 0.5*frame_id assumes position 1 == video start (:482)"
+   ],
+   "notes": "Verdict at T_arr (:397-401). HEAD 9b61d2e != pinned 5c8a7599; this HEAD does not import PlaneArrivalDetector."
+  },
+  "pre-departure-walk-around-completed": {
+   "m_id": "M19",
+   "checks": [
+    "Pre-departure walk around completed"
+   ],
+   "entry": "main.py:89 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "beltloader",
+     "gse",
+     "pushback",
+     "trailer",
+     "airplane_engine",
+     "cone",
+     "airplane_tail",
+     "airplane_nose"
+    ],
+    "class_names_cosmetic": [
+     "roi",
+     "airplane",
+     "beltloader",
+     "person"
+    ],
+    "class_names_note": "'airplane_wheel' compared as string (:221) — such class does not appear in any str2id lookup elsewhere; likely never matches",
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls_id in det` (:195); reverse lookup list(str2id.values()).index(cls_id) (:198-199)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane(TrackedObject).from_state_dict (:30,:258,:260)",
+     "status (:261,:264)",
+     "to_state_dict (:281)",
+     "xyxy (:327,:331)",
+     "Beltloader(TrackedObject).from_state_dict (Beltloaders.py:6, main.py:346-349)",
+     "state_dict['_obj_id'] (:344)",
+     "data['bl_type'] (:350)",
+     "loader.status/near_plane/direction_state (helpers.py:137-143)",
+     "person tr_id/xyxy (:411-432)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "T_arr = first status==STOPPED (:261-263)",
+     "T_dep = status==MOVING after stop, immediate (:264-267)",
+     "BL entering/leaving from own velocity direction (:352-369)",
+     "nose_left camera side (:232-252)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "iterates decoded video + next(metadata) (:161,:165); im0s only for drawing",
+    "own_models": [
+     "none (norfair cone tracker :126-133)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(dataset, 1) + next(metadata) (:161,:165)",
+   "config": {
+    "fps_assumption": "config['fps'] (:347,:373,:394,:421); Beltloaders.py/Cones.py/Workers.py default fps=8",
+    "camera": "cone forced (:93); intrinsics local_config.yaml:10-14, seconds_between_parts 45",
+    "cv_common_pin": "d7f907cd",
+    "db_worker_pin": "0248146c",
+    "repo_head": "f2b6c36",
+    "pinned_in_04_modules": "e407de23",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "plot_<video>.png in out_dir (:491-500)"
+   ],
+   "chunkwise_blockers": [
+    "structurally iterates video frames (:161)",
+    "whole-stage decision after departure (:485-488,:513)"
+   ],
+   "notes": "get_decision Pass branch references undefined start_frame (:59) — NameError on Pass. HEAD f2b6c36 != pinned e407de23; module_map models=2 refers to the other branch (this HEAD has no models)."
+  },
+  "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready": {
+   "m_id": "M20",
+   "checks": [
+    "Pushback does not start until wing walkers are in place and ready"
+   ],
+   "entry": "main.py:303 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera: bool=None, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "airplane_tail",
+     "airplane_wing",
+     "pushback",
+     "front_wheel",
+     "beltloader",
+     "gse",
+     "trailer",
+     "obstacle",
+     "side_obstacle"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls_id in det` (:374); GM 'obstacle'/'side_obstacle' rows used as side obstacles (:400)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.from_state_dict each frame (:488,:492)",
+     "status (:493-516)",
+     "xyxy (:507,:536)",
+     "person tr_id/xyxy (:431-437,:521-533)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "T_arr = STOPPED for fps*60 frames (:498-500)",
+     "T_dep = MOVING after stop (moving_frames, start_moving :502-505)",
+     "pushback attached = wheel-pushback distance < 315 px (:460, display only)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:344); dataset.nframes default stop_frame (:316)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:340)",
+   "config": {
+    "fps_assumption": "config['fps'] (:328); inference_time = fps*30 (:331)",
+    "camera": "cone (cone_camera unused); intrinsics from global config (:524-539)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "f3b041c",
+    "pinned_in_04_modules": "f3b041cb",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "matplotlib figure created, not saved (:246-265)"
+   ],
+   "chunkwise_blockers": [
+    "module-level global two_wing_wolkers persists across detect() calls in one process (:29,:148,:491)",
+    "dataset.nframes (:316)"
+   ],
+   "notes": "Verdict 30 s after pushback starts moving (:555-560), i.e. T_dep+30 s, not at the moment of start. Uses only tracker status, never arrival_frame/departure_frame. Tracks parsed only if det non-empty (:364)."
+  },
+  "pushback-pathway-confirmed-clear-of-obstacles": {
+   "m_id": "M21",
+   "checks": [
+    "Pushback pathway confirmed clear of obstacles"
+   ],
+   "entry": "main.py:201 detect(source, output_path, device, video_worker=None, write_video=False, weights_dir='weights', json_logger=None, cone_camera=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "pushback",
+     "airplane_tail",
+     "airplane_nose",
+     "beltloader",
+     "gse",
+     "fuel_truck",
+     "trailer",
+     "cone",
+     "chock",
+     "ladder"
+    ],
+    "class_names_cosmetic": [
+     "front_door",
+     "back_door",
+     "obstacle",
+     "roi"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls in det` (:297); dict membership vehicles/objects keyed by str2id (:239-247); frames with empty det skipped entirely incl. tracks (:294-295)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:329)",
+     "Airplane.update_inner_state (:101,:332)",
+     "arrived (:338,:344,:423,:490)",
+     "status (:370-373,:415,:427)",
+     "departure_frame (:187)",
+     "departured (:516,:519)",
+     "is_stopped (:487)",
+     "xyxy",
+     "center (:142)",
+     "to_state_dict (:155)",
+     "draw_OF_points (:334)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "pushback_moving = airplane status in [PROCEEDING, MOVING] (:370)",
+     "final_frame = departure_frame + 15*8 (:81,:187)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:275)",
+    "own_models": []
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:271)",
+   "config": {
+    "fps_assumption": "config['fps'] (:480,:516,:528,:535,:552,:554); hard-coded 15*8 (:81)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "104db85",
+    "pinned_in_04_modules": "104db85a",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)"
+   ],
+   "chunkwise_blockers": [
+    "in-stream Fail is provisional: report entries older than final_frame-30 s are dropped at the end and may flip to Pass (:526-532); needs final_frame = T_dep+15 s"
+   ],
+   "notes": "Verdict window effectively [T_dep-30 s .. T_dep+15 s]; NO if <7 s of checked frames (:516-521). Not 'INSTANT' in practice."
+  },
+  "safety-handrails-fully-extended": {
+   "m_id": "M22",
+   "checks": [
+    "Safety handrails fully extended and used"
+   ],
+   "entry": "main.py:120 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "person",
+     "trailer",
+     "gse",
+     "back_wheel"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for i, (*xyxy, conf, cls) in enumerate(det)` (:202); config['str2id'][name]"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "beltloader"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.update_inner_state (:183)",
+     "arrived (:189)",
+     "departured (:195)",
+     "data['bl_type'] (:232,:235)",
+     "state_dict['_obj_id'] read AND written (:249,:257-258)",
+     "Vehicle.from_state_dict (:64,:262)",
+     "xyxy mutated (:77)",
+     "is_stopped (:269)",
+     "_color (:86)"
+    ],
+    "private_fields": [
+     "_obj_id (raw key, rewritten)",
+     "_color"
+    ],
+    "events_recomputed_locally": [
+     "BL active = bl_type==needed + is_stopped + rear-wheel filter (:235-239,:269)",
+     "BL identity swap across track ids (:251-258)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) every frame with stopped BL (:279); classifier every 8 frames (:283)",
+    "own_models": [
+     "EfficientNetB0 handrail classifier (local_config.yaml:3, :132-133)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:154)",
+   "config": {
+    "fps_assumption": "config['fps'] (:141 unused); hard-coded 60*8 frames (:24)",
+    "camera": "both (front/back :143; rear-wheel filter cone only :237)",
+    "cv_common_pin": "33c188d0",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "8b9a2a9",
+    "pinned_in_04_modules": "8b9a2a9b",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (classifier)",
+    "result.csv"
+   ],
+   "chunkwise_blockers": [
+    "verdict only in make_inference after the loop (:301); no in-stream latch and no 'BL left' event; needs an explicit close trigger"
+   ],
+   "notes": "extended_ratio > 0.45 over BL visit (:31), visit must exceed 480 frames (:24)."
+  },
+  "safety-vests-secured-to-body": {
+   "m_id": "M23",
+   "checks": [
+    "Employees wearing safety vests secured to body"
+   ],
+   "entry": "main.py:247 detect(source, output_path, device, video_worker=None, weights_dir='', cone_camera=True, write_video=False, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "safety_vest"
+    ],
+    "class_names_cosmetic": [],
+    "fields": [
+     "bbox xyxy(int)",
+     "conf kept in vest_detections (:336, not used for decision)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls in reversed(det)` (:332); config['str2id']['safety_vest'] (:335)"
+   },
+   "tracker": {
+    "classes": [
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy (:344-349,:371-386)"
+    ],
+    "private_fields": [],
+    "events_recomputed_locally": [
+     "none (no airplane, no stage)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "iterates decoded video `enumerate(dataset)` (0-based!) + next(metadata) (:307,:313); classifiers and HSV segmentation on im0s (:358,:364,:381)",
+    "own_models": [
+     "Swin-T pose classifier pose_classifier.pt (back/head/side, :277-281)",
+     "Swin-T vest classifier vest_classifier.pt (:294-298)",
+     "HSV colour segmentation rules vests_utils.py (no weights)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(dataset) 0-based + next(metadata) (:307,:313) — json_logger frame ids off by one vs other modules",
+   "config": {
+    "fps_assumption": "config['fps'] (:249, report times only)",
+    "camera": "any (cone_camera unused)",
+    "cv_common_pin": "4291b0d9",
+    "db_worker_pin": "0248146c",
+    "repo_head": "ae8ef16",
+    "pinned_in_04_modules": "ae8ef164",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter via write_image (write_video)",
+    "weights_dir (2 Swin-T)"
+   ],
+   "chunkwise_blockers": [],
+   "notes": "Fail latches per person after 20-frame vote + age>=100 frames (:92-107); report at end (:430). local_config lists mmpose hrnet keys (yaml:3-4) that main.py never uses. module_map models=4 vs 2 weight files here."
+  },
+  "safety-zone-confirmed-clear": {
+   "m_id": "M24",
+   "checks": [
+    "Safety zone confirmed clear"
+   ],
+   "entry": "main.py:831 detect(source, output_path, device, video_worker=None, write_video=False, weights_dir='', cone_camera=False, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "cone",
+     "front_wheel",
+     "person",
+     "pushback",
+     "beltloader",
+     "gse",
+     "fuel_truck",
+     "trailer",
+     "obstacle",
+     "vehicle",
+     "side_obstacle"
+    ],
+    "class_names_cosmetic": [
+     "safety_zone",
+     "obstacle"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "pass 1 `for *xyxy, _, cls in det` (:885); pass 2 (:1056) with reverse lookup list(str2id.values()).index(cls) (:1058); GM 'obstacle'/'side_obstacle' rows treated as 'vehicle' (:1017-1020)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Airplane.from_state_dict (:912,:1101)",
+     "update_inner_state (:920,:1109)",
+     "status (:940,:1129,:1141)",
+     "arrival_frame (:948,:957,:1137,:1524)",
+     "xyxy (:882 height>=200 filter, :952)",
+     "center (:1078)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (twice: :922-949, :1111-1138)",
+     "own norfair truck tracker + cv_common Vehicle instances with pixel optical flow (:990-994,:1420-1426)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "pass 2: dataset.get_im0s(frame_number) every frame (:1032); Vehicle.update_params(estimate, prev_im0s, im0s, predictor(SAM), worker_bboxes) (:1426)",
+    "own_models": [
+     "mobile_sam.pt (SamPredictor, :856-865)"
+    ]
+   },
+   "passes": 2,
+   "frame_numbering": "enumerate(metadata, 1) twice (:868, :1027)",
+   "config": {
+    "fps_assumption": "config['fps'] (:749,:965,:974-975,:1010,:1454,:1521)",
+    "camera": "cone (camera_label only :1015)",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "91676a5",
+    "pinned_in_04_modules": "91676a55",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (mobile_sam.pt)",
+    "arrival-frame PNG always written to output_dir (:1200-1203,:1298-1302)"
+   ],
+   "chunkwise_blockers": [
+    "pass 1 must reach T_arr to fit the front-wheel trajectory and build the zone before pass 2 (:847-987)",
+    "frame_start = stop_frame - 120*fps known only after pass 1 (:1010)",
+    "pass 2 needs pixels + SAM for its own vehicle tracking (:1426)"
+   ],
+   "notes": "Per-frame PASS/FAIL after zone is known; final over the last 120 s (:1521,:1535). RETHINK candidate: trajectory is in buffer at T_arr."
+  },
+  "seat-belts-used-on-all-gse-equipped-with-seat-belts": {
+   "m_id": null,
+   "checks": [
+    "Seat belts used on all GSE equipped with seat belts (outside active review scope)"
+   ],
+   "entry": "main.py:428 detect(source, output_path, device, video_worker=None, cone_camera=None, write_video=False, weights_dir='', json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "person",
+     "airplane_engine",
+     "beltloader",
+     "pushback",
+     "fuel_truck",
+     "trailer"
+    ],
+    "class_names_cosmetic": [
+     "airplane",
+     "gse",
+     "person"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "conf (person conf fed to mmpose bbox_thr=0.25 :504,:589,:598)",
+     "class"
+    ],
+    "conf_used": true,
+    "via": "`for *xyxy, conf, cls in reversed(det)` (:501); config['str2id'][name]"
+   },
+   "tracker": {
+    "classes": [
+     "gse",
+     "airplane"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane(TrackedObject).from_state_dict (:121,:533)",
+     "_is_stopped (:122,:124)",
+     "_status == MOVING (:129)",
+     "status (:541)",
+     "xyxy (:558)",
+     "draw_OF_points (:539)",
+     "GSE(TrackedObject) built with gse.state_dict as tracking_params (:623)",
+     "state_dict['_xyxy'] raw (:52)",
+     "_status (:58,:61,:72-80)",
+     "_is_stopped (:64)",
+     "gse.status == PROCEEDING (:632)",
+     "gse tr_id/xyxy/state_dict (:556,:584,:622-625,:664)"
+    ],
+    "private_fields": [
+     "_is_stopped",
+     "_status",
+     "_xyxy (raw key)"
+    ],
+    "events_recomputed_locally": [
+     "airplane stopped = status in [STOPPED, PROCEEDING] (:541)",
+     "GSE state change frames (:72-80,:632-633)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "iterates decoded video + next(metadata) (:473,:488); mmpose on im0s (:594-602); OTSU belt segmentation (:365-416)",
+    "own_models": [
+     "mmpose (old API init_pose_model) config['pose_config'/'pose_checkpoint'] — keys absent from local_config.yaml, source unknown (:439-442)",
+     "own norfair person tracker (:451-454)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(dataset, 1) + next(metadata) (:473,:488)",
+   "config": {
+    "fps_assumption": "config['fps'] (:623,:660); local_config.yaml defines its own tracking: block (airplane/gse/person) overriding global (yaml:4-53)",
+    "camera": "both (cone_camera filters GSE side :559-562)",
+    "cv_common_pin": "238e1ef7",
+    "db_worker_pin": "d2b4ed2c",
+    "repo_head": "43068fe",
+    "pinned_in_04_modules": null,
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (pose)",
+    "output/output_<video>.csv always (:729-732)",
+    "mkdir output (:432-433)"
+   ],
+   "chunkwise_blockers": [
+    "structurally iterates video frames (:473)"
+   ],
+   "notes": "module_map models=0 but mmpose is loaded (:439). Out of active review scope (04_modules: 'поза активним скоупом')."
+  },
+  "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
+   "m_id": "M26",
+   "checks": [
+    "Steering by-pass pin installed, or steering otherwise bypassed"
+   ],
+   "entry": "main.py:643 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None, write_clips=False)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "person",
+     "front_wheel",
+     "chock"
+    ],
+    "class_names_cosmetic": [
+     "airplane",
+     "front_wheel",
+     "person"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "conf cast (:737, person list unused for decision)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls in reversed(det)` (:735); config['str2id'][name]; chocks collected but unused (:743-744)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:199,:766)",
+     "status (:219)",
+     "arrival_frame (:227,:790,:810,:881-887)",
+     "arrived (:773,:781)",
+     "xyxy (:770)",
+     "person tr_id/xyxy (:351-352)",
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "private_fields": [
+     "_p0",
+     "_st",
+     "_of_dots_lifetime",
+     "_init_dots_lifetime"
+    ],
+    "events_recomputed_locally": [
+     "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:201-228)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": true,
+    "how": "dataset.get_im0s(frame_number) every frame after arrival into image_buffer deque(200 full frames) (:819,:260,:284); pose on buffered frames at stop events (:524)",
+    "own_models": [
+     "mmpose HRNet-w48 td-hm (:653-657)",
+     "tsai time-series classifier model_newaug.pkl (:662)",
+     "joblib scaler.gz (:663)"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:698)",
+   "config": {
+    "fps_assumption": "config['fps'] (:666,:675 pin_installation_thresh=4*60*fps)",
+    "camera": "cone (cone_camera unused)",
+    "cv_common_pin": "8e3a7bf6",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "60dca73",
+    "pinned_in_04_modules": "60dca736",
+    "head_matches_pin": true
+   },
+   "io": [
+    "json_logger",
+    "cv2.VideoWriter (write_video)",
+    "weights_dir (3 artifacts)",
+    "output_clips/ dirs created always (:254-256)",
+    "result.csv"
+   ],
+   "chunkwise_blockers": [
+    "image_buffer of 200 raw frames (~1.2 GB) (:260)",
+    "analysis window centred at frame-100 -> decision lags 12.5 s (:453,:488)"
+   ],
+   "notes": "DEADLINE at arrival_frame + 240 s (:790); Pass latched when tsai says LEFT_PIN/AUTO_PIN (:639,:861-869). pathlib.WindowsPath monkeypatch (:29)."
+  },
+  "wing-walkers-in-proper-position-and-using-approved-wands": {
+   "m_id": "M27",
+   "checks": [
+    "Wing walkers in proper position and using approved wands"
+   ],
+   "entry": "main.py:395 detect(source, output_path, device, video_worker=None, weights_dir='', write_video=False, cone_camera=True, json_logger=None)",
+   "gm": {
+    "class_ids": [],
+    "class_names": [
+     "airplane_engine",
+     "airplane_wing",
+     "airplane_nose",
+     "airplane_tail",
+     "pushback",
+     "beltloader",
+     "gse",
+     "trailer",
+     "obstacle"
+    ],
+    "class_names_cosmetic": [
+     "front_wheel (collected, unused)"
+    ],
+    "fields": [
+     "bbox xyxy(int)",
+     "class"
+    ],
+    "conf_used": false,
+    "via": "`for *xyxy, conf, cls_id in det` (:493); GM 'obstacle' rows used as side obstacle (:526)"
+   },
+   "tracker": {
+    "classes": [
+     "airplane",
+     "person"
+    ],
+    "state_fields": [
+     "cls_str",
+     "tr_id",
+     "xyxy",
+     "state_dict",
+     "Plane.from_state_dict (:41,:545)",
+     "_status (:43,:46)",
+     "status (:554-573)",
+     "xyxy (:548,:617-624,:692)",
+     "person tr_id/xyxy (:663-689,:705-722)"
+    ],
+    "private_fields": [
+     "_status"
+    ],
+    "events_recomputed_locally": [
+     "T_arr = STOPPED for stop_thd*fps frames (:556-561)",
+     "T_dep = MOVING for depart_thd*fps frames with reset on STOPPED (:563-575)",
+     "fallback T_dep from statuses_airplane history at end (:772-795)"
+    ]
+   },
+   "pixels": {
+    "reads_frames": false,
+    "how": "get_im0s only if write_video (:456); wand inference commented out (:578-590)",
+    "own_models": [
+     "cv_common Model('./wand_detector.pt') loaded (:414) but never run — dead"
+    ]
+   },
+   "passes": 1,
+   "frame_numbering": "enumerate(metadata, 1) (:452)",
+   "config": {
+    "fps_assumption": "config['fps'] (:398); stop_thd 5 / depart_thd 8 s (local_config.yaml:4-5)",
+    "camera": "cone (cone_camera unused); intrinsics from global config",
+    "cv_common_pin": "dd5b5547",
+    "db_worker_pin": "5a4aa83d",
+    "repo_head": "5f7ca1a",
+    "pinned_in_04_modules": "4800b649",
+    "head_matches_pin": false
+   },
+   "io": [
+    "json_logger (use_ndjson)",
+    "cv2.VideoWriter (write_video)",
+    "./wand_detector.pt relative path (:414)"
+   ],
+   "chunkwise_blockers": [
+    "fallback decision uses the whole statuses_airplane history at end of stream (:772-795)"
+   ],
+   "notes": "Verdict 60 s after departure start (:738-763); wand Pass hard-coded (:225-227). Uses tracker status only, not arrival/departure anchors. HEAD 5f7ca1a != pinned 4800b649."
+  }
+ },
+ "aggregates": {
+  "gm_class_names_decision": [
+   "airplane_engine",
+   "airplane_nose",
+   "airplane_tail",
+   "airplane_wing",
+   "back_door",
+   "back_wheel",
+   "beltloader",
+   "beltloader_cone",
+   "chock",
+   "cone",
+   "engine_cone",
+   "front_door",
+   "front_wheel",
+   "fuel_truck",
+   "gse",
+   "ladder",
+   "obstacle",
+   "person",
+   "pushback",
+   "safety_vest",
+   "side_obstacle",
+   "tail_cone",
+   "tow_bar",
+   "trailer",
+   "vehicle",
+   "wing_cone"
+  ],
+  "gm_class_names_cosmetic_only_extra": [
+   "airplane",
+   "roi",
+   "safety_zone"
+  ],
+  "gm_class_ids_literal": {
+   "aircraft-chocks:1386 (comment)": {
+    "person": 0,
+    "airplane": 2,
+    "beltloader": 3,
+    "gse": 4,
+    "obstacle": 29,
+    "side_obstacle": 30
+   },
+   "fod-walk-completed:276": "config['colors'][19] (unknown class)"
+  },
+  "gm_conf_consumers": [
+   "aircraft-chocks (airplane_nose sort :1520)",
+   "seat-belts (person conf -> mmpose bbox_thr :598)"
+  ],
+  "tracker_classes": {
+   "airplane": 25,
+   "beltloader": 11,
+   "person": 14,
+   "gse": 3
+  },
+  "tracker_state_fields_union": {
+   "xyxy": 44,
+   "cls_str": 27,
+   "tr_id": 27,
+   "state_dict": 26,
+   "status": 18,
+   "arrived": 11,
+   "arrival_frame": 11,
+   "person tr_id/xyxy": 11,
+   "departured": 10,
+   "_p0": 10,
+   "_st": 10,
+   "draw_OF_points": 9,
+   "data['bl_type']": 9,
+   "_of_dots_lifetime": 9,
+   "_init_dots_lifetime": 9,
+   "_status": 8,
+   "Airplane.update_inner_state": 8,
+   "Plane.from_state_dict": 8,
+   "Vehicle.from_state_dict": 7,
+   "state_dict['_obj_id']": 7,
+   "to_state_dict": 7,
+   "_obj_id": 6,
+   "_color": 6,
+   "departure_frame": 6,
+   "update_inner_state": 5,
+   "Airplane.from_state_dict": 4,
+   "is_stopped": 4,
+   "center": 3,
+   "xyxy mutated": 3,
+   "_xyxy": 2,
+   "state_dict['_status']": 2,
+   "status in [STOPPING, STOPPED]": 2,
+   "Airplane.from_state_dict each frame": 2,
+   "Airplane(TrackedObject).from_state_dict": 2,
+   "Beltloader(TrackedObject).from_state_dict": 2,
+   "_is_stopped": 2,
+   "Airplane.update_inner_state(state_dict)": 1,
+   "init_xyxy": 1,
+   "stops_count": 1,
+   "have_pre_arrival_stage": 1,
+   "_static_frames": 1,
+   "_stopping_time_thres": 1,
+   "_moving_frames": 1,
+   "_display_proceeding_time_thres": 1,
+   "_of_dots_lifetime/_init_dots_lifetime": 1,
+   "person/beltloader tr_id+xyxy": 1,
+   "RAW track['cls_str']": 1,
+   "RAW track['state_dict']['arrival_frame']": 1,
+   "state_dict['_status'] compared with Status.STOPPED.value": 1,
+   "TrackedObject.from_state_dict(person.state_dict)": 1,
+   "obj_id": 1,
+   "loader.status": 1,
+   "loader.data": 1,
+   "loader.status/near_plane/direction_state": 1,
+   "state_dict['_obj_id'] read AND written": 1,
+   "Plane(TrackedObject).from_state_dict": 1,
+   "GSE(TrackedObject) built with gse.state_dict as tracking_params": 1,
+   "state_dict['_xyxy'] raw": 1,
+   "gse.status": 1,
+   "gse tr_id/xyxy/state_dict": 1
+  },
+  "private_fields_by_module": {
+   "_status": [
+    "3-stop-brake-check",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "cones-placed-in-proper-positions-and-timely",
+    "gse-chocks",
+    "hand-signals",
+    "pin-verification",
+    "seat-belts-used-on-all-gse-equipped-with-seat-belts",
+    "wing-walkers-in-proper-position-and-using-approved-wands"
+   ],
+   "_p0": [
+    "aircraft-chocks",
+    "all-cargo-bin-doors-opened-and-verified",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "fod-walk-completed",
+    "gse-chocks",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pre-arrival-safety-huddle",
+    "safety-zone-confirmed-clear",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed"
+   ],
+   "_st": [
+    "aircraft-chocks",
+    "all-cargo-bin-doors-opened-and-verified",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "fod-walk-completed",
+    "gse-chocks",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pre-arrival-safety-huddle",
+    "safety-zone-confirmed-clear",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed"
+   ],
+   "_of_dots_lifetime": [
+    "aircraft-chocks",
+    "all-cargo-bin-doors-opened-and-verified",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "fod-walk-completed",
+    "gse-chocks",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pre-arrival-safety-huddle",
+    "safety-zone-confirmed-clear",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed"
+   ],
+   "_init_dots_lifetime": [
+    "aircraft-chocks",
+    "all-cargo-bin-doors-opened-and-verified",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "fod-walk-completed",
+    "gse-chocks",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pre-arrival-safety-huddle",
+    "safety-zone-confirmed-clear",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed"
+   ],
+   "_obj_id": [
+    "3-stop-brake-check",
+    "aircraft-chocks",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "gse-chocks",
+    "hand-signals",
+    "handrails-on-gse-being-used",
+    "safety-handrails-fully-extended"
+   ],
+   "_color": [
+    "3-stop-brake-check",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "hand-signals",
+    "handrails-on-gse-being-used",
+    "safety-handrails-fully-extended"
+   ],
+   "_xyxy": [
+    "3-stop-brake-check",
+    "beltloader-chocks",
+    "gse-chocks",
+    "hand-signals",
+    "seat-belts-used-on-all-gse-equipped-with-seat-belts"
+   ],
+   "_static_frames": [
+    "gse-chocks"
+   ],
+   "_stopping_time_thres": [
+    "gse-chocks"
+   ],
+   "_moving_frames": [
+    "gse-chocks"
+   ],
+   "_display_proceeding_time_thres": [
+    "gse-chocks"
+   ],
+   "_is_stopped": [
+    "seat-belts-used-on-all-gse-equipped-with-seat-belts"
+   ]
+  },
+  "arrival_stage_block_modules": [
+   "aircraft-chocks",
+   "all-cargo-bin-doors-opened-and-verified",
+   "chocks-and-cones-available-and-staged-for-arrival",
+   "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "fod-walk-completed",
+   "lead-marshaller-and-wing-walkers-in-position",
+   "pre-arrival-safety-huddle",
+   "safety-zone-confirmed-clear",
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed"
+  ],
+  "pushback_attached_modules": [
+   "aircraft-chocks",
+   "pin-verification"
+  ],
+  "pixel_modules": [
+   "aircraft-chocks",
+   "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "fod-walk-completed",
+   "gse-chocks",
+   "hand-signals",
+   "handrails-on-gse-being-used",
+   "pin-verification",
+   "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "pre-arrival-safety-huddle",
+   "pre-departure-walk-around-completed",
+   "safety-handrails-fully-extended",
+   "safety-vests-secured-to-body",
+   "safety-zone-confirmed-clear",
+   "seat-belts-used-on-all-gse-equipped-with-seat-belts",
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed"
+  ],
+  "own_model_modules": [
+   "aircraft-chocks",
+   "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "fod-walk-completed",
+   "gse-chocks",
+   "hand-signals",
+   "handrails-on-gse-being-used",
+   "pin-verification",
+   "safety-handrails-fully-extended",
+   "safety-vests-secured-to-body",
+   "safety-zone-confirmed-clear",
+   "seat-belts-used-on-all-gse-equipped-with-seat-belts",
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "wing-walkers-in-proper-position-and-using-approved-wands"
+  ],
+  "passes_histogram": {
+   "1": 23,
+   "2": 4
+  },
+  "cv_common_pin_histogram": {
+   "dd5b5547": 12,
+   "ac5098d2": 3,
+   "33c188d0": 3,
+   "86731e4c": 2,
+   "8e3a7bf6": 2,
+   "bb0b1746": 1,
+   "acfc0808": 1,
+   "d7f907cd": 1,
+   "4291b0d9": 1,
+   "238e1ef7": 1
+  },
+  "db_worker_pin_histogram": {
+   "5a4aa83d": 19,
+   "6efc0b05": 4,
+   "0248146c": 3,
+   "d2b4ed2c": 1
+  },
+  "frame_numbering_kinds": {
+   "enumerate(metadata,1)": 18,
+   "enumerate(metadata,1) x2": 4,
+   "enumerate(dataset)+next(metadata)": 5
+  },
+  "needs_total_frame_count": [
+   "aircraft-chocks",
+   "lead-marshaller-and-wing-walkers-in-position",
+   "pin-verification",
+   "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "lead-marshaller-and-wing-walkers-in-position (dataset.nframes :250)",
+   "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready (dataset.nframes :316)",
+   "post-arrival-aircraft-walk-around-inspection-completed-accurately (dataset.nframes :286)"
+  ],
+  "reverse_id_lookup_modules": [
+   "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "cones-placed-in-proper-positions-and-timely",
+   "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "pre-departure-walk-around-completed",
+   "safety-zone-confirmed-clear"
+  ],
+  "tracks_parsed_only_when_gm_nonempty": [
+   "chocks-and-cones-available-and-staged-for-arrival",
+   "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "cones-placed-in-proper-positions-and-timely",
+   "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "pre-arrival-safety-huddle",
+   "lead-marshaller-and-wing-walkers-in-position",
+   "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "pre-departure-walk-around-completed",
+   "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "safety-vests-secured-to-body",
+   "seat-belts-used-on-all-gse-equipped-with-seat-belts",
+   "wing-walkers-in-proper-position-and-using-approved-wands",
+   "safety-zone-confirmed-clear",
+   "pushback-pathway-confirmed-clear-of-obstacles"
+  ]
+ }
+}
