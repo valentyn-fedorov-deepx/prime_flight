@@ -6,11 +6,11 @@
 
 | Звіт | Джерело | Хто | Стан |
 |---|---|---|---|
-| `gm_current.md` | код `external/general_model` (master @ 13a4ddc = пін ревʼю) + `external/db_worker` | gm-tracker-engineer | in-progress |
+| `gm_current.md` | код `external/general_model` (master @ 13a4ddc = пін ревʼю) + `external/db_worker` | gm-tracker-engineer | **готово → review Юрія** (375 рядків; нотатка `tasks/notes/PF-Q1-12.md`) |
 | `module_consumption.md` + `.json` | код 27 модулів `external/<repo>` (default-гілки, свіжі клони) + `db_worker/ML_worker.py` | module-porter | in-progress |
 | `contract_observed.md` + `ndjson_observed.json` + `scripts/inspect_ndjson.py` | реальні прод-ndjson `G:\gat_stages\atlc5_inferences` (7 відео, 5.8 ГБ) | qa-parity | in-progress |
 | `tracker_current.md` | код `cv_trackers` + `cv_common` — **немає доступу** (ssh-ключ не в GitLab, https «not found», локальні клони зникли) | gm-tracker-engineer | blocked |
-| `measurement_plan.md` | baseline: швидкість (мс/кадр по компонентах) + точність модулів (паритет вердиктів v1↔v2 на тих самих відео, fail-вибірки) | qa-parity | todo |
+| `measurement_plan.md` | baseline: швидкість (мс/кадр по компонентах) + точність модулів (паритет вердиктів v1↔v2 на тих самих відео, fail-вибірки) | Валентин / qa-parity | чернетка v1 |
 
 ## Дані для замірів, що є локально
 
