@@ -1,9 +1,23 @@
-"""Helper functions of cv_common/common.py @2759daf used by the tracker path — bodies verbatim (AST-extracted by
-scripts/vendor_tracker_v1.py). Do not edit by hand.
+"""Helper functions of cv_common/common.py @2759daf used by the tracker path, with the imports/constants they
+reference — bodies verbatim (AST-extracted by scripts/vendor_tracker_v1.py). Do not edit by hand.
 """
 
+import logging
 import numpy as np
+from math import sqrt
 from skimage.measure import label
+
+
+def bbox_area(bbox, is_xyxy=True) -> float:
+    """ Get area of bounding box
+    :param bbox: bounding box
+    :param is_xyxy: if True - then bbox is in xyxy format, else - in xywh
+    :return: area of bounding box
+    """
+    if is_xyxy:
+        return (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])  # (x2 - x1) * (y2 - y1)
+    else:
+        return bbox[2] * bbox[3]  # w * h
 
 
 def get_distance(point1, point2) -> float:
@@ -21,84 +35,74 @@ def get_distance(point1, point2) -> float:
         return -1
 
 
-def check_bounding_box(bbox, shape=None) -> bool:
-    """Checks whether the entire bounding box is on the image plane and has non-zero area.
+def get_center(bbox) -> 'tuple[int, int]':
+    ''' Get center of bounding box'''
+    x1, y1, x2, y2 = map(int, bbox)
+    return (x1 + x2) // 2, (y1 + y2) // 2
 
-    Args:
-        bbox (tuple): Tuple of (x1, y1, x2, y2) representing the bounding box coordinates.
-        shape (tuple, optional): Tuple of (height, width) representing the shape of the image. Defaults to None.
 
-    Returns:
-        bool: True if the bounding box is on the image plane and has non-zero area, False otherwise.
-    """
-    if bbox_area(bbox) == 0:
+def get_hw(bbox) -> 'tuple[int, int]':
+    """ Get height and width of bounding box """
+    x1, y1, x2, y2 = map(int, bbox)
+    return y2 - y1, x2 - x1
+
+
+def is_overlap(box1, box2, is_xyxy=True) -> bool:
+    """ Check if two bboxes is overlapping """
+    # Get the coordinates of bounding boxes
+    if is_xyxy:  # x1, y1, x2, y2 = box1
+        b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
+        b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
+    else:  # transform from xywh to xyxy
+        b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
+        b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
+        b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
+        b2_y1, b2_y2 = box2[1] - box2[3] / 2, box2[1] + box2[3] / 2
+
+    # If one rectangle is on left side of other
+    if b1_x1 >= b2_x2 or b2_x1 >= b1_x2:
         return False
 
-    x1, y1, x2, y2 = bbox
-    if any(map(lambda x: x < 0, bbox)):
+    # If one rectangle is above other
+    if b1_y1 >= b2_y2 or b2_y1 >= b1_y2:
         return False
-
-    if x1 > x2 or y1 > y2:
-        return False
-
-    if shape:
-        h, w = shape
-        if x1 > w or x2 > w or y1 > h or y2 > h:
-            return False
 
     return True
 
 
-def fix_incorrect_bbox(bbox, shape) -> list:
+def add_offset(bbox, offset_x, offset_y, img_width=1920, img_height=1080) -> 'tuple[int, ...]':
+    """ Adds offset to bbox with respect to img size
+    :param bbox: represented as (x1, y1, x2, y2)
+    :param offset_x: if int - treated as absolute value, if float in range (0, 1) - as relative value
+    :param offset_y: if int - treated as absolute value, if float in range (0, 1) - as relative value
+    :param img_width: maximum width of the img
+    :param img_height: maximum height of the img
+    :return: tuple, bbox in xyxy format
     """
-    Fixes the bounding box by ensuring that the coordinates are non-negative, ordered correctly, and within the image boundaries.
-    Args:
-        bbox (list): List of [x1, y1, x2, y2] representing the bounding box coordinates.
-        shape (tuple): Tuple of (height, width) representing the shape of the image.
-    Returns:
-        list: A list of [x1, y1, x2, y2] representing the corrected bounding box coordinates.
-    """
-    x1, y1, x2, y2 = bbox
-    x1, y1, x2, y2 = abs(x1), abs(y1), abs(x2), abs(y2)
-    if x2 < x1:
-        x1, x2 = x2, x1
-    if y2 < y1:
-        y1, y2 = y2, y1
-    h, w = shape
-    x1, x2 = max(0, min(w, x1)), max(0, min(w, x2))
-    y1, y2 = max(0, min(h, y1)), max(0, min(h, y2))
-    return [x1, y1, x2, y2]
 
-
-def bbox_area(bbox, is_xyxy=True) -> float:
-    """ Get area of bounding box
-    :param bbox: bounding box
-    :param is_xyxy: if True - then bbox is in xyxy format, else - in xywh
-    :return: area of bounding box
-    """
-    if is_xyxy:
-        return (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])  # (x2 - x1) * (y2 - y1)
+    x1, y1, x2, y2 = map(int, bbox)
+    w, h = x2 - x1, y2 - y1
+    if type(offset_x) is float and 0 <= offset_x <= 1:
+        # treat as percentage
+        x1 = max(int(x1 - offset_x * w), 0)
+        x2 = min(int(x2 + offset_x * w), img_width)
+    elif type(offset_x) is int and 0 <= offset_x < img_width:
+        x1 = max(int(x1 - offset_x), 0)
+        x2 = min(int(x2 + offset_x), img_width)
     else:
-        return bbox[2] * bbox[3]  # w * h
+        raise TypeError('Incorrect offset_x value, got {}'.format(offset_x))
 
-
-def getLargestCC(mask):
-    """
-    Selects the biggest connected component from the mask.
-
-    Args:
-        mask (numpy.ndarray): Binary mask.
-
-    Returns:
-        numpy.ndarray: Binary mask with only the largest connected component.
-    """
-    
-    labels = label(mask)
-    if labels.max() == 0:
-        return np.zeros_like(mask)
+    if type(offset_y) is float and 0 < offset_y < 1:
+        # treat as percentage
+        y1 = max(int(y1 - offset_y * h), 0)
+        y2 = min(int(y2 + offset_y * h), img_height)
+    elif type(offset_y) is int and 0 <= offset_y < img_height:
+        y1 = max(int(y1 - offset_y), 0)
+        y2 = min(int(y2 + offset_y), img_height)
     else:
-        largestCC = labels == np.argmax(np.bincount(labels.flat)[1:])+1
-        return np.array(largestCC, dtype=np.uint8)
+        raise TypeError('Incorrect offset_y value, got {}'.format(offset_y))
+
+    return x1, y1, x2, y2
 
 
 def in_bbox(point, bbox) -> bool:
@@ -181,81 +185,69 @@ def bbox_rel(*xyxy):
     return x_c, y_c, w, h
 
 
-def get_center(bbox) -> 'tuple[int, int]':
-    ''' Get center of bounding box'''
-    x1, y1, x2, y2 = map(int, bbox)
-    return (x1 + x2) // 2, (y1 + y2) // 2
+def check_bounding_box(bbox, shape=None) -> bool:
+    """Checks whether the entire bounding box is on the image plane and has non-zero area.
 
+    Args:
+        bbox (tuple): Tuple of (x1, y1, x2, y2) representing the bounding box coordinates.
+        shape (tuple, optional): Tuple of (height, width) representing the shape of the image. Defaults to None.
 
-def get_hw(bbox) -> 'tuple[int, int]':
-    """ Get height and width of bounding box """
-    x1, y1, x2, y2 = map(int, bbox)
-    return y2 - y1, x2 - x1
-
-
-def is_overlap(box1, box2, is_xyxy=True) -> bool:
-    """ Check if two bboxes is overlapping """
-    # Get the coordinates of bounding boxes
-    if is_xyxy:  # x1, y1, x2, y2 = box1
-        b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
-        b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
-    else:  # transform from xywh to xyxy
-        b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
-        b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
-        b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
-        b2_y1, b2_y2 = box2[1] - box2[3] / 2, box2[1] + box2[3] / 2
-
-    # If one rectangle is on left side of other
-    if b1_x1 >= b2_x2 or b2_x1 >= b1_x2:
+    Returns:
+        bool: True if the bounding box is on the image plane and has non-zero area, False otherwise.
+    """
+    if bbox_area(bbox) == 0:
         return False
 
-    # If one rectangle is above other
-    if b1_y1 >= b2_y2 or b2_y1 >= b1_y2:
+    x1, y1, x2, y2 = bbox
+    if any(map(lambda x: x < 0, bbox)):
         return False
+
+    if x1 > x2 or y1 > y2:
+        return False
+
+    if shape:
+        h, w = shape
+        if x1 > w or x2 > w or y1 > h or y2 > h:
+            return False
 
     return True
 
 
-def add_offset(bbox, offset_x, offset_y, img_width=1920, img_height=1080) -> 'tuple[int, ...]':
-    """ Adds offset to bbox with respect to img size
-    :param bbox: represented as (x1, y1, x2, y2)
-    :param offset_x: if int - treated as absolute value, if float in range (0, 1) - as relative value
-    :param offset_y: if int - treated as absolute value, if float in range (0, 1) - as relative value
-    :param img_width: maximum width of the img
-    :param img_height: maximum height of the img
-    :return: tuple, bbox in xyxy format
+def fix_incorrect_bbox(bbox, shape) -> list:
+    """
+    Fixes the bounding box by ensuring that the coordinates are non-negative, ordered correctly, and within the image boundaries.
+    Args:
+        bbox (list): List of [x1, y1, x2, y2] representing the bounding box coordinates.
+        shape (tuple): Tuple of (height, width) representing the shape of the image.
+    Returns:
+        list: A list of [x1, y1, x2, y2] representing the corrected bounding box coordinates.
+    """
+    x1, y1, x2, y2 = bbox
+    x1, y1, x2, y2 = abs(x1), abs(y1), abs(x2), abs(y2)
+    if x2 < x1:
+        x1, x2 = x2, x1
+    if y2 < y1:
+        y1, y2 = y2, y1
+    h, w = shape
+    x1, x2 = max(0, min(w, x1)), max(0, min(w, x2))
+    y1, y2 = max(0, min(h, y1)), max(0, min(h, y2))
+    return [x1, y1, x2, y2]
+
+
+def getLargestCC(mask):
+    """
+    Selects the biggest connected component from the mask.
+
+    Args:
+        mask (numpy.ndarray): Binary mask.
+
+    Returns:
+        numpy.ndarray: Binary mask with only the largest connected component.
     """
 
-    x1, y1, x2, y2 = map(int, bbox)
-    w, h = x2 - x1, y2 - y1
-    if type(offset_x) is float and 0 <= offset_x <= 1:
-        # treat as percentage
-        x1 = max(int(x1 - offset_x * w), 0)
-        x2 = min(int(x2 + offset_x * w), img_width)
-    elif type(offset_x) is int and 0 <= offset_x < img_width:
-        x1 = max(int(x1 - offset_x), 0)
-        x2 = min(int(x2 + offset_x), img_width)
+    labels = label(mask)
+    if labels.max() == 0:
+        return np.zeros_like(mask)
     else:
-        raise TypeError('Incorrect offset_x value, got {}'.format(offset_x))
-
-    if type(offset_y) is float and 0 < offset_y < 1:
-        # treat as percentage
-        y1 = max(int(y1 - offset_y * h), 0)
-        y2 = min(int(y2 + offset_y * h), img_height)
-    elif type(offset_y) is int and 0 <= offset_y < img_height:
-        y1 = max(int(y1 - offset_y), 0)
-        y2 = min(int(y2 + offset_y), img_height)
-    else:
-        raise TypeError('Incorrect offset_y value, got {}'.format(offset_y))
-
-    return x1, y1, x2, y2
-
-
-def xyxy_to_det_arr(xyxy) -> np.ndarray:
-    """
-    Helper function to convert detection bounding box into Detection format for norfair
-    :param xyxy: array-like, contains (x1, y1, x2, y2)
-    :return: np.ndarray, array([[x1, y1], [x2, y2]])
-    """
-    x1, y1, x2, y2 = xyxy
-    return np.array([[x1, y1], [x2, y2]])
+        largestCC = labels == np.argmax(np.bincount(labels.flat)[1:])+1
+        return np.array(largestCC, dtype=np.uint8)

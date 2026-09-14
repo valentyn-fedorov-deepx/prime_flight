@@ -8,11 +8,12 @@ Outputs in --out-dir:
 
 Parity (per --compare file, normally the production-pin outputs of `scripts/tracker_v1_profile.py --pin prod` on the
 same slice): `pf.eval.compare_tracker_ndjson` on the consumed fields + line-level identity (raw, and with the private
-optical-flow fields removed). With the same `--seed` on both sides a faithful port must be byte-identical.
+optical-flow fields removed). With the same `--seed` on both sides a faithful port must be byte-identical; so must the
+`--exact-fast` paths.
 
     python scripts/tracker_v2_run.py --video G:/gat_stages/atlc5_videos/DjwtQRdZyt0sSk.mp4 \
         --gm-ndjson G:/gat_stages/atlc5_inferences/general_modelDjwtQRdZyt0sSk.mp4.ndjson --start 9000 --frames 1200 \
-        --seed 0 --compare out/tracker_profile_prod/trackers_busy_seed0.ndjson
+        --seed 0 --compare out/tracker_profile_prod/trackers_busy_seed0.ndjson [--exact-fast]
 """
 
 from __future__ import annotations
@@ -58,6 +59,9 @@ def install_component_timers() -> None:
     cv2.calcOpticalFlowPyrLK = timed("cv2.calcOpticalFlowPyrLK")(cv2.calcOpticalFlowPyrLK)
     cv2.cvtColor = timed("cv2.cvtColor")(cv2.cvtColor)
     restoration.estimate_sigma = timed("estimate_sigma")(restoration.estimate_sigma)
+    import pf.tracker.fast_sigma as fs
+
+    fs.estimate_sigma_rgb = timed("estimate_sigma_rgb")(fs.estimate_sigma_rgb)
     try:
         from ultralytics.engine.model import Model
 
@@ -131,8 +135,10 @@ def main() -> int:
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--cone-camera", action="store_true", help="same flag semantics as tracker_v1_profile.py")
     ap.add_argument("--seed", type=int, default=None, help="np.random seed set right before the first frame")
-    ap.add_argument("--fast-noise-gate", action="store_true")
+    ap.add_argument("--exact-fast", action="store_true", help="output-identical performance paths")
+    ap.add_argument("--fast-noise-gate", action="store_true", help="NOT exact: half-resolution noise estimate")
     ap.add_argument("--no-profile", action="store_true", help="do not install per-component timers")
+    ap.add_argument("--no-compat", action="store_true", help="write only the v2 bus (skip the v1-compat serialisation)")
     ap.add_argument("--out-dir", default="out/tracker_v2")
     ap.add_argument("--compare", nargs="*", default=[], help="reference tracker ndjson files (same slice)")
     a = ap.parse_args()
@@ -153,7 +159,8 @@ def main() -> int:
     t_init = time.perf_counter()
     stream = TrackerStream(
         TrackerOptions(
-            weights_dir=a.weights_dir, device=a.device, cone_camera=a.cone_camera, fast_noise_gate=a.fast_noise_gate
+            weights_dir=a.weights_dir, device=a.device, cone_camera=a.cone_camera, exact_fast=a.exact_fast,
+            fast_noise_gate=a.fast_noise_gate,
         )
     )
     init_s = time.perf_counter() - t_init
@@ -166,21 +173,25 @@ def main() -> int:
     counter = 1
     frames = 0
     t_decode = 0.0
+    t_write = 0.0
     bus_bytes = compat_bytes = 0
-    with io.open(compat_path, "w", encoding="utf-8", newline="\n") as fc, io.open(
-        bus_path, "w", encoding="utf-8", newline="\n"
-    ) as fb:
+    fc = None if a.no_compat else io.open(compat_path, "w", encoding="utf-8", newline="\n")
+    fb = io.open(bus_path, "w", encoding="utf-8", newline="\n")
+    try:
 
         def publish(items):
-            nonlocal counter, bus_bytes, compat_bytes
+            nonlocal counter, bus_bytes, compat_bytes, t_write
+            tw = time.perf_counter()
             for fno, records in items:
-                line = json.dumps({str(counter): records}) + "\n"
-                fc.write(line)
-                compat_bytes += len(line)
+                if fc is not None:
+                    line = json.dumps({str(counter): records}) + "\n"
+                    fc.write(line)
+                    compat_bytes += len(line)
                 bl = json.dumps({"frame_id": a.start + fno, "records": [strip_private(r) for r in records]}) + "\n"
                 fb.write(bl)
                 bus_bytes += len(bl)
                 counter += 1
+            t_write += time.perf_counter() - tw
 
         torch.cuda.synchronize()
         t0 = time.perf_counter()
@@ -195,7 +206,12 @@ def main() -> int:
         publish(stream.finish())
         torch.cuda.synchronize()
         total = time.perf_counter() - t0
-    cap.release()
+    finally:
+        if fc is not None:
+            fc.close()
+        fb.close()
+        stream.close()
+        cap.release()
 
     report = {
         "video": name,
@@ -203,11 +219,13 @@ def main() -> int:
         "frames": frames,
         "seed": a.seed,
         "cone_camera": a.cone_camera,
+        "exact_fast": a.exact_fast,
         "fast_noise_gate": a.fast_noise_gate,
         "init_s": round(init_s, 2),
         "total_s": round(total, 2),
         "ms_per_frame_total": round(1000 * total / max(frames, 1), 3),
         "decode_ms_per_frame": round(1000 * t_decode / max(frames, 1), 3),
+        "serialise_ms_per_frame": round(1000 * t_write / max(frames, 1), 3),
         "stream": stream.report(),
         "components_ms_per_frame": {
             k: round(1000 * v / max(frames, 1), 3) for k, v in sorted(TIMES.items(), key=lambda kv: -kv[1])
@@ -218,14 +236,18 @@ def main() -> int:
         "v2bus_mb": round(bus_bytes / 1e6, 2),
         "parity": {},
     }
-    for ref in a.compare:
-        s = compare_tracker_ndjson(ref, compat_path).summary()
-        s["first_diffs"] = s.get("first_diffs", [])[:10]
-        report["parity"][ref] = {"consumed_fields": s, "lines": compare_lines(ref, compat_path)}
+    if not a.no_compat:
+        for ref in a.compare:
+            s = compare_tracker_ndjson(ref, compat_path).summary()
+            s["first_diffs"] = s.get("first_diffs", [])[:10]
+            report["parity"][ref] = {"consumed_fields": s, "lines": compare_lines(ref, compat_path)}
     out = os.path.join(a.out_dir, f"tracker_v2_report{name}.json")
     with io.open(out, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=1, default=str)
-    brief = {k: report[k] for k in ("frames", "ms_per_frame_total", "decode_ms_per_frame", "compat_mb", "v2bus_mb")}
+    brief = {
+        k: report[k]
+        for k in ("frames", "exact_fast", "ms_per_frame_total", "decode_ms_per_frame", "serialise_ms_per_frame", "compat_mb", "v2bus_mb")
+    }
     brief["stages"] = report["stream"]["timings_ms_per_frame"]
     brief["components"] = report["components_ms_per_frame"]
     print(json.dumps(brief, indent=1))

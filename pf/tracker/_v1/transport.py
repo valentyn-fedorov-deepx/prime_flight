@@ -1,4 +1,4 @@
-"""VENDORED verbatim from cv_common/transport.py @2759daf (imports rewritten; config from .config).""" 
+"""VENDORED verbatim from cv_common/transport.py @2759daf (imports rewritten; config from .config)."""
 from .tracked_object import TrackedObject, Status
 from .common import get_relative_intersection
 from .config import config

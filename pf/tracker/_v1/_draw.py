@@ -1,10 +1,10 @@
 """Drawing helpers for the vendored tracker classes (only used with save_video): `plot_one_box` verbatim from
-cv_common/utils/plots.py @2759daf; `Color` replaces `norfair.Color` (BGR tuples) so norfair is not a dependency.
+cv_common/utils/plots.py @2759daf with its imports; `Color` replaces `norfair.Color` (same BGR values) so norfair
+is not a dependency.
 """
 
-import random
-
 import cv2
+import random
 
 
 class Color:
@@ -12,10 +12,6 @@ class Color:
     black = (0, 0, 0)
     teal = (128, 128, 0)
     olive = (0, 128, 128)
-    red = (0, 0, 255)
-    green = (0, 255, 0)
-    blue = (255, 0, 0)
-    white = (255, 255, 255)
 
 
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):

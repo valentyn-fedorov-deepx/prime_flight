@@ -1,4 +1,4 @@
-"""VENDORED verbatim from cv_common/track.py @2759daf.""" 
+"""VENDORED verbatim from cv_common/track.py @2759daf."""
 from dataclasses import dataclass, field
 from typing import Optional, Union
 

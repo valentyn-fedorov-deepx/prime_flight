@@ -11,15 +11,18 @@ cv_common @2759daf), DeepSORT ×3 with the production configs, the same detectio
 typing, GSE re-initialisation, N_INIT publish delay and the retroactive `arrival_frame` rewrite through the airplane
 buffer. What is deliberately NOT ported: `--save-video` drawing, per-frame `print`/`logging`, the `to_csv` log directory.
 
-Cost changes are introduced behind explicit switches (see `TrackerOptions`) and validated with
-`pf.eval.compare_tracker_ndjson` against the production pin; default = production behaviour.
+`TrackerOptions.exact_fast` switches on the output-identical performance paths (proven with seeded byte-level runs
+against the production pin): `pf.tracker.fast_paths` (grey frames once per frame, vectorised in-box test, no stage-counter
+print), no full-frame copies of the tracked image, the bit-identical threaded noise estimate (`pf.tracker.fast_sigma`)
+and the three DeepSORT updates in parallel threads. Default = production behaviour.
 """
 
 from __future__ import annotations
 
 import os
 import time
-from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -56,8 +59,8 @@ class TrackerOptions:
     plane_seg_weights: str = "yolo11s-seg_plane.pt"
     bl_gse_seg_weights: str = "yolo26s_seg_bl_gse_tr10_noalb.pt"
     # --- cost switches (production behaviour when False) -------------------------------------------
-    fast_noise_gate: bool = False  # sigma on a downscaled frame (calibrated) instead of the full 1080p frame
-    keep_private_fields: bool = True  # v1-compat records keep _p0/_st; the v2 bus strips them anyway
+    exact_fast: bool = False  # output-identical performance paths (see module docstring)
+    fast_noise_gate: bool = False  # NOT exact: sigma on a half-resolution frame (needs calibration before use)
 
 
 @dataclass
@@ -105,26 +108,37 @@ def replace_plane_arrival_frame(tracked_data, new_arrival_frame):
 
 class NoiseGate:
     """Production: `skimage.estimate_sigma` on the full frame every `estimate_sigma_interval` seconds while any object is
-    tracked; TV denoising (Chambolle, weight 5, 50 iterations) of the frame used for optical flow when sigma > 0.5."""
+    tracked; TV denoising (Chambolle, weight 5, 50 iterations) of the frame used for optical flow when sigma > 0.5.
 
-    def __init__(self, fps: int, interval_s: int, fast: bool = False, device: str = "cuda"):
+    `exact_fast_sigma` uses the bit-identical threaded estimate; `copy_frames=False` returns the decoded frame itself
+    instead of a copy when no denoising happens (nothing downstream writes to it)."""
+
+    def __init__(self, fps: int, interval_s: int, fast: bool = False, device: str = "cuda",
+                 exact_fast_sigma: bool = False, copy_frames: bool = True):
         self.delay = int(interval_s * fps)
         self.fast = fast
         self.device = device
+        self.exact_fast_sigma = exact_fast_sigma
+        self.copy_frames = copy_frames
         self.current_sigma = 0.0
         self.calls = 0
         self.denoised = 0
 
     def sigma(self, im0s: np.ndarray) -> float:
-        from skimage.restoration import estimate_sigma
-
         self.calls += 1
         if self.fast:
             import cv2
+            from skimage.restoration import estimate_sigma
 
             small = cv2.resize(im0s, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
             return float(estimate_sigma(small, average_sigmas=True, channel_axis=-1))
-        return float(estimate_sigma(im0s, average_sigmas=True, channel_axis=-1))
+        if self.exact_fast_sigma:
+            from pf.tracker.fast_sigma import estimate_sigma_rgb
+
+            return estimate_sigma_rgb(im0s)
+        from skimage.restoration import estimate_sigma
+
+        return estimate_sigma(im0s, average_sigmas=True, channel_axis=-1)
 
     def image_to_track(self, frame_number: int, im0s: np.ndarray, any_object: bool) -> np.ndarray:
         if any_object:
@@ -133,24 +147,28 @@ class NoiseGate:
             if self.current_sigma > 0.5:
                 self.denoised += 1
                 return self.denoise(im0s)
-        return im0s.copy()
+        return im0s.copy() if self.copy_frames else im0s
 
     def denoise(self, im0s: np.ndarray) -> np.ndarray:
         try:
-            from cucim.skimage.restoration import denoise_tv_chambolle  # production (Linux, GPU)
-            import cupy as cp
+            import cupy as cp  # production (Linux, GPU)
+            from cucim.skimage.restoration import denoise_tv_chambolle
 
             arr = cp.asarray(im0s.copy(), dtype=float)
             out = cp.asnumpy(denoise_tv_chambolle(arr, weight=5, eps=0.00005, max_num_iter=50, channel_axis=-1))
         except ImportError:  # torch port, bit-identical to scikit-image (scripts/win_shims/tv_chambolle_torch.py)
             import sys
 
-            shims = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "scripts", "win_shims")
+            shims = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "scripts", "win_shims"
+            )
             if shims not in sys.path:
                 sys.path.insert(0, shims)
             from tv_chambolle_torch import denoise_tv_chambolle
 
-            out = denoise_tv_chambolle(im0s.astype(np.float64), weight=5, eps=0.00005, max_num_iter=50, channel_axis=-1, device=self.device)
+            out = denoise_tv_chambolle(
+                im0s.astype(np.float64), weight=5, eps=0.00005, max_num_iter=50, channel_axis=-1, device=self.device
+            )
         return out.astype(np.uint8)
 
 
@@ -195,11 +213,22 @@ class TrackerStream:
         self.bl_gse_segmentor = YOLO(os.path.join(self.opt.weights_dir, self.opt.bl_gse_seg_weights)).to(device)
         ObjectSegmenter.Classwise_buffer_mask = {}  # class-level cache in cv_common: reset per stream
 
-        self.noise = NoiseGate(self.cfg["fps"], self.cfg["estimate_sigma_interval"], fast=self.opt.fast_noise_gate, device=device)
+        self.fast = None
+        self._pool = None
+        if self.opt.exact_fast:
+            from pf.tracker import fast_paths
+
+            fast_paths.enable()
+            fast_paths.end_stream()
+            self.fast = fast_paths
+            self._pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="pf-deepsort")
+
+        self.noise = NoiseGate(
+            self.cfg["fps"], self.cfg["estimate_sigma_interval"], fast=self.opt.fast_noise_gate, device=device,
+            exact_fast_sigma=self.opt.exact_fast, copy_frames=not self.opt.exact_fast,
+        )
         self.str2id = self.cfg["str2id"]
-        self.ignore_ids = {
-            cls_name: [self.str2id[c] for c in classes] for cls_name, classes in IGNORE_DICT.items()
-        }
+        self.ignore_ids = {cls_name: [self.str2id[c] for c in classes] for cls_name, classes in IGNORE_DICT.items()}
         self.tracking = self.cfg["tracking"]
         self.torch = torch
 
@@ -220,10 +249,50 @@ class TrackerStream:
         self.frames_seen = 0
 
     # ------------------------------------------------------------------------------------------------
+    def _deepsort_updates(self, im0s, bl_xywh, bl_confs, w_xywh, w_confs, g_xywh, g_confs):
+        """The three DeepSORT updates of tracker.py in production order (BL, workers + tentative, GSE)."""
+        torch = self.torch
+        xywhs_beltloaders = torch.Tensor(bl_xywh)
+        confss_beltloaders = torch.Tensor(bl_confs)
+        xywhs_workers = torch.Tensor(w_xywh)
+        confss_workers = torch.Tensor(w_confs)
+        xywhs_gse = torch.Tensor(g_xywh)
+        confss_gse = torch.Tensor(g_confs)
+
+        def beltloaders():
+            if bl_xywh is not None and len(bl_xywh):
+                return self.bl_tracker.update(xywhs_beltloaders, confss_beltloaders, im0s)
+            self.bl_tracker.increment_ages()
+            return []
+
+        def workers():
+            if w_xywh is not None and len(w_xywh):
+                out = self.workers_tracker.update(xywhs_workers, confss_workers, im0s)
+                return out, self.workers_tracker.get_tentative_tracks()
+            self.workers_tracker.increment_ages()
+            return [], []
+
+        def gse():
+            if g_xywh is not None and len(g_xywh):
+                return self.gse_tracker.update(xywhs_gse, confss_gse, im0s)
+            self.gse_tracker.increment_ages()
+            return []
+
+        if self._pool is None:
+            outputs_beltloaders = beltloaders()
+            outputs_workers, outputs_workers_tentative = workers()
+            outputs_gse = gse()
+        else:  # independent trackers → the same results in any interleaving
+            f_bl, f_w, f_g = self._pool.submit(beltloaders), self._pool.submit(workers), self._pool.submit(gse)
+            outputs_beltloaders = f_bl.result()
+            outputs_workers, outputs_workers_tentative = f_w.result()
+            outputs_gse = f_g.result()
+        return outputs_beltloaders, outputs_workers, outputs_workers_tentative, outputs_gse
+
     def update(self, frame_number: int, im0s: np.ndarray, det) -> list:
         """One frame → list of (frame_id, [record dicts]) that became final. `det`: GM rows of this frame (list)."""
         t_start = time.perf_counter()
-        cfg, s2i, torch = self.cfg, self.str2id, self.torch
+        cfg, s2i = self.cfg, self.str2id
         bboxes_to_ignore = {c: list() for c in IGNORE_DICT}
         bbox_xywh_beltloaders, confs_beltloaders = [], []
         bbox_xywh_workers, confs_workers = [], []
@@ -280,37 +349,17 @@ class TrackerStream:
             combined = list(zip(bbox_xywh_beltloaders, confs_beltloaders))
             combined.sort(key=lambda x: x[0][2] * x[0][3], reverse=True)
             bbox_xywh_beltloaders, confs_beltloaders = zip(*combined)
-        xywhs_beltloaders = torch.Tensor(bbox_xywh_beltloaders)
-        confss_beltloaders = torch.Tensor(confs_beltloaders)
-        if bbox_xywh_beltloaders is not None and len(bbox_xywh_beltloaders):
-            outputs_beltloaders = self.bl_tracker.update(xywhs_beltloaders, confss_beltloaders, im0s)
-        else:
-            self.bl_tracker.increment_ages()
-            outputs_beltloaders = []
-
-        xywhs_workers = torch.Tensor(bbox_xywh_workers)
-        confss_workers = torch.Tensor(confs_workers)
-        if bbox_xywh_workers is not None and len(bbox_xywh_workers):
-            outputs_workers = self.workers_tracker.update(xywhs_workers, confss_workers, im0s)
-            outputs_workers_tentative = self.workers_tracker.get_tentative_tracks()
-        else:
-            self.workers_tracker.increment_ages()
-            outputs_workers = []
-            outputs_workers_tentative = []
-
-        xywhs_gse = torch.Tensor(bbox_xywh_gse)
-        confss_gse = torch.Tensor(confs_gse)
-        if bbox_xywh_gse is not None and len(bbox_xywh_gse):
-            outputs_gse = self.gse_tracker.update(xywhs_gse, confss_gse, im0s)
-        else:
-            self.gse_tracker.increment_ages()
-            outputs_gse = []
+        outputs_beltloaders, outputs_workers, outputs_workers_tentative, outputs_gse = self._deepsort_updates(
+            im0s, bbox_xywh_beltloaders, confs_beltloaders, bbox_xywh_workers, confs_workers, bbox_xywh_gse, confs_gse
+        )
         t1 = time.perf_counter()
         self.timings.deepsort_s += t1 - t0
 
         # ------------------------- noise gate -------------------------
         any_object = bool(len(airplane_det) or len(outputs_gse) or len(outputs_workers) or len(outputs_beltloaders))
         img_to_track = self.noise.image_to_track(frame_number, im0s, any_object)
+        if self.fast is not None:
+            self.fast.begin_frame(self.prev_img_to_track, img_to_track)
         t2 = time.perf_counter()
         self.timings.noise_s += t2 - t1
 
@@ -355,7 +404,7 @@ class TrackerStream:
                 observed = True
                 for *xyxy, conf, cls_id in det:
                     if cls_id in gse_trailer_ids and observed:
-                        observed, obstacle_xyxy = check_obstacles(tracked_obj, xyxy, cfg)
+                        observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
                 if not observed:
                     tracked_obj.set_unobserved()
                 else:
@@ -388,7 +437,7 @@ class TrackerStream:
                 observed = True
                 for *xyxy, conf, cls_id in det:
                     if cls_id in gse_trailer_ids and observed:
-                        observed, obstacle_xyxy = check_obstacles(tracked_obj, xyxy, cfg)
+                        observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
                 if observed:
                     tracked_obj.set_observed()
                     tracked_obj.update_params(
@@ -485,7 +534,7 @@ class TrackerStream:
                         out.append((stored_frame_number, [tr.to_json() for tr in stored_tracked_data]))
                     self.airplane_data_buffer.clear()
                 out.append((fno, [tr.to_json() for tr in tracked_data]))
-        self.prev_img_to_track = img_to_track.copy()
+        self.prev_img_to_track = img_to_track if self.fast is not None else img_to_track.copy()
         t6 = time.perf_counter()
         self.timings.publish_s += t6 - t5
         self.timings.frames += 1
@@ -504,12 +553,20 @@ class TrackerStream:
         self.airplane_data_buffer.clear()
         return out
 
+    def close(self) -> None:
+        if self._pool is not None:
+            self._pool.shutdown(wait=True)
+            self._pool = None
+        if self.fast is not None:
+            self.fast.end_stream()
+
     def report(self) -> dict:
         return {
             "frames": self.frames_seen,
+            "exact_fast": self.opt.exact_fast,
             "timings_ms_per_frame": self.timings.as_ms_per_frame(),
             "noise_gate": {"sigma_calls": self.noise.calls, "denoised_frames": self.noise.denoised,
-                           "last_sigma": round(self.noise.current_sigma, 4)},
+                           "last_sigma": round(float(self.noise.current_sigma), 4)},
             "identities": {
                 "beltloaders": sorted(self.bl_obj_dict), "gse": sorted(self.gse_obj_dict),
                 "workers": len(set(self.confirmed_workers_ids)),

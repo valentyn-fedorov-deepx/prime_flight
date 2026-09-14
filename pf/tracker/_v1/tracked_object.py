@@ -1,4 +1,4 @@
-"""VENDORED verbatim from cv_common/tracked_object.py @2759daf (imports rewritten).""" 
+"""VENDORED verbatim from cv_common/tracked_object.py @2759daf (imports rewritten)."""
 import numpy as np
 import cv2
 from ._draw import plot_one_box, Color

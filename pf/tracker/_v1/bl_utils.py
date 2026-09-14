@@ -1,4 +1,4 @@
-"""VENDORED verbatim from cv_trackers/local_utils/bl_utils.py @bd43c3c (import rewritten).""" 
+"""VENDORED verbatim from cv_trackers/local_utils/bl_utils.py @bd43c3c (import rewritten)."""
 from .common import bboxes_iou, bbox_area, is_overlap
 
 
