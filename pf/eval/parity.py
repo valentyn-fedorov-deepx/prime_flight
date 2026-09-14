@@ -101,13 +101,23 @@ class DetectionParity:
 
 
 def compare_gm_ndjson(
-    path_a: str, path_b: str, *, ndigits: int = 1, max_first_diffs: int = 20
+    path_a: str,
+    path_b: str,
+    *,
+    ndigits: int = 1,
+    max_first_diffs: int = 20,
+    ignore_classes=(),
+    only_common_frames: bool = False,
 ) -> DetectionParity:
     """Frame-by-frame comparison of two GM ndjson files as multisets of rounded detections.
 
     ``ndigits`` — rounding applied to coordinates and confidence before comparing (1 = 0.1 px / 0.1 conf).
+    ``ignore_classes`` — class ids dropped from both sides before comparing (e.g. the synthesized 2/29/30 rows that
+    depend on whole-video context when only a prefix of the video was processed).
+    ``only_common_frames`` — do not count frames present in one file only (partial runs).
     Frame numbers are matched by key, never by position (X2).
     """
+    ignore = {int(c) for c in ignore_classes}
     res = DetectionParity()
     ia, ib = iter_ndjson(path_a), iter_ndjson(path_b)
     na, nb = next(ia, None), next(ib, None)
@@ -115,14 +125,17 @@ def compare_gm_ndjson(
         ka = na[0] if na is not None else None
         kb = nb[0] if nb is not None else None
         if kb is None or (ka is not None and ka < kb):
-            res.frames_only_in_a += 1
+            res.frames_only_in_a += 0 if only_common_frames else 1
             na = next(ia, None)
             continue
         if ka is None or kb < ka:
-            res.frames_only_in_b += 1
+            res.frames_only_in_b += 0 if only_common_frames else 1
             nb = next(ib, None)
             continue
         da, db = na[1] or [], nb[1] or []
+        if ignore:
+            da = [d for d in da if int(d[5]) not in ignore]
+            db = [d for d in db if int(d[5]) not in ignore]
         res.frames_compared += 1
         res.dets_a += len(da)
         res.dets_b += len(db)

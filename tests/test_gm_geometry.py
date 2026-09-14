@@ -37,11 +37,26 @@ def test_correct_coords_clamps_like_v1():
     assert correct_coords([0, 0, 1920, 1080]) == [0, 0, 1920, 1080]
 
 
-def test_iou_and_relative_intersection():
+def test_iou_uses_the_cv_common_plus_one_convention():
     a, b = [0, 0, 10, 10], [5, 0, 15, 10]
-    assert abs(bboxes_iou(a, b) - 50 / 150) < 1e-9
-    assert abs(relative_intersection(a, b) - 0.5) < 1e-9
+    # inclusive pixels: inter = 6*11 = 66, areas = 11*11 = 121 each → 66 / (242 - 66)
+    assert abs(bboxes_iou(a, b) - 66 / 176) < 1e-9
     assert bboxes_iou(a, [20, 20, 30, 30]) == 0.0
+    assert abs(bboxes_iou(a, a) - 1.0) < 1e-9
+
+
+def test_relative_intersection_divides_by_main_area_plus_one():
+    a, b = [0, 0, 10, 10], [5, 0, 15, 10]
+    assert abs(relative_intersection(a, b) - 50 / 101) < 1e-9
+    assert relative_intersection(a, [20, 20, 30, 30]) == 0
+    assert relative_intersection([0, 0, 10, 10], [10, 0, 20, 10]) == 0.0   # touching: x1 == x2 → zero area, not early return
+
+
+def test_center_and_hw_truncate_like_cv_common():
+    from pf.gm.geometry import get_center, get_hw, is_overlap
+    assert get_center([0.9, 0.9, 10.9, 20.9]) == (5, 10) and get_hw([0.9, 0.9, 10.9, 20.9]) == (20, 10)
+    assert not is_overlap([0, 0, 10, 10], [10, 0, 20, 10])   # touching edges are not an overlap
+    assert is_overlap([0, 0, 10, 10], [9, 0, 20, 10])
 
 
 def test_overlay_ratio_is_relative_to_smaller_box():

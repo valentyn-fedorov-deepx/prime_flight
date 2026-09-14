@@ -66,16 +66,18 @@ def main() -> int:
     ap.add_argument("--weights-dir", required=True, help="folder with the three ONNX files (DVC pull of general_model)")
     ap.add_argument("--gm-weights", default="GM_yolov8m_best_augmentation_march2024.onnx")
     ap.add_argument("--chocks-weights", default="chocks_v4.3_200ep_yolov8.onnx")
-    ap.add_argument("--vehicle-weights", default="vehicle.onnx")
-    ap.add_argument("--str2id", required=True, help="json/yaml with the cv_common str2id mapping")
+    ap.add_argument("--vehicle-weights", default="VM_yolov8m_last_september2023.onnx")
+    ap.add_argument("--str2id", default=os.path.join(ROOT, "external", "cv_common", "global_config.yaml"),
+                    help="json/yaml with the cv_common str2id mapping (default: external/cv_common/global_config.yaml)")
     ap.add_argument("--conf-thres", type=float, default=0.35)
-    ap.add_argument("--chock-conf-thres", type=float, default=0.10, help="v1 config value unknown; 0.10 observed in data")
-    ap.add_argument("--vehicle-conf-thres", type=float, default=0.40, help="v1 config value unknown; 0.40 observed")
+    ap.add_argument("--chock-conf-thres", type=float, default=0.10, help="cv_common global_config chock_conf_thres")
+    ap.add_argument("--vehicle-conf-thres", type=float, default=0.40, help="cv_common global_config vehicle_conf_thres")
     ap.add_argument("--fps", type=int, default=8)
     ap.add_argument("--max-frames", type=int, default=None)
     ap.add_argument("--out-dir", default="out")
     ap.add_argument("--compare", default=None, help="production second-run ndjson to compare the compat file against")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--compare-ignore-classes", default="", help="comma-separated class ids to ignore in --compare (e.g. 2,29,30 for a partial run)")
     a = ap.parse_args()
 
     cm = ClassMap(load_str2id(a.str2id))
@@ -121,7 +123,10 @@ def main() -> int:
                            if getattr(dets, k).geometry}
     report["events"] = [vars(e) for e in stream.events]
     if a.compare:
-        report["parity_vs_production"] = compare_gm_ndjson(a.compare, compat_path).summary()
+        ignore = [int(x) for x in a.compare_ignore_classes.split(",") if x.strip()]
+        report["parity_vs_production"] = compare_gm_ndjson(
+            a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)).summary()
+        report["parity_vs_production"]["ignore_classes"] = ignore
     with open(report_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=1, default=str)
     print(json.dumps({k: report[k] for k in ("number_of_frames", "timings_ms_per_frame", "decided_at")}, indent=1))

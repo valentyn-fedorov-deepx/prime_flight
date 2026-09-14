@@ -109,3 +109,15 @@ def test_gm_frames_are_matched_by_key_not_position(tmp_path):
     res = compare_gm_ndjson(str(a), str(b))
     assert res.frames_only_in_a == 1 and res.frames_only_in_b == 0
     assert res.frames_compared == 99 and res.frames_equal == 99
+
+
+def test_gm_compare_can_ignore_classes_and_partial_frames(tmp_path):
+    frames = synth_frames(n=50)
+    a, b = tmp_path / "a.ndjson", tmp_path / "b.ndjson"
+    _write_ndjson(a, frames)
+    # b: only the first 30 frames, with an extra synthesized row of class 29 in each frame
+    _write_ndjson(b, [make_frame(f["frame_id"], f["general_model"] + [[1, 1, 2, 2, 0.5, 29]], []) for f in frames[:30]])
+    res = compare_gm_ndjson(str(a), str(b), ignore_classes=(29,), only_common_frames=True)
+    assert res.frames_compared == 30 and res.frames_equal == 30 and res.frames_only_in_a == 0
+    res2 = compare_gm_ndjson(str(a), str(b))
+    assert res2.frames_only_in_a == 20 and res2.frames_equal == 0

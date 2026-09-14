@@ -1,9 +1,12 @@
 """Pure-Python geometry helpers used by the General Model port.
 
-Ported from `general_model/main.py` (correct_coords, get_overlay_ratio, count_bbox_frames) and re-implemented for the
-`cv_common.common` helpers that are pinned but not available on disk (bbox_area, bboxes_iou, get_hw, get_center,
-get_relative_intersection, is_overlap). Where the cv_common implementation could not be verified, the docstring says
-ASSUMPTION; parity runs against v1 output will confirm or refute them (tracked in docs/analysis/gm_current.md §11).
+Exact ports of `general_model/main.py` (correct_coords, get_overlay_ratio, count_bbox_frames) and of the
+`cv_common/common.py` helpers at pin ac5098d (bbox_area, bboxes_iou, get_hw, get_center, get_relative_intersection,
+is_overlap). The cv_common helpers carry conventions that matter for parity and are kept verbatim:
+  * `bboxes_iou` uses the +1 pixel convention (inclusive coordinates) — `common.py:204-232`;
+  * `get_hw` / `get_center` truncate with `int()` and `get_center` uses integer division — `common.py:101-111`;
+  * `get_relative_intersection(target, main)` = intersection / (area(main) + 1), 0 when boxes do not touch — `common.py:235-250`;
+  * `is_overlap` treats touching edges as NOT overlapping (`>=`) — `common.py:113-134`.
 """
 
 from __future__ import annotations
@@ -17,61 +20,74 @@ FRAME_W, FRAME_H = 1920, 1080
 def correct_coords(xyxy, img_height: int = FRAME_H, img_width: int = FRAME_W) -> list:
     """Exact port of `general_model/main.py:153-168`: clamp a box into the frame."""
     new_xyxy = [i for i in xyxy]
-    new_xyxy[0] = max(0, xyxy[0])
-    new_xyxy[1] = max(0, xyxy[1])
-    new_xyxy[2] = min(img_width, xyxy[2])
-    new_xyxy[3] = min(img_height, xyxy[3])
-    new_xyxy = [max(i, 0) for i in new_xyxy]
+    new_xyxy[0] = xyxy[0] if xyxy[0] > 0 else 0
+    new_xyxy[1] = xyxy[1] if xyxy[1] > 0 else 0
+    new_xyxy[2] = xyxy[2] if xyxy[2] < img_width else img_width
+    new_xyxy[3] = xyxy[3] if xyxy[3] < img_height else img_height
+    new_xyxy = [i if i >= 0 else 0 for i in new_xyxy]
     return new_xyxy
 
 
-def bbox_area(box) -> float:
-    """ASSUMPTION (cv_common.common.bbox_area): (x2 - x1) * (y2 - y1), no clamping."""
-    return (box[2] - box[0]) * (box[3] - box[1])
+def bbox_area(bbox, is_xyxy: bool = True) -> float:
+    """`cv_common/common.py:74-84`."""
+    if is_xyxy:
+        return (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+    return bbox[2] * bbox[3]
 
 
-def get_hw(box):
-    """ASSUMPTION (cv_common.common.get_hw): returns (height, width)."""
-    return box[3] - box[1], box[2] - box[0]
+def get_hw(bbox):
+    """`cv_common/common.py:107-110`: (height, width) after int truncation."""
+    x1, y1, x2, y2 = map(int, bbox)
+    return y2 - y1, x2 - x1
 
 
-def get_center(box):
-    """ASSUMPTION (cv_common.common.get_center): (cx, cy)."""
-    return (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+def get_center(bbox):
+    """`cv_common/common.py:101-104`: integer centre."""
+    x1, y1, x2, y2 = map(int, bbox)
+    return (x1 + x2) // 2, (y1 + y2) // 2
 
 
-def intersection_area(a, b) -> float:
-    x1, y1 = max(a[0], b[0]), max(a[1], b[1])
-    x2, y2 = min(a[2], b[2]), min(a[3], b[3])
-    if x1 >= x2 or y1 >= y2:
-        return 0.0
-    return (x2 - x1) * (y2 - y1)
+def bboxes_iou(xyxy1, xyxy2) -> float:
+    """`cv_common/common.py:204-232`: IoU with the +1 (inclusive pixel) convention."""
+    x1_d, y1_d, x2_d, y2_d = xyxy1
+    x1_e, y1_e, x2_e, y2_e = xyxy2
+    x_left = max(x1_d, x1_e)
+    y_top = max(y1_d, y1_e)
+    x_right = min(x2_d, x2_e)
+    y_bottom = min(y2_d, y2_e)
+    intersection_area = max(0, x_right - x_left + 1) * max(0, y_bottom - y_top + 1)
+    bb1_area = (max(0, x2_d - x1_d) + 1) * (max(0, y2_d - y1_d) + 1)
+    bb2_area = (max(0, x2_e - x1_e) + 1) * (max(0, y2_e - y1_e) + 1)
+    return intersection_area / float(bb1_area + bb2_area - intersection_area)
 
 
-def bboxes_iou(a, b) -> float:
-    """ASSUMPTION (cv_common.common.bboxes_iou): standard IoU on xyxy boxes."""
-    inter = intersection_area(a, b)
-    if inter <= 0:
-        return 0.0
-    union = bbox_area(a) + bbox_area(b) - inter
-    return inter / union if union > 0 else 0.0
+def relative_intersection(target_bbox, main_bbox) -> float:
+    """`cv_common/common.py:235-250` (`get_relative_intersection`): intersection / (area(main) + 1)."""
+    x1 = max(target_bbox[0], main_bbox[0])
+    x2 = min(target_bbox[2], main_bbox[2])
+    y1 = max(target_bbox[1], main_bbox[1])
+    y2 = min(target_bbox[3], main_bbox[3])
+    if x1 > x2 or y1 > y2:
+        return 0
+    intersection_area = (x2 - x1) * (y2 - y1)
+    return intersection_area / (bbox_area(main_bbox) + 1)
 
 
-def relative_intersection(a, b) -> float:
-    """ASSUMPTION (cv_common.common.get_relative_intersection): intersection area / area of the SECOND box.
-
-    Used as `get_relative_intersection(side_roi, transport) > 0.7` (fraction of the transport inside the ROI) and as
-    the association key `get_relative_intersection(new_xyxy, plane.xyxy)`.
-    """
-    area_b = bbox_area(b)
-    if area_b <= 0:
-        return 0.0
-    return intersection_area(a, b) / area_b
-
-
-def is_overlap(a, b) -> bool:
-    """ASSUMPTION (cv_common.common.is_overlap): boxes share a positive-area intersection."""
-    return intersection_area(a, b) > 0
+def is_overlap(box1, box2, is_xyxy: bool = True) -> bool:
+    """`cv_common/common.py:113-134`: touching edges do not count as overlap."""
+    if is_xyxy:
+        b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
+        b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
+    else:
+        b1_x1, b1_x2 = box1[0] - box1[2] / 2, box1[0] + box1[2] / 2
+        b1_y1, b1_y2 = box1[1] - box1[3] / 2, box1[1] + box1[3] / 2
+        b2_x1, b2_x2 = box2[0] - box2[2] / 2, box2[0] + box2[2] / 2
+        b2_y1, b2_y2 = box2[1] - box2[3] / 2, box2[1] + box2[3] / 2
+    if b1_x1 >= b2_x2 or b2_x1 >= b1_x2:
+        return False
+    if b1_y1 >= b2_y2 or b2_y1 >= b1_y2:
+        return False
+    return True
 
 
 def overlay_ratio(target_bbox, main_bbox) -> float:
