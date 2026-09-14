@@ -123,6 +123,8 @@ MODULE_DIR = {
     # disconnect_frame") and its own weights (DVC)
     "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed":
         "external/_branches/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed@new_logic",
+    # calibration, 3 events: tdv_cone 3/3 = New output (default 1/3); its own weights (DVC) and ultralytics 8.4.83
+    "safety-vests-secured-to-body": "external/_branches/safety-vests-secured-to-body@tdv_cone",
     # steering and aircraft-chocks stay on the default branch: their newer branches tie at 5/5 and 15/15 and are feature
     # work without production fixes (steering_observability_fix 2026-08-14, towbar-attachment-fallback 2026-09-04)
 }
