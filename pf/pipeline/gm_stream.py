@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pf.contract import make_frame
 from pf.gm.compat_writer import CompatContext, write_second_run_file
 from pf.gm.context import VideoContextV2
+from pf.gm.preprocessor import ImagePreprocessor
 from pf.gm.rows import ClassMap, first_run_rows
 from pf.receiver import Session
 
@@ -60,6 +61,9 @@ class GmStream:
     context: VideoContextV2 = None
     session: Session = None
     raw_rows: dict = field(default_factory=dict)  # frame_id -> first-run rows (kept for the compat writer)
+    preprocessor: ImagePreprocessor | None = (
+        None  # v1 feeds every first-run frame through it (noise-adaptive blur)
+    )
     events: list = field(default_factory=list)
     _closed: bool = False
 
@@ -70,15 +74,27 @@ class GmStream:
             self.session = Session(self.event_id, fps=self.fps)
         if self.detectors is None and self.rows_provider is None:
             raise ValueError("GmStream needs detectors or a rows_provider")
+        if self.preprocessor is None and self.detectors is not None:
+            self.preprocessor = ImagePreprocessor()
 
     # ---------------------------------------------------------------- per frame
     def _rows_for(self, frame_id: int, image) -> list:
         if self.rows_provider is not None:
             return list(self.rows_provider(frame_id, image))
+        if self.preprocessor is not None and image is not None:
+            self.preprocessor.update(frame_id, image)
+            image = self.preprocessor.get_preprocessed()
         return self.detectors.rows(image, self.cm)
 
     def _ingest(
-        self, frame_id: int, image=None, *, entity_class_ids=None, is_cone=None, arrived: bool = False
+        self,
+        frame_id: int,
+        image=None,
+        *,
+        entity_class_ids=None,
+        is_cone=None,
+        arrived: bool = False,
+        departured: bool = False,
     ) -> dict:
         """Rows + context for one frame (no session I/O). Returns the contract frame."""
         if self._closed:
@@ -86,7 +102,13 @@ class GmStream:
         rows = self._rows_for(frame_id, image)
         self.raw_rows[frame_id] = rows
         for name in self.context.update(
-            frame_id, rows, image, entity_class_ids=entity_class_ids, is_cone=is_cone, arrived=arrived
+            frame_id,
+            rows,
+            image,
+            entity_class_ids=entity_class_ids,
+            is_cone=is_cone,
+            arrived=arrived,
+            departured=departured,
         ):
             self.events.append(GmStreamEvent(frame_id, name, self._decision_value(name)))
         return make_frame(frame_id, rows, [])
@@ -117,8 +139,8 @@ class GmStream:
         if not self._closed:
             last = max(self.raw_rows) if self.raw_rows else 0
             if freeze_camera:
-                for name in self.context.camera.decide(last):
-                    self.events.append(GmStreamEvent(last, name, self.context.camera.camera_type_cone))
+                for name in self.context.finalize(last):
+                    self.events.append(GmStreamEvent(last, name, self._decision_value(name)))
             self.session.close()
             self._closed = True
         return self.context.snapshot()
@@ -147,6 +169,7 @@ class GmStream:
             "fps": self.fps,
             "number_of_frames": max(self.raw_rows) if self.raw_rows else 0,
             "decided_at": snap.get("decided_at", {}),
+            "noise": self.preprocessor.snapshot() if self.preprocessor is not None else None,
             "session": {
                 "frames_in": self.session.stats.frames_in,
                 "frames_filled": self.session.stats.frames_filled,

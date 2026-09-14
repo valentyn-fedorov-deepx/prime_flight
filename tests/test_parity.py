@@ -116,8 +116,29 @@ def test_gm_compare_can_ignore_classes_and_partial_frames(tmp_path):
     a, b = tmp_path / "a.ndjson", tmp_path / "b.ndjson"
     _write_ndjson(a, frames)
     # b: only the first 30 frames, with an extra synthesized row of class 29 in each frame
-    _write_ndjson(b, [make_frame(f["frame_id"], f["general_model"] + [[1, 1, 2, 2, 0.5, 29]], []) for f in frames[:30]])
+    _write_ndjson(
+        b, [make_frame(f["frame_id"], f["general_model"] + [[1, 1, 2, 2, 0.5, 29]], []) for f in frames[:30]]
+    )
     res = compare_gm_ndjson(str(a), str(b), ignore_classes=(29,), only_common_frames=True)
     assert res.frames_compared == 30 and res.frames_equal == 30 and res.frames_only_in_a == 0
     res2 = compare_gm_ndjson(str(a), str(b))
     assert res2.frames_only_in_a == 20 and res2.frames_equal == 0
+
+
+def test_tolerant_comparison_pairs_by_iou_and_reports_deltas(tmp_path):
+    from pf.eval import compare_gm_ndjson_tolerant
+
+    frames = synth_frames(n=40)
+    shifted = []
+    for f in frames:
+        rows = [[d[0] + 1, d[1], d[2] + 1, d[3], round(d[4] - 0.01, 4), d[5]] for d in f["general_model"]]
+        shifted.append(make_frame(f["frame_id"], rows, []))
+    a, b = tmp_path / "a.ndjson", tmp_path / "b.ndjson"
+    _write_ndjson(a, frames)
+    _write_ndjson(b, shifted)
+    res = compare_gm_ndjson_tolerant(str(a), str(b), coord_tol_px=2.0, conf_tol=0.02)
+    s = res.summary()
+    assert s["frames_compared"] == 40 and s["frames_within_tolerance"] == 40 and s["unmatched_a"] == 0
+    assert s["pairs"] == s["dets_a"] and s["pairs_exact"] == 0 and s["coord_delta_px"]["max"] == 1
+    tight = compare_gm_ndjson_tolerant(str(a), str(b), coord_tol_px=0.5, conf_tol=0.02)
+    assert tight.frames_within_tolerance < 40 and tight.first_diffs

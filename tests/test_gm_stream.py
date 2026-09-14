@@ -86,11 +86,9 @@ def test_decisions_carry_frame_ids_and_close_freezes_camera():
     assert names["parts_layout"] == 241  # front-wheel bucket > 30·8 frames
     assert "camera_type" not in names
     snap = gs.close()
-    assert (
-        snap["camera_type_cone"] is True
-        and gs.events[-1].name == "camera_type"
-        and gs.events[-1].frame_id == 399
-    )
+    closing = {e.name: e.frame_id for e in gs.events if e.frame_id == 399}
+    assert snap["camera_type_cone"] is True and closing["camera_type"] == 399
+    assert "aircraft_type" in closing and snap["variant"] == "prod"   # production rule decides at end of video
     assert snap["mode_plane_height"] == 680 and snap["frame_of_beginning"] == 10
 
 

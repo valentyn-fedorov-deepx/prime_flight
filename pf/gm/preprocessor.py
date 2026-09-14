@@ -47,7 +47,7 @@ class ImagePreprocessor:
         self._ssd_noise = 0.0
         self.samples = 0
         self.mode = Mode.CLEAR
-        self.decided_at: int | None = None     # first frame on which the mode left CLEAR (v2 addition)
+        self.decided_at: int | None = None  # first frame on which the mode left CLEAR (v2 addition)
 
     def update(self, frame_id: int, frame: np.ndarray) -> None:
         if frame_id % self.frame_interval == 0:
@@ -92,6 +92,11 @@ class ImagePreprocessor:
         return self.mode.name
 
     def snapshot(self) -> dict:
-        return {"video_type_by_noise": self.mode.name, "noise_mean": self.mean_noise,
-                "noise_std": self.get_noise_std(), "is_broken": self.is_broken(),
-                "noise_samples": self.samples, "noise_mode_decided_at": self.decided_at}
+        return {
+            "video_type_by_noise": self.mode.name,
+            "noise_mean": self.mean_noise,
+            "noise_std": self.get_noise_std(),
+            "is_broken": self.is_broken(),
+            "noise_samples": self.samples,
+            "noise_mode_decided_at": self.decided_at,
+        }

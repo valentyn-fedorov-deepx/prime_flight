@@ -49,13 +49,16 @@ def test_relative_intersection_divides_by_main_area_plus_one():
     a, b = [0, 0, 10, 10], [5, 0, 15, 10]
     assert abs(relative_intersection(a, b) - 50 / 101) < 1e-9
     assert relative_intersection(a, [20, 20, 30, 30]) == 0
-    assert relative_intersection([0, 0, 10, 10], [10, 0, 20, 10]) == 0.0   # touching: x1 == x2 → zero area, not early return
+    assert (
+        relative_intersection([0, 0, 10, 10], [10, 0, 20, 10]) == 0.0
+    )  # touching: x1 == x2 → zero area, not early return
 
 
 def test_center_and_hw_truncate_like_cv_common():
     from pf.gm.geometry import get_center, get_hw, is_overlap
+
     assert get_center([0.9, 0.9, 10.9, 20.9]) == (5, 10) and get_hw([0.9, 0.9, 10.9, 20.9]) == (20, 10)
-    assert not is_overlap([0, 0, 10, 10], [10, 0, 20, 10])   # touching edges are not an overlap
+    assert not is_overlap([0, 0, 10, 10], [10, 0, 20, 10])  # touching edges are not an overlap
     assert is_overlap([0, 0, 10, 10], [9, 0, 20, 10])
 
 

@@ -2,9 +2,11 @@
 
 from .parity import (
     DetectionParity,
+    TolerantParity,
     as_chunks,
     canonical,
     compare_gm_ndjson,
+    compare_gm_ndjson_tolerant,
     diff_streams,
     digest,
     iter_ndjson,
@@ -19,10 +21,12 @@ from .tracker_parity import (
 __all__ = [
     "CONSUMED_STATE_FIELDS",
     "DetectionParity",
+    "TolerantParity",
     "TrackerParity",
     "as_chunks",
     "canonical",
     "compare_gm_ndjson",
+    "compare_gm_ndjson_tolerant",
     "compare_tracker_frames",
     "compare_tracker_ndjson",
     "diff_streams",

@@ -21,13 +21,17 @@ from pf.gm.geometry import FRAME_H, FRAME_W, bbox_area, relative_intersection
 from pf.gm.rows import ClassMap
 
 
-def drop_tiny_planes(boxes: list, frame_w: int = FRAME_W, frame_h: int = FRAME_H, min_fraction: float = 0.1) -> list:
+def drop_tiny_planes(
+    boxes: list, frame_w: int = FRAME_W, frame_h: int = FRAME_H, min_fraction: float = 0.1
+) -> list:
     """`main.py:612-621` @ a0157a4: candidates with area / frame area < 0.1 are removed (after the overlap merge)."""
     frame_area = frame_w * frame_h
     return [b for b in boxes if bbox_area(b) / frame_area >= min_fraction]
 
 
-def save_plane_type_frame_data(rows, main_plane_xyxy, counters: dict, cm: ClassMap, departured: bool = False) -> None:
+def save_plane_type_frame_data(
+    rows, main_plane_xyxy, counters: dict, cm: ClassMap, departured: bool = False
+) -> None:
     """Port of `scripts/engine_script.py:7-42` @ a0157a4 (class names resolved via `cm`, not reverse lookup)."""
     if main_plane_xyxy is None or departured:
         return
@@ -43,7 +47,9 @@ def save_plane_type_frame_data(rows, main_plane_xyxy, counters: dict, cm: ClassM
                 engine_detections.append((xyxy, conf))
     for best_part, part_detections in [(best_wing, wing_detections), (best_engine, engine_detections)]:
         for xyxy, conf in part_detections:
-            if (not best_part or conf > best_part[0][1]) and relative_intersection(main_plane_xyxy, xyxy) >= 0.5:
+            if (not best_part or conf > best_part[0][1]) and relative_intersection(
+                main_plane_xyxy, xyxy
+            ) >= 0.5:
                 best_part.clear()
                 best_part.append((xyxy, conf))
     if best_wing and best_engine:
@@ -85,8 +91,17 @@ class AircraftTypeVoterProd:
     answer: str | None = "not evaluated"
     decided_at: int | None = None
 
-    def feed(self, frame_id: int, rows, cm: ClassMap, *, plane_available: bool, main_plane_xyxy, arrived: bool,
-             departured: bool) -> list:
+    def feed(
+        self,
+        frame_id: int,
+        rows,
+        cm: ClassMap,
+        *,
+        plane_available: bool,
+        main_plane_xyxy,
+        arrived: bool,
+        departured: bool,
+    ) -> list:
         # non-target plane passing by (before arrival): reset the counters after 10 s without the plane
         if main_plane_xyxy is not None and not arrived:
             if plane_available:

@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from statistics import mode
 
+from pf.gm.context_prod import AircraftTypeVoterProd, drop_tiny_planes
 from pf.gm.geometry import (
     FRAME_H,
     FRAME_W,
@@ -159,6 +160,7 @@ class MainAircraftTracker:
     """
 
     min_height: int = 150
+    drop_tiny: bool = False  # production a0157a4 drops candidates < 10 % of the frame area
     tracks: dict = field(default_factory=dict)  # track_id -> {frame_id: xyxy}
     last_box: dict = field(default_factory=dict)  # track_id -> xyxy
     _next_id: int = 1
@@ -171,7 +173,8 @@ class MainAircraftTracker:
             xyxy = list(map(int, xyxy))
             if cls_id == airplane_id and get_hw(xyxy)[0] >= self.min_height:
                 cands.append(xyxy)
-        return merge_overlapping_planes(cands)
+        merged = merge_overlapping_planes(cands)
+        return drop_tiny_planes(merged) if self.drop_tiny else merged
 
     def update(self, frame_id: int, rows, cm: ClassMap) -> list:
         decided = []
@@ -417,10 +420,12 @@ class VideoContextV2:
 
     cm: ClassMap
     fps: int = 8
+    variant: str = "prod"  # 'prod' = commit a0157a4 behaviour (default), 'master' = 13a4ddc
     layout: PartsLayout = None
     aircraft: MainAircraftTracker = None
     entity: EntityVoter = field(default_factory=EntityVoter)
     aircraft_type: AircraftTypeVoter = field(default_factory=AircraftTypeVoter)
+    aircraft_type_prod: AircraftTypeVoterProd = None
     camera: CameraVoter = field(default_factory=CameraVoter)
     decisions: list = field(default_factory=list)  # [(frame_id, field)]
 
@@ -428,7 +433,9 @@ class VideoContextV2:
         if self.layout is None:
             self.layout = PartsLayout(fps=self.fps)
         if self.aircraft is None:
-            self.aircraft = MainAircraftTracker()
+            self.aircraft = MainAircraftTracker(drop_tiny=(self.variant == "prod"))
+        if self.aircraft_type_prod is None:
+            self.aircraft_type_prod = AircraftTypeVoterProd(fps=self.fps)
 
     def update(
         self,
@@ -439,24 +446,51 @@ class VideoContextV2:
         entity_class_ids=None,
         is_cone=None,
         arrived: bool = False,
+        departured: bool = False,
     ) -> list:
-        """`detections` = first-run rows. `arrived` = T_arr already happened (from the stage detector / tracker)."""
+        """`detections` = first-run rows. `arrived` / `departured` = T_arr / T_dep already happened (tracker / stage detector)."""
         decided = []
         decided += self.layout.update(frame_id, detections, self.cm)
         decided += self.aircraft.update(frame_id, detections, self.cm)
         decided += self.entity.feed(frame_id, entity_class_ids)
-        if arrived:
+        if self.variant == "prod":
+            tid = self.aircraft.longest()
+            plane_available = tid is not None and frame_id in self.aircraft.tracks[tid]
+            main_xyxy = self.aircraft.last_box.get(tid) if tid is not None else None
+            decided += self.aircraft_type_prod.feed(
+                frame_id,
+                detections,
+                self.cm,
+                plane_available=plane_available,
+                main_plane_xyxy=main_xyxy,
+                arrived=arrived,
+                departured=departured,
+            )
+        elif arrived:
             decided += self.aircraft_type.feed(frame_id, detections, self.cm)
-            if is_cone is not None:
-                self.camera.feed(frame_id, is_cone)
+        if arrived and is_cone is not None:
+            self.camera.feed(frame_id, is_cone)
+        for name in decided:
+            self.decisions.append((frame_id, name))
+        return decided
+
+    def finalize(self, frame_id: int) -> list:
+        """End of event: decisions v1 takes after EOF (camera majority, production aircraft type)."""
+        decided = list(self.camera.decide(frame_id))
+        if self.variant == "prod":
+            decided += self.aircraft_type_prod.finalize(frame_id)
         for name in decided:
             self.decisions.append((frame_id, name))
         return decided
 
     def snapshot(self) -> dict:
+        atype = self.aircraft_type_prod.answer if self.variant == "prod" else self.aircraft_type.answer
+        if atype == "not evaluated":
+            atype = None
         s = {
             "entity": self.entity.entity,
-            "aircraft_type": self.aircraft_type.answer,
+            "aircraft_type": atype,
+            "variant": self.variant,
             "camera_type_cone": self.camera.camera_type_cone,
             "camera_running_majority": self.camera.majority(),
             "confidence_camera": self.camera.confidence(),

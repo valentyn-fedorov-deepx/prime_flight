@@ -20,11 +20,11 @@ FRAME_W, FRAME_H = 1920, 1080
 def correct_coords(xyxy, img_height: int = FRAME_H, img_width: int = FRAME_W) -> list:
     """Exact port of `general_model/main.py:153-168`: clamp a box into the frame."""
     new_xyxy = [i for i in xyxy]
-    new_xyxy[0] = xyxy[0] if xyxy[0] > 0 else 0
-    new_xyxy[1] = xyxy[1] if xyxy[1] > 0 else 0
-    new_xyxy[2] = xyxy[2] if xyxy[2] < img_width else img_width
-    new_xyxy[3] = xyxy[3] if xyxy[3] < img_height else img_height
-    new_xyxy = [i if i >= 0 else 0 for i in new_xyxy]
+    new_xyxy[0] = max(0, xyxy[0])
+    new_xyxy[1] = max(0, xyxy[1])
+    new_xyxy[2] = min(img_width, xyxy[2])
+    new_xyxy[3] = min(img_height, xyxy[3])
+    new_xyxy = [max(i, 0) for i in new_xyxy]
     return new_xyxy
 
 
