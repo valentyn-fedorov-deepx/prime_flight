@@ -16,6 +16,10 @@ Modules whose environment is not ready are listed in the orchestrator control fi
 
 from __future__ import annotations
 
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 PIXEL_FREE = {
     "3-stop-brake-check",
     "all-cargo-bin-doors-opened-and-verified",
@@ -44,7 +48,8 @@ DEVICE = {
 }
 
 PREPEND_PATH = {
-    "pre-departure-walk-around-completed": ["out/envs/norfair031"],  # norfair==0.3.1 API (hit_inertia_min)
+    # pre-departure: the default branch needed out/envs/norfair031 (norfair 0.3.1 API); the calibrated tdv_cone branch runs
+    # in the np1_walkaround venv with its own norfair 2.2 (LAUNCHER below)
     # mmpose 1.x API: out/envs/mmpose1 (mmpose 1.3.1, mmcv-lite 2.1.0, mmengine 0.10.4, mmdet 3.2.0; README inside)
     "hand-signals": ["out/envs/mmpose1"],
     "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": ["out/envs/mmpose1"],
@@ -72,7 +77,14 @@ ENV = {
 }
 
 # hair-policy: CPython 3.8 venv in WSL Ubuntu-24.04 (scripts/testset/wsl_run_module.sh picks it from the Pyarmor header)
-LAUNCHER = {"hair-policy": ["wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "/mnt/g/prime_flight/scripts/testset/wsl_run_module.sh"]}
+_NP1_WALKAROUND = os.path.join(ROOT, "out", "envs", "np1_walkaround", "Scripts", "python.exe")
+LAUNCHER = {
+    "hair-policy": ["wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "/mnt/g/prime_flight/scripts/testset/wsl_run_module.sh"],
+    # walk-around tdv_cone branches: NumPy 1.26 + TensorFlow 2.15 venv (out/envs/np1_walkaround/README.md); pre-departure
+    # loads its Keras-3 archive through the branch's own torch shim (single_run.py hook)
+    "post-arrival-aircraft-walk-around-inspection-completed-accurately": [_NP1_WALKAROUND, "scripts/run_module.py"],
+    "pre-departure-walk-around-completed": [_NP1_WALKAROUND, "scripts/run_module.py", "--keras-torch-shim"],
+}
 
 JOB_CLASS = {"hair-policy": "mod_cpu"}  # ~0.9 CPU-s per frame on 2 threads
 
@@ -91,6 +103,11 @@ MODULE_DIR = {
     # 8/8 events = New output (default branch 5/8); needs out/envs/sklearn161 + out/envs/mmpose1
     "lead-marshaller-and-wing-walkers-in-position":
         "external/_branches/lead-marshaller-and-wing-walkers-in-position@pre_arrival_departure",
+    # event 641a25728471f56e528714e9: tdv_cone Fail = New output (default branch Pass); the deployed GS-1737 port
+    "post-arrival-aircraft-walk-around-inspection-completed-accurately":
+        "external/_branches/post-arrival-aircraft-walk-around-inspection-completed-accurately@tdv_cone",
+    # tdv_cone Fail = New output on event 1 (with cv_common/modules overlaid from the archive @2759daf)
+    "pre-departure-walk-around-completed": "external/_branches/pre-departure-walk-around-completed@tdv_cone",
 }
 
 

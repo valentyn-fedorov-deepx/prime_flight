@@ -44,6 +44,10 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
     One difference: the shim's `<weights>_torch.pth` cache is not written next to the weights (the checkout stays
     read-only; a cache would hold the same tensors). Every load is recorded in the JSON as `keras_torch_shim_loads`.
     Needs a TensorFlow that imports: the `out/envs/np1_walkaround` venv (README inside).
+  * Per-run module cache (automatic): modules whose `detect()` takes `cache_folder` (the walk-around tdv_cone branches keep
+    per-video artefacts in `./data/<video>/` inside the checkout and skip the work when they already exist) get a folder of
+    their own next to the result JSON (`<out>.cache/`); one left by an earlier attempt is renamed aside first. Every run
+    computes from scratch and the control and v2 runs of a video never share results. Recorded as `cache_folder`.
 """
 
 from __future__ import annotations
@@ -291,6 +295,13 @@ def main() -> int:
         if "airplane_type" in inspect.signature(prod.detect).parameters:
             kwargs["airplane_type"] = a.airplane_type
             result["airplane_type_passed"] = True
+        if "cache_folder" in inspect.signature(prod.detect).parameters:
+            cache = os.path.splitext(out)[0] + ".cache"
+            if os.path.exists(cache):
+                os.replace(cache, f"{cache}.old-{time.strftime('%Y%m%d-%H%M%S')}")
+            os.makedirs(cache)
+            kwargs["cache_folder"] = cache
+            result["cache_folder"] = cache
         with torch.no_grad():
             ret = prod.detect(**kwargs)
         values = list(ret) if isinstance(ret, (tuple, list)) else [ret]
