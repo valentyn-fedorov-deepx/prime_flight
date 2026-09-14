@@ -21,7 +21,8 @@
       "Bash(wc*)"
     ],
     "deny": [
-      "Bash(git push*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
       "Bash(git reset --hard*)",
       "Bash(git checkout -- *)",
       "Bash(rm -rf*)",

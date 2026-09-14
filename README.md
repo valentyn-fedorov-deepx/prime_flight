@@ -3,8 +3,8 @@
 GitHub: https://github.com/valentyn-fedorov-deepx/prime_flight (private). Прод-код DeepX лишається у GitLab `dxgat/*`; тут — воркспейс, документація, борд і новий пакет `pf/`.
 
 Один воркспейс для всієї документації, рольових агентів і беклогу проєкту Prime Flight (DXGAT → real-time).
-Код не тут: він у `G:\deepx_gat\*` (клони GitLab `dxgat/*`) і на стенді `G:\gat-streaming`; обидві теки підключені
-через `.claude/settings.json → additionalDirectories`, тож агенти читають їх без додаткових дозволів.
+Прод-код — read-only клони GitLab `dxgat/*` у `external/` (gitignored) і стенд `G:\gat-streaming`; дані для замірів — `G:\gat_stages`
+(обидві зовнішні теки підключені через `.claude/settings.json → additionalDirectories`). Новий код — пакет `pf/`.
 
 ## Як користуватись
 
