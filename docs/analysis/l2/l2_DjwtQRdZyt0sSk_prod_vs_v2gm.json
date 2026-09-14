@@ -1,0 +1,329 @@
+{
+ "video": "DjwtQRdZyt0sSk.mp4",
+ "inputs": {
+  "prod": "production GM second-run + production tracker (ATL-C5)",
+  "v2gm": "GM v2 v1-compat second-run (fixed ORT options, parallel heads) + production tracker"
+ },
+ "modules": [
+  {
+   "module": "3-stop-brake-check",
+   "prod_status": "Fail",
+   "v2gm_status": "Fail",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [
+    {
+     "Status": "Fail",
+     "Start": 6349,
+     "End": 6349
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Fail",
+     "Start": 6349,
+     "End": 6349
+    }
+   ],
+   "prod_report": [
+    "Beltloader 45 failed on 00:13:14. "
+   ],
+   "v2gm_report": [
+    "Beltloader 45 failed on 00:13:14. "
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin 86731e4cc4dfbb296ce4e41431a68f1468db4427 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "prod_status": "Pass",
+   "v2gm_status": "Pass",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": false,
+   "report_equal": true,
+   "prod_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": "4259",
+     "End": "10085"
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": "4259",
+     "End": "10086"
+    }
+   ],
+   "prod_report": [
+    "There are open front cargo doors on video for 480 frames. (00:08:52 - 00:21:01)"
+   ],
+   "v2gm_report": [
+    "There are open front cargo doors on video for 480 frames. (00:08:52 - 00:21:01)"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "beltloader-chocks",
+   "prod_status": "Pass",
+   "v2gm_status": "Pass",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": false,
+   "prod_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": 9888,
+     "End": 22775
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": 9888,
+     "End": 22775
+    }
+   ],
+   "prod_report": [
+    "All of the beltloaders were confirmed chocked. Beltloader 6 was chocked (00:32:13 - 00:32:33). "
+   ],
+   "v2gm_report": [
+    "All of the beltloaders were confirmed chocked. Beltloader 6 was chocked (00:32:14 - 00:32:34). "
+   ],
+   "error": null,
+   "cv_common_substituted": null
+  },
+  {
+   "module": "bl_rear_cone",
+   "prod_status": "Pass",
+   "v2gm_status": "Pass",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": 9888,
+     "End": 22775
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": 9888,
+     "End": 22775
+    }
+   ],
+   "prod_report": [
+    "All of the beltloaders were confirmed coned. Beltloader 6 was coned (00:20:38 - 00:20:58). "
+   ],
+   "v2gm_report": [
+    "All of the beltloaders were confirmed coned. Beltloader 6 was coned (00:20:38 - 00:20:58). "
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin 86731e4cc4dfbb296ce4e41431a68f1468db4427 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "prod_status": "Fail",
+   "v2gm_status": "Fail",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [
+    {
+     "Status": "Fail",
+     "Start": 0,
+     "End": 3669
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Fail",
+     "Start": 0,
+     "End": 3669
+    }
+   ],
+   "prod_report": [
+    "There are not enough cones and chocks. (Max detected: cones: 4, chocks: 4, must be cones >= 7 and chocks >= 6). (00:00:00 - 00:07:39)"
+   ],
+   "v2gm_report": [
+    "There are not enough cones and chocks. (Max detected: cones: 4, chocks: 4, must be cones >= 7 and chocks >= 6). (00:00:00 - 00:07:39)"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "prod_status": "Not observed",
+   "v2gm_status": "Not observed",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [],
+   "v2gm_smart_timeline": [],
+   "prod_report": [
+    "There is no departure stage. The GSE can still drive up to the airplane"
+   ],
+   "v2gm_report": [
+    "There is no departure stage. The GSE can still drive up to the airplane"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin 33c188d0e4c6ecd66948cbcfe3bf417f9e77e1c4 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "prod_status": "Fail",
+   "v2gm_status": "Fail",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": false,
+   "prod_smart_timeline": [
+    {
+     "Status": "Fail",
+     "Start": "3669",
+     "End": "37530"
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Fail",
+     "Start": "3669",
+     "End": "37530"
+    }
+   ],
+   "prod_report": [
+    "Not every type of cones was visible for enough time (100 frames). (Time appeared - one wing cone: 144 frames, two engine cones: 1 frames, ). Time : 00:07:39 : 01:18:11"
+   ],
+   "v2gm_report": [
+    "Not every type of cones was visible for enough time (100 frames). (Time appeared - one wing cone: 143 frames, two engine cones: 1 frames, ). Time : 00:07:39 : 01:18:11"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "prod_status": "Pass",
+   "v2gm_status": "Pass",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": "1",
+     "End": "3669"
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": "1",
+     "End": "3669"
+    }
+   ],
+   "prod_report": [
+    "Three or more workers were present for enough time during prearrival stage.                         Time 00:00:00 -- 00:07:39"
+   ],
+   "v2gm_report": [
+    "Three or more workers were present for enough time during prearrival stage.                         Time 00:00:00 -- 00:07:39"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "prod_status": null,
+   "v2gm_status": null,
+   "comparable": false,
+   "status_equal": false,
+   "smart_timeline_equal": false,
+   "report_equal": false,
+   "prod_smart_timeline": null,
+   "v2gm_smart_timeline": null,
+   "prod_report": null,
+   "v2gm_report": null,
+   "error": "TypeError: only 0-dimensional arrays can be converted to Python scalars",
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "prod_status": "Not observed",
+   "v2gm_status": "Not observed",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [],
+   "v2gm_smart_timeline": [],
+   "prod_report": [
+    "Not enough moving frames of airplane were detected"
+   ],
+   "v2gm_report": [
+    "Not enough moving frames of airplane were detected"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "prod_status": "Pass",
+   "v2gm_status": "Pass",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": 6427,
+     "End": 37530
+    }
+   ],
+   "v2gm_smart_timeline": [
+    {
+     "Status": "Pass",
+     "Start": 6427,
+     "End": 37530
+    }
+   ],
+   "prod_report": [
+    "There is no transport on the pushback pathway on the departure stage. (00:13:23 - 01:18:11)"
+   ],
+   "v2gm_report": [
+    "There is no transport on the pushback pathway on the departure stage. (00:13:23 - 01:18:11)"
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  },
+  {
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "prod_status": "Not observed",
+   "v2gm_status": "Not observed",
+   "comparable": true,
+   "status_equal": true,
+   "smart_timeline_equal": true,
+   "report_equal": true,
+   "prod_smart_timeline": [],
+   "v2gm_smart_timeline": [],
+   "prod_report": [
+    "Departure stage was not captured."
+   ],
+   "v2gm_report": [
+    "Departure stage was not captured."
+   ],
+   "error": null,
+   "cv_common_substituted": "cv_common pin dd5b5547c9f392de1f7ecc4a6f34006ce4aca972 is not in the local archive; substituted with ac5098d2 for the L2 A/B comparison (same code on both sides)."
+  }
+ ]
+}

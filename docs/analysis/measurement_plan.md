@@ -59,8 +59,9 @@ only where fail labels exist.
 2. ~~Port `runner.py`~~ done: `scripts/run_module.py` (path `external/<repo>`, `--no-video` meta worker). First L2 result
    (14.09, `DjwtQRdZyt0sSk`, `beltloader-chocks` unchanged, cv_common pin ac5098d2): production inferences → **Pass**,
    v2-GM second-run file + production tracker file → **Pass**; smart timeline identical `[9888–22775]`; report text shifts
-   by one second (00:32:13 → 00:32:14). Next: the other pixel-free modules (pushback-pathway, bl_rear_cone), then the
-   pixel modules with weights (aircraft-chocks needs effnetb0).
+   by one second (00:32:13 → 00:32:14). Extended the same day to all 12 pixel-free modules (`l2_gate.md`): 11 of 11
+   comparable modules give the same verdict on GM v2 inputs, 9 of 11 identical timelines and reports. Next: Tracker v2
+   inputs, the other ATL-C5 videos, pixel modules.
 3. ~~v1 speed baseline~~ GM: done through the v2 core with the v1 op sequence and options (`gm_speed.md` "baseline");
    tracker: done for both pins on two slices (`tracker_current.md` §8, `tasks/notes/PF-Q1-17.md`); full-turnaround runs
    remain (≈ 1 h per video for the master pin).
