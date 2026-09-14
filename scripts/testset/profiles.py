@@ -25,7 +25,8 @@ PIXEL_FREE = {
     "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
     "cones-placed-in-proper-positions-and-timely",
     "crew-present-10-minutes-prior-to-aircraft-arrival",
-    "lead-marshaller-and-wing-walkers-in-position",
+    # lead-marshaller-and-wing-walkers-in-position: pixel-free on the default branch, but the calibrated
+    # pre_arrival_departure branch runs an mmpose model on frames -> GPU job class
     "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
     "pushback-pathway-confirmed-clear-of-obstacles",
 }
@@ -82,6 +83,9 @@ MODULE_DIR = {
     "all-cargo-bin-doors-opened-and-verified": "external/_branches/all-cargo-bin-doors-opened-and-verified@bl_approach",
     "chocks-and-cones-available-and-staged-for-arrival":
         "external/_branches/chocks-and-cones-available-and-staged-for-arrival@not_observed_logic",
+    # 8/8 events = New output (default branch 5/8); needs out/envs/sklearn161 + out/envs/mmpose1
+    "lead-marshaller-and-wing-walkers-in-position":
+        "external/_branches/lead-marshaller-and-wing-walkers-in-position@pre_arrival_departure",
 }
 
 
