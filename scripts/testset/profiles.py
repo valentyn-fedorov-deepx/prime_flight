@@ -116,6 +116,15 @@ MODULE_DIR = {
     "gse-chocks": "external/_branches/gse-chocks@per_component_improvement",
     # event 641a25728471f56e528714e9: Fail = New output (default Not observed = Previous column)
     "handrails-on-gse-being-used": "external/_branches/handrails-on-gse-being-used@per_component_improvement",
+    # calibration, 5 events: obstruction_hand_signals 5/5 = New output (default 3/5); imports mmpose 1.x (overlay)
+    "wing-walkers-in-proper-position-and-using-approved-wands":
+        "external/_branches/wing-walkers-in-proper-position-and-using-approved-wands@obstruction_hand_signals",
+    # 5/5 ties with the default; the branch carries the production fix ("Fix prod error of not being able to identify
+    # disconnect_frame") and its own weights (DVC)
+    "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed":
+        "external/_branches/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed@new_logic",
+    # steering and aircraft-chocks stay on the default branch: their newer branches tie at 5/5 and 15/15 and are feature
+    # work without production fixes (steering_observability_fix 2026-08-14, towbar-attachment-fallback 2026-09-04)
 }
 
 
