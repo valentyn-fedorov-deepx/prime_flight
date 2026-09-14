@@ -45,6 +45,26 @@ Speed on the RTX 5070 Ti (3 000 frames, batch 1, fp16, three detectors sequentia
 vehicle 32.1 ms inference; end-to-end 77.6 ms/frame = 1.6× real-time at 8 fps. The vehicle head (yolov8m @1088) is the
 largest cost; batching across the three heads / cameras and removing the padding are the first optimizations (ADR-001 §6).
 
+## Measured L1 parity of the v1-compat second-run file (all detector heads, same 3 000 frames)
+
+Compared against the production second-run file with the synthesized rows (2/29/30) ignored — they depend on whole-video
+context that a 3 000-frame prefix does not have — so the comparison covers the GM head plus the chock (25) and vehicle (31)
+heads after the second-run int-truncation:
+
+| metric | all heads | chock head (25) | vehicle head (31) |
+|---|---|---|---|
+| detections prod / v2 | 20 184 / 20 184 | 3 000 / 3 000 | 6 225 / 6 224 |
+| pairs (same class, IoU ≥ 0.5) | 20 158 (99.87 %) | 3 000 (100 %) | 6 220 (99.9 %) |
+| pairs bit-exact | 12 969 (64 %) | 2 294 (76 %) | 4 795 (77 %) |
+| pairs within ±2 px / ±0.02 conf | 20 099 (99.7 %) | 3 000 | 6 209 |
+| frames fully within tolerance | 2 896 / 3 000 = 96.5 % | 100 % | 99.4 % |
+| coord delta px p99 / max | 2 / 18 | 1 / 1 | 2 / 6 |
+| conf delta p99 / max | 0.003 / 0.008 | 0.0005 / 0.003 | 0.002 / 0.005 |
+
+Exact (bitwise) frame parity of the compat file on this prefix: 60.7 % — the rest is the same fp16 noise. Speed for this run
+(three heads + noise estimator, batch 1): decode 3.2 ms, GM 9.8 ms, chocks 16.7 ms, vehicle 30.6 ms inference,
+end-to-end 73.3 ms/frame = 1.7× real-time at 8 fps on the RTX 5070 Ti.
+
 ## Tracker bd43c3c (branch `optimization`, 2026-02-28)
 
 `git diff --stat b5d350c bd43c3c`: tracker.py +115/−?, local_config.yaml +2, weights.dvc changed, `scripts/tracker_clips.py`

@@ -8,7 +8,7 @@ only where fail labels exist.
 
 | Level | Question | Method | Tool | Data |
 |---|---|---|---|---|
-| L1 · GM per-frame output | Does v2 produce the same detections as v1 on the same frames? | per-frame multiset matching of `[x1,y1,x2,y2,conf,class_id]` with rounding (ndigits=1 → 0.1 px / 0.1 conf), matched by `frame_id`, not by position | `pf.eval.compare_gm_ndjson` (exists, has tests) | ATL-C5: `general_model<ID>.mp4.ndjson` (v1) vs the v2 output on `atlc5_videos/<ID>.mp4` |
+| L1 · GM per-frame output | Does v2 produce the same detections as v1 on the same frames? | exact: per-frame multiset matching with rounding (ndigits=1), matched by `frame_id`; tolerant: same-class IoU pairing with ±px / ±conf tolerances and delta percentiles (cross-hardware) | `pf.eval.compare_gm_ndjson`, `compare_gm_ndjson_tolerant` (tests) | ATL-C5: `general_model<ID>.mp4.ndjson` (v1) vs the v2 output on `atlc5_videos/<ID>.mp4` |
 | L1 · tracker per-frame output | Does v2 produce the same `state_dict` on the consumed fields? | per-frame comparison of only the fields **consumed by the modules** (list from `module_consumption.json`), the private `_p0/_st` separately (expected not bitwise-identical) | `pf.eval` (add `compare_tracker_ndjson`, after the `state_dict` contract) | ATL-C5: `trackers<ID>.mp4.ndjson` (v1) vs v2 |
 | L2 · module verdicts | Does the Pass/Fail/NO of any module change if the input is swapped v1 → v2? | run the prod module (as is, without code changes) on the v1 ndjson and on the v2 ndjson of the same video; compare the status + the key time anchors in the report | `gat-streaming/streaming/runner.py` (+ `tools/compare_runs.py`, exit 1 on mismatch) — port into `pf/eval/run_module.py` with a path to `external/<repo>` | ATL-C5 7 videos (both cameras?) → then a balanced sample with fails from the monthly reports (`tools/pick_balanced.py`) |
 | L3 · accuracy against labels | Is v2 no worse than v1 against GT where GT exists? | recall/precision on the checks with enough fails (Main gear chocks 30 fail; BL forward chock 12) | `compare_runs.py --gt` | `gt_by_video.json` from the monthly reports (`tools/parse_gt.py`), needs inferences from the bucket |
@@ -25,8 +25,10 @@ only where fail labels exist.
 
 ## 3. Acceptance criteria for GM v2 / Tracker v2 (proposal, to be agreed with Ihor/Oksana)
 
-1. L1 GM: `frame_parity ≥ 0.99` at ndigits=1 on each of the 7 videos, **or** every discrepancy is explained by a mechanism
-   (different NMS version, fp16, batching) and does not change L2.
+1. L1 GM (measured 14.09 on `DjwtQRdZyt0sSk`, `gm_prod_delta.md`): cross-hardware runs cannot be bitwise-equal, so the
+   criterion is the tolerant metric of `pf.eval.compare_gm_ndjson_tolerant` — pair recall ≥ 99.5 % (same class, IoU ≥ 0.5),
+   ≥ 97 % of frames fully within ±2 px / ±0.02 conf, every unmatched detection near the conf threshold or the frame edge;
+   on the production hardware/runtime bitwise parity (`compare_gm_ndjson`, ndigits=1) is expected and must be reported too.
 2. L1 Tracker: 100 % match on the consumed non-private fields (`arrival_frame`, `departure_frame`, statuses, `_class_name`,
    `_obj_id` identity by IoU) with a tolerance of ±1 frame on events; the number of unique aircraft per video = as in v1 (X1).
 3. L2: 0 verdict changes on ATL-C5 and on the balanced sample; a change "Not observed → verdict" is counted separately and

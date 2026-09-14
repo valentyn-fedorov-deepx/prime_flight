@@ -24,7 +24,7 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from pf.eval.parity import compare_gm_ndjson  # noqa: E402
+from pf.eval.parity import compare_gm_ndjson, compare_gm_ndjson_tolerant  # noqa: E402
 from pf.gm.compat_writer import ndjson_line  # noqa: E402
 from pf.gm.onnx_detector import YoloV8Onnx, YoloV8OnnxConfig  # noqa: E402
 from pf.gm.rows import ClassMap  # noqa: E402
@@ -127,11 +127,14 @@ def main() -> int:
         report["parity_vs_production"] = compare_gm_ndjson(
             a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)).summary()
         report["parity_vs_production"]["ignore_classes"] = ignore
+        report["parity_vs_production_tolerant"] = compare_gm_ndjson_tolerant(
+            a.compare, compat_path, ignore_classes=ignore, only_common_frames=bool(a.max_frames)).summary()
     with open(report_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=1, default=str)
     print(json.dumps({k: report[k] for k in ("number_of_frames", "timings_ms_per_frame", "decided_at")}, indent=1))
     if a.compare:
-        print("parity:", json.dumps(report["parity_vs_production"], indent=1)[:800])
+        print("parity (exact):", json.dumps(report["parity_vs_production"], indent=1)[:600])
+        print("parity (tolerant):", json.dumps(report["parity_vs_production_tolerant"], indent=1)[:1200])
     return 0
 
 

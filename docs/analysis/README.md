@@ -6,7 +6,8 @@ of the prod output on real data, (d) how to measure that module accuracy has not
 
 | Report | Source | Who | Status |
 |---|---|---|---|
-| `gm_current.md` | code of `external/general_model` (master @ 13a4ddc = review pin) + `external/db_worker` | gm-tracker-engineer | **done → Yurii's review** (375 lines; note `tasks/notes/PF-Q1-12.md`) |
+| `gm_current.md` | code of `external/general_model` (master @ 13a4ddc = review pin) + `external/db_worker` | gm-tracker-engineer | **done → Yurii's review** (375 lines; note `tasks/notes/PF-Q1-12.md`). Describes master 13a4ddc; the production commit a0157a4 differs — see `gm_prod_delta.md` |
+| `gm_prod_delta.md` | bucket object names (`general_modela0157a4`, `trackersbd43c3c`) + `git diff` master→production; worktrees `external/general_model_prod`, `external/cv_trackers_prod` | Valentyn (gm-tracker-engineer) | **done** — production GM/tracker commits ≠ the review pin; BGR→RGB was the decisive difference; GM v2 head parity 99.8 % pairs |
 | `module_consumption.md` + `.json` | code of the 27 modules `external/<repo>` (default branches, fresh clones) + `db_worker/ML_worker.py` | module-porter | **done → review** (note `tasks/notes/PF-Q1-14.md`; decision → `decisions/ADR-001`) |
 | `contract_observed.md` + `ndjson_observed.json` + `scripts/inspect_ndjson.py` | real prod ndjson `G:\gat_stages\atlc5_inferences` (7 videos, 5.8 GB) | qa-parity | in-progress |
 | `tracker_current.md` | code of `cv_trackers` + `cv_common` — **no access** (ssh key not in GitLab, https "not found", local clones are gone) | gm-tracker-engineer | in-progress (sources received 14.09 as an archive: `external/cv_trackers` @ b5d350c, `external/cv_common` @ ac5098d) |
