@@ -10,7 +10,7 @@ of the prod output on real data, (d) how to measure that module accuracy has not
 | `gm_prod_delta.md` | bucket object names (`general_modela0157a4`, `trackersbd43c3c`) + `git diff` master→production; worktrees `external/general_model_prod`, `external/cv_trackers_prod` | Valentyn (gm-tracker-engineer) | **done** — production GM/tracker commits ≠ the review pin; BGR→RGB was the decisive difference; GM v2 head parity 99.8 % pairs |
 | `module_consumption.md` + `.json` | code of the 27 modules `external/<repo>` (default branches, fresh clones) + `db_worker/ML_worker.py` | module-porter | **done → review** (note `tasks/notes/PF-Q1-14.md`; decision → `decisions/ADR-001`) |
 | `contract_observed.md` + `ndjson_observed.json` + `scripts/inspect_ndjson.py` | real prod ndjson `G:\gat_stages\atlc5_inferences` (7 videos, 5.8 GB) | qa-parity | in-progress |
-| `tracker_current.md` | code of `cv_trackers` + `cv_common` — **no access** (ssh key not in GitLab, https "not found", local clones are gone) | gm-tracker-engineer | in-progress (sources received 14.09 as an archive: `external/cv_trackers` @ b5d350c, `external/cv_common` @ ac5098d) |
+| `tracker_current.md` | code of `cv_trackers` + `cv_common` — **no access** (ssh key not in GitLab, https "not found", local clones are gone) | gm-tracker-engineer | **done → review** (389 lines; production bd43c3c covered in §12; note `tasks/notes/PF-Q1-13.md`) |
 | `measurement_plan.md` | baseline: speed (ms/frame per component) + module accuracy (parity of v1↔v2 verdicts on the same videos, fail samples) | Valentyn / qa-parity | draft v1 |
 
 ## Data for measurements available locally

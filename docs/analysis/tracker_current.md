@@ -5,6 +5,7 @@ Task PF-Q1-13 (basis for PF-Q1-17 Tracker v2 and PF-Q1-03 stage detector, per AD
 `external/cv_common` (`tracked_object.py`, `transport.py`, `track.py`, `common.py`, `global_config.yaml`, `utils/datasets.py`),
 `external/db_worker` (`ML_worker.py`, `model_starter.py`, `send_report.py`). Empirical rules of `contract_observed.md` §3–5 are
 confirmed/refuted from code in §4 below. All paths are relative to `G:\prime_flight\external\` unless stated otherwise.
+**Production ran `bd43c3c` (branch `optimization`), not master** — §12 lists the delta and which sections apply to both.
 
 **TL;DR.** The tracker is a per-video, pixel-reading batch job: three DeepSORT instances (beltloader, gse, person) on top of the GM
 second-pass ndjson, one `Airplane` object fed by the class-2 rows, an optical-flow/MobileSAM motion state machine per object
@@ -328,3 +329,61 @@ Nothing above depends on chunking; everything depends on decoded pixels, so the 
 7. Whether the EOF ordering hazard (§6) has ever fired in prod (needs a video ending in a pre-arrival stop).
 8. `cv_trackers` branches `loaders_track_fix` (`bcfa684`: tentative BL accumulation, square filter removed) and `loader_stops_fix`
    (`8c237c7`: MOVING as BL initial status) change BL semantics relative to master — which one prod actually deploys.
+9. The exact `cv_common` commit inside the production image: `bd43c3c` still pins `ac5098d` but cannot run on it (§12) — the
+   `tracker_optimization` commit it was built with (before `2759daf`, 2026-05-15) is absent from the archive.
+
+## 12. Production delta (b5d350c → bd43c3c)
+
+Production commit `bd43c3c` (2026-02-28, "Edit requirements.txt", `origin/optimization`; worktree `external/cv_trackers_prod`, read-only)
+vs the review pin `b5d350c` (2025-08-08, master). `git diff --numstat b5d350c bd43c3c`: `.gitignore` +4/−0, `local_config.yaml` +2/−0,
+`requirements.txt` +6/−1, `scripts/tracker_clips.py` +797/−0 (new), `tracker.py` **+79/−36**, `weights.dvc` +3/−3 — 6 files, 891/40.
+`local_utils/bl_utils.py`, `deep_sort_pytorch/`, `model_starter.py`, `process_videos.sh`, `Dockerfile`, `.gitmodules` are byte-identical;
+`ls-tree bd43c3c` still pins `cv_common ac5098d` and `db_worker 5a4aa83`. Production lines below cite `cv_trackers_prod/...`.
+
+1. **Segmentation backend: MobileSAM → two Ultralytics YOLO-seg models.** `mobile_sam` import and predictor commented out
+   (`cv_trackers_prod/tracker.py:27, 120-130`), `from ultralytics import YOLO` (`:30`), `plane_segmentor = YOLO("weights/yolo11s-seg_plane.pt")`
+   and `bl_gse_segmentor = YOLO("weights/yolo26s_seg_bl_gse_tr10_noalb.pt")` (`:133-134`, **cwd-relative, not `weights_dir`**),
+   `yolo_class_mapping = {'beltloader': [0], 'gse': [1]}` (`:136`). Every `update_params` call now passes `frame_number`, the segmentor and
+   (vehicles) `yolo_idx=` (`:339-341, 386-387, 420-421, 522-523`). **This signature does not exist in `cv_common@ac5098d`** — there `Vehicle`
+   inherits `update_params(xyxy, prev_im0s, im0s, predictor, bboxes_to_remove=None, is_noised=False)` (`cv_common/tracked_object.py:393`), so
+   `cv_trackers_prod/tracker.py:386-387` would raise `TypeError` (two values for `bboxes_to_remove`). The matching code is the
+   `tracker_optimization` tip `2759daf`: `Vehicle.update_params(..., frame_id, predictor, ..., yolo_idx=None)` (`transport.py@2759daf:198-199`),
+   `Airplane.update_params(..., invoker=None)` (`:113-115`), `tracking_params['model_type'] = 'yolo_seg'` forced in both constructors (`:45, 173`),
+   `ObjectSegmenter.segment_object(image, predictor, xyxy, frame_number, invoker, yolo_idx)` (`tracked_object.py@2759daf:183-238`). Hence the
+   production image contained a `tracker_optimization`-line `cv_common` newer than the pin (`Dockerfile:11 COPY . .` ships the checked-out
+   submodule; `cv_common/README.md:6` recommends `git submodule update --remote`). Consequences visible in code:
+   - `to_state_dict`/`from_state_dict` bodies are **byte-identical** between `ac5098d` and `2759daf` (diffed) → 39/34/0 keys, same order; the
+     coordinator's "ac5098d is the right cv_common" holds for the **contract**, not for the runtime path.
+   - YOLO-seg path (`tracked_object.py@2759daf:200-238`): one inference per class name per frame, cached in the class-level
+     `Classwise_buffer_mask[invoker.__class__.__name__] = [frame_number, results]` (`:176, 206-213`); conf 0.01 for `Vehicle`, 0.1 for `Airplane`
+     (`:204`); mask = the instance whose box has the best IoU with the track box, resized to the frame and clipped to the box (`:218-236`), no
+     `getLargestCC`, `_segm_points` no longer used as prompts (still generated and serialised, `transport.py@2759daf:58-79`). **Cache-key
+     collision**: BL and GSE share the key `'Vehicle'` but request different `classes=yolo_idx` (`[0]` vs `[1]`); when a BL and a GSE
+     (re-)initialise keypoints on the same frame, the GSE reuses the beltloader-class results → no matching instance → zero mask → no FAST
+     keypoints → its status is frozen until the next re-init (BL is processed first, `tracker.py` order).
+   - A bad box no longer kills the job: `fix_incorrect_bbox` repairs it (`common.py@2759daf:497-515`, `tracked_object.py@2759daf:441-444`).
+2. **Noise gate throttled.** `estimate_sigma_interval: 2` (`cv_trackers_prod/local_config.yaml:14`) → `EST_SGM_DELAY = 2·fps = 16`
+   (`tracker.py:155`); sigma is estimated on frames with `(frame_number − 1) % 16 == 0` when any object is present (`:299-304`) and the cached
+   value gates TV denoising for the next 16 frames (`:306-323`); the post-denoise estimate is removed (`:320`). Master evaluated the gate on
+   every frame (1–3 full-frame estimates), so denoising decisions differ in the 16-frame granularity — a behavioural, not schema, change.
+3. **Weights.** `weights.dvc`: dir `e30ba4ea…` (2 files, 86 835 124 B) → `1a3e876f…` (4 files, 130 795 072 B): +2 files = the two YOLO-seg
+   checkpoints named at `tracker.py:133-134` (+44 MB); the previous two (`scripted_ckpt.t7`, `mobile_sam.pt`) are presumably kept —
+   `mobile_sam.pt` is dead weight since `mobile-sam` is commented out of `requirements.txt:9`. `.gitignore` adds `*venv*`, `runs*`,
+   `yolo*.pt` (`.gitignore:6-8`). `requirements.txt` adds `torch==2.5.1`, `torchvision==0.20.1`, `ultralytics==8.4.9`, `opencv-python`,
+   `pathspec==0.11.1` (`:3-4, 12, 18-19`).
+4. **`scripts/tracker_clips.py` (797 lines, new)** — a copy of `detect()` for developer experiments on selected clips: `--timestamps`
+   `'[["00:01:30","00:02:45"], ...]'` parsed with `ast.literal_eval` into frame intervals (`scripts/tracker_clips.py:236-254`), frames outside
+   the intervals are skipped and processing stops after the last one (`:280-290`), FPS is reported over processed frames (`:758`), optional
+   scalene profiling (`:12, 790, 797`). It imports both MobileSAM and YOLO (`:28, 31`) and hard-codes an absolute weight path
+   (`/home/oleksii.shabo/repositories/cv_trackers/weights/…`, `:221`). Not a production entry point (`db_worker/model_starter.py:161` imports
+   `tracker`), cannot run in the prod image (no `mobile_sam`), and skipping frames deliberately breaks X1/X2 — its outputs are not comparable
+   to full runs.
+5. **What of §§2–6 applies to both master and production.** §1 (job model, I/O, report), §2 (DeepSORT configs, ids, re-association,
+   envelope, `data.bl_type`), §3 (key sets, order, types, `from_state_dict` rules), §5 (BL semantics) and §6 (buffers, EOF hazard, frame
+   numbering, non-causal elements) describe both — the diff touches none of that code. §4 applies to both for the state machine
+   (`analyze_movement` unchanged) and the airplane counters (`_update_stage_status` unchanged at `transport.py@2759daf:81`), so **arrival /
+   departure / stop semantics and the `arrival_frame` rewrite are unchanged in production**; master-only in §4: the `ValueError` on a bad
+   box and the SAM-prompt role of `_segm_points`. §8 item 1 (SAM) is master-only — production runs at most one YOLO-seg inference per class
+   name per frame; §8 item 2 is 16× cheaper in production. §9: production additionally reads `estimate_sigma_interval` and the two
+   cwd-relative weight paths. **The `state_dict` key set did not change** (ATL-C5's 39/34/0 is consistent with either build); `_p0`/`_st`
+   values differ (different masks → different keypoints), so parity against ATL-C5 must be run with the production segmentation backend.

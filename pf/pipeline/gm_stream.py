@@ -131,6 +131,7 @@ class GmStream:
             "camera_type": snap.get("camera_type_cone"),
             "parts_layout": snap.get("main_nose") or snap.get("main_front_wheel"),
             "first_aircraft_seen": snap.get("frame_of_beginning"),
+            "first_aircraft_track": snap.get("first_aircraft_track"),
         }.get(name)
 
     # ---------------------------------------------------------------- end of event

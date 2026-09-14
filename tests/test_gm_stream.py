@@ -88,8 +88,13 @@ def test_decisions_carry_frame_ids_and_close_freezes_camera():
     snap = gs.close()
     closing = {e.name: e.frame_id for e in gs.events if e.frame_id == 399}
     assert snap["camera_type_cone"] is True and closing["camera_type"] == 399
-    assert "aircraft_type" in closing and snap["variant"] == "prod"   # production rule decides at end of video
-    assert snap["mode_plane_height"] == 680 and snap["frame_of_beginning"] == 10
+    assert "aircraft_type" in closing and snap["variant"] == "prod"  # production rule decides at end of video
+    # production tracker (norfair 0.2.0): the track is reported 9 frames after the first sighting at frame 10
+    assert (
+        snap["mode_plane_height"] == 680
+        and snap["frame_of_beginning"] == 18
+        and snap["first_aircraft_track"] == 18
+    )
 
 
 def test_v1_compat_file_matches_direct_second_run(tmp_path):

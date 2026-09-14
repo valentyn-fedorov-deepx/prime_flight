@@ -28,6 +28,7 @@ from pf.gm.geometry import (
     overlay_ratio,
     relative_intersection,
 )
+from pf.gm.plane_tracker import NorfairPlaneTracker
 from pf.gm.rows import ClassMap
 
 # ---------------------------------------------------------------- parts layout (wings / nose / front wheel)
@@ -433,7 +434,7 @@ class VideoContextV2:
         if self.layout is None:
             self.layout = PartsLayout(fps=self.fps)
         if self.aircraft is None:
-            self.aircraft = MainAircraftTracker(drop_tiny=(self.variant == "prod"))
+            self.aircraft = NorfairPlaneTracker() if self.variant == "prod" else MainAircraftTracker()
         if self.aircraft_type_prod is None:
             self.aircraft_type_prod = AircraftTypeVoterProd(fps=self.fps)
 

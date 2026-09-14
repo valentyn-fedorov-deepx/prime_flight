@@ -72,7 +72,7 @@ PRE_ARRIVAL ──T_arr (tracker: 4 s stop)──► ARRIVAL/POST-ARRIVAL ──
 |---|---|
 | decode | 2.90 |
 | GM detection | 28.29 |
-| tracker | 0.11 |
+| tracker | 0.11 (stand placeholder: a hard-coded replay constant, `simulate.py:305`; the real cv_trackers cost — optical flow on ≤ 250 points + segmentation — is not measured yet, PF-Q1-13 §8) |
 | module logic (simplified) | 0.03 |
 
 Real-time comes down to the detector and its plumbing (3.95× real-time on a full turnaround; short tests overestimate).
