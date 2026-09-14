@@ -108,6 +108,14 @@ MODULE_DIR = {
         "external/_branches/post-arrival-aircraft-walk-around-inspection-completed-accurately@tdv_cone",
     # tdv_cone Fail = New output on event 1 (with cv_common/modules overlaid from the archive @2759daf)
     "pre-departure-walk-around-completed": "external/_branches/pre-departure-walk-around-completed@tdv_cone",
+    # calibration, first 5 events: green_cone_median 4/5 = New output (default 3/5); needs cv_common/modules (overlay)
+    "pre-arrival-safety-huddle": "external/_branches/pre-arrival-safety-huddle@green_cone_median",
+    # 5/5 ties with the default; the same pre-arrival absence logic whose branches reproduce New output elsewhere
+    "fod-walk-completed": "external/_branches/fod-walk-completed@dev",
+    # 5/5 ties with the default; per_component_improvement is the deployed line (handrails' reproduces New output)
+    "gse-chocks": "external/_branches/gse-chocks@per_component_improvement",
+    # event 641a25728471f56e528714e9: Fail = New output (default Not observed = Previous column)
+    "handrails-on-gse-being-used": "external/_branches/handrails-on-gse-being-used@per_component_improvement",
 }
 
 
