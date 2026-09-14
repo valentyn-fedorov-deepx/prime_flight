@@ -47,6 +47,9 @@ class YoloV8OnnxConfig:
     iou_thres: float = 0.7
     device_type: str = "cuda"
     device_id: int = 0
+    # production GM (commit a0157a4, deployment_v_py3_10) converts BGR→RGB before normalisation
+    # (`scripts/new_model.py:308-309`); the reviewed master pin (13a4ddc) fed BGR. Default = production.
+    bgr_to_rgb: bool = True
     providers: list = field(
         default_factory=lambda: [
             (
@@ -101,9 +104,11 @@ class YoloV8Onnx:
         return t.from_numpy(image_bgr_hwc).float().to(self._device).half()
 
     def preprocess(self, image_hwc_half, geom: Letterbox):
-        """Exact op sequence of v1 `preprocess()`: clone, HWC→CHW, /255 in fp16, bilinear resize, constant pad."""
+        """Exact op sequence of v1 `preprocess()`: clone, HWC→CHW, [BGR→RGB in production], /255 in fp16, bilinear resize, constant pad."""
         t = self._torch
         x = image_hwc_half.clone().permute(2, 0, 1)
+        if self.cfg.bgr_to_rgb:
+            x = x[[2, 1, 0], :, :]
         x /= 255.0
         x = t.nn.functional.interpolate(
             x.unsqueeze(0), size=(geom.new_h, geom.new_w), mode="bilinear", align_corners=False
