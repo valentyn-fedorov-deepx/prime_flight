@@ -78,3 +78,10 @@ after the event, the lower bound = the tracker's event latency 4 s / 10 s).
 - Fail-case labels are almost empty for 3 of 4 first-queue checks → we do not declare "delivered" without a measurement on fail videos.
 - Different cv_common pins in the modules → shared components (stage detector, contract) break modules silently.
 - S1 checks are retrospective by their logic → RT without a trigger change gives no prevention.
+- Production code differs from the review pins (GM a0157a4, tracker bd43c3c on the cv_common `tracker_optimization` line), and several
+  production revisions are not accessible (cv_common d74eb096 for GM; 86731e4c, dd5b5547, 33c188d0 for 11 modules) → exact reproduction
+  depends on archives; L2 runs some modules on a substituted revision.
+- The workstation runtime differs from production (numpy 2.x vs 1.24, torch weights-only loading, fp16 kernels on another GPU) → some
+  module checks fail for environment reasons (lead-marshaller) and GM rows are compared with a tolerance, not bit for bit.
+- Streaming cannot reproduce v1's retroactive end-of-video decisions (obstacle rows before the aircraft arrives, the final mode height)
+  → modules that depend on them change behaviour in RT; measured by the L2 gate on streaming outputs (`docs/analysis/streaming_v0.md`).
