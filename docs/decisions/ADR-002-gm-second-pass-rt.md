@@ -47,6 +47,31 @@ In the real-time branch there is no "end of the video", the budget is 125 ms/fra
   56 frames on `DjwtQRdZyt0sSk`), which is exactly what the switch conditions measure.
 - Needs MongoDB access (or another source of production GM reports) before the RT switch.
 
+## Measured 2026-09-15 — buffered single-pass decisions (`--buffered-decisions`)
+
+Implementation: `pf/gm/buffered.py` (`CameraVoteBuffer` as `GmStream.frame_observer`, `decide_camera`,
+`replay_aircraft_type`), `scripts/gm_v2_run.py --buffered-decisions`, `scripts/gm_decide_buffered.py`; tests
+`tests/test_gm_buffered.py`, `tests/test_gm_decide_buffered.py`. Measured on test-set videos (`out/gm_buffered/`), under full
+CPU contention from the test-set run.
+
+- The v1 classifier runs on every 8th frame with a tracked aircraft, from the first aircraft frame, on the detector input of
+  that frame (v1's working frame) — no second decode, no MobileSAM, no image ring buffer: T_ARR only selects votes already
+  stored. `ToTensor` + `Normalize` in numpy are bit-identical to v1's torchvision path.
+- Exact v1 second-pass port vs buffered, 2 full videos: camera identical (cone), probabilities bit-identical on all common
+  frames (1 128 / 1 128 and 1 454 / 1 454); v1-compat first-run and second-run rows byte-identical with and without the flag
+  (also a 4 000-frame slice and 12 replays).
+- 12 cone videos: decision identical to the report-routing camera of the test-set plan, taken 49.1-49.9 s after T_ARR
+  (50 votes × 8 frames); confidence 1.0. Airplane type from the existing voter with the real T_ARR: AIRCRAFT on 10, None on 2.
+- Cost: 0.9-1.6 ms/frame added (numpy transform) against 15-30 ms/frame for the exact second pass on the same machine.
+- `frame_stopped` := Tracker v2 T_ARR is 7.0-7.5 s earlier than v1's value (first stopping frame vs completed stop counter).
+- RT membership: counting votes on the longest GM aircraft track delayed one decision to 262 s; RT should count votes on
+  the aircraft that matches the Tracker v2 airplane box (not implemented).
+
+Switch conditions status: exact-port identity and byte-identical rows — met on the measured videos; wing cameras — open
+(the remaining test-set videos, 21 of them wing cameras, run GM v2 with `--buffered-decisions`); T_ARR vs `frame_stopped`
+table and the L2 gate with T_ARR substituted on the three consuming modules — open; production GM reports (MongoDB) — open;
+latency (~50 s after T_ARR, or 4th-frame / 25-vote sampling ≈ 20 s after re-measurement) — to be agreed with Maksym / Ihor.
+
 ## Open questions
 
 - Which production collection holds the GM report (`camera_type`, `confidence_camera`, `frame_stopped`) per event?

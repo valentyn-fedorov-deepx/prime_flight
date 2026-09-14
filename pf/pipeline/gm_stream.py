@@ -88,6 +88,10 @@ class GmStream:
     )
     events: list = field(default_factory=list)
     _closed: bool = False
+    # Opt-in per-frame hook, called after the context update as observe(frame_id, image, context.aircraft, detector_input),
+    # e.g. pf.gm.buffered.CameraVoteBuffer (ADR-002). None (the default) leaves the per-frame path unchanged.
+    frame_observer: object = None
+    _detector_input: object = field(default=None, repr=False)
 
     def __post_init__(self):
         if self.context is None:
@@ -106,6 +110,8 @@ class GmStream:
         if self.preprocessor is not None and image is not None:
             self.preprocessor.update(frame_id, image)
             image = self.preprocessor.get_preprocessed()
+        if self.frame_observer is not None:
+            self._detector_input = image  # the observer reuses the exact detector input (the heads never write to it)
         return self.detectors.rows(image, self.cm)
 
     def _ingest(
@@ -134,6 +140,9 @@ class GmStream:
             heavy=self.preprocessor.is_heavy() if self.preprocessor is not None else False,
         ):
             self.events.append(GmStreamEvent(frame_id, name, self._decision_value(name)))
+        if self.frame_observer is not None:
+            self.frame_observer.observe(frame_id, image, self.context.aircraft, self._detector_input)
+            self._detector_input = None
         return make_frame(frame_id, rows, [])
 
     def process(self, frame_id: int, image=None, **kw) -> list:

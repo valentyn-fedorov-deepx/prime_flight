@@ -147,8 +147,14 @@ def run_module_impl(a, cfg, cv2, torch, noise_fn, init_s) -> int:
         "ms_per_frame": round(1000 * total / max(frames, 1), 3),
         "components_ms_per_frame": {k: round(1000 * v / max(frames, 1), 3) for k, v in sorted(TIMES.items(), key=lambda kv: -kv[1])},
         "calls": dict(CALLS),
+        "camera_split_ms_per_call": (
+            {"cpu_crop_pil_transforms": round(1000 * sp.camera.prep_s / sp.camera.calls, 2),
+             "gpu_upload_forward_sync": round(1000 * sp.camera.gpu_s / sp.camera.calls, 2)}
+            if getattr(sp.camera, "calls", 0) and hasattr(sp.camera, "prep_s") else None
+        ),
         "all_votes": [bool(v) for v in sp.votes] if a.dump_votes else None,
         "all_probs": [float(x) for x in sp.probs] if a.dump_votes else None,
+        "all_vote_frames": [int(f) for f in sp.vote_frames] if a.dump_votes else None,
     }
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with io.open(a.out, "w", encoding="utf-8") as fh:
@@ -219,7 +225,7 @@ def main() -> int:
     departure_frame = None
     first_plane_frame = None
     plane_frames = 0
-    votes, probs = [], []
+    votes, probs, vote_frames = [], [], []
     frames = 0
     t_decode = t_pre = 0.0
     t0 = time.perf_counter()
@@ -276,6 +282,7 @@ def main() -> int:
             is_cone, p = camera.predict(im0s)
             votes.append(is_cone)
             probs.append(p)
+            vote_frames.append(frame_id)
     torch.cuda.synchronize()
     total = time.perf_counter() - t0
     cap.release()
@@ -303,6 +310,7 @@ def main() -> int:
         "sam_calls": CALLS.get("sam.set_image", 0),
         "all_votes": [bool(v) for v in votes] if a.dump_votes else None,
         "all_probs": [float(x) for x in probs] if a.dump_votes else None,
+        "all_vote_frames": vote_frames if a.dump_votes else None,
         "deviation": "cv_common d74eb096 unavailable: vendored 2759daf Airplane with MobileSAM segmenter",
         "fast_sigma": a.fast_sigma,
         "init_s": round(init_s, 1),

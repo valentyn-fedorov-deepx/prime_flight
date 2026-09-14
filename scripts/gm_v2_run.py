@@ -5,6 +5,11 @@ Outputs in --out-dir:
   general_model<video>-second_run.ndjson   v1-compat second-run file (what the tracker and the 27 modules read)
   gm_v2_report<video>.json                 decisions with decided_at frames, session stats, per-component ms/frame
 
+Opt-in `--buffered-decisions` (ADR-002): the cone/wing classifier runs on every 8th frame with a tracked aircraft inside this
+single pass (on the detector input, no second decode) and the report gains `buffered_votes` and
+`buffered_decisions_cost_ms_per_frame`; `scripts/gm_decide_buffered.py` decides camera_type / frame_stopped / airplane_type
+from them once Tracker v2 has run. The first-run and second-run files are the same with and without the flag.
+
 Parity against a production file:
   python scripts/gm_v2_run.py --video G:/gat_stages/atlc5_videos/<ID>.mp4 --weights-dir <dir> --str2id <json> \
       --out-dir out/ --compare G:/gat_stages/atlc5_inferences/general_model<ID>.mp4.ndjson
@@ -103,6 +108,24 @@ def main() -> int:
         default="",
         help="comma-separated class ids to ignore in --compare (e.g. 2,29,30 for a partial run)",
     )
+    ap.add_argument(
+        "--buffered-decisions",
+        action="store_true",
+        help="ADR-002 opt-in: camera classifier on every 8th frame with a tracked aircraft during this pass; adds "
+        "buffered_votes and buffered_decisions_cost_ms_per_frame to the report (rows unchanged)",
+    )
+    ap.add_argument(
+        "--camera-weights-dir",
+        default=None,
+        help="folder with camera_cls_effnet_b0_october_v1.8.1.pt for --buffered-decisions (default: --weights-dir)",
+    )
+    ap.add_argument(
+        "--camera-transform",
+        default="numpy",
+        choices=["numpy", "torchvision"],
+        help="classifier input for --buffered-decisions: numpy (bit-identical to v1's torchvision transform, one CPU "
+        "thread) or torchvision (v1's code path)",
+    )
     a = ap.parse_args()
 
     cm = ClassMap(load_str2id(a.str2id))
@@ -132,6 +155,17 @@ def main() -> int:
     report_path = os.path.join(a.out_dir, f"gm_v2_report{video_name}.json")
 
     stream = GmStream(cm, event_id=video_name, fps=a.fps, detectors=dets, variant=a.variant)
+    buffer, buffer_init_s = None, 0.0
+    if a.buffered_decisions:
+        from pf.gm.buffered import CameraVoteBuffer
+        from pf.gm.camera import CameraClassifier
+
+        t_buffer = time.perf_counter()
+        buffer = CameraVoteBuffer(
+            CameraClassifier(a.camera_weights_dir or wd, device=a.device, transform=a.camera_transform)
+        )
+        buffer_init_s = time.perf_counter() - t_buffer
+        stream.frame_observer = buffer
     t_decode = 0.0
     t_total0 = time.perf_counter()
     n = 0
@@ -161,6 +195,10 @@ def main() -> int:
     }
     report["timings_ms_per_frame"]["runner"] = dets.timings()
     report["events"] = [vars(e) for e in stream.events]
+    if buffer is not None:
+        buffer.finalize(stream.context.aircraft.snapshot().get("history"))
+        report["buffered_votes"] = buffer.as_report(aircraft=stream.context.aircraft, variant=a.variant)
+        report["buffered_decisions_cost_ms_per_frame"] = buffer.cost_ms_per_frame(n, init_s=buffer_init_s)
     if a.compare:
         ignore = [int(x) for x in a.compare_ignore_classes.split(",") if x.strip()]
         report["parity_vs_production"] = compare_gm_ndjson(
@@ -177,6 +215,8 @@ def main() -> int:
             {k: report[k] for k in ("number_of_frames", "timings_ms_per_frame", "decided_at")}, indent=1
         )
     )
+    if buffer is not None:
+        print("buffered decisions:", json.dumps(report["buffered_decisions_cost_ms_per_frame"]))
     if a.compare:
         print("parity (exact):", json.dumps(report["parity_vs_production"], indent=1)[:600])
         print("parity (tolerant):", json.dumps(report["parity_vs_production_tolerant"], indent=1)[:1200])

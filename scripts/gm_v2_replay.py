@@ -8,9 +8,14 @@ With `--video --second-pass` it then runs the GM second pass (`pf.gm.second_pass
 state machine + camera classifier, v1 semantics, GPU) over the video with the regenerated second-run rows and adds
 `camera_type`, `confidence_camera` and `frame_stopped` to the report — the fields `model_starter.py` hands to the modules.
 
+With `--video --buffered-decisions` it decodes the video alongside the recorded rows and fills the ADR-002 vote buffer
+(`pf.gm.buffered.CameraVoteBuffer`, own noise preprocessor, classifier on every 8th frame with a tracked aircraft) exactly
+as `scripts/gm_v2_run.py --buffered-decisions` does inside the GM pass, without the detectors; the report gains
+`buffered_votes` and `buffered_decisions_cost_ms_per_frame` for `scripts/gm_decide_buffered.py`.
+
     python scripts/gm_v2_replay.py --first-run out/<run>/general_model<video>.mp4.ndjson \
         --compare G:/gat_stages/atlc5_inferences/general_model<video>.mp4.ndjson --out-dir out/<run>_replay \
-        [--video G:/gat_stages/atlc5_videos/<video>.mp4 --second-pass]
+        [--video G:/gat_stages/atlc5_videos/<video>.mp4 --second-pass] [--video ... --buffered-decisions]
 """
 
 from __future__ import annotations
@@ -77,9 +82,13 @@ def main() -> int:
     ap.add_argument("--weights-dir", default=os.path.join(ROOT, "external", "general_model_prod", "weights"))
     ap.add_argument("--gm-repo", default=os.path.join(ROOT, "external", "general_model_prod"))
     ap.add_argument("--device", default="cuda:0")
+    ap.add_argument("--buffered-decisions", action="store_true",
+                    help="decode --video and fill the ADR-002 camera vote buffer (adds buffered_votes to the report)")
     a = ap.parse_args()
     if a.second_pass and not a.video:
         raise SystemExit("--second-pass needs --video")
+    if a.buffered_decisions and not a.video:
+        raise SystemExit("--buffered-decisions needs --video")
 
     cm = ClassMap(load_str2id(a.str2id))
     rows_by_frame = {}
@@ -92,14 +101,39 @@ def main() -> int:
     stream = GmStream(
         cm, event_id=video_name, fps=a.fps, rows_provider=lambda f, _img: rows_by_frame[f], variant=a.variant
     )
+    buffer, cap, buffer_init_s, t_decode = None, None, 0.0, 0.0
+    if a.buffered_decisions:
+        import cv2
+
+        from pf.gm.buffered import CameraVoteBuffer
+        from pf.gm.camera import CameraClassifier
+        from pf.tracker.fast_sigma import estimate_sigma_rgb
+
+        t_buffer = time.perf_counter()
+        buffer = CameraVoteBuffer(CameraClassifier(a.weights_dir, device=a.device, transform="numpy"),
+                                  noise_fn=lambda img: float(estimate_sigma_rgb(img)))
+        buffer_init_s = time.perf_counter() - t_buffer
+        stream.frame_observer = buffer
+        cap = cv2.VideoCapture(a.video)
     t0 = time.perf_counter()
-    for f in frames:
+    for position, f in enumerate(frames, 1):
+        img = None
+        if cap is not None:
+            if f != position:
+                raise SystemExit(f"--buffered-decisions needs contiguous first-run frames from 1 (frame {f} at {position})")
+            t_dec = time.perf_counter()
+            ok, img = cap.read()
+            t_decode += time.perf_counter() - t_dec
+            if not ok:
+                raise SystemExit(f"video ended before first-run frame {f}")
         stream.process(
             f,
-            None,
+            img,
             arrived=(a.arrived_at is not None and f >= a.arrived_at),
             departured=(a.departured_at is not None and f >= a.departured_at),
         )
+    if cap is not None:
+        cap.release()
     compat_path = os.path.join(a.out_dir, f"general_model{video_name}-second_run.ndjson")
     stream.write_v1_compat(compat_path)
     elapsed = time.perf_counter() - t0
@@ -123,6 +157,12 @@ def main() -> int:
         )
     }
     report["events"] = [vars(e) for e in stream.events]
+    if buffer is not None:
+        buffer.finalize(stream.context.aircraft.snapshot().get("history"))
+        report["buffered_votes"] = buffer.as_report(aircraft=stream.context.aircraft, variant=a.variant)
+        cost = buffer.cost_ms_per_frame(len(frames), init_s=buffer_init_s)
+        cost["replay_decode"] = round(1000 * t_decode / max(len(frames), 1), 3)
+        report["buffered_decisions_cost_ms_per_frame"] = cost
     if a.second_pass:
         sp = run_second_pass(a, compat_path)
         report["second_pass"] = sp

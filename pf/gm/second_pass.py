@@ -130,6 +130,7 @@ class SecondPass:
         self.preprocessed_frames = 0
         self.votes: list = []
         self.probs: list = []
+        self.vote_frames: list = []  # frame id of each vote (sampled-rule evaluation, ADR-002)
 
     def parse_rows(self, rows) -> tuple:
         nose_list, bboxes_to_remove, largest_plane, mode_height = [], [], None, None
@@ -182,6 +183,7 @@ class SecondPass:
             is_cone, p = self.camera.predict(work.get())
             self.votes.append(is_cone)
             self.probs.append(p)
+            self.vote_frames.append(frame_id)
 
     def result(self) -> SecondPassResult:
         from pf.gm.camera import majority_vote
