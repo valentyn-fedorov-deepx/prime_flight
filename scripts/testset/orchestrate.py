@@ -285,7 +285,7 @@ def build_cmd(step: str, video: str, plan: Plan):
         return [PY, "scripts/testset/fetch.py", "--videos", video, "--what", "video,gm,trackers", "--workers", "3"], None
     if step == "gm":
         return [PY, "scripts/gm_v2_run.py", "--video", p["video"], "--weights-dir", GM_WEIGHTS, "--variant", "entity_clip",
-                "--parallel-heads", "--out-dir", p["gm_dir"], "--compare", p["prod_gm"]], None
+                "--parallel-heads", "--out-dir", p["gm_dir"], "--compare", p["prod_gm"], "--buffered-decisions"], None
     if step == "tracker":
         cmd = [PY, "scripts/tracker_v2_run.py", "--video", p["video"], "--gm-ndjson", p["gm_compat"], "--seed", "0",
                "--exact-fast", "--no-profile", "--out-dir", p["trk_dir"], "--compare", p["prod_trk"]]
@@ -426,11 +426,25 @@ def event_window(plan: Plan, ctl: dict, window: int, prefetch: int) -> tuple:
     return active, fetch_ok
 
 
+def other_orchestrators() -> list:
+    """Command lines of other running `orchestrate.py run` processes (Windows); two schedulers would duplicate jobs."""
+    if os.name != "nt":
+        return []
+    ps = "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | ForEach-Object { '{0} {1}' -f $_.ProcessId, $_.CommandLine }"
+    out = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True).stdout
+    return [line for line in out.splitlines() if "orchestrate.py run" in line and not line.startswith(f"{os.getpid()} ")]
+
+
 def run(a) -> int:
     videos = None
     if a.videos:
         raw = io.open(a.videos[1:], encoding="utf-8").read().split() if a.videos.startswith("@") else a.videos.split(",")
         videos = [x.strip() for x in raw if x.strip()]
+    if not a.dry_run:
+        others = other_orchestrators()
+        if others:
+            log(f"refusing to start: another orchestrator is running: {[o[:80] for o in others]}")
+            return 2
     plan = Plan(videos)
     if a.limit:
         plan.order = plan.order[: a.limit]
