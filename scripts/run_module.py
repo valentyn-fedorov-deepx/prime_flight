@@ -24,6 +24,11 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
     start all call `float(np.rad2deg(np.arctan(lin_reg.coef_)))`). The runner rebinds `float` and `int` in the module's
     namespace to subclasses that restore exactly that conversion and delegate everything else (isinstance, dtype) to the
     builtins. Opt-in with --numpy1-scalars, used only for the modules that need it.
+  * `--drop-state-keys`: tracker files carry the stage fields of cv_common's newer `transport.Airplane`
+    (`_moving_counter`, `_stopped_counter`, `have_pre_arrival_stage`, `have_arrival_stage`, `departure_frame`,
+    `_height_mode`); the `TrackedObject.from_state_dict` of an older cv_common copy raises on them. Modules that define
+    their own `Airplane(TrackedObject)` and never read those fields (the post-arrival and pre-departure walk-arounds)
+    get them removed before the call - the treatment that copy already gives `arrival_frame`. Recorded in the JSON.
 """
 
 from __future__ import annotations
@@ -109,6 +114,20 @@ def numpy1_scalar_types():
     return float, int
 
 
+def drop_tracker_state_keys(keys: list) -> None:
+    """Remove `keys` from a state dict (in place, like the method itself) before `TrackedObject.from_state_dict`."""
+    from cv_common import tracked_object
+
+    original = tracked_object.TrackedObject.from_state_dict
+
+    def from_state_dict(self, state_dict, *args, **kwargs):
+        for k in keys:
+            state_dict.pop(k, None)
+        return original(self, state_dict, *args, **kwargs)
+
+    tracked_object.TrackedObject.from_state_dict = from_state_dict
+
+
 def _jsonable(v):
     if v is None or isinstance(v, (str, int, float, bool)):
         return v
@@ -134,6 +153,8 @@ def main() -> int:
     ap.add_argument("--weights-dir", default="weights")
     ap.add_argument("--numpy1-scalars", action="store_true", help="NumPy 1.x float()/int() of one-element arrays")
     ap.add_argument("--write-video", action="store_true")
+    ap.add_argument("--prepend-path", action="append", default=[], help="folder put before site-packages (repeatable)")
+    ap.add_argument("--drop-state-keys", default="", help="comma list of tracker state keys removed before cv_common TrackedObject.from_state_dict")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -144,8 +165,11 @@ def main() -> int:
     if not a.no_video and not os.path.exists(src):
         raise SystemExit(f"video not found: {src} (use --videos-dir or --no-video)")
 
+    prepend = [os.path.abspath(p) for p in a.prepend_path]
     os.makedirs(os.path.join(moddir, "output"), exist_ok=True)
     os.chdir(moddir)
+    for p in reversed(prepend):
+        sys.path.insert(0, p)
     sys.path.insert(0, moddir)
     t0 = time.time()
     result = {
@@ -158,6 +182,8 @@ def main() -> int:
         "cone_camera": a.cone_camera,
         "airplane_type": a.airplane_type,
         "numpy1_scalar_shim": a.numpy1_scalars,
+        "prepend_path": prepend,
+        "drop_state_keys": [k for k in a.drop_state_keys.split(",") if k],
     }
     substituted = os.path.join(moddir, "cv_common", "SUBSTITUTED_PIN.txt")
     if os.path.exists(substituted):
@@ -168,6 +194,8 @@ def main() -> int:
         prod = importlib.import_module(a.entry)
         if a.numpy1_scalars:
             prod.float, prod.int = numpy1_scalar_types()
+        if result["drop_state_keys"]:
+            drop_tracker_state_keys(result["drop_state_keys"])
         from cv_common.common import parse_config
         from cv_common.log_utils import JsonLogger
         from db_worker.ML_worker import VideoWorker

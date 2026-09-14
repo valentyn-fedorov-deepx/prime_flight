@@ -1,0 +1,54 @@
+"""How each production module is launched locally for the test-set run (environment facts, not module semantics).
+
+Every entry is a measured requirement of the module code on this machine (Python 3.11, torch 2.11 cu128, NumPy 2.x, norfair 2.3):
+  * device       — YOLOv5 `select_device` in wing-walkers accepts only a bare index;
+  * numpy1       — `float(one-element array)` calls that NumPy 2 rejects (see scripts/run_module.py --numpy1-scalars);
+  * prepend_path — folders put before site-packages (pinned pure-Python packages, e.g. norfair 0.3.1);
+  * drop_state_keys — tracker state keys the module's cv_common copy rejects and the module never reads;
+  * pixel_free   — never reads frames; may run with --no-video once the video was cleaned up.
+Modules whose environment is not ready are listed in the orchestrator control file (`disabled_modules`), not here.
+"""
+
+from __future__ import annotations
+
+PIXEL_FREE = {
+    "3-stop-brake-check",
+    "all-cargo-bin-doors-opened-and-verified",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "cones-placed-in-proper-positions-and-timely",
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "pushback-pathway-confirmed-clear-of-obstacles",
+}
+
+NUMPY1 = {
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "wing-walkers-in-proper-position-and-using-approved-wands",
+}
+
+DEVICE = {"wing-walkers-in-proper-position-and-using-approved-wands": "0"}
+
+PREPEND_PATH = {"pre-departure-walk-around-completed": ["out/envs/norfair031"]}  # norfair==0.3.1 API (hit_inertia_min)
+
+AIRPLANE_STAGE_KEYS = "_moving_counter,_stopped_counter,have_pre_arrival_stage,have_arrival_stage,departure_frame,_height_mode"
+DROP_STATE_KEYS = {
+    "post-arrival-aircraft-walk-around-inspection-completed-accurately": AIRPLANE_STAGE_KEYS,
+    "pre-departure-walk-around-completed": AIRPLANE_STAGE_KEYS,
+}
+
+ENV = {"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1"}
+
+
+def profile(module: str) -> dict:
+    return {
+        "device": DEVICE.get(module, "cuda:0"),
+        "numpy1": module in NUMPY1,
+        "prepend_path": PREPEND_PATH.get(module, []),
+        "drop_state_keys": DROP_STATE_KEYS.get(module, ""),
+        "pixel_free": module in PIXEL_FREE,
+    }
