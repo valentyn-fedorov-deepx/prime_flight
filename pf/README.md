@@ -1,26 +1,26 @@
 # `pf` — Prime Flight core package
 
-Збираємо тут, по частинах, стрімінгову версію CV-пайплайну DXGAT. Порядок — той, що в roadmap: контракт і приймач
-(є), потім GM v2 і Tracker v2 (після аналізу в `docs/analysis/`), потім stage detector, потім адаптери модулів.
+Here we assemble, piece by piece, the streaming version of the DXGAT CV pipeline. The order is the one from the roadmap: contract and receiver
+(done), then GM v2 and Tracker v2 (after the analysis in `docs/analysis/`), then the stage detector, then module adapters.
 
-| Пакет | Стан | Що це |
+| Package | State | What it is |
 |---|---|---|
-| `pf.contract` | **готово, тести** | Контракт кадру schema 1.0: `schema_version`, `frame_id`, `general_model`, `trackers` + опційні `stage`/`events`/`anchors`; гігієна витікання полів між класами трекера. Портовано зі стенду `gat-streaming`. |
-| `pf.receiver` | **готово, тести** | `Session`: один event = один неперервний потік = один трекер (X1); заповнення дірок заглушками (X2); `stream_from_chunks` для тестів транспорту. |
-| `pf.eval` | **готово, тести** | Паритет: digest потоків, `diff_streams`, `compare_gm_ndjson` (старий vs новий GM по кадрах, з допуском, матчинг по `frame_id`, а не по позиції). |
-| `pf.gm` | інтерфейс | `FrameDetector` (кадр → детекції `[x1,y1,x2,y2,conf,class_id]`), `VideoContext` (інкрементні per-video рішення з подією «вирішено на кадрі X»). Реалізація — після `docs/analysis/gm_current.md`. |
-| `pf.tracker` | інтерфейс | `Tracker.update(frame_id, detections)` причинний, один на подію; `state_dict` per class = контракт. Реалізація — після аналізу трекера (потрібен доступ до `cv_trackers`/`cv_common`). |
-| `pf.stage` | словник | `STAGES`, `EVENTS` (у `pf.contract.frame`). Автомат — задача PF-Q1-03. |
+| `pf.contract` | **done, tests** | Frame contract schema 1.0: `schema_version`, `frame_id`, `general_model`, `trackers` + optional `stage`/`events`/`anchors`; hygiene of field leakage between tracker classes. Ported from the `gat-streaming` stand (test bench). |
+| `pf.receiver` | **done, tests** | `Session`: one event = one continuous stream = one tracker (X1); gap filling with placeholder frames (X2); `stream_from_chunks` for transport tests. |
+| `pf.eval` | **done, tests** | Parity: stream digests, `diff_streams`, `compare_gm_ndjson` (old vs new GM per frame, with tolerance, matching by `frame_id`, not by position). |
+| `pf.gm` | interface | `FrameDetector` (frame → detections `[x1,y1,x2,y2,conf,class_id]`), `VideoContext` (incremental per-video decisions with a "decided at frame X" event). Implementation — after `docs/analysis/gm_current.md`. |
+| `pf.tracker` | interface | `Tracker.update(frame_id, detections)` causal, one per event; `state_dict` per class = the contract. Implementation — after the tracker analysis (requires access to `cv_trackers`/`cv_common`). |
+| `pf.stage` | vocabulary | `STAGES`, `EVENTS` (in `pf.contract.frame`). The state machine — task PF-Q1-03. |
 
-## Правила для коду в `pf`
+## Rules for code in `pf`
 
-- Ядро інференсу не знає про відео-файли, чанки, MongoDB і бакети — тільки кадр → детекції / детекції → треки.
-- Усе, що модулі споживають сьогодні (формат детекції, `class_id`-мапа, ключі `state_dict`, нумерація кадрів з 1),
-  лишається побітово сумісним, або змінюється через ADR + `schema_version`.
-- Кожна зміна доводиться паритетом на реальних ndjson (`pf.eval`) і замірами на fail-відео, не «на око».
-- Швидкі гейти (`pytest`) не потребують torch/onnx/opencv і мають бігти < 1 с.
+- The inference core knows nothing about video files, chunks, MongoDB or buckets — only frame → detections / detections → tracks.
+- Everything the modules consume today (detection format, `class_id` map, `state_dict` keys, frame numbering from 1)
+  stays bit-for-bit compatible, or changes via an ADR + `schema_version`.
+- Every change is proven by parity on real ndjson (`pf.eval`) and by measurements on fail videos, not "by eye".
+- Fast gates (`pytest`) do not need torch/onnx/opencv and must run in < 1 s.
 
 ```bash
-pip install -e ".[ci]"   # або просто: pip install pytest
+pip install -e ".[ci]"   # or simply: pip install pytest
 pytest
 ```
