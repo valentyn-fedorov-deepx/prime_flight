@@ -19,6 +19,9 @@ Live control: `out/testset/orchestrator_control.json` is re-read every loop:
    "cleanup": false, "retry_failed": false, "stop": false}
 `stop` drains (no new jobs, exit when the running ones finish); `retry_failed` resets failed steps once; `cleanup` deletes the
 mp4 and the v2 bus file of a video once all its enabled module jobs have finished.
+`event_window` N > 0 processes events one after another (smallest first): jobs start only for the videos of the first N
+unfinished events, downloads also for the next `prefetch_events`. An event is finished when every enabled step of each of
+its videos is done or failed. With N = 2 the head event runs its modules while the next one runs GM v2 and Tracker v2.
 
     python scripts/testset/orchestrate.py run --steps fetch,gm,tracker,mod:ctl,mod:v2 --disabled-modules hair-policy
     python scripts/testset/orchestrate.py run --dry-run
@@ -52,6 +55,8 @@ DEFAULT_CONTROL = {
     "limits": {"fetch": 2, "gm": 1, "tracker": 2, "mod": 3, "mod_gpu": 1, "mod_cpu": 1},
     "disabled_modules": [],
     "min_free_gb": 60.0,
+    "event_window": 0,
+    "prefetch_events": 1,
     "cleanup": False,
     "retry_failed": False,
     "stop": False,
@@ -127,6 +132,7 @@ class Plan:
         self.plan = jload(os.path.join(TS, "plan.json"))
         self.inventory = {r["video"]: r for r in jload(os.path.join(TS, "videos_inventory.json"))}
         events = sorted(self.plan["events"], key=lambda e: sum(self.inventory[v]["size"] for v in e["videos"]))
+        self.events = events
         order = []
         for e in events:
             for v in e["videos"]:
@@ -390,6 +396,36 @@ def chain_ok(step: str, led: dict, ctl: dict) -> bool:
     return True
 
 
+def video_steps(video: str, plan: Plan, ctl: dict) -> list:
+    steps = [s for s in ("fetch", "gm", "tracker") if step_enabled(s, ctl)]
+    return steps + [f"mod:{lb}:{m}" for lb in ("v2", "ctl") for m in plan.modules(video)
+                    if step_enabled(f"mod:{lb}:{m}", ctl)]
+
+
+def event_finished(event: dict, plan: Plan, ctl: dict) -> bool:
+    for v in event["videos"]:
+        led = load_ledger(v)
+        if any(led["steps"].get(s, {}).get("status") not in ("done", "failed") for s in video_steps(v, plan, ctl)):
+            return False
+    return True
+
+
+def event_window(plan: Plan, ctl: dict, window: int, prefetch: int) -> tuple:
+    """(videos whose jobs may start, videos that may be downloaded) for event-by-event processing."""
+    active, fetch_ok, n = set(), set(), 0
+    for event in plan.events:
+        videos = [v for v in event["videos"] if v in plan.order]
+        if not videos or event_finished(event, plan, ctl):
+            continue
+        if n < window:
+            active.update(videos)
+        fetch_ok.update(videos)
+        n += 1
+        if n >= window + prefetch:
+            break
+    return active, fetch_ok
+
+
 def run(a) -> int:
     videos = None
     if a.videos:
@@ -408,6 +444,10 @@ def run(a) -> int:
         if v is not None:
             ctl["limits"][k] = v
     ctl["cleanup"] = a.cleanup or ctl.get("cleanup", False)
+    if a.event_window is not None:
+        ctl["event_window"] = a.event_window
+    if a.prefetch_events is not None:
+        ctl["prefetch_events"] = a.prefetch_events
     ctl["stop"] = False
     if not a.dry_run:
         jsave(CONTROL, ctl)
@@ -442,6 +482,8 @@ def run(a) -> int:
         busy = {(j.video, j.step) for j in running}
         counts = collections.Counter(job_class(j.step) for j in running)
         pending, starts = 0, []
+        window = int(ctl.get("event_window") or 0)
+        active, fetch_ok = event_window(plan, ctl, window, int(ctl.get("prefetch_events") or 0)) if window else (set(), set())
         for video in plan.order:
             led = load_ledger(video)
             p = paths(video)
@@ -473,6 +515,8 @@ def run(a) -> int:
                         adopted["finished"] = now()
                         led["steps"][step] = adopted
                         save_ledger(led)
+                    continue
+                if window and video not in (fetch_ok if step == "fetch" else active):
                     continue
                 if step.startswith("mod:") and not os.path.exists(p["video"]) \
                         and not profiles.profile(step.split(":", 2)[2])["pixel_free"]:
@@ -530,6 +574,9 @@ def status(a) -> int:
             trk.append(led["steps"]["tracker"])
     for k, c in counts.items():
         print(f"{k:10s} {dict(c)}")
+    ctl = read_control()
+    finished = sum(1 for e in plan.events if event_finished(e, plan, ctl))
+    print(f"events finished (all enabled steps done or failed): {finished} of {len(plan.events)}")
     if gm:
         frames = sum(r.get("frames") or 0 for r in gm)
         ms = sum((r.get("ms_per_frame") or 0) * (r.get("frames") or 0) for r in gm) / max(frames, 1)
@@ -560,6 +607,8 @@ def main() -> int:
     for k in ("gm", "tracker", "fetch", "mod", "mod_gpu", "mod_cpu"):
         r.add_argument(f"--limit-{k.replace('_', '-')}", dest=f"limit_{k}", type=int, default=None)
     r.add_argument("--cleanup", action="store_true")
+    r.add_argument("--event-window", type=int, default=None, help="events processed at a time (0 = all at once)")
+    r.add_argument("--prefetch-events", type=int, default=None, help="events downloaded ahead of the window")
     r.add_argument("--keep-control", action="store_true", help="start from the existing control file")
     r.add_argument("--dry-run", action="store_true")
     r.add_argument("--poll", type=float, default=10.0)
