@@ -66,7 +66,14 @@ LAUNCHER = {"hair-policy": ["wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "/mnt
 
 JOB_CLASS = {"hair-policy": "mod_cpu"}  # ~0.9 CPU-s per frame on 2 threads
 
-MODULE_DIR: dict = {}
+# chosen by scripts/testset/calibrate.py against the report's New output (out/testset/calibration*.json)
+MODULE_DIR = {
+    # 8/8 events = New output (default branch 3/8)
+    "cones-placed-in-proper-positions-and-timely": "external/_branches/cones-placed-in-proper-positions-and-timely@not_observed_logic",
+    # 8/8 events = New output (default branch 5/8)
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready":
+        "external/_branches/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready@obstruction_plane_track",
+}
 
 
 def profile(module: str) -> dict:
