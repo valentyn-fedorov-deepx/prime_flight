@@ -37,7 +37,10 @@ NUMPY1 = {
     "safety-zone-confirmed-clear",  # "only 0-dimensional arrays can be converted to Python scalars"
 }
 
-DEVICE = {"wing-walkers-in-proper-position-and-using-approved-wands": "0"}
+DEVICE = {
+    "wing-walkers-in-proper-position-and-using-approved-wands": "0",
+    "hair-policy": "cpu",  # Pyarmor build loads only on CPython 3.8; no torch for 3.8 supports sm_120
+}
 
 PREPEND_PATH = {
     "pre-departure-walk-around-completed": ["out/envs/norfair031"],  # norfair==0.3.1 API (hit_inertia_min)
@@ -58,9 +61,10 @@ DROP_STATE_KEYS = {
 
 ENV = {"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1"}
 
-LAUNCHER: dict = {}
+# hair-policy: CPython 3.8 venv in WSL Ubuntu-24.04 (scripts/testset/wsl_run_module.sh picks it from the Pyarmor header)
+LAUNCHER = {"hair-policy": ["wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "/mnt/g/prime_flight/scripts/testset/wsl_run_module.sh"]}
 
-JOB_CLASS: dict = {}
+JOB_CLASS = {"hair-policy": "mod_cpu"}  # ~0.9 CPU-s per frame on 2 threads
 
 MODULE_DIR: dict = {}
 
