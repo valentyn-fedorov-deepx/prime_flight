@@ -279,6 +279,12 @@ slice (1 200 of 1 200 lines, including `_p0`/`_st`), with and without the exact 
 vectorised in-box test, no frame copies, bit-identical threaded noise estimate, parallel DeepSORT). Under contention the
 fast paths take it from 50.6 to 39.2 ms/frame (`tasks/notes/PF-Q1-17.md`).
 
+**ReID BatchNorm in training mode (both pins).** `deep_sort/deep/feature_extractor.py:ResNetExtractor` creates
+`torchvision.models.resnet34(pretrained=True)` and never calls `.eval()` (only the person `Extractor` does), so the beltloader
+and GSE appearance features are normalised with the statistics of the current batch — the crops of that class in that frame.
+A crop's feature changes with the crops next to it (measured: up to 7.25 absolute difference when the two classes share a batch;
+bit-identical only with the same batch composition). Any v2 change to batching or BatchNorm mode is a behaviour change.
+
 ### 8.1 Where the time goes (from code; confirmed by the profile)
 
 Per frame, in decreasing expected cost (RTX-class GPU, 1080p):
