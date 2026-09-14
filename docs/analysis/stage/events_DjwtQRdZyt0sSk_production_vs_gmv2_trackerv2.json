@@ -1,0 +1,128 @@
+{
+ "files": {
+  "production": "G:/gat_stages/atlc5_inferences/trackersDjwtQRdZyt0sSk.mp4.ndjson",
+  "gmv2_trackerv2": "out/pipeline_Djwt_v2gm_v2trk/trackersDjwtQRdZyt0sSk.mp4.ndjson"
+ },
+ "derived": {
+  "production": {
+   "events": [
+    {
+     "name": "T_ARR",
+     "frame": 3669,
+     "decided_at": 3669,
+     "attrs": {
+      "source": "tracker.airplane"
+     }
+    },
+    {
+     "name": "BL_AT_DOOR",
+     "frame": 9888,
+     "decided_at": 9888,
+     "attrs": {
+      "door": "front",
+      "tr_id": 85,
+      "status": "stopped"
+     }
+    },
+    {
+     "name": "BL_LEAVE",
+     "frame": 22776,
+     "decided_at": 22776,
+     "attrs": {
+      "door": "front",
+      "tr_id": 88,
+      "status": "moving"
+     }
+    }
+   ],
+   "reidentifications": [
+    {
+     "frame": 21945,
+     "door": "front",
+     "from": 85,
+     "to": 88
+    }
+   ],
+   "open_doors_at_end": {}
+  },
+  "gmv2_trackerv2": {
+   "events": [
+    {
+     "name": "T_ARR",
+     "frame": 3669,
+     "decided_at": 3669,
+     "attrs": {
+      "source": "tracker.airplane"
+     }
+    },
+    {
+     "name": "BL_AT_DOOR",
+     "frame": 9888,
+     "decided_at": 9888,
+     "attrs": {
+      "door": "front",
+      "tr_id": 87,
+      "status": "stopped"
+     }
+    },
+    {
+     "name": "BL_LEAVE",
+     "frame": 22776,
+     "decided_at": 22776,
+     "attrs": {
+      "door": "front",
+      "tr_id": 90,
+      "status": "moving"
+     }
+    }
+   ],
+   "reidentifications": [
+    {
+     "frame": 21945,
+     "door": "front",
+     "from": 87,
+     "to": 90
+    }
+   ],
+   "open_doors_at_end": {}
+  }
+ },
+ "comparison": [
+  {
+   "event": "BL_AT_DOOR",
+   "door": "front",
+   "index": 0,
+   "frames": {
+    "production": 9888,
+    "gmv2_trackerv2": 9888
+   },
+   "delta_to_production": {
+    "gmv2_trackerv2": 0
+   }
+  },
+  {
+   "event": "BL_LEAVE",
+   "door": "front",
+   "index": 0,
+   "frames": {
+    "production": 22776,
+    "gmv2_trackerv2": 22776
+   },
+   "delta_to_production": {
+    "gmv2_trackerv2": 0
+   }
+  },
+  {
+   "event": "T_ARR",
+   "door": null,
+   "index": 0,
+   "frames": {
+    "production": 3669,
+    "gmv2_trackerv2": 3669
+   },
+   "delta_to_production": {
+    "gmv2_trackerv2": 0
+   }
+  }
+ ]
+}
