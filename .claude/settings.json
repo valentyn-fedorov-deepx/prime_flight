@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "G:\\gat-streaming",
+      "G:\\gat_stages"
+    ],
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git blame*)",
+      "Bash(python scripts/build_docs.py)",
+      "Bash(python -m pytest*)",
+      "Bash(pytest*)",
+      "Bash(ls*)",
+      "Bash(wc*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git reset --hard*)",
+      "Bash(git checkout -- *)",
+      "Bash(rm -rf*)",
+      "Read(**/.env)",
+      "Read(**/*.pem)",
+      "Read(**/*credentials*.json)"
+    ]
+  },
+  "env": {
+    "PYTHONIOENCODING": "utf-8",
+    "PF_WORKSPACE": "G:\\prime_flight",
+    "PF_REPOS": "G:\\prime_flight\\external",
+    "PF_STREAMING": "G:\\gat-streaming",
+    "PF_DATA": "G:\\gat_stages"
+  }
+}

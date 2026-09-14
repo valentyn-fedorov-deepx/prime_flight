@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.claude/settings.local.json
+docs/inbox/*.zip
+*.mp4
+*.ndjson
+external/

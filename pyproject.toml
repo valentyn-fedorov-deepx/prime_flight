@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prime-flight"
+version = "0.1.0"
+description = "Prime Flight: chunk-wise / real-time rebuild of the DXGAT CV pipeline (contract, receiver, GM v2, tracker v2, stage detector, module adapters, parity eval)"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "Proprietary" }
+dependencies = []
+
+[project.optional-dependencies]
+# Fast gates: contract + receiver + parity mechanics. No torch, no onnxruntime, no opencv.
+ci = ["pytest>=8.0"]
+# Docs regeneration (scripts/build_docs.py).
+docs = ["openpyxl>=3.1"]
+# Real inference / replay (fill in when GM v2 lands): numpy, opencv-python, onnxruntime-gpu, ultralytics ...
+infer = ["numpy>=1.26"]
+
+[tool.setuptools.packages.find]
+include = ["pf*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q --strict-markers"
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
