@@ -105,6 +105,58 @@ def tracker_airplane_events(path: str) -> dict:
             "departure_frame": departure, "departure_published_at_line": first_departure_line}
 
 
+def run_module_impl(a, cfg, cv2, torch, noise_fn, init_s) -> int:
+    """The same probe through `pf.gm.second_pass.SecondPass` (models are loaded again inside the class)."""
+    from pf.gm.second_pass import SecondPass
+
+    t_init = time.perf_counter()
+    sp = SecondPass(cfg, a.weights_dir, device=a.device, noise_fn=noise_fn)
+    init_s += time.perf_counter() - t_init
+    cap = cv2.VideoCapture(a.video)
+    frames = 0
+    t0 = time.perf_counter()
+    for frame_id, rows in iter_rows(a.second_run):
+        if a.max_frames is not None and frame_id > a.max_frames:
+            break
+        ok, im0s = cap.read()
+        if not ok:
+            break
+        frames += 1
+        sp.update(frame_id, im0s, rows)
+    torch.cuda.synchronize()
+    total = time.perf_counter() - t0
+    cap.release()
+    res = sp.result()
+    report = {
+        "video": os.path.basename(a.video),
+        "second_run": a.second_run,
+        "impl": "module",
+        "frames": frames,
+        "plane_frames": res.plane_frames,
+        "first_plane_frame": res.first_plane_frame,
+        "frame_stopped": res.frame_stopped,
+        "first_frame_with_arrived": res.first_frame_with_arrived,
+        "departure_frame": res.departure_frame,
+        "camera": {"votes": res.camera_votes, "camera_type_cone": res.camera_type_cone,
+                   "confidence_camera": round(res.confidence_camera, 4)},
+        "preprocessed_frames": res.preprocessed_frames,
+        "sam_calls": CALLS.get("sam.set_image", 0),
+        "fast_sigma": a.fast_sigma,
+        "init_s": round(init_s, 1),
+        "total_s": round(total, 1),
+        "ms_per_frame": round(1000 * total / max(frames, 1), 3),
+        "components_ms_per_frame": {k: round(1000 * v / max(frames, 1), 3) for k, v in sorted(TIMES.items(), key=lambda kv: -kv[1])},
+        "calls": dict(CALLS),
+        "all_votes": [bool(v) for v in sp.votes] if a.dump_votes else None,
+        "all_probs": [float(x) for x in sp.probs] if a.dump_votes else None,
+    }
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+    with io.open(a.out, "w", encoding="utf-8") as fh:
+        json.dump(report, fh, indent=1, default=str)
+    print(json.dumps({k: report[k] for k in ("impl", "frames", "plane_frames", "frame_stopped", "camera", "preprocessed_frames", "ms_per_frame")}, default=str))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", required=True)
@@ -114,6 +166,9 @@ def main() -> int:
     ap.add_argument("--gm-repo", default=os.path.join(ROOT, "external", "general_model_prod"))
     ap.add_argument("--fast-sigma", action="store_true", help="bit-identical threaded noise estimate in the preprocessor")
     ap.add_argument("--max-frames", type=int, default=None)
+    ap.add_argument("--impl", default="inline", choices=["inline", "module"],
+                    help="inline = the reference loop below; module = pf.gm.second_pass.SecondPass (on-demand preprocessing)")
+    ap.add_argument("--dump-votes", action="store_true", help="store every camera vote and probability in the JSON")
     ap.add_argument("--device", default="cuda:0")
     ap.add_argument("--out", default="out/gm_second_pass_probe.json")
     a = ap.parse_args()
@@ -151,6 +206,9 @@ def main() -> int:
         noise_fn = lambda img: float(estimate_sigma_rgb(img))  # noqa: E731
     pre = ImagePreprocessor(noise_fn=timed("preprocessor.noise")(noise_fn))
     init_s = time.perf_counter() - t_init
+
+    if a.impl == "module":
+        return run_module_impl(a, cfg, cv2, torch, timed("preprocessor.noise")(noise_fn), init_s)
 
     cap = cv2.VideoCapture(a.video)
     main_plane = None
@@ -241,6 +299,10 @@ def main() -> int:
             "prob_min_mean_max": [round(float(probs_np.min()), 4), round(float(probs_np.mean()), 4), round(float(probs_np.max()), 4)] if probs else None,
             "votes_with_prob_in_0.4_0.6": int(((probs_np > 0.4) & (probs_np < 0.6)).sum()) if probs else 0,
         },
+        "impl": "inline",
+        "sam_calls": CALLS.get("sam.set_image", 0),
+        "all_votes": [bool(v) for v in votes] if a.dump_votes else None,
+        "all_probs": [float(x) for x in probs] if a.dump_votes else None,
         "deviation": "cv_common d74eb096 unavailable: vendored 2759daf Airplane with MobileSAM segmenter",
         "fast_sigma": a.fast_sigma,
         "init_s": round(init_s, 1),

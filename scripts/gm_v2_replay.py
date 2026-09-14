@@ -4,8 +4,13 @@ Use it to (a) iterate on the context / compat logic against a production file wi
 compare the regenerated second-run file with production on ALL rows, including the synthesized ones (class 2 main
 aircraft, 29/30 obstacles), which need the whole video.
 
+With `--video --second-pass` it then runs the GM second pass (`pf.gm.second_pass.SecondPass`: MobileSAM main-aircraft
+state machine + camera classifier, v1 semantics, GPU) over the video with the regenerated second-run rows and adds
+`camera_type`, `confidence_camera` and `frame_stopped` to the report — the fields `model_starter.py` hands to the modules.
+
     python scripts/gm_v2_replay.py --first-run out/<run>/general_model<video>.mp4.ndjson \
-        --compare G:/gat_stages/atlc5_inferences/general_model<video>.mp4.ndjson --out-dir out/<run>_replay
+        --compare G:/gat_stages/atlc5_inferences/general_model<video>.mp4.ndjson --out-dir out/<run>_replay \
+        [--video G:/gat_stages/atlc5_videos/<video>.mp4 --second-pass]
 """
 
 from __future__ import annotations
@@ -25,6 +30,33 @@ from pf.pipeline import GmStream
 from scripts.gm_v2_run import load_str2id
 
 
+def run_second_pass(a, compat_path: str) -> dict:
+    import cv2
+    import torch
+
+    from pf.gm.second_pass import SecondPass, load_gm_config
+    from pf.tracker.fast_sigma import estimate_sigma_rgb
+
+    t0 = time.perf_counter()
+    sp = SecondPass(load_gm_config(a.gm_repo), a.weights_dir, device=a.device,
+                    noise_fn=lambda img: float(estimate_sigma_rgb(img)))
+    cap = cv2.VideoCapture(a.video)
+    frames = 0
+    for frame_id, rows in iter_ndjson(compat_path):
+        ok, img = cap.read()
+        if not ok:
+            break
+        sp.update(frame_id, img, rows)
+        frames += 1
+    cap.release()
+    torch.cuda.synchronize()
+    res = sp.result().as_dict()
+    res["frames"] = frames
+    res["seconds"] = round(time.perf_counter() - t0, 1)
+    res["ms_per_frame"] = round(1000 * res["seconds"] / max(frames, 1), 2)
+    return res
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--first-run", required=True, help="first-run ndjson written by scripts/gm_v2_run.py")
@@ -40,7 +72,14 @@ def main() -> int:
         help="frame of T_arr to gate camera/aircraft-type votes (until the stage detector exists)",
     )
     ap.add_argument("--departured-at", type=int, default=None)
+    ap.add_argument("--video", default=None, help="the video, for --second-pass")
+    ap.add_argument("--second-pass", action="store_true", help="run the GM second pass (GPU) and add its report fields")
+    ap.add_argument("--weights-dir", default=os.path.join(ROOT, "external", "general_model_prod", "weights"))
+    ap.add_argument("--gm-repo", default=os.path.join(ROOT, "external", "general_model_prod"))
+    ap.add_argument("--device", default="cuda:0")
     a = ap.parse_args()
+    if a.second_pass and not a.video:
+        raise SystemExit("--second-pass needs --video")
 
     cm = ClassMap(load_str2id(a.str2id))
     rows_by_frame = {}
@@ -83,6 +122,12 @@ def main() -> int:
         )
     }
     report["events"] = [vars(e) for e in stream.events]
+    if a.second_pass:
+        sp = run_second_pass(a, compat_path)
+        report["second_pass"] = sp
+        report["camera_type"] = sp["camera_type_cone"]
+        report["confidence_camera"] = sp["confidence_camera"]
+        report["frame_stopped"] = sp["frame_stopped"]
     if a.compare:
         report["parity_exact_all_classes"] = compare_gm_ndjson(a.compare, compat_path).summary()
         report["parity_tolerant_all_classes"] = compare_gm_ndjson_tolerant(a.compare, compat_path).summary()
@@ -97,7 +142,7 @@ def main() -> int:
             ).summary()
     with open(os.path.join(a.out_dir, f"gm_v2_replay{video_name}.json"), "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=1, default=str)
-    keys = ["frames", "replay_seconds", "context", "decided_at"]
+    keys = ["frames", "replay_seconds", "context", "decided_at"] + (["second_pass"] if a.second_pass else [])
     print(json.dumps({k: report[k] for k in keys}, indent=1, default=str))
     if a.compare:
         for k in (

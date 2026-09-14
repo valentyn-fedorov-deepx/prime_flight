@@ -29,6 +29,21 @@ import os
 from dataclasses import asdict, dataclass
 
 REMOVE_CLASSES = ("person", "trailer", "fuel_truck", "gse")
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def load_gm_config(gm_repo: str | None = None) -> dict:
+    """GM's `parse_config()`: cv_common global_config (the vendored 2759daf copy — GM's own pin d74eb096 is not available)
+    updated by the GM repo's local_config.yaml (top-level keys replace the global ones)."""
+    import yaml
+
+    with open(os.path.join(ROOT, "pf", "tracker", "_v1", "config", "global_config.yaml"), encoding="utf-8") as fh:
+        cfg = yaml.load(fh, Loader=yaml.FullLoader)
+    local = os.path.join(gm_repo or os.path.join(ROOT, "external", "general_model_prod"), "local_config.yaml")
+    if os.path.isfile(local):
+        with open(local, encoding="utf-8") as fh:
+            cfg.update(yaml.load(fh, Loader=yaml.FullLoader) or {})
+    return cfg
 
 
 def preprocess_frame(frame, mode):
