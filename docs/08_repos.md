@@ -21,6 +21,10 @@
 Модульні репо (M-ID → repo) і pinned-коміти ревʼю — у `04_modules.md`. Локально є також `seat-belts-used-on-all-gse-equipped-with-seat-belts`
 (M25, поза скоупом) та робочі папки `_vest_verifier`, `_pa_scene_decomp`, `_steering_eval`, `onboarding_docs/` (safety_vests.md, walkaround.md).
 
+## Репо Prime Flight (GitHub)
+
+https://github.com/valentyn-fedorov-deepx/prime_flight — private, гілка `main`, push через https (gh auth, keyring). Коміти англійською, без Claude-трейлерів; `external/` і великі артефакти — поза git.
+
 ## Стенд стрімінгу
 
 `G:\gat-streaming` — **не прод**, тестовий стенд: контракт (`streaming/contract.py`), сесія (`session.py`), раннер

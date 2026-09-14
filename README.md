@@ -1,5 +1,7 @@
 # Prime Flight — Claude Code workspace ліда
 
+GitHub: https://github.com/valentyn-fedorov-deepx/prime_flight (private). Прод-код DeepX лишається у GitLab `dxgat/*`; тут — воркспейс, документація, борд і новий пакет `pf/`.
+
 Один воркспейс для всієї документації, рольових агентів і беклогу проєкту Prime Flight (DXGAT → real-time).
 Код не тут: він у `G:\deepx_gat\*` (клони GitLab `dxgat/*`) і на стенді `G:\gat-streaming`; обидві теки підключені
 через `.claude/settings.json → additionalDirectories`, тож агенти читають їх без додаткових дозволів.
@@ -60,6 +62,5 @@ scripts/bootstrap.ps1          перевірка оточення (клони, 
 ## Що ще не зроблено (стан 2026-09-14)
 
 - Борд — чернетка ліда; узгодити з Максимом Ч., Юрієм, Аріаном, потім рецензія Ігоря/Сергія.
-- `camera_software` не клонований локально (PF-X-03); https-шлях у GitLab не знайдено — уточнити.
-- SSH до GitLab на цій машині не налаштований (host key); https працює через Git Credential Manager для частини репо.
-- GPU-раннер для nightly паритету відсутній (PF-Q1-07, external).
+- `G:\deepx_gat` зник 14.09; клони у `external/` (https). `cv_trackers`/`cv_common`/`camera_software` недоступні: ssh-ключ не в GitLab (PF-X-05).
+- GPU-раннер для nightly паритету відсутній (PF-Q1-07, external); gcloud потребує `gcloud auth login`.
