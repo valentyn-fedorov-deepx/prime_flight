@@ -13,12 +13,14 @@ buffer. What is deliberately NOT ported: `--save-video` drawing, per-frame `prin
 
 `TrackerOptions.exact_fast` switches on the output-identical performance paths (proven with seeded byte-level runs
 against the production pin): `pf.tracker.fast_paths` (grey frames once per frame, vectorised in-box test, no stage-counter
-print), no full-frame copies of the tracked image, the bit-identical threaded noise estimate (`pf.tracker.fast_sigma`)
-and the three DeepSORT updates in parallel threads. Default = production behaviour.
+print), `pf.tracker.fast_grouped_lk` (one optical-flow call per class grey pair and direction for beltloaders and GSE), no
+full-frame copies of the tracked image, the bit-identical threaded noise estimate (`pf.tracker.fast_sigma`) and the three
+DeepSORT updates in parallel threads. Default = production behaviour.
 """
 
 from __future__ import annotations
 
+import functools
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -39,7 +41,7 @@ from pf.tracker._v1.common import (
 from pf.tracker._v1.config import config as V1_CONFIG
 from pf.tracker._v1.config import deep_sort_config
 from pf.tracker._v1.track import Track
-from pf.tracker._v1.tracked_object import ObjectSegmenter, Status
+from pf.tracker._v1.tracked_object import FeatureTracker, ObjectSegmenter, Status
 from pf.tracker._v1.transport import Airplane, Vehicle
 
 IGNORE_DICT = {
@@ -60,6 +62,7 @@ class TrackerOptions:
     bl_gse_seg_weights: str = "yolo26s_seg_bl_gse_tr10_noalb.pt"
     # --- cost switches (production behaviour when False) -------------------------------------------
     exact_fast: bool = False  # output-identical performance paths (see module docstring)
+    grouped_lk: bool = True  # within exact_fast: grouped optical flow for beltloaders/GSE
     fast_noise_gate: bool = False  # NOT exact: sigma on a half-resolution frame (needs calibration before use)
 
 
@@ -214,6 +217,8 @@ class TrackerStream:
         ObjectSegmenter.Classwise_buffer_mask = {}  # class-level cache in cv_common: reset per stream
 
         self.fast = None
+        self.grouped = None
+        self.grouped_stats: dict = {}
         self._pool = None
         if self.opt.exact_fast:
             from pf.tracker import fast_paths
@@ -222,6 +227,11 @@ class TrackerStream:
             fast_paths.end_stream()
             self.fast = fast_paths
             self._pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="pf-deepsort")
+            if self.opt.grouped_lk:
+                from pf.tracker import fast_grouped_lk
+
+                fast_grouped_lk.check_pinned_source()
+                self.grouped = fast_grouped_lk
 
         self.noise = NoiseGate(
             self.cfg["fps"], self.cfg["estimate_sigma_interval"], fast=self.opt.fast_noise_gate, device=device,
@@ -288,6 +298,122 @@ class TrackerStream:
             outputs_workers, outputs_workers_tentative = f_w.result()
             outputs_gse = f_g.result()
         return outputs_beltloaders, outputs_workers, outputs_workers_tentative, outputs_gse
+
+    # ---- beltloader loop pieces (shared by the sequential and the grouped variants) --------------------
+    def _bl_record(self, tracked_obj, beltloader_id, tracked_data):
+        if self.bl_labels_dict["front"] == beltloader_id:
+            bl_type = "front"
+        elif self.bl_labels_dict["back"] == beltloader_id:
+            bl_type = "back"
+        else:
+            bl_type = "undefined"
+        tracked_data.append(
+            Track(beltloader_id, tracked_obj.xyxy, "beltloader", state_dict=tracked_obj.to_state_dict(),
+                  data={"bl_type": bl_type})
+        )
+
+    def _bl_after_update_existing(self, tracked_obj, beltloader_id, observed, beltloader_type, biggest_doors_xyxy,
+                                  engines_det, back_wheels_det, tracked_data):
+        if tracked_obj.is_stopped and observed:
+            bl_type = get_bl_type(tracked_obj, beltloader_type, self.opt.cone_camera, biggest_doors_xyxy,
+                                  engines_det, back_wheels_det, fps=self.cfg["fps"])
+            if bl_type != "undefined":
+                self.bl_labels_dict[bl_type] = beltloader_id
+        elif tracked_obj.status == Status.MOVING:
+            for bl_type in self.bl_labels_dict.keys():
+                if self.bl_labels_dict[bl_type] == beltloader_id:
+                    self.bl_labels_dict[bl_type] = None
+        self._bl_record(tracked_obj, beltloader_id, tracked_data)
+
+    def _bl_type_new(self, tracked_obj, beltloader_id, observed, beltloader_type, biggest_doors_xyxy,
+                     engines_det, back_wheels_det):
+        if tracked_obj.is_stopped and observed:
+            bl_type = get_bl_type(tracked_obj, beltloader_type, self.opt.cone_camera, biggest_doors_xyxy,
+                                  engines_det, back_wheels_det, fps=self.cfg["fps"])
+            if bl_type != "undefined":
+                self.bl_labels_dict[bl_type] = beltloader_id
+
+    def _beltloaders_grouped(self, outputs_beltloaders, det, frame_number, img_to_track, bboxes_to_ignore,
+                             beltloader_type, biggest_doors_xyxy, engines_det, back_wheels_det, tracked_data):
+        """The beltloader loop with grouped optical flow (pf.tracker.fast_grouped_lk.Batch) — same order of effects."""
+        cfg, s2i = self.cfg, self.str2id
+        gse_trailer_ids = [s2i["gse"], s2i["trailer"]]
+        batch = self.grouped.Batch(FeatureTracker._lk_params, self.grouped_stats)
+        for *bl_xyxy, beltloader_id in outputs_beltloaders:
+            beltloader_id = int(beltloader_id)
+            bl_xyxy = tuple(map(int, bl_xyxy))
+            if beltloader_id in self.bl_obj_dict:
+                tracked_obj = self.bl_obj_dict[beltloader_id]
+                observed = True
+                for *xyxy, conf, cls_id in det:
+                    if cls_id in gse_trailer_ids and observed:
+                        observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
+                if not observed:
+                    tracked_obj.set_unobserved()
+                    batch.then(functools.partial(self._bl_record, tracked_obj, beltloader_id, tracked_data))
+                else:
+                    tracked_obj.set_observed()
+                    batch.update(tracked_obj, bl_xyxy, self.prev_img_to_track, img_to_track, frame_number,
+                                 self.bl_gse_segmentor, bboxes_to_ignore["beltloader"], YOLO_CLASS_MAPPING["beltloader"])
+                    batch.then(functools.partial(self._bl_after_update_existing, tracked_obj, beltloader_id, observed,
+                                                 beltloader_type, biggest_doors_xyxy, engines_det, back_wheels_det,
+                                                 tracked_data))
+            elif beltloader_id in self.bl_to_init:
+                tracked_obj = self.bl_to_init.pop(beltloader_id)
+                observed = True
+                for *xyxy, conf, cls_id in det:
+                    if cls_id in gse_trailer_ids and observed:
+                        observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
+                if observed:
+                    tracked_obj.set_observed()
+                    batch.update(tracked_obj, bl_xyxy, self.prev_img_to_track, img_to_track, frame_number,
+                                 self.bl_gse_segmentor, bboxes_to_ignore["beltloader"], YOLO_CLASS_MAPPING["beltloader"])
+                    re_initialized = False
+                    for bl_id in reversed(list(self.bl_obj_dict.keys())):
+                        if get_relative_intersection(tracked_obj.xyxy, self.bl_obj_dict[bl_id].recent_biggest_bbox) > 0.3:
+                            self.bl_obj_dict[beltloader_id] = self.bl_obj_dict.pop(bl_id)
+                            re_initialized = True
+                            break
+                    if not re_initialized:
+                        batch.then(functools.partial(self._bl_type_new, tracked_obj, beltloader_id, observed,
+                                                     beltloader_type, biggest_doors_xyxy, engines_det, back_wheels_det))
+                        self.bl_obj_dict[beltloader_id] = tracked_obj
+            else:
+                self.bl_to_init[beltloader_id] = Vehicle(
+                    obj_id=beltloader_id, class_name="beltloader", xyxy=bl_xyxy,
+                    tracking_params=self.tracking["beltloader"]["tracked_object"],
+                )
+        batch.flush()
+
+    def _gse_record(self, obj, gse_id, tracked_data):
+        tracked_data.append(Track(gse_id, obj.xyxy, "gse", state_dict=obj.to_state_dict()))
+
+    def _gse_grouped(self, outputs_gse, frame_number, img_to_track, bboxes_to_ignore, tracked_data):
+        """The GSE loop with grouped optical flow — same order of effects."""
+        cfg = self.cfg
+        batch = self.grouped.Batch(FeatureTracker._lk_params, self.grouped_stats)
+        for *gse_xyxy, gse_id in outputs_gse:
+            gse_id = int(gse_id)
+            gse_xyxy = tuple(map(int, gse_xyxy))
+            if gse_id not in self.gse_obj_dict:
+                re_init_id = None
+                closest_objects = [(bboxes_iou(gse_xyxy, gse_obj.xyxy), gid) for gid, gse_obj in self.gse_obj_dict.items()]
+                if len(closest_objects) > 0:
+                    max_iou, closest_id = sorted(closest_objects, reverse=True)[0]
+                    if max_iou > cfg["gse_iou_reinit_thresh"]:
+                        re_init_id = closest_id
+                if re_init_id is not None:
+                    self.gse_obj_dict[gse_id] = self.gse_obj_dict.pop(re_init_id)
+                else:
+                    self.gse_obj_dict[gse_id] = Vehicle(
+                        obj_id=gse_id, class_name="gse", xyxy=gse_xyxy,
+                        tracking_params=self.tracking["gse"]["tracked_object"],
+                    )
+            else:
+                batch.update(self.gse_obj_dict[gse_id], gse_xyxy, self.prev_img_to_track, img_to_track, frame_number,
+                             self.bl_gse_segmentor, bboxes_to_ignore["gse"], YOLO_CLASS_MAPPING["gse"])
+            batch.then(functools.partial(self._gse_record, self.gse_obj_dict[gse_id], gse_id, tracked_data))
+        batch.flush()
 
     def update(self, frame_number: int, im0s: np.ndarray, det) -> list:
         """One frame → list of (frame_id, [record dicts]) that became final. `det`: GM rows of this frame (list)."""
@@ -395,73 +521,68 @@ class TrackerStream:
         biggest_doors_xyxy = {"front": front_door_xyxy, "back": back_door_xyxy}
 
         # ------------------------- beltloaders -------------------------
-        gse_trailer_ids = [s2i["gse"], s2i["trailer"]]
-        for *bl_xyxy, beltloader_id in outputs_beltloaders:
-            beltloader_id = int(beltloader_id)
-            bl_xyxy = tuple(map(int, bl_xyxy))
-            if beltloader_id in self.bl_obj_dict:
-                tracked_obj = self.bl_obj_dict[beltloader_id]
-                observed = True
-                for *xyxy, conf, cls_id in det:
-                    if cls_id in gse_trailer_ids and observed:
-                        observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
-                if not observed:
-                    tracked_obj.set_unobserved()
-                else:
-                    tracked_obj.set_observed()
-                    tracked_obj.update_params(
-                        bl_xyxy, self.prev_img_to_track, img_to_track, frame_number, self.bl_gse_segmentor,
-                        bboxes_to_remove=bboxes_to_ignore["beltloader"], yolo_idx=YOLO_CLASS_MAPPING["beltloader"],
-                    )
-                    if tracked_obj.is_stopped and observed:
-                        bl_type = get_bl_type(tracked_obj, beltloader_type, self.opt.cone_camera, biggest_doors_xyxy,
-                                              engines_det, back_wheels_det, fps=cfg["fps"])
-                        if bl_type != "undefined":
-                            self.bl_labels_dict[bl_type] = beltloader_id
-                    elif tracked_obj.status == Status.MOVING:
-                        for bl_type in self.bl_labels_dict.keys():
-                            if self.bl_labels_dict[bl_type] == beltloader_id:
-                                self.bl_labels_dict[bl_type] = None
-                if self.bl_labels_dict["front"] == beltloader_id:
-                    bl_type = "front"
-                elif self.bl_labels_dict["back"] == beltloader_id:
-                    bl_type = "back"
-                else:
-                    bl_type = "undefined"
-                tracked_data.append(
-                    Track(beltloader_id, tracked_obj.xyxy, "beltloader", state_dict=tracked_obj.to_state_dict(),
-                          data={"bl_type": bl_type})
-                )
-            elif beltloader_id in self.bl_to_init:
-                tracked_obj = self.bl_to_init.pop(beltloader_id)
-                observed = True
-                for *xyxy, conf, cls_id in det:
-                    if cls_id in gse_trailer_ids and observed:
-                        observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
-                if observed:
-                    tracked_obj.set_observed()
-                    tracked_obj.update_params(
-                        bl_xyxy, self.prev_img_to_track, img_to_track, frame_number, self.bl_gse_segmentor,
-                        bboxes_to_remove=bboxes_to_ignore["beltloader"], yolo_idx=YOLO_CLASS_MAPPING["beltloader"],
-                    )
-                    re_initialized = False
-                    for bl_id in reversed(list(self.bl_obj_dict.keys())):
-                        if get_relative_intersection(tracked_obj.xyxy, self.bl_obj_dict[bl_id].recent_biggest_bbox) > 0.3:
-                            self.bl_obj_dict[beltloader_id] = self.bl_obj_dict.pop(bl_id)
-                            re_initialized = True
-                            break
-                    if not re_initialized:
+        if self.grouped is not None:
+            self._beltloaders_grouped(outputs_beltloaders, det, frame_number, img_to_track, bboxes_to_ignore,
+                                      beltloader_type, biggest_doors_xyxy, engines_det, back_wheels_det, tracked_data)
+        else:
+            gse_trailer_ids = [s2i["gse"], s2i["trailer"]]
+            for *bl_xyxy, beltloader_id in outputs_beltloaders:
+                beltloader_id = int(beltloader_id)
+                bl_xyxy = tuple(map(int, bl_xyxy))
+                if beltloader_id in self.bl_obj_dict:
+                    tracked_obj = self.bl_obj_dict[beltloader_id]
+                    observed = True
+                    for *xyxy, conf, cls_id in det:
+                        if cls_id in gse_trailer_ids and observed:
+                            observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
+                    if not observed:
+                        tracked_obj.set_unobserved()
+                    else:
+                        tracked_obj.set_observed()
+                        tracked_obj.update_params(
+                            bl_xyxy, self.prev_img_to_track, img_to_track, frame_number, self.bl_gse_segmentor,
+                            bboxes_to_remove=bboxes_to_ignore["beltloader"], yolo_idx=YOLO_CLASS_MAPPING["beltloader"],
+                        )
                         if tracked_obj.is_stopped and observed:
                             bl_type = get_bl_type(tracked_obj, beltloader_type, self.opt.cone_camera, biggest_doors_xyxy,
                                                   engines_det, back_wheels_det, fps=cfg["fps"])
                             if bl_type != "undefined":
                                 self.bl_labels_dict[bl_type] = beltloader_id
-                        self.bl_obj_dict[beltloader_id] = tracked_obj
-            else:
-                self.bl_to_init[beltloader_id] = Vehicle(
-                    obj_id=beltloader_id, class_name="beltloader", xyxy=bl_xyxy,
-                    tracking_params=self.tracking["beltloader"]["tracked_object"],
-                )
+                        elif tracked_obj.status == Status.MOVING:
+                            for bl_type in self.bl_labels_dict.keys():
+                                if self.bl_labels_dict[bl_type] == beltloader_id:
+                                    self.bl_labels_dict[bl_type] = None
+                    self._bl_record(tracked_obj, beltloader_id, tracked_data)
+                elif beltloader_id in self.bl_to_init:
+                    tracked_obj = self.bl_to_init.pop(beltloader_id)
+                    observed = True
+                    for *xyxy, conf, cls_id in det:
+                        if cls_id in gse_trailer_ids and observed:
+                            observed, _obstacle = check_obstacles(tracked_obj, xyxy, cfg)
+                    if observed:
+                        tracked_obj.set_observed()
+                        tracked_obj.update_params(
+                            bl_xyxy, self.prev_img_to_track, img_to_track, frame_number, self.bl_gse_segmentor,
+                            bboxes_to_remove=bboxes_to_ignore["beltloader"], yolo_idx=YOLO_CLASS_MAPPING["beltloader"],
+                        )
+                        re_initialized = False
+                        for bl_id in reversed(list(self.bl_obj_dict.keys())):
+                            if get_relative_intersection(tracked_obj.xyxy, self.bl_obj_dict[bl_id].recent_biggest_bbox) > 0.3:
+                                self.bl_obj_dict[beltloader_id] = self.bl_obj_dict.pop(bl_id)
+                                re_initialized = True
+                                break
+                        if not re_initialized:
+                            if tracked_obj.is_stopped and observed:
+                                bl_type = get_bl_type(tracked_obj, beltloader_type, self.opt.cone_camera,
+                                                      biggest_doors_xyxy, engines_det, back_wheels_det, fps=cfg["fps"])
+                                if bl_type != "undefined":
+                                    self.bl_labels_dict[bl_type] = beltloader_id
+                            self.bl_obj_dict[beltloader_id] = tracked_obj
+                else:
+                    self.bl_to_init[beltloader_id] = Vehicle(
+                        obj_id=beltloader_id, class_name="beltloader", xyxy=bl_xyxy,
+                        tracking_params=self.tracking["beltloader"]["tracked_object"],
+                    )
         t4 = time.perf_counter()
         self.timings.beltloaders_s += t4 - t3
 
@@ -482,31 +603,32 @@ class TrackerStream:
             tracked_data_tentative.append(Track(worker_id, w_xyxy, "person"))
 
         # ------------------------- GSE -------------------------
-        for *gse_xyxy, gse_id in outputs_gse:
-            gse_id = int(gse_id)
-            gse_xyxy = tuple(map(int, gse_xyxy))
-            if gse_id not in self.gse_obj_dict:
-                re_init_id = None
-                closest_objects = [(bboxes_iou(gse_xyxy, gse_obj.xyxy), gid) for gid, gse_obj in self.gse_obj_dict.items()]
-                if len(closest_objects) > 0:
-                    max_iou, closest_id = sorted(closest_objects, reverse=True)[0]
-                    if max_iou > cfg["gse_iou_reinit_thresh"]:
-                        re_init_id = closest_id
-                if re_init_id is not None:
-                    self.gse_obj_dict[gse_id] = self.gse_obj_dict.pop(re_init_id)
+        if self.grouped is not None:
+            self._gse_grouped(outputs_gse, frame_number, img_to_track, bboxes_to_ignore, tracked_data)
+        else:
+            for *gse_xyxy, gse_id in outputs_gse:
+                gse_id = int(gse_id)
+                gse_xyxy = tuple(map(int, gse_xyxy))
+                if gse_id not in self.gse_obj_dict:
+                    re_init_id = None
+                    closest_objects = [(bboxes_iou(gse_xyxy, gse_obj.xyxy), gid) for gid, gse_obj in self.gse_obj_dict.items()]
+                    if len(closest_objects) > 0:
+                        max_iou, closest_id = sorted(closest_objects, reverse=True)[0]
+                        if max_iou > cfg["gse_iou_reinit_thresh"]:
+                            re_init_id = closest_id
+                    if re_init_id is not None:
+                        self.gse_obj_dict[gse_id] = self.gse_obj_dict.pop(re_init_id)
+                    else:
+                        self.gse_obj_dict[gse_id] = Vehicle(
+                            obj_id=gse_id, class_name="gse", xyxy=gse_xyxy,
+                            tracking_params=self.tracking["gse"]["tracked_object"],
+                        )
                 else:
-                    self.gse_obj_dict[gse_id] = Vehicle(
-                        obj_id=gse_id, class_name="gse", xyxy=gse_xyxy,
-                        tracking_params=self.tracking["gse"]["tracked_object"],
+                    self.gse_obj_dict[gse_id].update_params(
+                        gse_xyxy, self.prev_img_to_track, img_to_track, frame_number, self.bl_gse_segmentor,
+                        bboxes_to_remove=bboxes_to_ignore["gse"], yolo_idx=YOLO_CLASS_MAPPING["gse"],
                     )
-            else:
-                self.gse_obj_dict[gse_id].update_params(
-                    gse_xyxy, self.prev_img_to_track, img_to_track, frame_number, self.bl_gse_segmentor,
-                    bboxes_to_remove=bboxes_to_ignore["gse"], yolo_idx=YOLO_CLASS_MAPPING["gse"],
-                )
-            tracked_data.append(
-                Track(gse_id, self.gse_obj_dict[gse_id].xyxy, "gse", state_dict=self.gse_obj_dict[gse_id].to_state_dict())
-            )
+                self._gse_record(self.gse_obj_dict[gse_id], gse_id, tracked_data)
         t5 = time.perf_counter()
         self.timings.gse_s += t5 - t4
 
@@ -564,6 +686,8 @@ class TrackerStream:
         return {
             "frames": self.frames_seen,
             "exact_fast": self.opt.exact_fast,
+            "grouped_lk": self.grouped is not None,
+            "grouped_lk_stats": dict(self.grouped_stats),
             "timings_ms_per_frame": self.timings.as_ms_per_frame(),
             "noise_gate": {"sigma_calls": self.noise.calls, "denoised_frames": self.noise.denoised,
                            "last_sigma": round(float(self.noise.current_sigma), 4)},

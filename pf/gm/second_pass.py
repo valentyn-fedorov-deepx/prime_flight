@@ -10,8 +10,13 @@ from the aircraft's optical flow (`worker_bboxes`); airplane_nose boxes seed the
 
 v1 order kept per frame: `ImagePreprocessor.update(raw)`; once an aircraft object exists the pass works on the preprocessed
 frame; the Plane is created on the first class-2 frame and updated on the next ones with MobileSAM; `frame_stopped` follows
-`arrival_frame` while arrived; `prev_im0s` is the working frame of every frame; one camera vote per frame with the aircraft
+`arrival_frame` while arrived; the previous working frame feeds the next update; one camera vote per frame with the aircraft
 after arrival.
+
+Exact saving: v1 blurs (`get_preprocessed`) and copies every frame after the aircraft appears, but uses the image only on
+frames with the aircraft and as the previous frame of the next aircraft frame. The working frame is materialised on demand
+with the noise mode in force on ITS frame (`preprocess_frame`, the same OpenCV calls), so the images the Plane and the
+classifier receive are identical — about half of the blurs are skipped on a typical turnaround.
 
 Deviation (tasks/notes/PF-Q1-16.md): GM's cv_common pin d74eb096 is not in the local archive, so the Airplane /
 TrackedObject classes are the vendored 2759daf ones with the MobileSAM segmenter (the ac5098d2 code path); 2759daf repairs
@@ -26,6 +31,19 @@ from dataclasses import asdict, dataclass
 REMOVE_CLASSES = ("person", "trailer", "fuel_truck", "gse")
 
 
+def preprocess_frame(frame, mode):
+    """`ImagePreprocessor.get_preprocessed()` for a given frame and mode (the same OpenCV calls)."""
+    import cv2
+
+    from pf.gm.preprocessor import Mode
+
+    if mode in (Mode.CLEAR, Mode.LIGHT):
+        return frame
+    if mode is Mode.MIDDLE:
+        return cv2.medianBlur(frame, 5)
+    return cv2.medianBlur(cv2.GaussianBlur(frame, (5, 5), 0), 5)
+
+
 @dataclass
 class SecondPassResult:
     camera_type_cone: bool | None
@@ -36,9 +54,28 @@ class SecondPassResult:
     departure_frame: int | None
     camera_votes: int
     plane_frames: int
+    preprocessed_frames: int
 
     def as_dict(self) -> dict:
         return asdict(self)
+
+
+class _WorkingFrame:
+    """The frame v1 would hold as `im0s` on one frame, materialised only when used."""
+
+    __slots__ = ("raw", "use_preprocessed", "mode", "_img", "owner")
+
+    def __init__(self, raw, use_preprocessed, mode, owner):
+        self.raw, self.use_preprocessed, self.mode, self._img, self.owner = raw, use_preprocessed, mode, None, owner
+
+    def get(self):
+        if self._img is None:
+            if self.use_preprocessed:
+                self._img = preprocess_frame(self.raw, self.mode)
+                self.owner.preprocessed_frames += 1
+            else:
+                self._img = self.raw
+        return self._img
 
 
 class SecondPass:
@@ -69,12 +106,13 @@ class SecondPass:
         self.pre = ImagePreprocessor(noise_fn=noise_fn or estimate_noise)
         self.main_plane = None
         self.airplane_detected = False
-        self.prev_im0s = None
+        self.prev: _WorkingFrame | None = None
         self.frame_stopped = None
         self.first_arrived_frame = None
         self.departure_frame = None
         self.first_plane_frame = None
         self.plane_frames = 0
+        self.preprocessed_frames = 0
         self.votes: list = []
         self.probs: list = []
 
@@ -96,10 +134,9 @@ class SecondPass:
         from pf.tracker._v1 import tracked_object as to_mod
         from pf.tracker._v1.transport import Airplane
 
-        im0s = frame_bgr
-        self.pre.update(frame_id, im0s)
-        if self.airplane_detected:
-            im0s = self.pre.get_preprocessed()
+        self.pre.update(frame_id, frame_bgr)
+        # v1: `if airplane_detected: im0s = image_preprocessor.get_preprocessed()` — decided before this frame's plane block
+        work = _WorkingFrame(frame_bgr, self.airplane_detected, self.pre.mode, self)
         largest_plane, mode_height, nose_list, bboxes_to_remove = self.parse_rows(rows)
 
         plane_available = largest_plane is not None
@@ -112,8 +149,8 @@ class SecondPass:
                 self.main_plane._TrackedObject__segmenter = to_mod.ObjectSegmenter(model_type="mobile_sam")
                 self.first_plane_frame = frame_id
             else:
-                self.main_plane.update_params(largest_plane, self.prev_im0s, im0s, frame_id, self.predictor, nose_list,
-                                              bboxes_to_remove=bboxes_to_remove)
+                self.main_plane.update_params(largest_plane, self.prev.get(), work.get(), frame_id, self.predictor,
+                                              nose_list, bboxes_to_remove=bboxes_to_remove)
             self.airplane_detected = True
 
         mp = self.main_plane
@@ -124,10 +161,10 @@ class SecondPass:
         if mp is not None and mp.departured and self.departure_frame is None:
             self.departure_frame = mp.departure_frame
 
-        self.prev_im0s = im0s.copy()
+        self.prev = work  # v1 `prev_im0s = im0s.copy()` — nothing downstream writes to the frame
 
         if plane_available and mp.arrived and self.camera is not None:
-            is_cone, p = self.camera.predict(im0s)
+            is_cone, p = self.camera.predict(work.get())
             self.votes.append(is_cone)
             self.probs.append(p)
 
@@ -144,4 +181,5 @@ class SecondPass:
             departure_frame=self.departure_frame,
             camera_votes=len(self.votes),
             plane_frames=self.plane_frames,
+            preprocessed_frames=self.preprocessed_frames,
         )

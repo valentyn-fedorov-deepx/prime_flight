@@ -73,6 +73,22 @@ def install_component_timers() -> None:
 
     DeepSort.update = timed("deepsort.update")(DeepSort.update)
     TrackedObject.update_params = timed("tracked_object.update_params")(TrackedObject.update_params)
+    # DeepSORT internals: ReID forward (GPU) vs Kalman / matching (Python)
+    from pf.tracker._v1.deep_sort_pytorch.deep_sort.deep import feature_extractor as fe
+    from pf.tracker._v1.deep_sort_pytorch.deep_sort.sort import tracker as sort_tracker
+
+    fe.ResNetExtractor.__call__ = timed("deepsort.reid_resnet34")(fe.ResNetExtractor.__call__)
+    fe.ResNetExtractor._preprocess = timed("deepsort.reid_resnet34_preprocess")(fe.ResNetExtractor._preprocess)
+    fe.Extractor.__call__ = timed("deepsort.reid_person_net")(fe.Extractor.__call__)
+    sort_tracker.Tracker.predict = timed("deepsort.kalman_predict")(sort_tracker.Tracker.predict)
+    sort_tracker.Tracker.update = timed("deepsort.match_update")(sort_tracker.Tracker.update)
+    try:
+        import ultralytics.engine.predictor as up
+
+        up.BasePredictor.preprocess = timed("yolo_seg.preprocess")(up.BasePredictor.preprocess)
+        up.BasePredictor.inference = timed("yolo_seg.inference")(up.BasePredictor.inference)
+    except Exception:  # pragma: no cover
+        pass
 
 
 def iter_gm_rows(path: str, start: int, n: int | None):
