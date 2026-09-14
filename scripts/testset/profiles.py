@@ -48,6 +48,8 @@ PREPEND_PATH = {
     "hand-signals": ["out/envs/mmpose1"],
     "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": ["out/envs/mmpose1"],
     "pin-verification": ["out/envs/mmpose1"],
+    # pre_arrival_departure branch: imbalanced-learn 0.13.0 + scikit-learn 1.6.1 (its pickled classifiers), mmpose 1.x
+    "lead-marshaller-and-wing-walkers-in-position": ["out/envs/sklearn161", "out/envs/mmpose1"],
 }
 
 # keys of the production tracker files (bd43c3c) that an older cv_common TrackedObject.from_state_dict rejects: the stage
