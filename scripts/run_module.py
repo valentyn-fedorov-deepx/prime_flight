@@ -16,13 +16,22 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
   * with --no-video the worker returns a stub dataset (`nframes`, `cap.get()` → fps); pixel access raises a clear error;
   * import errors are recorded like runtime errors;
   * any `detect()` return shape is accepted: status, report, smart timeline = the first three values, the rest in
-    `extra_returns`.
+    `extra_returns`;
+  * `--airplane-type` is passed to `detect()` only for modules whose signature accepts it (db_worker's model_starter does
+    the same for cones-placed-in-proper-positions-and-timely);
+  * NumPy 1.x scalar conversion: the production images run NumPy 1.x, where `float(array([x]))` / `int(array([x]))` of a
+    one-element array return the element; NumPy 2.x raises TypeError (lead-marshaller, wing-walkers and pushback-does-not-
+    start all call `float(np.rad2deg(np.arctan(lin_reg.coef_)))`). The runner rebinds `float` and `int` in the module's
+    namespace to subclasses that restore exactly that conversion and delegate everything else (isinstance, dtype) to the
+    builtins. Opt-in with --numpy1-scalars, used only for the modules that need it.
 """
 
 from __future__ import annotations
 
 import argparse
+import builtins
 import importlib
+import inspect
 import json
 import os
 import sys
@@ -62,6 +71,44 @@ def make_meta_worker(VideoWorker, fps=8):
     return MetaOnlyWorker
 
 
+def numpy1_scalar_types():
+    """`float` / `int` replacements with NumPy 1.x conversion of one-element arrays; isinstance/issubclass/dtype unchanged."""
+    import numpy as np
+
+    def unwrap(args):
+        if args and isinstance(args[0], np.ndarray) and args[0].ndim > 0 and args[0].size == 1:
+            return (args[0].reshape(-1)[0],) + tuple(args[1:])
+        return args
+
+    class _FloatMeta(type):
+        def __instancecheck__(cls, obj):
+            return isinstance(obj, builtins.float)
+
+        def __subclasscheck__(cls, sub):
+            return issubclass(sub, builtins.float)
+
+    class _IntMeta(type):
+        def __instancecheck__(cls, obj):
+            return isinstance(obj, builtins.int)
+
+        def __subclasscheck__(cls, sub):
+            return issubclass(sub, builtins.int)
+
+    class float(builtins.float, metaclass=_FloatMeta):  # noqa: A001
+        dtype = np.dtype(builtins.float)  # np.dtype(float) / astype(float) / dtype=float keep meaning float64
+
+        def __new__(cls, *args):
+            return builtins.float(*unwrap(args))
+
+    class int(builtins.int, metaclass=_IntMeta):  # noqa: A001
+        dtype = np.dtype(builtins.int)
+
+        def __new__(cls, *args, **kw):
+            return builtins.int(*unwrap(args), **kw)
+
+    return float, int
+
+
 def _jsonable(v):
     if v is None or isinstance(v, (str, int, float, bool)):
         return v
@@ -83,7 +130,10 @@ def main() -> int:
     ap.add_argument("--fps", type=int, default=8)
     ap.add_argument("--device", default="cuda", help="some modules (YOLOv5 select_device) need '0' instead of 'cuda'")
     ap.add_argument("--cone-camera", default="true", choices=["true", "false"])
+    ap.add_argument("--airplane-type", default=None, help="JET | AIRCRAFT, passed only if detect() accepts it")
     ap.add_argument("--weights-dir", default="weights")
+    ap.add_argument("--numpy1-scalars", action="store_true", help="NumPy 1.x float()/int() of one-element arrays")
+    ap.add_argument("--write-video", action="store_true")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -106,6 +156,8 @@ def main() -> int:
         "no_video": a.no_video,
         "device": a.device,
         "cone_camera": a.cone_camera,
+        "airplane_type": a.airplane_type,
+        "numpy1_scalar_shim": a.numpy1_scalars,
     }
     substituted = os.path.join(moddir, "cv_common", "SUBSTITUTED_PIN.txt")
     if os.path.exists(substituted):
@@ -114,6 +166,8 @@ def main() -> int:
         import torch
 
         prod = importlib.import_module(a.entry)
+        if a.numpy1_scalars:
+            prod.float, prod.int = numpy1_scalar_types()
         from cv_common.common import parse_config
         from cv_common.log_utils import JsonLogger
         from db_worker.ML_worker import VideoWorker
@@ -129,17 +183,21 @@ def main() -> int:
             inferences_dir=inf,
         )
         jl = JsonLogger(config["status2id"], config["str2id"], None)
+        kwargs = dict(
+            source=src,
+            output_path=os.path.join(moddir, "output", a.video + ".mkv"),
+            device=a.device,
+            video_worker=vw,
+            write_video=a.write_video,
+            cone_camera=(a.cone_camera == "true"),
+            weights_dir=a.weights_dir,
+            json_logger=jl,
+        )
+        if "airplane_type" in inspect.signature(prod.detect).parameters:
+            kwargs["airplane_type"] = a.airplane_type
+            result["airplane_type_passed"] = True
         with torch.no_grad():
-            ret = prod.detect(
-                source=src,
-                output_path=os.path.join(moddir, "output", a.video + ".mkv"),
-                device=a.device,
-                video_worker=vw,
-                write_video=False,
-                cone_camera=(a.cone_camera == "true"),
-                weights_dir=a.weights_dir,
-                json_logger=jl,
-            )
+            ret = prod.detect(**kwargs)
         values = list(ret) if isinstance(ret, (tuple, list)) else [ret]
         result.update(
             {
