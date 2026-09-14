@@ -1,42 +1,42 @@
-# Команда Prime Flight — хто за що відповідає
+# Prime Flight team — who is responsible for what
 
-Джерела: пост ліда в Slack (делівері по кварталах) і нотатки зустрічі стрімінг-треку пт 4.09.2026.
-Slack-хендли: Максим Чернишов `U0BLS9K3H8T`, Юрій Лучко `U0BL02TRFK6`, Аріан Сінгх `U09Q50VN2JH`.
+Sources: the lead's post in Slack (delivery by quarter) and the notes of the streaming-track meeting of Fri 4.09.2026.
+Slack handles: Maksym Chernyshev `U0BLS9K3H8T`, Yurii Luchko `U0BL02TRFK6`, Aryan Singh `U09Q50VN2JH`.
 
-## Ядро
+## Core
 
-| Людина | Роль у PF | Зона | Агент у воркспейсі | Квартали |
+| Person | Role in PF | Zone | Agent in the workspace | Quarters |
 |---|---|---|---|---|
-| **Валентин** (лід) | координатор треку, техлід GM/Tracker разом з Юрієм | цей воркспейс, зведення для Ігоря/Сергія, таблиці/схеми, roadmap; GM+Tracker | `pm-coordinator`, `gm-tracker-engineer`, `module-porter` | усі |
-| **Максим Чернишов** | власник архітектури | data flow на дві гілки, receiver/orchestrator, stage detector, Wi-Fi/SIM upload, прибирання раннього merge, RT-гілка, техборг архітектури | `pipeline-architect` | Q1 (upload, stage detector, по-чанкова обробка), Q2 (RT-гілка), Q3 (фікси архітектури), Q4 (оптимізація) |
-| **Юрій Лучко** | GM + Tracker | фікси GM/Tracker (Q1), адаптація під RT (Q2), оптимізація (Q4); розбір логіки модулів, групування, чоки | `gm-tracker-engineer`, `module-porter` | Q1–Q4 |
-| **Аріан Сінгх** | алертинг | бекенд ↔ стрімінг: шина алертів, дедуплікація, MongoDB, endpoint, рендеринг; список відкритих питань у канал з тегом Ігоря | `alerting-engineer` | Q3–Q4 |
+| **Valentyn** (lead) | track coordinator, tech lead of GM/Tracker together with Yurii | this workspace, summaries for Ihor/Serhii, tables/diagrams, roadmap; GM+Tracker | `pm-coordinator`, `gm-tracker-engineer`, `module-porter` | all |
+| **Maksym Chernyshev** | architecture owner | data flow into two branches, receiver/orchestrator, stage detector, Wi-Fi/SIM upload, removal of early merge, RT branch, architecture tech debt | `pipeline-architect` | Q1 (upload, stage detector, per-chunk processing), Q2 (RT branch), Q3 (architecture fixes), Q4 (optimization) |
+| **Yurii Luchko** | GM + Tracker | GM/Tracker fixes (Q1), adaptation to RT (Q2), optimization (Q4); analysis of module logic, grouping, chocks | `gm-tracker-engineer`, `module-porter` | Q1–Q4 |
+| **Aryan Singh** | alerting | backend ↔ streaming: alert bus, deduplication, MongoDB, endpoint, rendering; list of open questions in the channel with Ihor tagged | `alerting-engineer` | Q3–Q4 |
 
-## Дотичні
+## Adjacent
 
-| Людина | Внесок | Синхронізація |
+| Person | Contribution | Sync |
 |---|---|---|
-| **Владислав** | ієрархія модулів (дерево), стан GM і трекера, тестування уривками, Entity Classifier, Hair Policy на edge (≈20 % на треку) | з Юрієм і Максимом Ч. |
-| **Денис** | датасети загалом і під модуль; збалансовані вибірки, fail-розмітка | з Владиславом (підхід до тестування), `qa-parity` |
-| **Максим Станкевич** | організаційне: таски для логування годин на планування/research | — |
-| **Оксана** | валідація точності модулів; розподіл модулів у презентації клієнту (≈11 стрімінг / 8–9 пост) | з Владиславом; `qa-parity` |
+| **Vladyslav** | module hierarchy (tree), state of the GM and tracker, testing on fragments, Entity Classifier, Hair Policy on edge (≈20 % on the track) | with Yurii and Maksym Ch. |
+| **Denys** | datasets in general and per module; balanced samples, fail labels | with Vladyslav (approach to testing), `qa-parity` |
+| **Maksym Stankevych** | organizational: tasks for logging hours on planning/research | — |
+| **Oksana** | validation of module accuracy; distribution of modules in the client presentation (≈11 streaming / 8–9 post) | with Vladyslav; `qa-parity` |
 
-## Рецензенти і джерела рішень
+## Reviewers and sources of decisions
 
-- **Ігор** — єдиний source of truth по технічній частині; рецензує вихід; ризик третьої ітерації → **уточнювати бачення,
-  не вгадувати**. Усі відкриті технічні питання — у канал з його тегом.
-- **Сергій** — рецензент разом з Ігорем; потребує таблиці pain points для пріоритизації.
+- **Ihor** — the single source of truth on the technical part; reviews the output; risk of a third iteration → **clarify the vision,
+  do not guess**. All open technical questions — in the channel with his tag.
+- **Serhii** — reviewer together with Ihor; needs a table of pain points for prioritization.
 
-## Ритм
+## Cadence
 
-- Щотижня: статус по борду (`/pf-status`), оновлення ризиків, «Decision needed» → Ігор.
-- Кінець кварталу: клієнтське delivery з roadmap + замір Time to Result.
-- Будь-яка зміна контракту кадру / stage-подій / клієнтської логіки → ADR у `docs/decisions/` + погодження.
+- Weekly: status by the board (`/pf-status`), risk update, "Decision needed" → Ihor.
+- End of quarter: client delivery per the roadmap + Time to Result measurement.
+- Any change of the frame contract / stage events / client logic → ADR in `docs/decisions/` + sign-off.
 
-## Правила взаємодії агентів між зонами
+## Rules of agent interaction between zones
 
-- `pipeline-architect` володіє контрактом подій (stage/events/anchors); `gm-tracker-engineer` — схемою `general_model`/`trackers`
-  у контракті. Зміна будь-якого поля = ADR + повідомлення `module-porter`.
-- `module-porter` не змінює клієнтську семантику вердикту; якщо треба — задача з тегом `trigger-change` до ліда.
-- `qa-parity` має право заблокувати статус «done» у будь-якій задачі порту модуля без результату паритету.
-- `alerting-engineer` споживає вердикти й події з контракту, не читає внутрішній стан модулів.
+- `pipeline-architect` owns the event contract (stage/events/anchors); `gm-tracker-engineer` — the `general_model`/`trackers` schema
+  in the contract. A change of any field = ADR + a message to `module-porter`.
+- `module-porter` does not change the client semantics of the verdict; if needed — a task tagged `trigger-change` to the lead.
+- `qa-parity` has the right to block the "done" status in any module-port task without a parity result.
+- `alerting-engineer` consumes verdicts and events from the contract, does not read the internal state of modules.

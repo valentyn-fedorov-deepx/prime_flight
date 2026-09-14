@@ -1,73 +1,73 @@
-# ADR-001 · GM v2 / Tracker v2: стратегія сумісності з 27 модулями і по-чанкова обробка
+# ADR-001 · GM v2 / Tracker v2: compatibility strategy with the 27 modules and chunk-by-chunk processing
 
-- **Дата:** 2026-09-14 · **Статус:** proposed
-- **Автор:** Валентин · **Рецензенти:** Ігор, Юрій, Максим Ч. (+ Оксана — щодо семантики вердиктів)
-- **Зона:** GM / Tracker / контракт кадру / приймач
-- **Підстава:** `docs/analysis/gm_current.md` (PF-Q1-12), `docs/analysis/module_consumption.md` (PF-Q1-14),
+- **Date:** 2026-09-14 · **Status:** proposed
+- **Author:** Valentyn · **Reviewers:** Ihor, Yurii, Maksym Ch. (+ Oksana — regarding the verdict semantics)
+- **Zone:** GM / Tracker / frame contract / receiver
+- **Basis:** `docs/analysis/gm_current.md` (PF-Q1-12), `docs/analysis/module_consumption.md` (PF-Q1-14),
   `docs/analysis/contract_observed.md` (PF-Q1-15), `docs/02_target_architecture.md` §2–5.
 
-## Контекст
+## Context
 
-Модулі (27) споживають не «детекції і треки», а дуже конкретний артефакт: файл **другого проходу** GM
-(`[x1,y1,x2,y2,conf,cls]`, синтезовані `obstacle/side_obstacle`, рядок головного літака з висотою-модою в conf-слоті) і
-трекерний JSON, чий `state_dict` відновлюється `from_state_dict` на **10 різних пінах cv_common**, що падають на будь-якому
-невідомому ключі. GM сам двопрохідний і приймає всі per-video рішення після EOF; 9 модулів дублюють arrival-stage блок з
-приватних полів трекера; 4 порівнюють `frame_number == arrival_frame`. Отже «оптимізувати GM+Tracker і перевірити, що
-точність модулів не впала» можливо лише якщо інтерфейс до модулів заморожено побітово, а нове — версіоновано окремо.
+The modules (27) consume not "detections and tracks" but a very specific artifact: the GM **second-pass** file
+(`[x1,y1,x2,y2,conf,cls]`, the synthesized `obstacle/side_obstacle`, the main-aircraft row with the height mode in the conf slot) and
+the tracker JSON, whose `state_dict` is restored by `from_state_dict` on **10 different cv_common pins** that fail on any
+unknown key. GM itself is two-pass and makes all per-video decisions after EOF; 9 modules duplicate the arrival-stage block from
+private tracker fields; 4 compare `frame_number == arrival_frame`. Hence "optimize GM+Tracker and verify that
+the module accuracy did not drop" is possible only if the interface to the modules is frozen bit-for-bit, and the new is versioned separately.
 
-## Рішення
+## Decision
 
-1. **Два шари виходу, один інференс.**
-   - **v1-compat (пост-гілка, для 27 модулів як є):** GM v2 + Tracker v2 на кінці події відтворюють легасі-артефакти
-     побітово: ndjson другого проходу (сирі рядки без `airplane`, рядки 29/30 з тією ж логікою, рядок класу 2 з висотою-модою,
-     1-based ключі без дірок) і трекерний ndjson з тим самим набором ключів `state_dict` per class (39 airplane / 34 vehicle,
-     як спостережено). Паритет з v1 доводиться `pf.eval.compare_gm_ndjson` + порівнянням `state_dict` по споживаних полях.
-   - **v2 (шина, для стрімінгу і нових модулів):** `pf.contract` schema `"2.0"`: `frame_id` абсолютний, сирі рядки
-     `airplane` зі справжнім conf, без синтезованих копій, `stage/events/anchors` від stage detector; трекерні об'єкти
-     з `schema_version` і без приватних полів оптичного потоку у контракті.
-   Модуль, що переїжджає у стрімінг, переходить з v1 на v2 явно (ADR на модуль), не «мовчки».
+1. **Two output layers, one inference.**
+   - **v1-compat (post branch, for the 27 modules as is):** GM v2 + Tracker v2 at the end of the event reproduce the legacy artifacts
+     bit-for-bit: the second-pass ndjson (raw rows without `airplane`, rows 29/30 with the same logic, the class-2 row with the height mode,
+     1-based keys without gaps) and the tracker ndjson with the same set of `state_dict` keys per class (39 airplane / 34 vehicle,
+     as observed). Parity with v1 is proven by `pf.eval.compare_gm_ndjson` + a comparison of `state_dict` on the consumed fields.
+   - **v2 (the bus, for streaming and new modules):** `pf.contract` schema `"2.0"`: absolute `frame_id`, raw
+     `airplane` rows with the real conf, no synthesized copies, `stage/events/anchors` from the stage detector; tracker objects
+     with `schema_version` and without private optical-flow fields in the contract.
+   A module that moves to streaming switches from v1 to v2 explicitly (an ADR per module), not "silently".
 
-2. **GM v2 = `gm_core` + `gm_context` + sink-и.** `gm_core`: чиста `frame → rows` з тими самими порогами (0.35 / chock /
-   vehicle), letterbox, fp16 IO-binding і class-agnostic NMS 0.7 — умова побітового паритету сирих рядків. `gm_context`:
-   інкрементальні per-video рішення з подією `decided_at` (entity 40 хітів; тип літака 500 голосів після T_arr; камера —
-   правило фіксації N кадрів після зупинки, **окремий ADR**; layout частин — заморозка після ≥240 стабільних кадрів;
-   головний літак — біжучий найдовший трек, фінал на кінці події). Sink v1-compat відтворює другий прохід з сирих рядків +
-   фінального контексту; sink v2 пише шину покадрово.
+2. **GM v2 = `gm_core` + `gm_context` + sinks.** `gm_core`: a pure `frame → rows` with the same thresholds (0.35 / chock /
+   vehicle), letterbox, fp16 IO-binding and class-agnostic NMS 0.7 — the condition of bit-for-bit parity of the raw rows. `gm_context`:
+   incremental per-video decisions with a `decided_at` event (entity 40 hits; aircraft type 500 votes after T_arr; camera —
+   the rule of fixing N frames after the stop, **a separate ADR**; parts layout — freeze after ≥240 stable frames;
+   main aircraft — the running longest track, the final at the end of the event). The v1-compat sink reproduces the second pass from the raw rows +
+   the final context; the v2 sink writes the bus frame by frame.
 
-3. **Tracker v2 не змінює `state_dict` для старих модулів.** Нові поля/події (BL@door, BL leave, стаціонарність пушбека,
-   `have_arrival_stage` як подія) — тільки в `data{}` треку (модулі читають лише `data.bl_type`) або в полях кадру
-   `events/anchors`. Один трекер на подію (X1), причинний; `schema_version` — у обгортці кадру, не в `state_dict`.
+3. **Tracker v2 does not change `state_dict` for the old modules.** New fields/events (BL@door, BL leave, pushback stationarity,
+   `have_arrival_stage` as an event) — only in the track's `data{}` (the modules read only `data.bl_type`) or in the frame fields
+   `events/anchors`. One tracker per event (X1), causal; `schema_version` — in the frame wrapper, not in `state_dict`.
 
-4. **Stage detector — єдиний власник якорів.** T_arr/T_dep/BL@door/BL leave/pushback_attached обчислюються один раз після
-   трекера і кладуться в `anchors`; перший крок порту будь-якого модуля — замінити локальний arrival-stage блок і
-   рівності `frame_number ==` на `anchors` (9 + 4 модулі).
+4. **The stage detector is the sole owner of the anchors.** T_arr/T_dep/BL@door/BL leave/pushback_attached are computed once after
+   the tracker and put into `anchors`; the first step of porting any module is to replace the local arrival-stage block and
+   the `frame_number ==` equalities with `anchors` (9 + 4 modules).
 
-5. **Заглушки при втраті чанка (X2):** порожній кадр `general_model: []` призводить до того, що 15 модулів не оновлюють
-   трек літака. Пропозиція: заглушка несе `trackers` з останнім відомим станом літака і `general_model: []`; вибір
-   фіксується після заміру на стенді (`--drop-mode fill`).
+5. **Placeholder frames on chunk loss (X2):** an empty frame `general_model: []` leads to 15 modules not updating
+   the aircraft track. Proposal: the placeholder frame carries `trackers` with the last known aircraft state and `general_model: []`; the choice
+   is fixed after a measurement on the stand (`--drop-mode fill`).
 
-6. **Оптимізації, що змінюють вихід** (прямокутний ONNX-експорт 1088×640, fp16→int8, інша NMS, 720p), дозволені лише як
-   **версіонована** зміна (`schema_version` або окремий model_version у звіті) з переміром recall на збалансованій вибірці.
-   Оптимізації без зміни виходу (батчинг по камерах, векторизація постпроцесингу, прибрати три декодування і SAM щокадру,
-   `write_video` off, кешування H2D) — без ADR, лише з паритетом.
+6. **Optimizations that change the output** (rectangular ONNX export 1088×640, fp16→int8, a different NMS, 720p) are allowed only as a
+   **versioned** change (`schema_version` or a separate model_version in the report) with a recall re-measurement on a balanced sample.
+   Optimizations without an output change (batching across cameras, vectorization of the post-processing, removing the three decodings and SAM on every frame,
+   `write_video` off, H2D caching) — without an ADR, with parity only.
 
-## Альтернативи, які відкинули
+## Alternatives rejected
 
-- **Переписати модулі під новий контракт одразу.** 27 репо на 10 пінах cv_common, 15 з пікселями, 13 з власними моделями —
-  місяці роботи до першого виміряного результату; ризик регресій без розмітки.
-- **Лишити GM однопрохідним «як є» і лише прискорити.** Не дає по-чанкової обробки: усі per-video рішення чекають EOF.
-- **Додати нові ключі в `state_dict`.** Доведено інцидентом `_bl_type_*`: падіння модулів на старих пінах.
+- **Rewrite the modules for the new contract right away.** 27 repos on 10 cv_common pins, 15 with pixels, 13 with own models —
+  months of work before the first measured result; risk of regressions without labels.
+- **Leave GM single-pass "as is" and only speed it up.** Does not give chunk-by-chunk processing: all per-video decisions wait for EOF.
+- **Add new keys to `state_dict`.** Proven by the `_bl_type_*` incident: module crashes on old pins.
 
-## Наслідки
+## Consequences
 
-- Модулі: 0 змін коду для пост-гілки (v1-compat); для стрімінгу — явний перехід на v2 з паритетом.
-- Клієнтська логіка (`05_module_logic.md`): без змін.
-- Вимірювання: L1 паритет сирих рядків і `state_dict` (по споживаних полях) на 7 ATL-C5 відео; L2 паритет вердиктів на
-  v1-compat артефактах; швидкість GM v2 ≤ 28 мс/кадр (`measurement_plan.md`).
-- Борг, що стає видимим: `str2id` як версіонований артефакт у `pf/` (потрібен `cv_common/global_config.yaml`), мертві
-  гілки GM (BL-стадії, `select_video`, `stages=None`), 8 модулів з HEAD ≠ pinned.
+- Modules: 0 code changes for the post branch (v1-compat); for streaming — an explicit switch to v2 with parity.
+- Client logic (`05_module_logic.md`): unchanged.
+- Measurements: L1 parity of the raw rows and `state_dict` (on the consumed fields) on the 7 ATL-C5 videos; L2 parity of verdicts on
+  the v1-compat artifacts; GM v2 speed ≤ 28 ms/frame (`measurement_plan.md`).
+- Debt that becomes visible: `str2id` as a versioned artifact in `pf/` (requires `cv_common/global_config.yaml`), dead
+  GM branches (BL stages, `select_video`, `stages=None`), 8 modules with HEAD ≠ pinned.
 
-## Дії
-- [ ] Ревʼю Ігоря/Юрія/Максима Ч.; окремі ADR: правило фіксації камери, політика заглушок, `str2id`-артефакт.
-- [ ] PF-Q1-16 (GM v2) і PF-Q1-17 (Tracker v2) виконуються за цим ADR; `pf/gm`, `pf/tracker` інтерфейси вже відповідають.
-- [ ] Після відновлення доступу до `cv_common` — перевірити `from_state_dict` на 10 пінах (чи справді падає на зайвих ключах).
+## Actions
+- [ ] Review by Ihor/Yurii/Maksym Ch.; separate ADRs: the camera fixing rule, the placeholder-frame policy, the `str2id` artifact.
+- [ ] PF-Q1-16 (GM v2) and PF-Q1-17 (Tracker v2) are executed per this ADR; the `pf/gm`, `pf/tracker` interfaces already conform.
+- [ ] After access to `cv_common` is restored — check `from_state_dict` on the 10 pins (whether it really fails on extra keys).

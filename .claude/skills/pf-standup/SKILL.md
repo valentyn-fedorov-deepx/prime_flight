@@ -1,20 +1,20 @@
 ---
 name: pf-standup
-description: Короткий стендап Prime Flight для Slack (5–8 рядків, українською) з tasks/BOARD.md і свіжих tasks/notes — зроблено / робимо / блокери / питання до Ігоря. Опційний аргумент — за скільки днів брати зміни (за замовчуванням 7).
+description: Short Prime Flight standup for Slack (5–8 lines, in English) from tasks/BOARD.md and fresh tasks/notes — done / doing / blockers / questions to Ihor. Optional argument — how many days of changes to take (default 7).
 ---
 
-Період: останні `$ARGUMENTS` днів (порожньо → 7). Виконує `pm-coordinator`.
+Period: the last `$ARGUMENTS` days (empty → 7). Executed by `pm-coordinator`.
 
-1. Прочитай `tasks/BOARD.md`, `tasks/notes/*.md` (журнали з датами в межах періоду), останній `tasks/status/*.md`.
-2. Сформуй текст для каналу — без markdown-таблиць, без заголовків, українською, з ID задач:
+1. Read `tasks/BOARD.md`, `tasks/notes/*.md` (journals with dates within the period), the latest `tasks/status/*.md`.
+2. Compose the text for the channel — no markdown tables, no headings, in English, with task IDs:
 
 ```
-PF · стендап <дата>
-✅ Зроблено: PF-…: …; PF-…: …
-🔧 Робимо: PF-…: … (хто)
-⛔ Блокери: PF-…: … → потрібно від <кого>
-❓ До Ігоря: …
-📅 Далі: …
+PF · standup <date>
+✅ Done: PF-…: …; PF-…: …
+🔧 Doing: PF-…: … (who)
+⛔ Blockers: PF-…: … → needed from <whom>
+❓ To Ihor: …
+📅 Next: …
 ```
-3. Не пиши від імені колег; тільки факти з notes. Якщо за період нічого не змінилось — так і напиши.
-4. Збережи копію у `tasks/status/standup-<YYYY-MM-DD>.md`.
+3. Do not write on behalf of colleagues; only facts from the notes. If nothing changed over the period — say so.
+4. Save a copy to `tasks/status/standup-<YYYY-MM-DD>.md`.

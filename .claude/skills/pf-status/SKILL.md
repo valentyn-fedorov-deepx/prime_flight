@@ -1,26 +1,26 @@
 ---
 name: pf-status
-description: Статус проєкту Prime Flight по кварталах з tasks/BOARD.md і tasks/notes — що done/in-progress/blocked, що змінилось з минулого статусу, ризики, decision-needed, наступні кроки. Зберігає у tasks/status/<date>.md.
+description: Prime Flight project status by quarters from tasks/BOARD.md and tasks/notes — what is done/in-progress/blocked, what changed since the previous status, risks, decision-needed, next steps. Saves to tasks/status/<date>.md.
 ---
 
-Використовуй агента `pm-coordinator` (або виконай сам, якщо вже в його ролі).
+Use the `pm-coordinator` agent (or do it yourself if you are already in its role).
 
-1. Прочитай `tasks/BOARD.md`, усі `tasks/notes/*.md`, останній файл у `tasks/status/` (якщо є), розділ «Ризики» у `docs/06_roadmap.md`.
-2. Склади статус у такому форматі (українською, стисло):
+1. Read `tasks/BOARD.md`, all `tasks/notes/*.md`, the latest file in `tasks/status/` (if any), the "Risks" section in `docs/06_roadmap.md`.
+2. Compose the status in the following format (in English, concise):
 
 ```
 # PF status · <YYYY-MM-DD>
-## Q1 · <тема>
-- done: …  · in-progress: … · blocked: … (чому, хто розблоковує)
-## Q2 … Q4 (лише якщо є рух)
-## Змінилось із <дата минулого статусу>
+## Q1 · <theme>
+- done: …  · in-progress: … · blocked: … (why, who unblocks)
+## Q2 … Q4 (only if there is movement)
+## Changed since <date of the previous status>
 - …
-## Decision needed (для Ігоря / ліда)
-- <ID>: питання одним реченням, варіанти A/B, рекомендація
-## Ризики (оновлено)
+## Decision needed (for Ihor / the lead)
+- <ID>: the question in one sentence, options A/B, recommendation
+## Risks (updated)
 - …
-## Наступні 3 кроки
+## Next 3 steps
 1. …
 ```
-3. Збережи у `tasks/status/<YYYY-MM-DD>.md`. Не змінюй статуси в BOARD.md без підстави в notes.
-4. Якщо аргумент `$ARGUMENTS` містить `slack` — додай наприкінці 5–8-рядкову версію для каналу.
+3. Save to `tasks/status/<YYYY-MM-DD>.md`. Do not change statuses in BOARD.md without grounds in the notes.
+4. If the `$ARGUMENTS` argument contains `slack` — add a 5–8-line version for the channel at the end.

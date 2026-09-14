@@ -1,26 +1,26 @@
-# <PF-ID> · <назва>
+# <PF-ID> · <title>
 
-- **Власник:** · **Агент:** · **Статус:** · **Квартал:**
-- **Deps:** · **Теги:**
-- **Репо / гілка:** `G:\deepx_gat\<repo>` · `pf/<id>-<slug>`
+- **Owner:** · **Agent:** · **Status:** · **Quarter:**
+- **Deps:** · **Tags:**
+- **Repo / branch:** `external\<repo>` · `pf/<id>-<slug>`
 
-## Контекст
-Чому задача існує, що з `docs/` релевантно (посилання на розділи 02/04/05).
+## Context
+Why the task exists, what in `docs/` is relevant (links to sections 02/04/05).
 
-## Acceptance (з BOARD.md, деталізовано)
+## Acceptance (from BOARD.md, detailed)
 - [ ] …
 
-## План
+## Plan
 1. …
 
-## Що зроблено (журнал, дата → факт)
+## What has been done (journal, date → fact)
 - 2026-MM-DD — …
 
-## Як перевірено
-Команди, вибірка відео, результат паритету / замір. Без цього статус `done` не ставиться.
+## How it was verified
+Commands, the video sample, the parity result / measurement. Without this the `done` status is not set.
 
-## Decision needed / відкриті питання
+## Decision needed / open questions
 - …
 
-## Для MR (людина пушить)
-- Гілка, коміти, опис MR, ризики.
+## For the MR (a human pushes)
+- Branch, commits, MR description, risks.

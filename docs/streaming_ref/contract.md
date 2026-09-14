@@ -1,81 +1,83 @@
-# Контракт кадру
+_English translation of `G:/gat-streaming/docs/contract.md` (Ukrainian original), 2026-09-14._
 
-Найдешевша частина системи і водночас та, відсутність якої вже коштувала дня
-роботи.
+# Frame contract
 
-## Схема
+The cheapest part of the system, and at the same time the one whose absence has already cost
+a day of work.
+
+## Schema
 
 ```python
 {
-  "schema_version": "1.0",     # без цього несумісність видно лише падінням
-  "frame_id": 1234,            # абсолютний номер, НЕ позиція в потоці
-  "general_model": [...],      # детекції
-  "trackers": [...]            # треки зі станом
+  "schema_version": "1.0",     # without this, incompatibility is visible only as a crash
+  "frame_id": 1234,            # absolute number, NOT the position in the stream
+  "general_model": [...],      # detections
+  "trackers": [...]            # tracks with state
 }
 ```
 
-Реалізація і перевірки — [streaming/contract.py](../streaming/contract.py),
-тести — [tests/test_contract.py](../tests/test_contract.py).
+Implementation and checks — [streaming/contract.py](../streaming/contract.py),
+tests — [tests/test_contract.py](../tests/test_contract.py).
 
-## Чому `schema_version`
+## Why `schema_version`
 
-У бакеті `gs://cv-modules-topics` лежить **по 15–16 версій** трекерних
-інференсів на кожне відео — з квітня по серпень 2026, з різними хешами коду
-і несумісними схемами `state_dict`. Позначки версії немає.
+The bucket `gs://cv-modules-topics` holds **15–16 versions** of tracker
+inferences per video — from April to August 2026, with different code hashes
+and incompatible `state_dict` schemas. There is no version marker.
 
-Розрізнити їх можна було лише так: завантажити, спробувати згодувати модулю,
-подивитись, чи впаде на `ValueError: Unexpected keys in state_dict`. Для трьох
-відео з восьми **жодна** з 15–16 версій не була сумісною.
+The only way to tell them apart was: download, try feeding it to the module,
+see whether it crashes with `ValueError: Unexpected keys in state_dict`. For three
+videos out of eight **none** of the 15–16 versions was compatible.
 
-## Чому `frame_id`
+## Why `frame_id`
 
-Модулі беруть номер кадру з `enumerate(metadata, 1)` — тобто **з позиції в
-потоці**. Поки потік цілий, позиція дорівнює абсолютному id. Щойно чанк
-загубиться — вони розходяться, і порівняння виду
+Modules take the frame number from `enumerate(metadata, 1)` — i.e. **from the position in
+the stream**. As long as the stream is intact, the position equals the absolute id. As soon as a chunk
+is lost they diverge, and comparisons like
 
 ```python
 elif frame_number == aircraft.departure_frame:
 ```
 
-починають показувати не на той кадр. `aircraft.departure_frame` приходить з
-трекера як абсолютний id; `frame_number` — це позиція. Після втрати одного
-7,5-секундного чанка вони розходяться рівно на 60.
+start pointing at the wrong frame. `aircraft.departure_frame` comes from the
+tracker as an absolute id; `frame_number` is a position. After the loss of one
+7.5-second chunk they diverge by exactly 60.
 
-Приймач мусить заповнювати дірки заглушками, а не пропускати кадри.
-`Session` це робить; тест `test_без_заповнення_нумерацiя_роз_їжджається`
-фіксує розмір розбіжності, якщо не робити.
+The receiver must fill the gaps with placeholder frames rather than skip frames.
+`Session` does this; the `test_session.py` test "without fill, the numbering drifts apart"
+(the stand's test names are Ukrainian identifiers) pins down the size of the divergence if it is not done.
 
-Є і друга причина. Чанк **не має фіксованої довжини**: при номіналі 7,5 с
-максимальна зміряна тривалість — 11,25 с, рівно на один GOP більше, бо
-останній чанк добирає залишок. Покладатися на «номер кадру в чанку» не можна
-в принципі. Див. [chunking.svg](chunking.svg).
+There is a second reason too. A chunk **has no fixed length**: at a nominal 7.5 s the
+maximum measured duration is 11.25 s, exactly one GOP more, because the
+last chunk picks up the remainder. Relying on "frame number within the chunk" is not possible
+in principle. See [chunking.svg](chunking.svg).
 
-## Витікання полів між класами
+## Field leakage between classes
 
-`VEHICLE_ONLY_KEYS = {"_bl_type_bbox", "_bl_type_frames"}` — поля, які клас
-`Vehicle` має право писати у свій стан, і яких **не має бути** у стані літака.
+`VEHICLE_ONLY_KEYS = {"_bl_type_bbox", "_bl_type_frames"}` — fields that the class
+`Vehicle` is allowed to write into its state and which **must not** be in the aircraft's state.
 
-Реальний баг: у новішій версії трекера ці поля піднялися вгору по ієрархії.
+A real bug: in a newer version of the tracker these fields moved up the hierarchy.
 
-| клас | правильна версія | зламана |
+| class | correct version | broken |
 |---|---|---|
-| `airplane` | 38 ключів, `bl_type` немає | **40 ключів, `bl_type` є** |
-| `beltloader` | 34 ключі, `bl_type` є | 34 ключі, `bl_type` є |
+| `airplane` | 38 keys, no `bl_type` | **40 keys, `bl_type` present** |
+| `beltloader` | 34 keys, `bl_type` present | 34 keys, `bl_type` present |
 
-Модуль відновлює зі стану лише літак (`main.py:1262`), його клас цих полів не
-знає — і базовий `tracked_object.py:672` кидає `ValueError`. Запінений
-`cv_common@ac5098d` тут ні до чого: він коректно обробляє ці поля у класі
+The module restores only the aircraft from state (`main.py:1262`), its class does not know
+these fields — and the base `tracked_object.py:672` raises `ValueError`. The pinned
+`cv_common@ac5098d` has nothing to do with it: it handles these fields correctly in the class
 `Vehicle` (`transport.py:203`).
 
-`check_class_leakage()` ловить це до деплою. `strip_class_leakage()` лікує
-вже наявні дані — тим самим механізмом, яким їхній же код відкидає застарілі
-поля (`state_dict.pop('_recent_bboxes', None)`). Це не зміна логіки: модуль
-ніде не читає `bl_type` для літака.
+`check_class_leakage()` catches this before deployment. `strip_class_leakage()` heals
+data that already exists — by the same mechanism their own code uses to discard obsolete
+fields (`state_dict.pop('_recent_bboxes', None)`). This is not a logic change: the module
+never reads `bl_type` for the aircraft.
 
-## Що НЕ входить у контракт
+## What is NOT part of the contract
 
-**Алерти.** Вердикт — це значення, яке модуль повертає. Дедуплікація, вікна
-тиші, життєвий цикл тривоги, доставка — окремий шар і окрема задача бекенду.
+**Alerts.** The verdict is the value the module returns. Deduplication, silence
+windows, alert lifecycle, delivery — a separate layer and a separate backend task.
 
-Для довідки, чому шар потрібен: без дедуплікації один модуль дав **357
-алертів на одному відео**. Але вирішувати це тут ми не будемо.
+For reference, why the layer is needed: without deduplication one module produced **357
+alerts on a single video**. But we will not solve that here.

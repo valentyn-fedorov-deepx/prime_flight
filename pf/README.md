@@ -7,8 +7,9 @@ Here we assemble, piece by piece, the streaming version of the DXGAT CV pipeline
 |---|---|---|
 | `pf.contract` | **done, tests** | Frame contract schema 1.0: `schema_version`, `frame_id`, `general_model`, `trackers` + optional `stage`/`events`/`anchors`; hygiene of field leakage between tracker classes. Ported from the `gat-streaming` stand (test bench). |
 | `pf.receiver` | **done, tests** | `Session`: one event = one continuous stream = one tracker (X1); gap filling with placeholder frames (X2); `stream_from_chunks` for transport tests. |
-| `pf.eval` | **done, tests** | Parity: stream digests, `diff_streams`, `compare_gm_ndjson` (old vs new GM per frame, with tolerance, matching by `frame_id`, not by position). |
-| `pf.gm` | interface | `FrameDetector` (frame → detections `[x1,y1,x2,y2,conf,class_id]`), `VideoContext` (incremental per-video decisions with a "decided at frame X" event). Implementation — after `docs/analysis/gm_current.md`. |
+| `pf.eval` | **done, tests** | Parity: stream digests, `diff_streams`, `compare_gm_ndjson` (old vs new GM per frame, with tolerance, matched by `frame_id`), `compare_tracker_ndjson` (consumed `state_dict` fields, identity by `(cls_str, _obj_id)`, `_p0/_st` by length). Streams a 600 MB production file in ~13 s. |
+| `pf.gm` | **core + context + v1-compat sink, tests** | `geometry` (letterbox arithmetic, ported box helpers, cv_common assumptions flagged), `onnx_detector` (numerically faithful port of the v1 ONNX wrapper), `rows` (first-run rows, `ClassMap`), `context` (`VideoContextV2`: parts layout, main aircraft, entity, aircraft type, camera — each with `decided_at`), `compat_writer` (regenerates the legacy second-run ndjson). Not yet run on real weights (DVC/gcloud access, PF-Q1-16). |
+| `pf.pipeline` | **done, tests** | `GmStream`: chunk-wise driver — rows → context → contract frames through `Session` (gaps filled), events with frame ids, `write_v1_compat()`, `report()`; CLI `scripts/gm_v2_run.py` (OpenCV decoder, timings, `--compare` vs production). |
 | `pf.tracker` | interface | `Tracker.update(frame_id, detections)` causal, one per event; `state_dict` per class = the contract. Implementation — after the tracker analysis (requires access to `cv_trackers`/`cv_common`). |
 | `pf.stage` | vocabulary | `STAGES`, `EVENTS` (in `pf.contract.frame`). The state machine — task PF-Q1-03. |
 

@@ -1,8 +1,8 @@
-# Клієнтська логіка модулів (DX_Modules logic.xlsx, аркуш «Updated logic 2025»)
+# Client module logic (DX_Modules logic.xlsx, sheet "Updated logic 2025")
 
-Це **контракт із клієнтом** щодо того, коли модуль каже Pass / Fail / Not observed / Not observed with obstacles. Будь-яка зміна тригера при переносі в real-time має зберігати цю семантику або бути явно погоджена. Файл-джерело: `docs/DX_Modules_logic.xlsx`.
+This is the **contract with the client** on when a module says Pass / Fail / Not observed / Not observed with obstacles. Any trigger change when porting to real-time must preserve this semantics or be explicitly agreed. Source file: `docs/DX_Modules_logic.xlsx`.
 
-| Стадія | Перевірка | Repo | Tier | Cam A/J | Prod | Pass | Fail | Not observed | NO with obstacles | Коментар |
+| Stage | Check | Repo | Tier | Cam A/J | Prod | Pass | Fail | Not observed | NO with obstacles | Comment |
 |---|---|---|---|---|---|---|---|---|---|---|
 | Pre-arrival stage | Chocks and cones available and staged for arrival | chocks-and-cones-available-and-staged-for-arrival | post | Cone/Cone | True | There are (7) cones and / (6) chocks on the pre-arrival stage | There are no (7) cones and / (6) chocks on the pre-arrival stage | Obstacle or there are no pre-arrival stage | There are obstacles more than 50% of pre-arrival stage or there is a side obstacle |  |
 | Pre-arrival stage | Crew present 10 minutes prior to aircraft arrival | crew-present-10-minutes-prior-to-aircraft-arrival | post | Cone/Cone | True | If amount of frames with three workers more that 80 between from 12 min to 8 min | Opposite to pass | There is no pre-arrival stage on the video (less than 4 minutes) | If amount of blocked frames is more than 70% of prearrival stage. |  |
@@ -36,9 +36,9 @@
 | Pre-departure stage | Wing walkers in proper position and using approved wands | wing-walkers-in-proper-position-and-using-approved-wands | streaming | Cone/Cone | True | A wing walker with wands and hand signals was noticed walking along the plane for both sides during the segment [departure frame, departure frame + 60 secs] | If at least one part of task returns Fail. | There was no departure stage. | If Fail is not triggered and amount of frames with obstacle on either side is more than 60% during [departure frame, departure frame + 60 secs]. |  |
 | Departure stage (Tow-Bar disconnet) | Nose wheel chock removed from aircraft | aircraft-chocks | real-time | Cone/Cone | True | Nose gear chocks removed only after aircraft is attached to pushback | Nose gear chocks removed before aircraft is attached to pushback or video stops before we can see chocks removal | Airplane or nose wheel was not detected or there is an obstacle | All frames are blocked |  |
 
-## Merge logic (дві камери → один вердикт)
+## Merge logic (two cameras → one verdict)
 
-Пріоритет: **Fail → Pass → Not observed**. Якщо задача бігла на обох камерах, Fail на будь-якій = Fail; Pass на одній + Not observed на іншій = Pass; Not observed лише коли обидві Not observed.
+Priority: **Fail → Pass → Not observed**. If the task ran on both cameras, Fail on either = Fail; Pass on one + Not observed on the other = Pass; Not observed only when both are Not observed.
 
 | Wing \ Cone | fail | pass | notObserved |
 |---|---|---|---|
@@ -46,9 +46,9 @@
 | pass | fail | pass | pass |
 | notObserved | fail | pass | notObserved |
 
-## Розподіл задач по камерах (аркуш «Tasks by cameras»)
+## Task split by cameras (sheet "Tasks by cameras")
 
-| Перевірка | Aircraft | Jet | ProdReady |
+| Check | Aircraft | Jet | ProdReady |
 |---|---|---|---|
 | 3 stop brake check | Both | Wing | False |
 | All cargo bin doors opened and verified | Both | Wing | True |
@@ -81,9 +81,9 @@
 | Steering by-pass pin installed, or steering otherwise bypassed | Cone | - | True |
 | Wing walkers in proper position and using approved wands | Cone | Cone | True |
 
-Підсумок з аркуша: Aircraft — 12 задач на обох камерах, 18 лише cone, 0 лише wing; Jet — 3 на обох, 13 лише cone, 8 лише wing.
+Summary from the sheet: Aircraft — 12 tasks on both cameras, 18 cone only, 0 wing only; Jet — 3 on both, 13 cone only, 8 wing only.
 
-## Tier за клієнтським поділом
+## Tier by the client split
 
 - **real-time** (10): Hair policy; Nose gear chocks applied immediately; Cones placed in proper positions and timely; Lead marshaller and wing walkers in correct position; Beltloader rear cone positioned after BL is in place; Main gear chocks removed only after aircraft is attached to pushback; Cones are removed only after all GSE is clear of A/C and chocked; Belt loader forward chock remained in place until unit is backed up clear of aircraft; Pushback pathway confirmed clear of obstacles; Nose wheel chock removed from aircraft
 - **streaming** (12): FOD walk completed; Employees wearing safety vests secured to body; Safety zone confirmed clear; Steering by-pass pin installed, or steering otherwise bypassed; 3 stop brake check; Motorized GSE parked and properly chocked; Handrails on GSE being used; Safety handrails fully extended and used; Conditioned air removed 10 mins prior to departure and properly stowed; Pushback operator verifies steering bypass pin installation; Pushback does not start until wing walkers are in place and ready; Wing walkers in proper position and using approved wands

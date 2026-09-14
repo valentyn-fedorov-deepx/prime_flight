@@ -1,111 +1,111 @@
-# Цільова архітектура Prime Flight (to-be): дві гілки, один контракт
+# Prime Flight target architecture (to-be): two branches, one contract
 
-Стисле зведення з виміряних результатів стенду `G:\gat-streaming` (повні тексти — `streaming_ref/architecture.md`,
-`contract.md`, `modules.md`, `testing.md`, `plan.md`; картинки `dataflow.png`, `stage_detector.png`, `stage_cards.png`,
-`integration_order.png`). Це **опорна модель** для Q1–Q4; Максим Ч. як власник архітектури може її змінювати через ADR.
+A concise summary of the measured results of the gat-streaming stand (test bench) `G:\gat-streaming` (full texts — `streaming_ref/architecture.md`,
+`contract.md`, `modules.md`, `testing.md`, `plan.md`; pictures `dataflow.png`, `stage_detector.png`, `stage_cards.png`,
+`integration_order.png`). This is the **reference model** for Q1–Q4; Maksym Ch. as the architecture owner may change it via ADR.
 
-## 1. Одне приймання, дві гілки
+## 1. One ingestion, two branches
 
 ```
-камбокс ──► чанки 7,5 с ──► приймач + реєстр сесій ──► GM + трекер (один на подію) ──► stage detector
- 1080p        stream-copy       gap-fill, frame_id              │                          │ stage/events/anchors
- 8 к/с        без перекод.                                      ├──► ГАРЯЧА (real-time): гейтовані модулі ──► вердикт/алерт
- ≈4 Мбіт/с                                                      └──► ХОЛОДНА (post): merge + пост-аналітика на повному записі
+cambox ──► chunks 7.5 s ──► receiver + session registry ──► GM + tracker (one per event) ──► stage detector
+ 1080p        stream-copy       gap-fill, frame_id                │                              │ stage/events/anchors
+ 8 fps        no transcode                                        ├──► HOT (real-time): gated modules ──► verdict/alert
+ ≈4 Mbit/s                                                        └──► COLD (post): merge + post-analytics on the full recording
 ```
 
-- **Гаряча гілка** відповідає зараз (S1/S2-перевірки), **холодна** — те, що може чекати кінця обслуговування
-  (walk-around-и, lookback-и типу conditioned air, звітні перевірки).
-- Пост-гілка **не запускає ті самі моделі повторно**: GM/трекер рахуються один раз, результати спільні.
-- Q1 робить перший крок без RT: чанки їдуть на сервер під час запису, GM+трекер біжать по чанках, merge — лише для
-  архіву/пост-модулів.
+- The **hot branch** answers now (S1/S2 checks), the **cold** one — what can wait until the end of servicing
+  (walk-arounds, lookbacks like conditioned air, reporting checks).
+- The post branch **does not run the same models again**: GM/tracker are computed once, the results are shared.
+- Q1 makes the first step without RT: chunks travel to the server during recording, GM+tracker run over the chunks, merge — only for
+  the archive/post modules.
 
-## 2. Контракт кадру (шина)
+## 2. Frame contract (the bus)
 
 ```python
 {
-  "schema_version": "1.0",   # X3: без версії несумісність видно лише падінням модуля
-  "frame_id": 1234,          # X2: абсолютний номер, НЕ позиція в потоці
-  "stage": "DOWNLOAD",       # від stage detector: де ми зараз
-  "events": ["BL_AT_DOOR"],  # переходи, що спрацювали на цьому frame_id (майже завжди порожньо)
-  "anchors": {"T_arr": 4812, "BL_at_door": 9600},   # абсолютні id минулих подій для lookback-вікон
-  "general_model": [...],    # детекції
-  "trackers": [...]          # треки зі state_dict
+  "schema_version": "1.0",   # X3: without a version, incompatibility is visible only as a module crash
+  "frame_id": 1234,          # X2: absolute number, NOT the position in the stream
+  "stage": "DOWNLOAD",       # from the stage detector: where we are now
+  "events": ["BL_AT_DOOR"],  # transitions that fired on this frame_id (almost always empty)
+  "anchors": {"T_arr": 4812, "BL_at_door": 9600},   # absolute ids of past events for lookback windows
+  "general_model": [...],    # detections
+  "trackers": [...]          # tracks with state_dict
 }
 ```
-Реалізація-референс: `G:\gat-streaming\streaming\contract.py` (перевірка `schema_version`, витікання полів
-`VEHICLE_ONLY_KEYS` між класами), `session.py` (реєстр сесій, gap-fill), тести `tests/`.
+Reference implementation: `G:\gat-streaming\streaming\contract.py` (`schema_version` check, leakage of
+`VEHICLE_ONLY_KEYS` fields between classes), `session.py` (session registry, gap-fill), tests in `tests/`.
 
-## 3. Чотири умови коректності (виміряні)
+## 3. Four correctness conditions (measured)
 
-| # | Умова | Чому |
+| # | Condition | Why |
 |---|---|---|
-| X1 | Трекер створюється раз на подію і ніколи не скидається | той самий вхід: наскрізний — 5 «літаків»; скидання раз на 60 с — 42; раз на 7,5 с — 297 |
-| X2 | Нумерація кадрів наскрізна і явна (`frame_id`), дірки заповнюються заглушками | модулі беруть `enumerate(metadata, 1)`; втрата одного 7,5-с чанка → розбіжність на 60 кадрів у `frame_number == aircraft.departure_frame` |
-| X3 | `schema_version` у кожному записі | 15–16 несумісних версій інференсів на відео в `gs://cv-modules-topics` без позначки |
-| X4 | Декодер закріплений з обох боків порівняння | ffmpeg губить кадри на немонотонному DTS, OpenCV читає всі: 22 791 vs 22 800 |
+| X1 | The tracker is created once per event and is never reset | the same input: end-to-end — 5 "aircraft"; a reset every 60 s — 42; every 7.5 s — 297 |
+| X2 | Frame numbering is end-to-end and explicit (`frame_id`), gaps are filled with placeholder frames | modules take `enumerate(metadata, 1)`; the loss of one 7.5-s chunk → a 60-frame mismatch in `frame_number == aircraft.departure_frame` |
+| X3 | `schema_version` in every record | 15–16 incompatible versions of inferences per video in `gs://cv-modules-topics` without a marker |
+| X4 | The decoder is pinned on both sides of the comparison | ffmpeg drops frames on non-monotonic DTS, OpenCV reads them all: 22 791 vs 22 800 |
 
-## 4. Чанкування
+## 4. Chunking
 
-Чанк — одиниця **транспорту**. GOP 3,75 с → чанк 7,5 с (2 GOP); stream-copy без перекодування; фактична довжина
-чанка до 11,25 с (останній добирає залишок) — тому «номер кадру в чанку» не існує, лише `frame_id`.
-Затримка: **10,5 с проти 84 с** для 60-секундних чанків. Паритет чанкової подачі з наскрізною — побітовий (D1 виконано).
+A chunk is the unit of **transport**. GOP 3.75 s → chunk 7.5 s (2 GOPs); stream-copy without re-encoding; the actual chunk
+length is up to 11.25 s (the last one takes the remainder) — therefore "frame number within the chunk" does not exist, only `frame_id`.
+Latency: **10.5 s versus 84 s** for 60-second chunks. Parity of chunked feeding with end-to-end is bit-exact (D1 done).
 
-## 5. Stage detector — причинний автомат після трекера (єдиний власник якорів)
+## 5. Stage detector — a causal state machine after the tracker (the single owner of anchors)
 
 ```
-PRE_ARRIVAL ──T_arr (трекер: зупинка 4 с)──► ARRIVAL/POST-ARRIVAL ──BL@door (iou(BL, aircraft)>0.2 ∧ stopped)──► DOWNLOAD/UPLOAD
-   ──BL leave──► PRE_DEPARTURE ──T_dep (трекер: рух 10 с)──► DEPARTURE (до T_dep + 60 с)
-   подія всередині стадії: pushback_attached = геометрія носа ∧ нерухома рамка пушбека N с
+PRE_ARRIVAL ──T_arr (tracker: 4 s stop)──► ARRIVAL/POST-ARRIVAL ──BL@door (iou(BL, aircraft)>0.2 ∧ stopped)──► DOWNLOAD/UPLOAD
+   ──BL leave──► PRE_DEPARTURE ──T_dep (tracker: 10 s motion)──► DEPARTURE (until T_dep + 60 s)
+   event inside a stage: pushback_attached = nose geometry ∧ pushback box stationary for N s
 ```
-- Ставить у кожен кадр `stage`, `events`, `anchors`; каже реєстру сесій, які модулі відкрити/закрити.
-- Замінює 9 копій «arrival stage» у модулях і 2 копії `pushback_attached` (aircraft-chocks, pin-verification).
-- Гейтування: замість 27 always-on воркерів — 4–9 активних на стадію. Lookback-модулі біжать від початку стадії і
-  звітують на її кінці, буфер повтору їм не потрібен.
-- Нижня межа затримки алерту = затримка події: 4 с після зупинки, 10 с після початку руху (`_arrival_thresh`,
-  `_departure_thresh` трекера).
-- BL@door і BL leave **не є подіями трекера сьогодні** — їх має породити детектор (піднято з 3-stop / beltloader-chocks).
-- Свідомо поза детектором: ETA/ETD з розкладу.
+- Puts `stage`, `events`, `anchors` into every frame; tells the session registry which modules to open/close.
+- Replaces the 9 copies of "arrival stage" in the modules and the 2 copies of `pushback_attached` (aircraft-chocks, pin-verification).
+- Gating: instead of 27 always-on workers — 4–9 active per stage. Lookback modules run from the start of the stage and
+  report at its end; they need no replay buffer.
+- The lower bound of the alert latency = the event latency: 4 s after the stop, 10 s after the start of motion (the tracker's `_arrival_thresh`,
+  `_departure_thresh`).
+- BL@door and BL leave **are not tracker events today** — the detector has to produce them (lifted from 3-stop / beltloader-chocks).
+- Deliberately outside the detector: ETA/ETD from the schedule.
 
-## 6. Бюджет кадру (RTX 5070 Ti, профіль core, 8 к/с → 125 мс)
+## 6. Frame budget (RTX 5070 Ti, core profile, 8 fps → 125 ms)
 
-| компонент | мс/кадр |
+| component | ms/frame |
 |---|---|
-| декод | 2,90 |
-| детекція GM | 28,29 |
-| трекер | 0,11 |
-| логіка модулів (спрощена) | 0,03 |
+| decode | 2.90 |
+| GM detection | 28.29 |
+| tracker | 0.11 |
+| module logic (simplified) | 0.03 |
 
-Real-time зводиться до детектора і його обв'язки (3,95× real-time на повному turnaround; короткі тести завищують).
-Застереження: справжній `aircraft-chocks` робить effnetb0-інференс щокадру на кожне заднє колесо — на два порядки дорожче,
-але в бюджет вкладається. 720p замість 1080p: швидкість не міняється, recall −≈3 %.
+Real-time comes down to the detector and its plumbing (3.95× real-time on a full turnaround; short tests overestimate).
+Caveat: the real `aircraft-chocks` runs effnetb0 inference every frame on each rear wheel — two orders of magnitude more expensive,
+but it fits into the budget. 720p instead of 1080p: speed does not change, recall −≈3 %.
 
-## 7. Класифікація модулів: дві осі + черга інтеграції
+## 7. Module classification: two axes + integration queue
 
-- **Вісь 1 — причинність**: скільки проходів по метаданих і чи спирається рішення на кадрі N на майбутнє.
-- **Вісь 2 — пікселі**: чи потрібні декодовані кадри (`dataset.get_im0s`) чи вистачає контракту (`--no-video`).
-- Verdict по кожному модулю — у `04_modules.md` (NOW / NOW_PX / PATCH / RETHINK / POST).
+- **Axis 1 — causality**: how many passes over the metadata and whether the decision at frame N relies on the future.
+- **Axis 2 — pixels**: whether decoded frames are needed (`dataset.get_im0s`) or the contract is enough (`--no-video`).
+- The verdict per module is in `04_modules.md` (NOW / NOW_PX / PATCH / RETHINK / POST).
 
-Черга (з `integration_order.png`): **E0·I1** спершу — `beltloader-chocks`, `pushback-does-not-start-until-wing-walkers…`,
-`pushback-pathway…`; далі решта E0 (12 модулів як є), E1 (кадри без моделей, 4), E2 (кадри + моделі, 5, після заміру
-вартості на кадр), E3 (aircraft-chocks, pin-verification — чекають на подію детектора), E4 (переписати перший прохід:
-hand-signals, safety-zone) і POST (walk-around-и) — наприкінці або ніколи.
+Queue (from `integration_order.png`): **E0·I1** first — `beltloader-chocks`, `pushback-does-not-start-until-wing-walkers…`,
+`pushback-pathway…`; then the rest of E0 (12 modules as they are), E1 (frames without models, 4), E2 (frames + models, 5, after measuring
+the per-frame cost), E3 (aircraft-chocks, pin-verification — waiting for the detector event), E4 (rewrite the first pass:
+hand-signals, safety-zone) and POST (walk-arounds) — at the end or never.
 
-**Два застереження, без яких таблиця бреше**: технічна готовність ≠ користь (beltloader-chocks повнота 83 % vs
-pushback-pathway 0 з 4 при однаковому E0·I1); розмітка майже порожня на 3 з 4 перевірок (Nose wheel — 1 fail на 90 відео) →
-міряти парну різницю пакет↔стрім, не абсолютну точність.
+**Two caveats without which the table lies**: technical readiness ≠ usefulness (beltloader-chocks completeness 83 % vs
+pushback-pathway 0 of 4 at the same E0·I1); the labels are almost empty on 3 of 4 checks (Nose wheel — 1 fail in 90 videos) →
+measure the paired batch↔stream difference, not the absolute accuracy.
 
-**S1-перевірки (секунди вирішують)** — safety zone, pushback pathway, «pushback не рушає без walkers», hand signals —
-усі приймають рішення після факту. Секундна доставка не допоможе без **перевизначення тригера**: окремий трек (Q3–Q4),
-з позначкою `trigger-change`.
+**S1 checks (seconds matter)** — safety zone, pushback pathway, "pushback does not start without walkers", hand signals —
+all make the decision after the fact. Delivery within seconds will not help without a **trigger change**: a separate track (Q3–Q4),
+tagged `trigger-change`.
 
-## 8. Чого сьогодні немає (компоненти для побудови)
+## 8. What does not exist today (components to build)
 
-| компонент | стан | власник у PF |
+| component | state | owner in PF |
 |---|---|---|
-| приймач чанків (порядок, gap-fill) | референс у `gat-streaming/streaming/session.py` | pipeline-architect |
-| реєстр сесій (одна подія = один трекер = один набір станів) | змодельовано | pipeline-architect |
-| контракт схеми | `contract.py` | gm-tracker-engineer |
-| stage detector | дизайн (`stage_detector.png`), коду немає | pipeline-architect |
-| шина алертів (дедуплікація, вікна тиші, доставка) | не в CV-зоні; 357 алертів на одному відео без дедуплікації | alerting-engineer |
-| транспорт камбокс → сервер (Wi-Fi/SIM, VPN, ≈4 Мбіт/с на камеру) | немає | pipeline-architect + запит назовні |
-| GPU-раннер для nightly паритету | немає (запит до Ігоря) | qa-parity |
+| chunk receiver (ordering, gap-fill) | reference in `gat-streaming/streaming/session.py` | pipeline-architect |
+| session registry (one event = one tracker = one set of states) | modelled | pipeline-architect |
+| schema contract | `contract.py` | gm-tracker-engineer |
+| stage detector | design (`stage_detector.png`), no code | pipeline-architect |
+| alert bus (deduplication, quiet windows, delivery) | not in the CV zone; 357 alerts on one video without deduplication | alerting-engineer |
+| transport cambox → server (Wi-Fi/SIM, VPN, ≈4 Mbit/s per camera) | none | pipeline-architect + request to the outside |
+| GPU runner for nightly parity | none (request to Ihor) | qa-parity |

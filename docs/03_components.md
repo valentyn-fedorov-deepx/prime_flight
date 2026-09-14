@@ -1,10 +1,10 @@
 # Shared components (E01–E33)
 
-Джерело: `docs/arch_review/essential_inventory.json` (baseline 2026-09-07, 32 компоненти після виключення E23/M25). Повний текст — `docs/arch_review/ESSENTIALS.md`, інтерактив — `docs/arch_review/components.html` та `hierarchy.html`.
+Source: `docs/arch_review/essential_inventory.json` (baseline 2026-09-07, 32 components after excluding E23/M25). Full text — `docs/arch_review/ESSENTIALS.md`, interactive — `docs/arch_review/components.html` and `hierarchy.html`.
 
-Правила меж (з ревʼю): списки задач містять лише evidence, потрібний політиці; пороги, дедлайни, eligibility і фінальний Pass/Fail лишаються локальними в модулі; один ID = один контракт.
+Boundary rules (from the review): task lists contain only the evidence the policy needs; thresholds, deadlines, eligibility and the final Pass/Fail stay local to the module; one ID = one contract.
 
-| ID | Група | Компонент | Impl | Контракт | Хто споживає |
+| ID | Group | Component | Impl | Contract | Consumed by |
 |---|---|---|---|---|---|
 | E01 | Context | **Aircraft arrival context** | CODE | Arrival time, whether arrival was seen, and how much pre-arrival footage is available. | M06, M10, M11, M18, M24, M02A, M09, M26, M15, M17, M03, U02, U03, U04 |
 | E02 | Context | **Aircraft departure context** | CODE | Departure time, whether departure was seen, and the available departure footage. | M07, M08, M16, M19, M20, M21, M27, U02, U04 |
@@ -39,7 +39,7 @@
 | E32 | Infrastructure | **Results and evidence** | CODE | Map task outputs, retain evidence and deliver reports, keeping processing errors separate from compliance failures. | U01, U04, U05 |
 | E33 | Infrastructure | **CV runtime helpers** | CODE | Shared model wrappers and image, box, mask and coordinate operations. These are library internals, not policy inputs. | U04 |
 
-## Групи
+## Groups
 
 - **Context**: E01, E02, E03, E07, E19
 - **Detections**: E04, E05, E06, E21, E25

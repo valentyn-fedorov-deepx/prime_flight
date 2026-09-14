@@ -1,24 +1,24 @@
-# ADR-000 · <назва рішення>
+# ADR-000 · <decision title>
 
-- **Дата:** · **Статус:** proposed / accepted / superseded by ADR-nnn
-- **Автор:** · **Рецензенти:** Ігор, Сергій (+ Оксана, якщо змінюється клієнтська логіка)
-- **Зона:** контракт кадру / stage-події / клієнтська логіка модуля / інфра / GM-Tracker
+- **Date:** · **Status:** proposed / accepted / superseded by ADR-nnn
+- **Author:** · **Reviewers:** Ihor, Serhii (+ Oksana, if the client logic changes)
+- **Zone:** frame contract / stage events / client logic of a module / infra / GM-Tracker
 
-## Контекст
-Що змушує вирішувати (замір, баг, вимога клієнта). Посилання на `docs/` і задачу `PF-…`.
+## Context
+What forces the decision (a measurement, a bug, a client requirement). Links to `docs/` and the `PF-…` task.
 
-## Рішення
-Одним абзацом. Що саме змінюється (поля контракту, подія, поріг, тригер).
+## Decision
+In one paragraph. What exactly changes (contract fields, event, threshold, trigger).
 
-## Альтернативи, які відкинули
+## Alternatives rejected
 - …
 
-## Наслідки
-- Для модулів (хто споживає): …
-- Для клієнтської логіки (`05_module_logic.md`): без змін / змінено (описати).
-- Для вимірювань: що треба перезаміряти (паритет, Time to Result).
+## Consequences
+- For modules (who consumes): …
+- For the client logic (`05_module_logic.md`): unchanged / changed (describe).
+- For measurements: what has to be re-measured (parity, Time to Result).
 
-## Дії
-- [ ] оновити `docs/…`
-- [ ] `python scripts/build_docs.py` (якщо змінено джерело)
-- [ ] повідомити агентів-споживачів (`module-porter`, `alerting-engineer`)
+## Actions
+- [ ] update `docs/…`
+- [ ] `python scripts/build_docs.py` (if the source changed)
+- [ ] notify the consumer agents (`module-porter`, `alerting-engineer`)

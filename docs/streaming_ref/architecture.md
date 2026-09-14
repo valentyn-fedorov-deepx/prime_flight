@@ -1,89 +1,91 @@
-# Архітектура
+_English translation of `G:/gat-streaming/docs/architecture.md` (Ukrainian original), 2026-09-14._
 
-## Одне приймання, дві гілки
+# Architecture
 
-![Стрімінговий dataflow](dataflow.png)
+## One ingest, two branches
 
-Камера віддає потік один раз. Далі він роздвоюється: гаряча гілка рахує те,
-що має відповісти зараз, холодна — те, що може почекати кінця обслуговування.
+![Streaming dataflow](dataflow.png)
+
+The camera hands over the stream once. From there it forks: the hot branch computes
+what has to be answered now, the cold branch — what can wait until the end of the turnaround.
 
 ```
-камбокс ──► чанки 7,5 с ──► GM + трекер ──┬──► гаряча гілка: 4 перевірки ──► вердикт
- 1080p        stream-copy    один на подію │
- 8 к/с        без перекод.                 └──► холодна: пост-аналітика на повному записі
- ≈4 Мбіт/с
+cambox ──► 7.5 s chunks ──► GM + tracker ──┬──► hot branch: 4 checks ──► verdict
+ 1080p     stream-copy      one per event  │
+ 8 fps     no re-encode                    └──► cold: post-analytics on the full recording
+ ≈4 Mbit/s
 ```
 
-Чанк — одиниця **транспорту**, а не одиниця обробки. Модуль про чанки не знає
-і знати не повинен.
+A chunk is a unit of **transport**, not a unit of processing. The module does not know
+about chunks and must not.
 
-Чому саме 7,5 с, а не 60 — окремий розбір із замірами: ![чанкування](chunking.png)
+Why exactly 7.5 s and not 60 — a separate breakdown with measurements: ![chunking](chunking.png)
 
-## Правило, на якому все тримається
+## The rule everything rests on
 
-**Трекер створюється раз на подію і ніколи не скидається.**
+**The tracker is created once per turnaround and is never reset.**
 
-Це не оптимізація, це умова коректності. Заміряно на реальному відео, той
-самий вхід, різниця лише в тому, як живе трекер:
+This is not an optimization, it is a correctness condition. Measured on real video, the
+same input, the only difference is how the tracker lives:
 
-| режим трекера | унікальних «літаків» | наслідок |
+| tracker mode | unique "aircraft" | consequence |
 |---|---|---|
-| наскрізний, без скидання | **5** | норма — літак, пушбек, техніка |
-| скидання раз на 60 с | 42 | таймінги розсипаються |
-| скидання раз на 7,5 с | 297 | жодна перевірка не працює |
+| end-to-end, no reset | **5** | normal — aircraft, pushback, equipment |
+| reset every 60 s | 42 | timings fall apart |
+| reset every 7.5 s | 297 | no check works at all |
 
-## Чотири умови коректності
+## Four correctness conditions
 
-Це не рекомендації. Порушення будь-якої з них означає, що стрімінговий
-результат перестає збігатися з нинішнім наскрізним.
+These are not recommendations. Violating any of them means the streaming result
+stops matching the current end-to-end one.
 
-**X1. Трекер живе на всю подію.** Див. таблицю вище.
+**X1. The tracker lives for the whole turnaround.** See the table above.
 
-**X2. Нумерація кадрів наскрізна і явна.** Модулі беруть номер кадру з
-`enumerate(metadata, 1)`, тобто **з позиції в потоці**. Поки потік цілий, це
-працює. Щойно чанк загубиться — позиція перестане збігатися з абсолютним id,
-і порівняння виду `frame_number == aircraft.departure_frame` покажуть не на
-той кадр. Тому в контракті є обов'язкове поле `frame_id`, а приймач заповнює
-дірки заглушками замість того, щоб просто пропускати кадри.
+**X2. Frame numbering is end-to-end and explicit.** Modules take the frame number from
+`enumerate(metadata, 1)`, i.e. **from the position in the stream**. As long as the stream is
+intact, this works. As soon as a chunk is lost, the position stops matching the absolute id,
+and comparisons like `frame_number == aircraft.departure_frame` point at the wrong
+frame. That is why the contract has the mandatory field `frame_id`, and the receiver fills
+the gaps with placeholder frames instead of simply skipping frames.
 
-**X3. Схема має версію.** `schema_version` у кожному записі. Без нього
-несумісний вхід виявляється лише падінням модуля — саме так ми втратили день.
+**X3. The schema has a version.** `schema_version` in every record. Without it an
+incompatible input is discovered only by the module crashing — that is exactly how we lost a day.
 
-**X4. Декодер закріплений по обидва боки порівняння.** Перший повний тест
-паритету показав 22 791 кадр проти 22 800 і виглядав як провал. Насправді
-порівнювались ffmpeg і OpenCV: у зведених прод-відео трапляється немонотонний
-DTS, ffmpeg на цьому губить кадри, OpenCV читає всі. Якщо декодер не
-закріплений — міряєш різницю бібліотек, а не різницю архітектур.
+**X4. The decoder is pinned on both sides of the comparison.** The first full parity
+test showed 22 791 frames versus 22 800 and looked like a failure. In reality ffmpeg and
+OpenCV were being compared: the merged production videos occasionally have non-monotonic
+DTS, ffmpeg drops frames on it, OpenCV reads all of them. If the decoder is not
+pinned — you measure the difference between libraries, not between architectures.
 
-## П'ять компонентів, яких сьогодні немає
+## Five components that do not exist today
 
-| компонент | стан | що робить |
+| component | state | what it does |
 |---|---|---|
-| приймач чанків | немає | приймає, впорядковує, заповнює пропуски |
-| реєстр сесій | змодельовано в `session.py` | одна подія = один трекер = один набір станів |
-| контракт схеми | є в `contract.py` | `schema_version`, `frame_id`, перевірка витікання полів |
-| шина алертів | **не сюди** | дедуплікація, вікна тиші — задача бекенду |
-| VPN-тунель | немає | транспорт камбокс → сервер, ≈4 Мбіт/с на камеру |
+| chunk receiver | missing | receives, orders, fills the gaps |
+| session registry | modelled in `session.py` | one turnaround = one tracker = one set of states |
+| schema contract | present in `contract.py` | `schema_version`, `frame_id`, field-leakage check |
+| alert bus | **not here** | deduplication, silence windows — the backend's job |
+| VPN tunnel | missing | transport cambox → server, ≈4 Mbit/s per camera |
 
-У коді `db_worker.ML_worker.load_source` на rtsp/http стоїть
-`raise Exception("Stream is not implemented yet")` — приймання потоку в
-їхньому коді справді немає, це не припущення.
+In the code, `db_worker.ML_worker.load_source` has
+`raise Exception("Stream is not implemented yet")` for rtsp/http — stream ingest really is
+absent from their code, this is not an assumption.
 
-## Бюджет кадру
+## Frame budget
 
-При 8 к/с на кадр є 125 мс. Заміряно на RTX 5070 Ti, профіль core:
+At 8 fps there are 125 ms per frame. Measured on an RTX 5070 Ti, core profile:
 
-| компонент | мс/кадр |
+| component | ms/frame |
 |---|---|
-| декод | 2,90 |
-| детекція | 28,29 |
-| трекер | 0,11 |
-| логіка модулів (спрощена) | 0,03 |
+| decode | 2.90 |
+| detection | 28.29 |
+| tracker | 0.11 |
+| module logic (simplified) | 0.03 |
 
-Уся задача real-time зводиться до детектора і його обв'язки. Трекер і логіка
-разом — 0,14 мс проти 125.
+The whole real-time problem boils down to the detector and its plumbing. Tracker and logic
+together — 0.14 ms against 125.
 
-**Застереження.** Ці 0,03 мс — від спрощеної логіки. Справжній
-`aircraft-chocks` робить інференс effnetb0 щокадру для кожного заднього
-колеса, і його вартість на два порядки вища. У бюджет вона все одно
-вкладається, але порядок треба знати чесно.
+**Caveat.** Those 0.03 ms come from simplified logic. The real
+`aircraft-chocks` runs effnetb0 inference every frame for each rear
+wheel, and its cost is two orders of magnitude higher. It still fits in the budget,
+but the order of magnitude must be stated honestly.

@@ -148,12 +148,12 @@ def cam_lookup(check: str) -> dict:
 
 # ---------------------------------------------------------------- 03 components
 out = ["# Shared components (E01–E33)\n",
-       f"Джерело: `docs/arch_review/essential_inventory.json` (baseline {inv['manifest']['baseline_date']}, "
-       "32 компоненти після виключення E23/M25). Повний текст — `docs/arch_review/ESSENTIALS.md`, "
-       "інтерактив — `docs/arch_review/components.html` та `hierarchy.html`.\n",
-       "Правила меж (з ревʼю): списки задач містять лише evidence, потрібний політиці; пороги, дедлайни, "
-       "eligibility і фінальний Pass/Fail лишаються локальними в модулі; один ID = один контракт.\n",
-       "| ID | Група | Компонент | Impl | Контракт | Хто споживає |",
+       f"Source: `docs/arch_review/essential_inventory.json` (baseline {inv['manifest']['baseline_date']}, "
+       "32 components after excluding E23/M25). Full text — `docs/arch_review/ESSENTIALS.md`, "
+       "interactive — `docs/arch_review/components.html` and `hierarchy.html`.\n",
+       "Boundary rules (from the review): task lists contain only the evidence the policy needs; thresholds, deadlines, "
+       "eligibility and the final Pass/Fail stay local to the module; one ID = one contract.\n",
+       "| ID | Group | Component | Impl | Contract | Consumed by |",
        "|---|---|---|---|---|---|"]
 consumers: dict[str, list[str]] = {c: [] for c in components}
 for v in inv["review_views"]:
@@ -162,7 +162,7 @@ for v in inv["review_views"]:
 for c in inv["manifest"]["components"]:
     out.append(f"| {c['id']} | {c['group']} | **{md_escape(c['title'])}** | {c['implementation']} | "
                f"{md_escape(c['contract'])} | {', '.join(consumers.get(c['id'], []))} |")
-out += ["", "## Групи", ""]
+out += ["", "## Groups", ""]
 for g in sorted({c["group"] for c in components.values()}):
     ids = [c["id"] for c in components.values() if c["group"] == g]
     out.append(f"- **{g}**: {', '.join(ids)}")
@@ -171,13 +171,13 @@ for g in sorted({c["group"] for c in components.values()}):
 # ---------------------------------------------------------------- 04 modules
 STAGE_ORDER = ["Pre-arrival", "Arrival", "Post-arrival", "Download", "Upload", "Pre-departure",
                "Departure (Tow-Bar disconnect)", ""]
-out = ["# Модулі (M01–M27) і pipeline-репозиторії (U01–U05)\n",
-       "Зведення трьох джерел: архітектурне ревʼю (inputs/outputs/attention/local policy), "
-       "аудит коду для стрімінгу (`streaming_ref/module_map.json`: stage/opens/closes/decision/verdict) "
-       "і клієнтський xlsx (tier, камери, ProdReady). Логіка Pass/Fail — у `05_module_logic.md`.\n",
-       "Легенда verdict (готовність до стрімінгу): NOW = стрімиться без змін коду · NOW_PX = без змін, але потребує кадрів · "
-       "PATCH = 3-хунковий фікс як в aircraft-chocks · RETHINK = двопрохідний, перший прохід визначає геометрію · POST = за суттю пост-обробка.\n",
-       "Tier (поділ клієнта, xlsx Edge-Friendly/Post analytics/Streaming): real-time · streaming · post.\n"]
+out = ["# Modules (M01–M27) and pipeline repositories (U01–U05)\n",
+       "A merge of three sources: the architecture review (inputs/outputs/attention/local policy), "
+       "the code audit for streaming (`streaming_ref/module_map.json`: stage/opens/closes/decision/verdict) "
+       "and the client xlsx (tier, cameras, ProdReady). Pass/Fail logic — in `05_module_logic.md`.\n",
+       "Verdict legend (streaming readiness): NOW = streams without code changes · NOW_PX = without changes, but needs frames · "
+       "PATCH = 3-hunk fix as in aircraft-chocks · RETHINK = two-pass, the first pass determines the geometry · POST = in essence post-processing.\n",
+       "Tier (client split, xlsx Edge-Friendly/Post analytics/Streaming): real-time · streaming · post.\n"]
 
 by_stage: dict[str, list] = {}
 for v in inv["review_views"]:
@@ -196,18 +196,18 @@ for stage in STAGE_ORDER:
         check = xrow["check"] if xrow else v["title"]
         cm = cam_lookup(check)
         out.append(f"### {v['id']} · {md_escape(v['title'])}")
-        out.append(f"- **Repo**: [{repo}]({v['repository_url']}) · локально `G:\\deepx_gat\\{repo}` · pinned `{v['commit'][:8]}`")
+        out.append(f"- **Repo**: [{repo}]({v['repository_url']}) · local `external\\{repo}` (read-only clone) · pinned `{v['commit'][:8]}`")
         if v.get("stage"):
-            out.append(f"- **Tier / камери / ProdReady**: {tier.get(check, '?')} · Aircraft={cm['aircraft']}, Jet={cm['jet']} · ProdReady={cm['prod']}")
+            out.append(f"- **Tier / cameras / ProdReady**: {tier.get(check, '?')} · Aircraft={cm['aircraft']}, Jet={cm['jet']} · ProdReady={cm['prod']}")
         if mm:
-            out.append(f"- **Стрімінг-аудит**: stage={mm.get('stage')} · opens=«{mm.get('opens')}» → closes=«{mm.get('closes')}» · "
+            out.append(f"- **Streaming audit**: stage={mm.get('stage')} · opens=\"{mm.get('opens')}\" → closes=\"{mm.get('closes')}\" · "
                        f"decision={mm.get('decision')} · preventive={mm.get('preventive')} · passes={mm.get('passes')}, "
                        f"pixels={mm.get('pixels')}, models={mm.get('models')} · deps={', '.join(mm.get('deps', []))} · **verdict={mm.get('verdict')}**")
             if mm.get("why"):
-                out.append(f"  - чому: {md_escape(mm['why'])}")
+                out.append(f"  - why: {md_escape(mm['why'])}")
             if mm.get("measured"):
-                out.append(f"  - зміряно: {md_escape(mm['measured'])}")
-        out.append(f"- **Компоненти**: {', '.join(v['component_ids'])}"
+                out.append(f"  - measured: {md_escape(mm['measured'])}")
+        out.append(f"- **Components**: {', '.join(v['component_ids'])}"
                    + (f" (+proposed: {', '.join(v['supporting_component_ids'])})" if v.get("supporting_component_ids") else ""))
         out.append(f"- **Inputs**: {md_escape(v['inputs'])}")
         out.append(f"- **Outputs**: {md_escape(v['outputs'])}")
@@ -219,17 +219,17 @@ for stage in STAGE_ORDER:
 # modules present in module_map but not in review (e.g. seat belts) – note them
 extra = [m for m in mmap["modules"] if m["name"] not in {v["repo"] for v in inv["review_views"]}]
 if extra:
-    out.append("\n## Поза активним скоупом ревʼю, але є в аудиті коду\n")
+    out.append("\n## Outside the active review scope, but present in the code audit\n")
     for m in extra:
         out.append(f"- `{m['name']}` — {m.get('check')} · verdict={m.get('verdict')} · {md_escape(m.get('why', ''))}")
 (DOCS / "04_modules.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 
 # ---------------------------------------------------------------- 05 module logic
-out = ["# Клієнтська логіка модулів (DX_Modules logic.xlsx, аркуш «Updated logic 2025»)\n",
-       "Це **контракт із клієнтом** щодо того, коли модуль каже Pass / Fail / Not observed / Not observed with obstacles. "
-       "Будь-яка зміна тригера при переносі в real-time має зберігати цю семантику або бути явно погоджена. "
-       "Файл-джерело: `docs/DX_Modules_logic.xlsx`.\n",
-       "| Стадія | Перевірка | Repo | Tier | Cam A/J | Prod | Pass | Fail | Not observed | NO with obstacles | Коментар |",
+out = ["# Client module logic (DX_Modules logic.xlsx, sheet \"Updated logic 2025\")\n",
+       "This is the **contract with the client** on when a module says Pass / Fail / Not observed / Not observed with obstacles. "
+       "Any trigger change when porting to real-time must preserve this semantics or be explicitly agreed. "
+       "Source file: `docs/DX_Modules_logic.xlsx`.\n",
+       "| Stage | Check | Repo | Tier | Cam A/J | Prod | Pass | Fail | Not observed | NO with obstacles | Comment |",
        "|---|---|---|---|---|---|---|---|---|---|---|"]
 for r in logic_rows:
     cm = cam_lookup(r["check"])
@@ -237,18 +237,18 @@ for r in logic_rows:
         r["stage"], r["check"], CHECK_TO_REPO.get(r["check"], "?"), tier.get(r["check"], "?"),
         f"{cm['aircraft']}/{cm['jet']}", cm["prod"], r["pass"], r["fail"], r["no"], r["no_obst"], r["comment"]]) + " |")
 
-out += ["", "## Merge logic (дві камери → один вердикт)", "",
-        "Пріоритет: **Fail → Pass → Not observed**. Якщо задача бігла на обох камерах, Fail на будь-якій = Fail; "
-        "Pass на одній + Not observed на іншій = Pass; Not observed лише коли обидві Not observed.", "",
+out += ["", "## Merge logic (two cameras → one verdict)", "",
+        "Priority: **Fail → Pass → Not observed**. If the task ran on both cameras, Fail on either = Fail; "
+        "Pass on one + Not observed on the other = Pass; Not observed only when both are Not observed.", "",
         "| Wing \\ Cone | fail | pass | notObserved |", "|---|---|---|---|",
         "| fail | fail | fail | fail |", "| pass | fail | pass | pass |", "| notObserved | fail | pass | notObserved |", "",
-        "## Розподіл задач по камерах (аркуш «Tasks by cameras»)", "",
-        "| Перевірка | Aircraft | Jet | ProdReady |", "|---|---|---|---|"]
+        "## Task split by cameras (sheet \"Tasks by cameras\")", "",
+        "| Check | Aircraft | Jet | ProdReady |", "|---|---|---|---|"]
 for k, v in cams.items():
     out.append(f"| {md_escape(k)} | {v['aircraft']} | {v['jet']} | {v['prod']} |")
-out += ["", "Підсумок з аркуша: Aircraft — 12 задач на обох камерах, 18 лише cone, 0 лише wing; "
-        "Jet — 3 на обох, 13 лише cone, 8 лише wing.", "",
-        "## Tier за клієнтським поділом", ""]
+out += ["", "Summary from the sheet: Aircraft — 12 tasks on both cameras, 18 cone only, 0 wing only; "
+        "Jet — 3 on both, 13 cone only, 8 wing only.", "",
+        "## Tier by the client split", ""]
 for t in ["real-time", "streaming", "post", "?"]:
     names = [c for c, tt in tier.items() if tt == t]
     if names:

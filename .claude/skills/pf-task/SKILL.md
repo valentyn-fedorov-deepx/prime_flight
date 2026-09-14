@@ -1,14 +1,14 @@
 ---
 name: pf-task
-description: Розкласти новий запит/ідею Prime Flight на задачі борду — ID PF-Qn-nn, власник-людина, агент, deps, вимірюваний acceptance, теги — додати в tasks/BOARD.md і створити tasks/notes/<ID>.md із шаблону. Аргумент — опис запиту.
+description: Break a new Prime Flight request/idea down into board tasks — ID PF-Qn-nn, human owner, agent, deps, measurable acceptance, tags — add to tasks/BOARD.md and create tasks/notes/<ID>.md from the template. Argument — the request description.
 ---
 
-Запит: `$ARGUMENTS`
+Request: `$ARGUMENTS`
 
-1. Прочитай `CLAUDE.md`, `tasks/BOARD.md`, `docs/07_team.md` (зони людей/агентів), `docs/06_roadmap.md` (до якого кварталу належить).
-2. Визнач: квартал (за темою), наступний вільний номер `PF-Qn-nn` (або `PF-X-nn` для наскрізних), власника-людину за зоною, агента з таблиці в `CLAUDE.md`.
-3. Напиши acceptance **вимірюваним**: число/замір/артефакт (паритет 0 розбіжностей на N відео; latency ≤ X мс p95; таблиця у notes). Без «покращити/дослідити».
-4. Deps — тільки існуючі ID. Теги: `trigger-change` (змінює момент/умову рішення перевірки), `decision-needed` (потрібен Ігор/лід), `external` (поза CV-зоною).
-5. Додай рядок у відповідну таблицю `tasks/BOARD.md` (не ламай markdown-таблицю), створи `tasks/notes/<ID>.md` з `tasks/TEMPLATE.md`, заповни Контекст із посиланнями на розділи docs.
-6. Якщо запит змінює контракт кадру/події/клієнтську логіку — додатково створи `docs/decisions/ADR-nnn-<slug>.md` зі статусом proposed.
-7. Відповідь: ID, один рядок задачі, кому призначено, що потрібно уточнити.
+1. Read `CLAUDE.md`, `tasks/BOARD.md`, `docs/07_team.md` (zones of people/agents), `docs/06_roadmap.md` (which quarter it belongs to).
+2. Determine: the quarter (by theme), the next free number `PF-Qn-nn` (or `PF-X-nn` for cross-cutting ones), the human owner by zone, the agent from the table in `CLAUDE.md`.
+3. Write the acceptance as **measurable**: a number/measurement/artifact (parity 0 discrepancies on N videos; latency ≤ X ms p95; a table in the notes). No "improve/investigate".
+4. Deps — only existing IDs. Tags: `trigger-change` (changes the moment/condition of a check's decision), `decision-needed` (Ihor/the lead is required), `external` (outside the CV zone).
+5. Add a row to the corresponding table in `tasks/BOARD.md` (do not break the markdown table), create `tasks/notes/<ID>.md` from `tasks/TEMPLATE.md`, fill in the Context with links to the docs sections.
+6. If the request changes the frame contract/events/client logic — additionally create `docs/decisions/ADR-nnn-<slug>.md` with status proposed.
+7. Reply: the ID, the task in one line, who it is assigned to, what needs clarification.

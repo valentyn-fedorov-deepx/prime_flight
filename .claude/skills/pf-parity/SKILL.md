@@ -1,17 +1,17 @@
 ---
 name: pf-parity
-description: Прогнати/оцінити паритет пакет↔стрім для модуля або задачі Prime Flight на стенді G:\gat-streaming (гейти рівня 1, runner рівня 2, drop-тест рівня 3), перевірити умови вимірювання (X4, кеш, вільна машина, fail-вибірка) і винести вердикт review→done або назад. Аргумент — репо модуля або PF-ID.
+description: Run/assess batch↔stream parity for a Prime Flight module or task on the gat-streaming stand (test bench) G:\gat-streaming (level 1 gates, level 2 runner, level 3 drop test), check the measurement conditions (X4, cache, free machine, fail sample) and issue the verdict review→done or back. Argument — the module repo or a PF-ID.
 ---
 
-Ціль: `$ARGUMENTS`. Виконує агент `qa-parity`.
+Target: `$ARGUMENTS`. Executed by the `qa-parity` agent.
 
-1. **Рівень 1** (завжди): `cd G:\gat-streaming && pytest -q` — контракт, паритет подачі, сесія/нумерація. Червоне → стоп, репорт.
-2. **Рівень 2** (якщо є інференси/ваги локально в `G:\gat-streaming\data`): batch vs stream через `streaming.runner`, потім `tools/compare_runs.py`.
-   Немає даних → напиши, чого саме бракує (інференси якої версії, ваги DVC, GCP-креденшели) і не вигадуй цифр.
-3. **Рівень 3** (для модулів без пікселів): `--no-video --drop-at 0.3 0.6 --drop-mode fill` і `shift` — різниця = ціна відсутності `frame_id`.
-4. **Чеклист умов** (усе має бути зафіксовано в notes задачі): декодер однаковий з обох боків; повний turnaround, не 60-с уривок;
-   стан файлового кешу; чи машина вільна; збалансована вибірка з fail-ами чи «робоча вісімка».
-5. **Вердикт**:
-   - `done` — 0 розбіжностей або кожна пояснена механізмом + замір на fail-відео + умови записані;
-   - назад в `in-progress` — з конкретною причиною (наприклад «повнота на fail-відео не заміряна», «декодер не закріплений»).
-6. Запиши результат у `tasks/notes/<ID>.md` (розділ «Як перевірено») і онови статус у `tasks/BOARD.md`.
+1. **Level 1** (always): `cd G:\gat-streaming && pytest -q` — contract, feed parity, session/numbering. Red → stop, report.
+2. **Level 2** (if inferences/weights are available locally in `G:\gat-streaming\data`): batch vs stream via `streaming.runner`, then `tools/compare_runs.py`.
+   No data → write exactly what is missing (inferences of which version, DVC weights, GCP credentials) and do not invent numbers.
+3. **Level 3** (for modules without pixels): `--no-video --drop-at 0.3 0.6 --drop-mode fill` and `shift` — the difference = the price of a missing `frame_id`.
+4. **Conditions checklist** (everything must be recorded in the task notes): the same decoder on both sides; a full turnaround, not a 60 s excerpt;
+   file cache state; whether the machine is free; a balanced sample with fails or the "working eight".
+5. **Verdict**:
+   - `done` — 0 discrepancies or each one explained by a mechanism + a measurement on fail videos + conditions recorded;
+   - back to `in-progress` — with a concrete reason (for example "recall on fail videos not measured", "decoder not pinned").
+6. Write the result into `tasks/notes/<ID>.md` (section "How it was verified") and update the status in `tasks/BOARD.md`.

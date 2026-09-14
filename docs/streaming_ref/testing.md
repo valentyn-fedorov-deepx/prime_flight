@@ -1,54 +1,56 @@
-# Тестування
+_English translation of `G:/gat-streaming/docs/testing.md` (Ukrainian original), 2026-09-14._
 
-## Головне застереження: що ці цифри означають, а що ні
+# Testing
 
-Розмітка місячного звіту — 90 відео. Розподіл класів по чотирьох перевірках
-першої черги:
+## The main caveat: what these numbers mean and what they do not
 
-| перевірка | fail | pass | частка fail |
+The monthly-report labelling — 90 videos. Class distribution over the four checks
+of the first wave:
+
+| check | fail | pass | fail share |
 |---|---|---|---|
-| Main gear chocks removed | 30 | 48 | **38,5 %** |
-| BL forward chock | 12 | 77 | 13,5 % |
-| Pushback pathway | 4 | 82 | 4,7 % |
-| Nose wheel chock removed | **1** | 78 | 1,3 % |
+| Main gear chocks removed | 30 | 48 | **38.5 %** |
+| BL forward chock | 12 | 77 | 13.5 % |
+| Pushback pathway | 4 | 82 | 4.7 % |
+| Nose wheel chock removed | **1** | 78 | 1.3 % |
 
-**Nose wheel має рівно один fail на всі 90 відео.** Модуль, який завжди
-відповідає «pass», отримає 78 із 79. Питання «яка точність» для цієї
-перевірки погано визначене в принципі.
+**Nose wheel has exactly one fail across all 90 videos.** A module that always
+answers "pass" gets 78 out of 79. The question "what is the accuracy" for this
+check is ill-defined in principle.
 
-**Pushback pathway** у робочій вісімці не має жодного fail — тобто «7 із 7»
-означає лише відсутність хибних тривог, і нічого не каже про здатність
-щось зловити.
+**Pushback pathway** has no fail at all in the working eight — i.e. "7 of 7"
+means only the absence of false alarms, and says nothing about the ability
+to catch anything.
 
-Звідси правило цього репозиторію:
+Hence the rule of this repository:
 
-> **Парне порівняння валідне, абсолютна точність — ні.**
-> Питання «чи змінився вердикт на тому самому відео» коректне незалежно від
-> балансу. Питання «яка точність» — лише для Main gear chocks.
+> **Paired comparison is valid, absolute accuracy is not.**
+> The question "did the verdict change on the same video" is correct regardless of
+> the balance. The question "what is the accuracy" — only for Main gear chocks.
 
-`tools/pick_balanced.py` будує збалансовану вибірку під конкретну перевірку:
-бере **всі** fail-и з розмітки і стільки ж pass-ів.
+`tools/pick_balanced.py` builds a balanced sample for a specific check:
+it takes **all** fails from the labelling and the same number of passes.
 
-## Три рівні гейтів
+## Three levels of gates
 
-### Рівень 1 — швидкі, кожен PR (`ci.yml`)
+### Level 1 — fast, every PR (`ci.yml`)
 
-Ні секретів, ні GPU, ні прод-даних. Менше секунди.
+No secrets, no GPU, no production data. Under a second.
 
-| гейт | що ловить |
+| gate | what it catches |
 |---|---|
-| `test_contract.py` | чужу версію схеми, витікання полів між класами |
-| `test_parity.py` | розбіжність чанкової подачі з пакетною |
-| `test_session.py` | роз'їжджання нумерації при втраті чанка |
+| `test_contract.py` | a foreign schema version, field leakage between classes |
+| `test_parity.py` | the chunked feed diverging from the batch one |
+| `test_session.py` | numbering drifting apart on chunk loss |
 
-Синтетичний потік, а не прод-дані: перевіряється **механіка подачі**, а не
-якість детектора. Справжні інференси — по 500–800 МБ на відео, у git їм не
-місце.
+A synthetic stream, not production data: what is checked is the **feed mechanics**, not
+the detector quality. Real inferences are 500–800 MB per video, they do not belong
+in git.
 
-### Рівень 2 — справжні модулі (`nightly.yml`)
+### Level 2 — real modules (`nightly.yml`)
 
-Self-hosted раннер із GPU. Потребує сабмодулів з GitLab, ваг із DVC і
-креденшелів GCP.
+Self-hosted runner with a GPU. Needs the submodules from GitLab, the weights from DVC and
+GCP credentials.
 
 ```bash
 python -m streaming.runner --mod aircraft-chocks --entry main \
@@ -63,65 +65,65 @@ python tools/compare_runs.py --batch out/batch.json --stream out/stream.json \
     --gt data/gt_by_video.json
 ```
 
-`compare_runs.py` виходить з кодом 1, якщо з'явилися розбіжності — CI
-червоніє, а не просто пише в лог.
+`compare_runs.py` exits with code 1 if discrepancies appeared — CI
+goes red instead of just writing to the log.
 
-### Рівень 3 — транспорт
+### Level 3 — transport
 
-Що станеться з вердиктом, коли чанк не доїде. Два режими:
+What happens to the verdict when a chunk does not arrive. Two modes:
 
 ```bash
-# правильний приймач: дірка заповнюється заглушками, нумерація ціла
+# correct receiver: the gap is filled with placeholder frames, numbering stays intact
 python -m streaming.runner --mod beltloader-chocks --no-video \
     --drop-at 0.3 0.6 --drop-mode fill ...
 
-# поведінка «як є»: кадри просто зникають, нумерація роз'їжджається
+# "as is" behaviour: frames simply vanish, numbering drifts apart
 python -m streaming.runner --mod beltloader-chocks --no-video \
     --drop-at 0.3 0.6 --drop-mode shift ...
 ```
 
-Різниця між `fill` і `shift` — це буквально ціна відсутності `frame_id`
-у контракті, виражена у вердиктах.
+The difference between `fill` and `shift` is literally the price of the absence of `frame_id`
+in the contract, expressed in verdicts.
 
-## Прогін без відеофайлу
+## Running without a video file
 
-`beltloader-chocks` і `pushback-pathway` не читають пікселі: `dataset` після
-`load_source()` не використовується жодного разу. Їм потрібні лише кількість
-кадрів і fps, а кількість кадрів дорівнює числу рядків у ndjson (перевірено
-на 8 відео, збіг до одиниці).
+`beltloader-chocks` and `pushback-pathway` do not read pixels: `dataset` is never used after
+`load_source()`. They need only the number of
+frames and the fps, and the number of frames equals the number of lines in the ndjson (verified
+on 8 videos, exact match).
 
-Тому — `--no-video`, і їх можна тестувати на будь-якому відео, для якого є
-інференси, навіть якщо mp4 на диску немає.
+Hence — `--no-video`, and they can be tested on any video for which there are
+inferences, even if the mp4 is not on disk.
 
-Для `aircraft-chocks` так **не можна**: `dataset.get_im0s(frame_number)`
-викликається щокадру для алгоритму різниці кадрів. Раннер це перевіряє і
-відмовляється запускатись із `--no-video`.
+For `aircraft-chocks` this is **not possible**: `dataset.get_im0s(frame_number)`
+is called every frame for the frame-difference algorithm. The runner checks this and
+refuses to start with `--no-video`.
 
-## Умови вимірювань
+## Measurement conditions
 
 | | |
 |---|---|
-| залізо | RTX 5070 Ti 16 ГБ (sm_120), onnxruntime-gpu 1.29, cuDNN із torch |
-| вхід | прод-відео 1920×1080, 8 к/с, H.264, ≈4,0 Мбіт/с |
-| нарізка | `ffmpeg -c copy -f segment -segment_time 7.5` — stream-copy |
-| детектори | GM_yolov8m_best_augmentation_march2024 @1088 + chocks_v4.3 @1280 |
-| трекер | параметри з їхнього `global_config`: MAX_AGE 40, MIN_HITS 8 |
-| бюджет | 125 мс на кадр при 8 к/с |
+| hardware | RTX 5070 Ti 16 GB (sm_120), onnxruntime-gpu 1.29, cuDNN from torch |
+| input | production video 1920×1080, 8 fps, H.264, ≈4.0 Mbit/s |
+| segmentation | `ffmpeg -c copy -f segment -segment_time 7.5` — stream-copy |
+| detectors | GM_yolov8m_best_augmentation_march2024 @1088 + chocks_v4.3 @1280 |
+| tracker | parameters from their `global_config`: MAX_AGE 40, MIN_HITS 8 |
+| budget | 125 ms per frame at 8 fps |
 
-## Пастки, на які ми вже наступили
+## Traps we have already stepped on
 
-**Короткі тести завищують.** 60-секундний тест давав 4,72× real-time проти
-3,95× на повному відео. На порожньому пероні детектору нема чого рахувати.
-Для планування брати цифру з повного turnaround.
+**Short tests overestimate.** A 60-second test gave 4.72× real-time versus
+3.95× on the full video. On an empty apron the detector has nothing to compute.
+For planning, take the number from a full turnaround.
 
-**Стан файлового кешу зсуває заміри вдвічі.** Ті самі 8 відео в пакетному
-режимі: 1092 с на прогрітому кеші проти 2228 с на холодному. Файли по
-500–800 МБ, прогін впирається у диск, а не в обчислення. Порівнювати можна
-лише режими всередині одного прогону — і навіть тоді другий режим має
-перевагу прогрітого кешу.
+**The state of the file cache shifts measurements twofold.** The same 8 videos in batch
+mode: 1092 s on a warm cache versus 2228 s on a cold one. Files are
+500–800 MB each, the run is bound by the disk, not by compute. Only modes
+within a single run can be compared — and even then the second mode has
+the advantage of a warm cache.
 
-**Паралельне навантаження псує все.** Перший замір стрімінгу довелося
-викинути: під час нього працював інший модуль і йшли рекурсивні сканування
-диска. Замір швидкості потребує вільної машини, крапка.
+**Concurrent load ruins everything.** The first streaming measurement had to be
+thrown out: during it another module was running and recursive disk scans
+were going on. A speed measurement needs an idle machine, period.
 
-**Декодер має бути закріплений.** Див. X4 в [architecture.md](architecture.md).
+**The decoder must be pinned.** See X4 in [architecture.md](architecture.md).

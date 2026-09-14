@@ -2379,7 +2379,7 @@
    "chunkwise_blockers": [
     "structurally iterates video frames (:473)"
    ],
-   "notes": "module_map models=0 but mmpose is loaded (:439). Out of active review scope (04_modules: 'поза активним скоупом')."
+   "notes": "module_map models=0 but mmpose is loaded (:439). Out of active review scope (04_modules: 'outside the active scope')."
   },
   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
    "m_id": "M26",
