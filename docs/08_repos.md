@@ -10,9 +10,9 @@
 |---|---|---|---|---|
 | All modules | https://gitlab.com/dxgat/detectors | `external\<repo>` (fresh clones) | default (`master`/`main`) | 27 repos, each with `main.py` + `local_config.yaml`; each has the `cv_common`, `db_worker` subs pinned |
 | General Model | https://gitlab.com/dxgat/detectors/general_model | `external\general_model` | `master` @ 13a4ddc | detection generation; `main.py`, `scripts/engine_script.py`, `videos_selection_script.py` |
-| Tracker | https://gitlab.com/dxgat/utils/cv_trackers | — (vanished; unavailable) | was `master` @ b5d350c | aircraft, BL, GSE, people; `tracker.py`, `local_utils/bl_utils.py` |
+| Tracker | https://gitlab.com/dxgat/utils/cv_trackers | `external\cv_trackers` (from the lead's archive) | `master` @ b5d350c | aircraft, BL, GSE, people; `tracker.py`, `local_utils/bl_utils.py` |
 | db_worker | https://gitlab.com/dxgat/utils/db_worker | `external\db_worker` | `master` @ 5a4aa83 | GM JSON detections, tracks; `ML_worker.py`, `model_starter.py`, `send_report.py` |
-| cv_common | https://gitlab.com/dxgat/utils/cv_common | — (vanished; unavailable) | was `tracker_optimization` @ 29def48 | helpers: `tracked_object.py`, `transport.py`, `detections.py`, `image_preprocessing.py`, `utils/datasets.py` |
+| cv_common | https://gitlab.com/dxgat/utils/cv_common | `external\cv_common` (from the lead's archive) | `master` @ ac5098d | helpers: `tracked_object.py`, `transport.py`, `detections.py`, `image_preprocessing.py`, `utils/datasets.py` |
 | camera_software | `git@gitlab.com:dxgat/detectors/camera_software` (per the architecture review; https path not found — to be clarified) | — (not available locally) | @ 13ef3fc | merge, chunks_handling, classifier, notification — **Q1 zone (Wi-Fi upload)**; to be cloned |
 
 Access: https + Git Credential Manager works for `general_model`, `db_worker`; `cv_trackers`, `cv_common`, `camera_software`
