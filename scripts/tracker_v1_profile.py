@@ -132,6 +132,7 @@ def main() -> int:
     ap.add_argument("--weights-dir", default="weights")
     ap.add_argument("--cone-camera", action="store_true")
     ap.add_argument("--device", default="0")
+    ap.add_argument("--seed", type=int, default=None, help="np.random seed set when the first frame is pulled")
     ap.add_argument("--out", default=None, help="default out/tracker_v1_profile_<pin>.json")
     a = ap.parse_args()
     tracker_dir = a.tracker_dir or os.path.join(ROOT, "external", PINS[a.pin])
@@ -190,6 +191,20 @@ def main() -> int:
             dataset = super().load_source(source)
             if a.start > 0:
                 dataset.cap.set(cv2.CAP_PROP_POS_FRAMES, a.start)
+            if a.seed is not None:
+                # seed np.random when the first frame is pulled — after all models are loaded inside detect(), i.e.
+                # at the same logical point as scripts/tracker_v2_run.py --seed (keypoint subsampling is unseeded in v1)
+                cls = type(dataset)
+                orig_next = cls.__next__
+                state = {"seeded": False}
+
+                def seeded_next(self_):
+                    if not state["seeded"]:
+                        np.random.seed(a.seed)
+                        state["seeded"] = True
+                    return orig_next(self_)
+
+                cls.__next__ = seeded_next
             return dataset
 
     vw = SlicedWorker(

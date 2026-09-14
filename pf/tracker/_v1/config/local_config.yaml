@@ -1,0 +1,14 @@
+task: trackers
+
+bl_range:
+  - 0.1
+  - 0.9
+bl_min_height: 30  # if height < thresh - reject detection
+bl_rel_inter_thresh: 0.3
+
+gse_iou_reinit_thresh: 0.25
+
+door_offset: 0.5
+min_iou_bl_type: 0.05
+
+estimate_sigma_interval: 2

@@ -1,0 +1,316 @@
+# video params
+width: 1920
+height: 1080
+img_size: 1280  # img_size for inference
+fps: 8  # in/out frame rate
+fourcc: DIVX  # output video codec
+save_format: mkv
+
+tracking:
+  airplane:
+    norfair:
+#      distance_threshold: 120  # for euclidean distance
+      distance_threshold: 0.8  # 0.2 minimal possible match
+      initialization_delay: 8
+      hit_inertia_max: 40
+    tracked_object:
+      stopping_time_thres: 24  # 3*8 // here 8 is fps
+      static_points_thres: 0.5  # how much points show be static to consider object stopped
+      proceeding_time_thres: 16 # 2*8 // here 8 is fps
+      display_proceeding_time_thres: 5 # 5 // here 8 is fps
+      moving_time_thres: 8  # 1*8 // here 8 is fps
+      init_dots_lifetime: 16  # renew dots for optical flow each 16 frames
+      min_points_number: 2 # update status only if at least 2 points are present
+      movement_anomaly_thres_x: 50 
+      movement_anomaly_thres_y: 5 
+      # x - left-right
+      from_x: 0.35
+      to_x: 0.9
+      # y – top-down
+      from_y: 0.25
+      to_y: 0.8
+      real_height: 7
+
+  gse:
+    norfair:
+#      distance_threshold: 120  # for euclidean distance
+      distance_threshold: 0.8  # 0.2 minimal possible match
+      initialization_delay: 8
+      hit_inertia_max: 40
+    tracked_object:
+      stopping_time_thres: 24  # 3*8 // here 8 is fps
+      static_points_thres: 0.5  # how much points show be static to consider object stopped
+      proceeding_time_thes: 16 # 2*8 // here 8 is fps
+      display_proceeding_time_thres: 5 # 5 // here 8 is fps
+      moving_time_thres: 8  # 1*8 // here 8 is fps
+      init_dots_lifetime: 5  # renew dots for optical flow each 5 frames
+      min_points_number: 2 # update status only if at least 2 points are present
+      # x - left-right
+      from_x: 0.1
+      to_x: 0.9
+      # y – top-down
+      from_y: 0.2
+      to_y: 0.9
+      real_height: 2
+
+  beltloader:
+    norfair:
+#      distance_threshold: 120  # for euclidean distance
+      distance_threshold: 0.8  # 0.2 minimal possible match
+      initialization_delay: 8
+      hit_inertia_max: 40
+    tracked_object:
+      stopping_time_thres: 24  # 3*8 // here 8 is fps
+      static_points_thres: 0.5  # how much points show be static to consider object stopped
+      proceeding_time_thes: 16 # 2*8 // here 8 is fps
+      display_proceeding_time_thres: 5 # 5 // here 8 is fps
+      moving_time_thres: 8  # 1*8 // here 8 is fps
+      init_dots_lifetime: 10  # renew dots for optical flow each 5 frames
+      min_points_number: 2 # update status only if at least 2 points are present
+      # x - left-right
+      from_x: 0.1
+      to_x: 0.7
+      # y – top-down
+      from_y: 0.4
+      to_y: 0.9
+      real_height: 3
+
+  person:
+    norfair:
+#      distance_threshold: 40  # for euclidean distance
+      distance_threshold: 0.7
+      initialization_delay: 5
+      hit_inertia_max: 30
+
+# models params
+conf_thres: 0.35
+chock_conf_thres: 0.1
+vehicle_conf_thres: 0.4
+iou_thres: 0.5
+deepsort_weights: scripted_ckpt.t7
+general_model_weights: GM_yolov8m_best_augmentation_march2024.onnx
+vehicle_model_weights: VM_yolov8m_last_september2023.onnx
+chocks_model_weights: chocks_v4.3_200ep_yolov8.onnx
+camera_classifier_weights: camera_cls_effnet_b0_october_v1.8.1.pt
+entity_detector_weights: entity_det_aug_expnd.pt
+pose_config: mmpose/configs/top_down/darkpose/coco/hrnet_w48_coco_384x288_dark.py
+pose_checkpoint: hrnet_w48_coco_384x288_dark-741844ba_20200812.pth
+#weights_dir: ../weights
+
+# some files' names
+logs_name: log_{video_name}_{datetime}.log
+csv_name: csv_{video_name}_{datetime}.csv
+
+# Constants for simple depth estimating
+worker_height: 1.75  # 1.75m
+airplane_height: 7  # 7m
+pixel_size: 0.0000125  # 0.0075 mm
+focal_length: 0.035  # 35 mm
+camera_angle: 60  # 60 degrees camera
+
+# class IDs
+str2id:
+  person: 0
+  cone: 1
+  airplane: 2
+  beltloader: 3
+  gse: 4
+  pushback: 5
+  airplane_wing: 6
+  airplane_engine: 7
+  airplane_tail: 8
+  airplane_nose: 9
+  safety_vest: 10
+  camera_holder: 11
+  tow_bar: 12
+  fuel_truck: 13
+  trailer: 14
+  ladder: 15
+  wing_cone: 16
+  engine_cone: 17
+  tail_cone: 18
+  front_wheel: 19
+  back_wheel: 20
+  front_door: 21
+  back_door: 22
+  beltloader_cone: 23
+  air_conditioning: 24
+  chock: 25
+  roi: 26
+  wand: 27
+  safety_zone: 28
+  obstacle: 29
+  side_obstacle: 30
+  vehicle: 31
+
+str2id_entity:
+  JetBlue: 0
+  AlleGiant: 1
+  UnitedExpress: 2
+
+# TrackedObject status IDs
+status2id:
+  stopping: 0
+  moving: 1
+  stopped: 2
+  proceeding: 3
+  unobserved: 5
+
+
+# object colors
+colors:
+  - - 0
+    - 255
+    - 0  # person - green
+  - - 200
+    - 0
+    - 0  # cone - red
+  - - 0
+    - 160
+    - 196  # plane - blue
+  - - 144
+    - 0
+    - 196  # belt loader - purple
+  - - 224
+    - 0
+    - 213  # GSE - pink
+  - - 2
+    - 7
+    - 161  # pushback - dark blue
+  - - 207
+    - 84
+    - 2  # airplane_wing - orange
+  - - 148
+    - 61
+    - 3  # airplane engine - brown
+  - - 66
+    - 46
+    - 21 # airplane tail - dark brown
+  - - 154
+    - 244
+    - 51  # airplane nose - lime
+  - - 95
+    - 128
+    - 212  # safety vest - blue
+  - - 176
+    - 138
+    - 219  # camera holder - light purple
+  - - 246
+    - 255
+    - 0  # tow bar - yellow
+  - - 0
+    - 255
+    - 255 # fuel truck - cyan
+  - - 127
+    - 255
+    - 212 # trailer - aquamarine
+  - - 255
+    - 20
+    - 147 # ladder - deeppink
+  - - 75
+    - 0
+    - 130 # wing_cone - indigo
+  - - 240
+    - 230
+    - 140 # engine_cone - khaki
+  - - 128
+    - 128
+    - 0 # tail_cone - olive
+  - - 214
+    - 151
+    - 4 # front_wheel - dark yellow
+  - - 43
+    - 171
+    - 126 # back_wheel - blue-green
+  - - 250
+    - 128
+    - 114 # front_door - salmon
+  - - 135
+    - 206
+    - 235 # back_door - skyblue
+  - - 255
+    - 99
+    - 71 # beltloader_cone - tomato
+  - - 154
+    - 205
+    - 50 # air_conditioning - yellowgreen
+  - - 120
+    - 134
+    - 107 # chock - camouflage green
+  - - 100
+    - 149
+    - 237 # roi - cornflower blue
+  - - 123
+    - 160
+    - 91 # wand - asparagus
+  - - 0
+    - 0
+    - 0 # safety_zone - black
+  - - 221
+    - 72
+    - 20 # obstacle - ubuntu orange
+  - - 255
+    - 159
+    - 0 # side_obstacle - peel orange
+  - - 123
+    - 145
+    - 123 # vehicle - Davy's grey
+
+# status colors
+status_colors:
+  - - 0
+    - 120
+    - 0  # pass - green
+  - - 120
+    - 0
+    - 0  # fail - red
+  - - 120
+    - 120
+    - 120  # undefined - gray
+
+# command line arguments
+command_line_args:
+  - - --source  # name
+    - ""  # default
+    - ""  # action
+    - path to video to process  # help
+  - - --output-path  # name
+    - "output"  # default
+    - ""  # action
+    - path to output file or folder  # help
+  - - --device  # name
+    - ""  # default
+    - ""  # action
+    - "cuda device, i.e. 0 or 0,1,2,3 or cpu"  # help
+  - - --write-video  # name
+    - False  # default
+    - "store_true"  # action
+    - flag to write video  # help
+  - - --do-inference  # name
+    - False  # default
+    - "store_true"  # action
+    - do inference with model instead of loading from database  # help
+  - - --inferences-dir  # name
+    - '/root/app/inferences_bucket'  # default
+    - ""  # action
+    - directory to save inferences downloaded from database  # help
+  - - --weights-dir  # name
+    - '../weights'  # default
+    - ""  # action
+    - base directory to search for models' weights  # help
+  - - --local-config
+    - 'local_config.yaml'
+    - ""
+    - path to local config file
+  - - --global-config
+    - 'cv_common/global_config.yaml'
+    - ""
+    - path to global config file
+  - - --cone-camera
+    - False
+    - "store_true"
+    - flag to show, whether the camera is cone or wing
+  - - --json-fn
+    - None
+    - ""
+    - output json filename
