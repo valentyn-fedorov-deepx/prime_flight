@@ -400,7 +400,7 @@ class CameraVoter:
 
     def confidence(self) -> float:
         if not self.votes:
-            return 0.0
+            return 1.0  # v1 main.py:1117-1118: cone_conf = 0, camera type None → 1 - 0
         cone_conf = sum(self.votes) / len(self.votes)
         return cone_conf if self.majority() else 1 - cone_conf
 
