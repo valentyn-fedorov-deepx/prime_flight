@@ -1,0 +1,34 @@
+{
+ "video": "DjwtQRdZyt0sSk.mp4",
+ "start": 9000,
+ "frames": 1200,
+ "total_s": 178.48,
+ "ms_per_frame_total": 148.734,
+ "components_ms_per_frame": {
+  "estimate_sigma": 102.494,
+  "tracked_object.update_params": 25.409,
+  "cv2.calcOpticalFlowPyrLK": 9.672,
+  "deepsort.update": 9.112,
+  "sam.set_image": 4.532,
+  "sam.predict": 3.482,
+  "video_worker.model_pub": 0.76
+ },
+ "calls": {
+  "deepsort.update": 2036,
+  "estimate_sigma": 1200,
+  "sam.set_image": 312,
+  "sam.predict": 312,
+  "cv2.calcOpticalFlowPyrLK": 2782,
+  "tracked_object.update_params": 2783,
+  "video_worker.model_pub": 1201
+ },
+ "calls_per_frame": {
+  "deepsort.update": 1.697,
+  "estimate_sigma": 1.0,
+  "sam.set_image": 0.26,
+  "sam.predict": 0.26,
+  "cv2.calcOpticalFlowPyrLK": 2.318,
+  "tracked_object.update_params": 2.319,
+  "video_worker.model_pub": 1.001
+ }
+}

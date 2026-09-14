@@ -37,7 +37,9 @@ only where fail labels exist.
 5. Speed: GM v2 ≤ 28 ms/frame on the reference hardware; tracker ≤ 1 ms; end-to-end ≥ 3.95× real-time on a full turnaround.
    Measured 14.09 (`gm_speed.md`): the three GM heads 22.4 ms (v1 options) / 16.8 ms (parallel, rows byte-identical) /
    8.0 ms (TensorRT, tolerant parity) on the RTX 5070 Ti; the "tracker 0.11 ms" of the stand was a placeholder — the real
-   v1 tracker is being profiled (`scripts/tracker_v1_profile.py`), and the criterion will be restated from that baseline.
+   v1 tracker measured 14.09 (`tracker_current.md` §8): master pin 137–149 ms/frame, production pin 36–49 ms/frame on
+   1 200-frame slices. Restated criterion: **Tracker v2 ≤ 15 ms/frame on the reference GPU** (3× vs production) with the
+   L1-tracker / L2 criteria above; the tracker comparison target is the **production** pin (bd43c3c), not master.
 
 ## 4. Data
 
@@ -57,7 +59,8 @@ only where fail labels exist.
    by one second (00:32:13 → 00:32:14). Next: the other pixel-free modules (pushback-pathway, bl_rear_cone), then the
    pixel modules with weights (aircraft-chocks needs effnetb0).
 3. ~~v1 speed baseline~~ GM: done through the v2 core with the v1 op sequence and options (`gm_speed.md` "baseline");
-   tracker: in progress (`scripts/tracker_v1_profile.py`, both pins).
+   tracker: done for both pins on two slices (`tracker_current.md` §8, `tasks/notes/PF-Q1-17.md`); full-turnaround runs
+   remain (≈ 1 h per video for the master pin).
 4. Then — as v2 appears: L1 → L2 → L3 in this order; report in `tasks/notes/PF-Q1-15.md`.
 
 ## 6. Open

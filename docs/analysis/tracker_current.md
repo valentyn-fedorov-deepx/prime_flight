@@ -250,7 +250,30 @@ producer A(38) → B: fine; producer A(40), `1bbe772` (`_real_height`), `984beef
 crashes on family B pins → since prod runs, those pins (`bb0b1746`, `d7f907cd`, `238e1ef7`) are presumably family A (unverified). Adding **any**
 key to `state_dict` breaks every family-B consumer; removing a key breaks nobody (all pops default to None) but changes the modules' values.
 
-## 8. Performance profile (from code; nothing here has been measured — the stand replays production ndjson, `gat-streaming/streaming/simulate.py:47, 89-96`, and hard-codes `tracker=0.11` ms, `:305`)
+## 8. Performance profile — measured 14.09 (RTX 5070 Ti, 1080p, `DjwtQRdZyt0sSk`, `scripts/tracker_v1_profile.py`)
+
+The stand's `tracker = 0.11 ms` (`gat-streaming/streaming/simulate.py:305`) was a placeholder. Two 1 200-frame slices
+("arrival" 3 400–4 600, "busy" 9 000–10 200, up to 8 tracks/frame), the unmodified `tracker.detect()` of each pin with
+timing wrappers; raw reports `docs/analysis/speed/tracker_v1_profile_*.json`, discussion `tasks/notes/PF-Q1-17.md`:
+
+| pin | slice | total ms/frame | `update_params` | PyrLK | DeepSORT ×3 | `estimate_sigma` | masks | `model_pub` |
+|---|---|---|---|---|---|---|---|---|
+| master b5d350c + ac5098d (MobileSAM) | arrival | **137.4** | 14.4 | 5.7 | 5.9 | **100.1** | SAM 4.4 | 0.5 |
+| master | busy | **148.7** | 25.4 | 9.7 | 9.1 | **102.5** | SAM 8.0 | 0.8 |
+| production bd43c3c + 2759daf (YOLO-seg) | arrival | **35.8** | 12.1 | 6.9 | 6.0 | 6.7 | YOLO-seg 2.2 | 0.5 |
+| production | busy | **48.7** | 20.2 | 10.9 | 9.6 | 7.0 | YOLO-seg 3.8 | 0.8 |
+
+Master runs **below real time** (7.3 fps for 8 fps input) because `estimate_sigma` on the full frame costs 161 ms per call on
+this CPU and runs on every frame with any object (item 2 below); production throttles it to every 16th frame but still on
+the full frame (the crop is commented out, `cv_trackers_prod/tracker.py:300-304`). Production's remaining cost is the
+per-object state machine (optical flow + masks + DeepSORT ≈ 20–30 ms/frame) plus ≈ 10 ms of decode and loop overhead.
+Master vs production on the same busy slice: same 4 identities, all 3 186 object-frames matched, but `_status` differs on
+88 object-frames (2.8 %), `_is_stopped` 106, `_stops_count` 20 — the segmentation backend changes stop timing, and the
+keypoint sampling is unseeded — yet the production pin's own run-to-run floor is small (two runs of the same slice:
+identities and `_status` identical, 6 of 3 186 object-frames differ on `_moving_frames`/`_is_stopped`), so the status
+gap between the backends is behavioural (PF-Q1-17).
+
+### 8.1 Where the time goes (from code; confirmed by the profile)
 
 Per frame, in decreasing expected cost (RTX-class GPU, 1080p):
 1. **MobileSAM `set_image`** on the full frame (`tracked_object.py:185`) — once per object per re-initialisation (every 16/10/5 frames for

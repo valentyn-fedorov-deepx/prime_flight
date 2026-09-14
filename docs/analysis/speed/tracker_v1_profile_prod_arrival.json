@@ -1,0 +1,36 @@
+{
+ "pin": "prod",
+ "tracker_dir": "G:\\prime_flight\\external\\cv_trackers_prod",
+ "windows_shims": [
+  "cupy"
+ ],
+ "video": "DjwtQRdZyt0sSk.mp4",
+ "start": 3400,
+ "frames": 1200,
+ "total_s": 42.92,
+ "ms_per_frame_total": 35.768,
+ "components_ms_per_frame": {
+  "tracked_object.update_params": 12.122,
+  "cv2.calcOpticalFlowPyrLK": 6.86,
+  "estimate_sigma": 6.672,
+  "deepsort.update": 6.043,
+  "yolo_seg.predict": 2.159,
+  "video_worker.model_pub": 0.526
+ },
+ "calls": {
+  "deepsort.update": 1659,
+  "video_worker.model_pub": 1201,
+  "estimate_sigma": 74,
+  "yolo_seg.predict": 157,
+  "cv2.calcOpticalFlowPyrLK": 1650,
+  "tracked_object.update_params": 1677
+ },
+ "calls_per_frame": {
+  "deepsort.update": 1.383,
+  "video_worker.model_pub": 1.001,
+  "estimate_sigma": 0.062,
+  "yolo_seg.predict": 0.131,
+  "cv2.calcOpticalFlowPyrLK": 1.375,
+  "tracked_object.update_params": 1.397
+ }
+}

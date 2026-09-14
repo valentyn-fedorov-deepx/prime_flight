@@ -5,9 +5,11 @@ Two pins:
   --pin master  cv_trackers b5d350c (review pin) + cv_common ac5098d2 (its submodule pointer): MobileSAM masks,
                 full-frame `estimate_sigma` on every frame with tracked objects.  Runs unmodified.
   --pin prod    cv_trackers bd43c3c (branch `optimization`, the production image): YOLO-seg masks, patch-based
-                `estimate_sigma` every N seconds.  Its `update_params` calls do not match ANY cv_common revision in the
-                repo (the image was built from a local working copy — open question to Ihor/Yurii), so it runs with
-                cv_common `tracker_optimization` @2759daf plus a thin argument adapter — a COST PROXY, labelled as such.
+                `estimate_sigma` every N seconds.  Its submodule pointer (cv_common ac5098d2) cannot run it; the calls
+                match `Vehicle.update_params` of cv_common `tracker_optimization` @2759daf (BL and GSE are `Vehicle`
+                objects there), so the prod pin runs with that revision.  Whether the image carried exactly 2759daf or an
+                earlier commit of that line is an open question to Ihor/Yurii (`docs/analysis/tracker_current.md` §12);
+                the adapter below only covers the (unused in practice) `TrackedObject.update_params` call shape.
 
 The unmodified `tracker.detect()` runs on a truncated inference directory (N lines of the production GM ndjson, renumbered
 from 1, the video seeked to the same frame) with timing wrappers around the expensive calls:
