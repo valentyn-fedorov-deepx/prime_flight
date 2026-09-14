@@ -30,6 +30,12 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
     `TrackedObject.from_state_dict` of an older cv_common copy raises on them. Modules that define their own
     `Airplane` / `Beltloader(TrackedObject)` and never read those fields (the post-arrival and pre-departure walk-arounds)
     get them removed before the call - the treatment that copy already gives `arrival_frame`. Recorded in the JSON.
+  * Windows path alias (automatic): steering-by-pass-pin's main.py runs `pathlib.WindowsPath = pathlib.PosixPath` at
+    import, so that its fastai learner (pickled on Windows, holds a `pathlib.WindowsPath`) unpickles on the Linux prod image.
+    On Windows that alias makes every `pathlib.Path()` raise NotImplementedError (matplotlib inside the mmpose visualizer,
+    fastai load_learner). The runner restores the native class right after importing any module that replaced it - the
+    same end state as on Linux (native path objects; the learner's path is not used for prediction). Recorded in the
+    JSON as `native_pathlib_restored`; `--native-pathlib` is still accepted and changes nothing.
 """
 
 from __future__ import annotations
@@ -40,6 +46,7 @@ import importlib
 import inspect
 import json
 import os
+import pathlib
 import sys
 import time
 import traceback
@@ -169,6 +176,8 @@ def main() -> int:
     ap.add_argument("--write-video", action="store_true")
     ap.add_argument("--prepend-path", action="append", default=[], help="folder put before site-packages (repeatable)")
     ap.add_argument("--drop-state-keys", default="", help="comma list of tracker state keys removed before cv_common TrackedObject.from_state_dict")
+    ap.add_argument("--native-pathlib", action="store_true", help="accepted for compatibility; the runner always undoes a "
+                    "module's import-time `pathlib.WindowsPath = pathlib.PosixPath` alias on Windows")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -200,6 +209,7 @@ def main() -> int:
         "numpy1_scalar_shim": a.numpy1_scalars,
         "prepend_path": prepend,
         "drop_state_keys": [k for k in a.drop_state_keys.split(",") if k],
+        "native_pathlib": a.native_pathlib,
     }
     substituted = os.path.join(moddir, "cv_common", "SUBSTITUTED_PIN.txt")
     if os.path.exists(substituted):
@@ -207,7 +217,11 @@ def main() -> int:
     try:
         import torch
 
+        native_windows_path = pathlib.WindowsPath
         prod = importlib.import_module(a.entry)
+        if os.name == "nt" and pathlib.WindowsPath is not native_windows_path:
+            pathlib.WindowsPath = native_windows_path
+            result["native_pathlib_restored"] = True
         if a.numpy1_scalars:
             prod.float, prod.int = numpy1_scalar_types()
         if result["drop_state_keys"]:

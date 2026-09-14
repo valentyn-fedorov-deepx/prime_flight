@@ -39,7 +39,13 @@ NUMPY1 = {
 
 DEVICE = {"wing-walkers-in-proper-position-and-using-approved-wands": "0"}
 
-PREPEND_PATH = {"pre-departure-walk-around-completed": ["out/envs/norfair031"]}  # norfair==0.3.1 API (hit_inertia_min)
+PREPEND_PATH = {
+    "pre-departure-walk-around-completed": ["out/envs/norfair031"],  # norfair==0.3.1 API (hit_inertia_min)
+    # mmpose 1.x API: out/envs/mmpose1 (mmpose 1.3.1, mmcv-lite 2.1.0, mmengine 0.10.4, mmdet 3.2.0; README inside)
+    "hand-signals": ["out/envs/mmpose1"],
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": ["out/envs/mmpose1"],
+    "pin-verification": ["out/envs/mmpose1"],
+}
 
 # keys of the production tracker files (bd43c3c) that an older cv_common TrackedObject.from_state_dict rejects: the stage
 # fields of transport.Airplane and the beltloader-type evidence on beltloader / gse records (scan of a full tracker file)
