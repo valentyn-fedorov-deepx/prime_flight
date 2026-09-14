@@ -17,8 +17,12 @@ Speedups that do not change values:
     so GM and the vehicle head preprocess once;
   * the output buffer is allocated once and rebound, not allocated per frame;
   * a vectorized gather + one device→host copy instead of a Python loop with per-element synchronisations.
-`provider="tensorrt"` is an EXPERIMENT (different kernels → small numeric differences; validate with the tolerant parity
-metric); `provider="cuda"` is the production path. torch / onnxruntime are imported lazily.
+`provider="cuda"` is the production path with the SAME session options as v1 (`scripts/new_model.py:232` passes plain
+provider names, i.e. onnxruntime defaults: `cudnn_conv_algo_search=EXHAUSTIVE`). Forcing the "DEFAULT" heuristic search
+instead made cuDNN 9.19 run every conv in "Fallback mode" on sm_120 — 2.6× slower AND different fp16 rounding
+(`scripts/gm_ep_probe.py`); keep the v1 options. `provider="tensorrt"` is the fast path (fp16 engines, ~2.3× faster than
+CUDA EP on the 5070 Ti) with different kernels → small numeric differences; it is validated with the tolerant parity
+metric + the L2 module gate, never with exact parity. torch / onnxruntime are imported lazily.
 """
 
 from __future__ import annotations
@@ -31,14 +35,38 @@ import numpy as np
 
 from pf.gm.geometry import Letterbox, letterbox_geometry
 
-CUDA_PROVIDER = (
-    "CUDAExecutionProvider",
-    {"cudnn_conv_use_max_workspace": "1", "cudnn_conv_algo_search": "DEFAULT"},
-)
+def cuda_provider(cudnn_conv_algo_search: str = "EXHAUSTIVE") -> tuple:
+    """v1-equivalent CUDA provider. EXHAUSTIVE and max workspace are the onnxruntime defaults v1 relies on."""
+    return (
+        "CUDAExecutionProvider",
+        {"cudnn_conv_use_max_workspace": "1", "cudnn_conv_algo_search": cudnn_conv_algo_search},
+    )
+
+
+CUDA_PROVIDER = cuda_provider()
+
+
+def add_tensorrt_dll_dir() -> str | None:
+    """Make the pip TensorRT libraries (`tensorrt_cu13_libs` → site-packages/tensorrt_libs/nvinfer_10.dll) loadable.
+
+    onnxruntime's TensorRT provider DLL is resolved through the Windows DLL search path, which does not include that
+    package directory; without this the provider silently falls back to CUDA (and prints an error to stderr).
+    """
+    try:
+        import tensorrt_libs  # noqa: F401  (pip package, Windows/Linux)
+
+        d = os.path.dirname(tensorrt_libs.__file__)
+    except Exception:
+        return None
+    if hasattr(os, "add_dll_directory"):
+        os.add_dll_directory(d)
+    os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+    return d
 
 
 def tensorrt_provider(cache_dir: str) -> tuple:
     os.makedirs(cache_dir, exist_ok=True)
+    add_tensorrt_dll_dir()
     return (
         "TensorrtExecutionProvider",
         {
@@ -75,7 +103,8 @@ class YoloV8OnnxConfig:
     iou_thres: float = 0.7
     device_type: str = "cuda"
     device_id: int = 0
-    provider: str = "cuda"  # "cuda" (production path) | "tensorrt" (experiment)
+    provider: str = "cuda"  # "cuda" (production path, v1 session options) | "tensorrt" (fast path, tolerant parity)
+    cudnn_conv_algo_search: str = "EXHAUSTIVE"  # onnxruntime default = v1; "DEFAULT"/"HEURISTIC" only for experiments
     trt_cache_dir: str = "out/trt_cache"
     # production GM (commit a0157a4, deployment_v_py3_10) converts BGR→RGB before normalisation
     # (`scripts/new_model.py:308-309`); the reviewed master pin (13a4ddc) fed BGR. Default = production.
@@ -85,9 +114,10 @@ class YoloV8OnnxConfig:
     def resolved_providers(self) -> list:
         if self.providers:
             return self.providers
+        cuda = cuda_provider(self.cudnn_conv_algo_search)
         if self.provider == "tensorrt":
-            return [tensorrt_provider(self.trt_cache_dir), CUDA_PROVIDER, "CPUExecutionProvider"]
-        return [CUDA_PROVIDER, "CPUExecutionProvider"]
+            return [tensorrt_provider(self.trt_cache_dir), cuda, "CPUExecutionProvider"]
+        return [cuda, "CPUExecutionProvider"]
 
 
 class YoloV8Onnx:
@@ -104,6 +134,12 @@ class YoloV8Onnx:
             opts = onnxruntime.SessionOptions()
             opts.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
         self.session = onnxruntime.InferenceSession(cfg.weights, opts, providers=cfg.resolved_providers())
+        self.providers_used = list(self.session.get_providers())
+        if cfg.provider == "tensorrt" and self.providers_used[0] != "TensorrtExecutionProvider":
+            raise RuntimeError(
+                f"TensorRT provider requested but the session runs on {self.providers_used[0]} "
+                "(TensorRT libraries not loadable?) — refusing to report TensorRT numbers for a CUDA run"
+            )
         self.binding = self.session.io_binding()
         self._input_name = self.session.get_inputs()[0].name
         self._output_name = self.session.get_outputs()[0].name

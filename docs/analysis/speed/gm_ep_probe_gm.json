@@ -1,0 +1,80 @@
+{
+ "info": {
+  "ort_version": "1.29.0",
+  "ort_build": "ORT Build Info: git-branch=HEAD, git-commit-id=2e2543fbe9, fp8-kv-cache=1, build type=Release",
+  "ort_available_providers": [
+   "TensorrtExecutionProvider",
+   "CUDAExecutionProvider",
+   "CPUExecutionProvider"
+  ],
+  "torch": "2.11.0+cu128",
+  "torch_cuda": "12.8",
+  "torch_cudnn": 91900,
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "tensorrt_dll_dir": "C:\\Users\\valik\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\tensorrt_libs"
+ },
+ "frames": 150,
+ "configs": {
+  "cuda_default": {
+   "providers_used": [
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+   ],
+   "session_build_s": 0.2,
+   "ms_per_frame": 11.235,
+   "preprocess_ms": 0.876,
+   "inference_ms": 9.303,
+   "postprocess_ms": 1.053,
+   "identical_to_first": 150
+  },
+  "cuda_heuristic": {
+   "providers_used": [
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+   ],
+   "session_build_s": 0.0,
+   "ms_per_frame": 5.365,
+   "preprocess_ms": 0.828,
+   "inference_ms": 3.556,
+   "postprocess_ms": 0.979,
+   "identical_to_first": 1
+  },
+  "cuda_exhaustive": {
+   "providers_used": [
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+   ],
+   "session_build_s": 0.0,
+   "ms_per_frame": 5.357,
+   "preprocess_ms": 0.809,
+   "inference_ms": 3.564,
+   "postprocess_ms": 0.981,
+   "identical_to_first": 1
+  },
+  "cuda_v1_plain": {
+   "providers_used": [
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+   ],
+   "session_build_s": 0.0,
+   "ms_per_frame": 5.332,
+   "preprocess_ms": 0.801,
+   "inference_ms": 3.58,
+   "postprocess_ms": 0.948,
+   "identical_to_first": 1
+  },
+  "tensorrt": {
+   "providers_used": [
+    "TensorrtExecutionProvider",
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider"
+   ],
+   "session_build_s": 17.2,
+   "ms_per_frame": 3.391,
+   "preprocess_ms": 0.961,
+   "inference_ms": 1.52,
+   "postprocess_ms": 0.907,
+   "identical_to_first": 0
+  }
+ }
+}

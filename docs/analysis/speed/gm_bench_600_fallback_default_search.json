@@ -1,0 +1,281 @@
+{
+ "video": "G:/gat_stages/atlc5_videos/DjwtQRdZyt0sSk.mp4",
+ "start": 3600,
+ "frames": 600,
+ "results": [
+  {
+   "config": "baseline",
+   "end_to_end_ms": 62.541,
+   "fps": 15.99,
+   "heads": {
+    "gm": {
+     "preprocess_ms": 1.026,
+     "inference_ms": 9.68,
+     "postprocess_ms": 1.191
+    },
+    "chocks": {
+     "preprocess_ms": 0.82,
+     "inference_ms": 16.49,
+     "postprocess_ms": 1.058
+    },
+    "vehicle": {
+     "preprocess_ms": 0.758,
+     "inference_ms": 30.267,
+     "postprocess_ms": 1.238
+    }
+   }
+  },
+  {
+   "config": "shared",
+   "end_to_end_ms": 59.82,
+   "fps": 16.72,
+   "upload_ms": 0.864,
+   "prepare_ms": 0.267,
+   "run_ms_all_heads": 58.683,
+   "parallel": false,
+   "heads": {
+    "gm": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 9.508,
+     "postprocess_ms": 1.048
+    },
+    "chocks": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 16.295,
+     "postprocess_ms": 0.959
+    },
+    "vehicle": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 29.788,
+     "postprocess_ms": 1.077
+    }
+   }
+  },
+  {
+   "config": "parallel",
+   "end_to_end_ms": 48.392,
+   "fps": 20.66,
+   "upload_ms": 0.788,
+   "prepare_ms": 0.254,
+   "run_ms_all_heads": 47.341,
+   "parallel": true,
+   "heads": {
+    "gm": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 29.671,
+     "postprocess_ms": 16.804
+    },
+    "chocks": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 31.44,
+     "postprocess_ms": 14.911
+    },
+    "vehicle": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 44.414,
+     "postprocess_ms": 2.586
+    }
+   }
+  },
+  {
+   "config": "tensorrt_parallel",
+   "end_to_end_ms": 17.192,
+   "fps": 58.17,
+   "upload_ms": 0.847,
+   "prepare_ms": 0.311,
+   "run_ms_all_heads": 16.023,
+   "parallel": true,
+   "heads": {
+    "gm": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 8.996,
+     "postprocess_ms": 3.6
+    },
+    "chocks": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 9.415,
+     "postprocess_ms": 3.14
+    },
+    "vehicle": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 14.108,
+     "postprocess_ms": 1.547
+    }
+   }
+  },
+  {
+   "config": "tensorrt",
+   "end_to_end_ms": 21.156,
+   "fps": 47.27,
+   "upload_ms": 0.792,
+   "prepare_ms": 0.272,
+   "run_ms_all_heads": 20.088,
+   "parallel": false,
+   "heads": {
+    "gm": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 3.846,
+     "postprocess_ms": 1.045
+    },
+    "chocks": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 5.14,
+     "postprocess_ms": 0.923
+    },
+    "vehicle": {
+     "preprocess_ms": 0.0,
+     "inference_ms": 8.081,
+     "postprocess_ms": 1.046
+    }
+   }
+  }
+ ],
+ "parity_vs_baseline": {
+  "shared": {
+   "gm": {
+    "frames": 600,
+    "identical": 600
+   },
+   "chocks": {
+    "frames": 600,
+    "identical": 600
+   },
+   "vehicle": {
+    "frames": 600,
+    "identical": 600
+   }
+  },
+  "parallel": {
+   "gm": {
+    "frames": 600,
+    "identical": 600
+   },
+   "chocks": {
+    "frames": 600,
+    "identical": 600
+   },
+   "vehicle": {
+    "frames": 600,
+    "identical": 600
+   }
+  },
+  "tensorrt": {
+   "gm": {
+    "match_iou": 0.5,
+    "coord_tol_px": 2.0,
+    "conf_tol": 0.02,
+    "frames_compared": 600,
+    "frames_within_tolerance": 548,
+    "frame_parity_tolerant": 0.913333,
+    "dets_a": 7120,
+    "dets_b": 7124,
+    "pairs": 7117,
+    "pairs_exact": 4128,
+    "pairs_within_tolerance": 7075,
+    "pair_recall": 0.999579,
+    "unmatched_a": 3,
+    "unmatched_b": 7,
+    "per_class_unmatched_a": {
+     "1": 2,
+     "3": 1
+    },
+    "per_class_unmatched_b": {
+     "2": 1,
+     "1": 2,
+     "3": 3,
+     "10": 1
+    },
+    "coord_delta_px": {
+     "p50": 0.0,
+     "p90": 0.875,
+     "p99": 2.0,
+     "max": 171.140625
+    },
+    "conf_delta": {
+     "p50": 0.0,
+     "p90": 0.00146484375,
+     "p99": 0.001953125,
+     "max": 0.005859375
+    }
+   },
+   "chocks": {
+    "match_iou": 0.5,
+    "coord_tol_px": 2.0,
+    "conf_tol": 0.02,
+    "frames_compared": 600,
+    "frames_within_tolerance": 594,
+    "frame_parity_tolerant": 0.99,
+    "dets_a": 1576,
+    "dets_b": 1577,
+    "pairs": 1576,
+    "pairs_exact": 962,
+    "pairs_within_tolerance": 1571,
+    "pair_recall": 1.0,
+    "unmatched_a": 0,
+    "unmatched_b": 1,
+    "per_class_unmatched_a": {},
+    "per_class_unmatched_b": {
+     "0": 1
+    },
+    "coord_delta_px": {
+     "p50": 0.0,
+     "p90": 0.0,
+     "p99": 1.5,
+     "max": 3.0
+    },
+    "conf_delta": {
+     "p50": 0.0,
+     "p90": 0.00048828125,
+     "p99": 0.00146484375,
+     "max": 0.00341796875
+    }
+   },
+   "vehicle": {
+    "match_iou": 0.5,
+    "coord_tol_px": 2.0,
+    "conf_tol": 0.02,
+    "frames_compared": 600,
+    "frames_within_tolerance": 594,
+    "frame_parity_tolerant": 0.99,
+    "dets_a": 799,
+    "dets_b": 800,
+    "pairs": 799,
+    "pairs_exact": 367,
+    "pairs_within_tolerance": 794,
+    "pair_recall": 1.0,
+    "unmatched_a": 0,
+    "unmatched_b": 1,
+    "per_class_unmatched_a": {},
+    "per_class_unmatched_b": {
+     "0": 1
+    },
+    "coord_delta_px": {
+     "p50": 0.0,
+     "p90": 0.25,
+     "p99": 1.5,
+     "max": 54.75
+    },
+    "conf_delta": {
+     "p50": 0.0,
+     "p90": 0.0009765625,
+     "p99": 0.0048828125,
+     "max": 0.0078125
+    }
+   }
+  },
+  "tensorrt_parallel": {
+   "gm": {
+    "frames": 600,
+    "identical": 600
+   },
+   "chocks": {
+    "frames": 600,
+    "identical": 600
+   },
+   "vehicle": {
+    "frames": 600,
+    "identical": 600
+   }
+  }
+ }
+}

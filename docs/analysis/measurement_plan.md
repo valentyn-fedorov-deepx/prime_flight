@@ -35,6 +35,9 @@ only where fail labels exist.
    explained.
 4. L3: recall/precision no worse than v1 on Main gear chocks (30 fail) — the only check with sufficient labels.
 5. Speed: GM v2 ≤ 28 ms/frame on the reference hardware; tracker ≤ 1 ms; end-to-end ≥ 3.95× real-time on a full turnaround.
+   Measured 14.09 (`gm_speed.md`): the three GM heads 22.4 ms (v1 options) / 16.8 ms (parallel, rows byte-identical) /
+   8.0 ms (TensorRT, tolerant parity) on the RTX 5070 Ti; the "tracker 0.11 ms" of the stand was a placeholder — the real
+   v1 tracker is being profiled (`scripts/tracker_v1_profile.py`), and the criterion will be restated from that baseline.
 
 ## 4. Data
 
@@ -48,9 +51,13 @@ only where fail labels exist.
 ## 5. Order of work
 
 1. ~~`contract_observed.md` → pin the fields for L1-tracker and the class-id inventory for L1-GM.~~ done (`pf/tracker/contract.py`, str2id from cv_common). L1-GM measured on 1 full video — `gm_prod_delta.md`.
-2. Port `runner.py` → `pf/eval/run_module.py` (path `external/<repo>`, `--no-video` for modules without pixels);
-   run 2–3 pixel-free modules (beltloader-chocks, pushback-pathway, bl_rear_cone) on the v1 ndjson of ATL-C5 = L2 baseline.
-3. v1 speed baseline: measure GM v1 on 1 full video (after `dvc pull`).
+2. ~~Port `runner.py`~~ done: `scripts/run_module.py` (path `external/<repo>`, `--no-video` meta worker). First L2 result
+   (14.09, `DjwtQRdZyt0sSk`, `beltloader-chocks` unchanged, cv_common pin ac5098d2): production inferences → **Pass**,
+   v2-GM second-run file + production tracker file → **Pass**; smart timeline identical `[9888–22775]`; report text shifts
+   by one second (00:32:13 → 00:32:14). Next: the other pixel-free modules (pushback-pathway, bl_rear_cone), then the
+   pixel modules with weights (aircraft-chocks needs effnetb0).
+3. ~~v1 speed baseline~~ GM: done through the v2 core with the v1 op sequence and options (`gm_speed.md` "baseline");
+   tracker: in progress (`scripts/tracker_v1_profile.py`, both pins).
 4. Then — as v2 appears: L1 → L2 → L3 in this order; report in `tasks/notes/PF-Q1-15.md`.
 
 ## 6. Open

@@ -35,15 +35,15 @@ RTX 5070 Ti + onnxruntime-gpu 1.29 vs production T4 + onnxruntime-gpu 1.16.2, sa
 | confidence delta (p50 / p90 / p99 / max) | 0 / 0.002 / 0.004 / 0.008 |
 | unmatched | 21 (prod) / 22 (v2), mostly class 3 beltloader boxes cut by the frame edge at x = 0 with conf ≈ 0.35–0.39 |
 
-Interpretation: the remaining differences are fp16 convolution / cuDNN algorithm / ORT-version noise (this GPU runs several
-fp16 convs in ORT "fallback mode"), not logic. Exact bitwise parity across different GPUs is not attainable; the acceptance
+Interpretation: the remaining differences are fp16 convolution / cuDNN algorithm / ORT-version noise, not logic (the runs in
+this file additionally used cuDNN "fallback mode" convs caused by a wrong provider option in the first port — corrected, see
+`gm_speed.md` §1; the fixed path is 2.6× faster and equally non-bit-exact). Exact bitwise parity across different GPUs is not attainable; the acceptance
 criterion for GM v2 (measurement_plan.md §3.1) is therefore the tolerant metric: pair recall ≥ 99.5 %, frames within
 ±2 px / ±0.02 conf ≥ 97 %, every unmatched detection near the threshold or the frame edge. On the **same** hardware and ORT
 version as production, bitwise parity is expected.
 
-Speed on the RTX 5070 Ti (3 000 frames, batch 1, fp16, three detectors sequential): decode 3.7 ms, GM 10.3 ms, chocks 17.5 ms,
-vehicle 32.1 ms inference; end-to-end 77.6 ms/frame = 1.6× real-time at 8 fps. The vehicle head (yolov8m @1088) is the
-largest cost; batching across the three heads / cameras and removing the padding are the first optimizations (ADR-001 §6).
+Speed: the figure first printed here (77.6 ms/frame) was measured on the cuDNN fallback path and is void — the corrected
+measurements are in `gm_speed.md` (22.4 ms/frame for the three heads with the v1 options, 16.8 ms parallel, 8.0 ms TensorRT).
 
 ## Measured L1 parity of the v1-compat second-run file (all detector heads, same 3 000 frames)
 
@@ -61,9 +61,8 @@ heads after the second-run int-truncation:
 | coord delta px p99 / max | 2 / 18 | 1 / 1 | 2 / 6 |
 | conf delta p99 / max | 0.003 / 0.008 | 0.0005 / 0.003 | 0.002 / 0.005 |
 
-Exact (bitwise) frame parity of the compat file on this prefix: 60.7 % — the rest is the same fp16 noise. Speed for this run
-(three heads + noise estimator, batch 1): decode 3.2 ms, GM 9.8 ms, chocks 16.7 ms, vehicle 30.6 ms inference,
-end-to-end 73.3 ms/frame = 1.7× real-time at 8 fps on the RTX 5070 Ti.
+Exact (bitwise) frame parity of the compat file on this prefix: 60.7 % — the rest is the same fp16 noise. (Speed for this
+run withdrawn — fallback path, see `gm_speed.md` §1.)
 
 ## Full-video L1 parity of the regenerated second-run file (37 530 frames, ALL rows incl. synthesized)
 
@@ -87,9 +86,9 @@ different candidate box won the merge (coord p99 56 px on class 2 only). The `co
 0.56 because v1 writes the stale loop variable — the last row's confidence — which flips with detection order; the
 compat writer reproduces the quirk, the value is inherently non-deterministic across hardware.
 
-Speed on the full turnaround (RTX 5070 Ti, batch 1, fp16): decode 2.5 ms, GM 9.5 + 4.3, chocks 16.4 + 3.7,
-vehicle 30.2 + 3.7 (inference + pre/post) → **79.3 ms/frame end-to-end = 1.58× real-time at 8 fps**; the vehicle head
-is 43 % of the budget.
+Speed on the full turnaround: the 79.3 ms/frame / 1.58× real-time figure was measured on the cuDNN fallback path and is
+void; decode was 2.5 ms/frame. Corrected per-configuration numbers: `gm_speed.md`; the full-turnaround re-run with the
+fixed options is listed there as next.
 
 Verdict for PF-Q1-16 acceptance (measurement_plan.md §3.1): **met** on the tolerant criterion for all row types
 (pair recall ≥ 99.5 %, frames within tolerance ≥ 97 % for the synthesized classes; 85.5 % for "every row in the frame
