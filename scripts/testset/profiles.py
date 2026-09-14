@@ -50,6 +50,8 @@ PREPEND_PATH = {
     "pin-verification": ["out/envs/mmpose1"],
     # pre_arrival_departure branch: imbalanced-learn 0.13.0 + scikit-learn 1.6.1 (its pickled classifiers), mmpose 1.x
     "lead-marshaller-and-wing-walkers-in-position": ["out/envs/sklearn161", "out/envs/mmpose1"],
+    # obstruction_hand_signals branch imports the mmpose 1.x API (the default branch does not import mmpose)
+    "wing-walkers-in-proper-position-and-using-approved-wands": ["out/envs/mmpose1"],
 }
 
 # keys of the production tracker files (bd43c3c) that an older cv_common TrackedObject.from_state_dict rejects: the stage
