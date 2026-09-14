@@ -8,7 +8,9 @@ Every entry is a measured requirement of the module code on this machine (Python
   * pixel_free   — never reads frames; may run with --no-video once the video was cleaned up;
   * launcher     — argv that replaces `python scripts/run_module.py` (another runtime, e.g. WSL); paths are then passed
                    relative to the repository root with forward slashes;
-  * job_class    — orchestrator concurrency class (default: `mod` for pixel-free modules, `mod_gpu` otherwise).
+  * job_class    — orchestrator concurrency class (default: `mod` for pixel-free modules, `mod_gpu` otherwise);
+  * module_dir   — module checkout relative to the repository root when not `external/<module>` (branch exports in
+                   `external/_branches/<module>@<branch>`, marker `PF_SOURCE.txt`); results from another checkout are redone.
 Modules whose environment is not ready are listed in the orchestrator control file (`disabled_modules`), not here.
 """
 
@@ -53,6 +55,8 @@ LAUNCHER: dict = {}
 
 JOB_CLASS: dict = {}
 
+MODULE_DIR: dict = {}
+
 
 def profile(module: str) -> dict:
     return {
@@ -63,4 +67,5 @@ def profile(module: str) -> dict:
         "pixel_free": module in PIXEL_FREE,
         "launcher": LAUNCHER.get(module),
         "job_class": JOB_CLASS.get(module),
+        "module_dir": MODULE_DIR.get(module, ""),
     }

@@ -229,7 +229,8 @@ def module_record(label: str, video: str, module: str) -> dict:
     r = jload(module_out(label, video, module), {}) or {}
     rec = {"status": "failed" if "error" in r or not r else "done", "verdict": r.get("status"),
            "seconds": r.get("seconds"), "cone_camera": r.get("cone_camera"), "airplane_type": r.get("airplane_type"),
-           "no_video": r.get("no_video")}
+           "no_video": r.get("no_video"), "module_dir": r.get("module_dir_arg") or "",
+           "module_source": r.get("module_source")}
     if "error" in r:
         rec["error"] = r["error"][:300]
     return rec
@@ -242,6 +243,8 @@ def stale(step: str, rec: dict, video: str, plan: Plan) -> bool:
     if step.startswith("mod:"):
         if rec.get("cone_camera") is None:
             return False
+        if (rec.get("module_dir") or "") != profiles.profile(step.split(":", 2)[2])["module_dir"]:
+            return True
         at = plan.airplane_type(video)
         return (rec["cone_camera"] == "true") != plan.cone(video) or (rec.get("airplane_type") or None) != (at or None)
     return False
@@ -302,6 +305,8 @@ def build_cmd(step: str, video: str, plan: Plan):
         cmd += ["--prepend-path", x]
     if prof["drop_state_keys"]:
         cmd += ["--drop-state-keys", prof["drop_state_keys"]]
+    if prof["module_dir"]:
+        cmd += ["--module-dir", prof["module_dir"]]
     return cmd, dict(os.environ, **profiles.ENV)
 
 

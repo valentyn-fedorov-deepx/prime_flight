@@ -129,6 +129,17 @@ def drop_tracker_state_keys(keys: list) -> None:
     tracked_object.TrackedObject.from_state_dict = from_state_dict
 
 
+def module_source(moddir: str) -> str:
+    """`PF_SOURCE.txt` of a branch export (`<branch>@<commit>`), else the git HEAD of the clone."""
+    marker = os.path.join(moddir, "PF_SOURCE.txt")
+    if os.path.exists(marker):
+        return open(marker, encoding="utf-8").read().strip()
+    import subprocess
+
+    out = subprocess.run(["git", "-C", moddir, "log", "-1", "--format=%h"], capture_output=True, text=True)
+    return out.stdout.strip()
+
+
 def _jsonable(v):
     if v is None or isinstance(v, (str, int, float, bool)):
         return v
@@ -142,6 +153,8 @@ def _jsonable(v):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--module", required=True, help="repo folder name under external/")
+    ap.add_argument("--module-dir", default=None, help="module checkout to run instead of external/<module> "
+                    "(e.g. a branch export with PF_SOURCE.txt)")
     ap.add_argument("--entry", default="main", help="python module with detect(): main | main_stream")
     ap.add_argument("--video", required=True, help="video file name (basename is used for the ndjson names)")
     ap.add_argument("--videos-dir", default=None, help="folder with the mp4 (needed unless --no-video)")
@@ -159,7 +172,7 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
-    moddir = os.path.join(ROOT, "external", a.module)
+    moddir = os.path.abspath(a.module_dir) if a.module_dir else os.path.join(ROOT, "external", a.module)
     inf = os.path.abspath(a.inferences_dir)
     out = os.path.abspath(a.out)
     src = os.path.join(os.path.abspath(a.videos_dir), a.video) if a.videos_dir else a.video
@@ -175,6 +188,8 @@ def main() -> int:
     t0 = time.time()
     result = {
         "module": a.module,
+        "module_dir_arg": a.module_dir or "",
+        "module_source": module_source(moddir),
         "entry": a.entry,
         "video": a.video,
         "inferences_dir": inf,
