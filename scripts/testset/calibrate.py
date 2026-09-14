@@ -47,12 +47,29 @@ def git(repo: str, *args: str) -> str:
 
 
 def pins(repo: str, ref: str) -> dict:
+    """Full commit ids of the cv_common / db_worker submodules at `ref`."""
     out = {}
     for line in git(repo, "ls-tree", ref, "cv_common", "db_worker").splitlines():
         parts = line.split()
         if len(parts) >= 4:
-            out[parts[3]] = parts[2][:8]
+            out[parts[3]] = parts[2]
     return out
+
+
+def extract_pinned(sub: str, pin: str, dest: str) -> bool:
+    """Extract commit `pin` of the local archive clone external/<sub> into dest; False if the commit is not there."""
+    repo = os.path.join(ROOT, "external", sub)
+    if not pin or not os.path.exists(os.path.join(repo, ".git")):
+        return False
+    if subprocess.run(["git", "-C", repo, "cat-file", "-e", f"{pin}^{{commit}}"], capture_output=True).returncode != 0:
+        return False
+    tar_path = dest + ".pin.tar"
+    subprocess.run(["git", "-C", repo, "archive", "--format=tar", "-o", tar_path, pin], check=True)
+    os.makedirs(dest, exist_ok=True)
+    with tarfile.open(tar_path) as tf:
+        tf.extractall(dest)
+    os.remove(tar_path)
+    return True
 
 
 def export_dir(module: str, candidate: str) -> str:
@@ -78,14 +95,21 @@ def export_branch(module: str, branch: str) -> str:
     with tarfile.open(tar_path) as tf:
         tf.extractall(tmp)
     os.remove(tar_path)
+    pins_default, pins_branch = pins(src, "HEAD"), pins(src, f"origin/{branch}")
+    submodules = {}
     for sub in ("cv_common", "db_worker"):
-        if os.path.isdir(os.path.join(src, sub)):
-            shutil.copytree(os.path.join(src, sub), os.path.join(tmp, sub), dirs_exist_ok=True)
+        dest = os.path.join(tmp, sub)
+        if pins_branch.get(sub) and pins_branch[sub] != pins_default.get(sub) and extract_pinned(sub, pins_branch[sub], dest):
+            submodules[sub] = f"branch pin {pins_branch[sub][:8]} extracted from external/{sub}"
+        elif os.path.isdir(os.path.join(src, sub)):
+            shutil.copytree(os.path.join(src, sub), dest, dirs_exist_ok=True)
+            submodules[sub] = f"copied from the default checkout (default pin {pins_default.get(sub, '?')[:8]})"
     dvc_changed = git(src, "diff", "--name-only", "HEAD", f"origin/{branch}", "--", "*.dvc", ".dvc").split()
     if not dvc_changed and os.path.isdir(os.path.join(src, "weights")):
         shutil.copytree(os.path.join(src, "weights"), os.path.join(tmp, "weights"), dirs_exist_ok=True)
-    info = {"module": module, "branch": branch, "commit": commit, "pins_default": pins(src, "HEAD"),
-            "pins_branch": pins(src, f"origin/{branch}"), "dvc_changed": dvc_changed,
+    info = {"module": module, "branch": branch, "commit": commit,
+            "pins_default": {k: v[:8] for k, v in pins_default.items()},
+            "pins_branch": {k: v[:8] for k, v in pins_branch.items()}, "submodules": submodules, "dvc_changed": dvc_changed,
             "requirements_changed": git(src, "diff", "--name-only", "HEAD", f"origin/{branch}", "--", "requirements*.txt").split()}
     with io.open(os.path.join(tmp, "PF_SOURCE.txt"), "w", encoding="utf-8") as fh:
         fh.write(f"{branch}@{commit}\n")
