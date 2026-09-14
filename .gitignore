@@ -5,3 +5,4 @@ docs/inbox/*.zip
 *.mp4
 *.ndjson
 external/
+out/
