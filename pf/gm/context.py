@@ -421,7 +421,10 @@ class VideoContextV2:
 
     cm: ClassMap
     fps: int = 8
-    variant: str = "prod"  # 'prod' = commit a0157a4 behaviour (default), 'master' = 13a4ddc
+    # 'prod' = commit a0157a4 (deployment_v_py3_10); 'entity_clip' = commit 8576299 (entity_clip_integration, master
+    # lineage: norfair tracking without the tiny-plane filter, BboxStabilizer in HEAVY mode, master aircraft-type vote);
+    # 'master' = the early 13a4ddc approximation (MainAircraftTracker)
+    variant: str = "prod"
     layout: PartsLayout = None
     aircraft: MainAircraftTracker = None
     entity: EntityVoter = field(default_factory=EntityVoter)
@@ -434,7 +437,12 @@ class VideoContextV2:
         if self.layout is None:
             self.layout = PartsLayout(fps=self.fps)
         if self.aircraft is None:
-            self.aircraft = NorfairPlaneTracker() if self.variant == "prod" else MainAircraftTracker()
+            if self.variant == "prod":
+                self.aircraft = NorfairPlaneTracker()
+            elif self.variant == "entity_clip":
+                self.aircraft = NorfairPlaneTracker(drop_tiny=False, stabilize_when_heavy=True)
+            else:
+                self.aircraft = MainAircraftTracker()
         if self.aircraft_type_prod is None:
             self.aircraft_type_prod = AircraftTypeVoterProd(fps=self.fps)
 
@@ -448,11 +456,15 @@ class VideoContextV2:
         is_cone=None,
         arrived: bool = False,
         departured: bool = False,
+        heavy: bool = False,
     ) -> list:
-        """`detections` = first-run rows. `arrived` / `departured` = T_arr / T_dep already happened (tracker / stage detector)."""
+        """`detections` = first-run rows. `heavy` = the noise preprocessor is in HEAVY mode on this frame. `arrived` / `departured` = T_arr / T_dep already happened (tracker / stage detector)."""
         decided = []
         decided += self.layout.update(frame_id, detections, self.cm)
-        decided += self.aircraft.update(frame_id, detections, self.cm)
+        if isinstance(self.aircraft, NorfairPlaneTracker):
+            decided += self.aircraft.update(frame_id, detections, self.cm, heavy=heavy)
+        else:
+            decided += self.aircraft.update(frame_id, detections, self.cm)
         decided += self.entity.feed(frame_id, entity_class_ids)
         if self.variant == "prod":
             tid = self.aircraft.longest()

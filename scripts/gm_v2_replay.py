@@ -61,7 +61,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--first-run", required=True, help="first-run ndjson written by scripts/gm_v2_run.py")
     ap.add_argument("--str2id", default=os.path.join(ROOT, "external", "cv_common", "global_config.yaml"))
-    ap.add_argument("--variant", default="prod", choices=["prod", "master"])
+    ap.add_argument("--variant", default="prod", choices=["prod", "entity_clip", "master"])
     ap.add_argument("--fps", type=int, default=8)
     ap.add_argument("--out-dir", default="out/replay")
     ap.add_argument("--compare", default=None, help="production second-run ndjson")
@@ -89,8 +89,9 @@ def main() -> int:
     video_name = os.path.basename(a.first_run).replace("general_model", "", 1).replace(".ndjson", "")
     os.makedirs(a.out_dir, exist_ok=True)
 
-    stream = GmStream(cm, event_id=video_name, fps=a.fps, rows_provider=lambda f, _img: rows_by_frame[f])
-    stream.context.variant = a.variant
+    stream = GmStream(
+        cm, event_id=video_name, fps=a.fps, rows_provider=lambda f, _img: rows_by_frame[f], variant=a.variant
+    )
     t0 = time.perf_counter()
     for f in frames:
         stream.process(

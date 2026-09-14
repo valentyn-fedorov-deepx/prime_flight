@@ -77,6 +77,7 @@ class GmStream:
     cm: ClassMap
     event_id: str
     fps: int = 8
+    variant: str = "prod"  # VideoContextV2 variant: 'prod' (a0157a4), 'entity_clip' (8576299), 'master'
     detectors: Detectors | None = None
     rows_provider: RowsProvider | None = None
     context: VideoContextV2 = None
@@ -90,7 +91,7 @@ class GmStream:
 
     def __post_init__(self):
         if self.context is None:
-            self.context = VideoContextV2(self.cm, fps=self.fps)
+            self.context = VideoContextV2(self.cm, fps=self.fps, variant=self.variant)
         if self.session is None:
             self.session = Session(self.event_id, fps=self.fps)
         if self.detectors is None and self.rows_provider is None:
@@ -130,6 +131,7 @@ class GmStream:
             is_cone=is_cone,
             arrived=arrived,
             departured=departured,
+            heavy=self.preprocessor.is_heavy() if self.preprocessor is not None else False,
         ):
             self.events.append(GmStreamEvent(frame_id, name, self._decision_value(name)))
         return make_frame(frame_id, rows, [])

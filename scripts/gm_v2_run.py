@@ -93,6 +93,12 @@ def main() -> int:
     )
     ap.add_argument("--provider", default="cuda", choices=["cuda", "tensorrt"])
     ap.add_argument(
+        "--variant",
+        default="prod",
+        choices=["prod", "entity_clip", "master"],
+        help="GM behaviour to reproduce: prod = a0157a4 (RGB input), entity_clip = 8576299 (BGR input), master = 13a4ddc",
+    )
+    ap.add_argument(
         "--compare-ignore-classes",
         default="",
         help="comma-separated class ids to ignore in --compare (e.g. 2,29,30 for a partial run)",
@@ -109,6 +115,7 @@ def main() -> int:
             iou_thres=0.7,
             device_type=a.device,
             provider=a.provider,
+            bgr_to_rgb=(a.variant == "prod"),
         )
     )
     dets = Detectors(
@@ -124,7 +131,7 @@ def main() -> int:
     compat_path = os.path.join(a.out_dir, f"general_model{video_name}-second_run.ndjson")
     report_path = os.path.join(a.out_dir, f"gm_v2_report{video_name}.json")
 
-    stream = GmStream(cm, event_id=video_name, fps=a.fps, detectors=dets)
+    stream = GmStream(cm, event_id=video_name, fps=a.fps, detectors=dets, variant=a.variant)
     t_decode = 0.0
     t_total0 = time.perf_counter()
     n = 0

@@ -9,7 +9,8 @@ Faithful to `general_model/main.py:597-646` (@ a0157a4 lines 599-660) and `scrip
   * `FeaturedTracker` computes FAST/ORB features per object but its `update()` never passes `image` to
     `update_objects_in_place`, so the feature-similarity gate is dead code — the engine is exactly norfair 0.2.0;
   * per reported object: `xyxy = correct_coords(obj.last_detection.data)` (the raw detection box, not the Kalman estimate);
-    the `BboxStabilizer` is applied only when the noise preprocessor is in HEAVY mode (not ported: reported as a flag);
+    the `BboxStabilizer` is applied only when the noise preprocessor is in HEAVY mode (`stabilize_when_heavy`, used by the
+    master-lineage variant `entity_clip`; `pf.gm.stabilizer`);
   * history bookkeeping (`planes_tracking_meta_data`): the first object initialises the dict; a known norfair id
     updates its history; a NEW norfair id is re-associated with the most overlapping known plane
     (`max(..., key=get_relative_intersection(xyxy, plane.xyxy))`, then `get_overlay_ratio > 0.5`) and SHARES that
@@ -27,6 +28,7 @@ import numpy as np
 
 from pf.gm._norfair020 import Detection, Tracker
 from pf.gm.context_prod import drop_tiny_planes
+from pf.gm.stabilizer import BboxStabilizer, PlanesView
 from pf.gm.geometry import bboxes_iou, correct_coords, get_hw, overlay_ratio, relative_intersection
 from pf.gm.rows import ClassMap
 
@@ -82,6 +84,8 @@ class NorfairPlaneTracker:
 
     min_height: int = 150
     drop_tiny: bool = True
+    stabilize_when_heavy: bool = False  # master lineage (13a4ddc … 8576299): BboxStabilizer on HEAVY-noise frames
+    stabilizer: BboxStabilizer = None
     norfair_params: dict = field(default_factory=lambda: dict(NORFAIR_AIRPLANE))
     tracker: Tracker = None
     planes: dict = field(
@@ -93,6 +97,8 @@ class NorfairPlaneTracker:
     def __post_init__(self):
         if self.tracker is None:
             self.tracker = Tracker(distance_function=iou_distance, **self.norfair_params)
+        if self.stabilizer is None and self.stabilize_when_heavy:
+            self.stabilizer = BboxStabilizer()
 
     # ---------------------------------------------------------------- per frame
     def candidates(self, rows, cm: ClassMap) -> list:
@@ -106,7 +112,7 @@ class NorfairPlaneTracker:
         cands = merge_overlapping_planes(cands)
         return drop_tiny_planes(cands) if self.drop_tiny else cands
 
-    def update(self, frame_id: int, rows, cm: ClassMap) -> list:
+    def update(self, frame_id: int, rows, cm: ClassMap, heavy: bool = False) -> list:
         decided = []
         cands = self.candidates(rows, cm)
         if not cands:
@@ -117,6 +123,8 @@ class NorfairPlaneTracker:
         detections = [Detection(xyxy_to_det_arr(b), data=b) for b in cands]
         for obj in self.tracker.update(detections):
             xyxy = correct_coords(obj.last_detection.data)
+            if heavy and self.stabilizer is not None:
+                xyxy = self.stabilizer.update_bbox(obj.id, frame_id, xyxy, PlanesView(self.planes))
             if self.first_track_at is None:
                 self.first_track_at = frame_id
                 decided.append("first_aircraft_track")
