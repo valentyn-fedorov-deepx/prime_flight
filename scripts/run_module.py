@@ -36,6 +36,14 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
     fastai load_learner). The runner restores the native class right after importing any module that replaced it - the
     same end state as on Linux (native path objects; the learner's path is not used for prediction). Recorded in the
     JSON as `native_pathlib_restored`; `--native-pathlib` is still accepted and changes nothing.
+  * `--keras-torch-shim` (opt-in): the walk-around `tdv_cone` branches load `weights/best_acc.keras` with
+    `tf.keras.models.load_model`, and the pinned TensorFlow 2.15 / Keras 2.15 cannot read that archive's weight layout
+    ("Layer 'conv2d' expected 2 variables, but received 0 variables during loading"). The branch's own `single_run.py`
+    (commit e407de2) replaces `tf.keras.models.load_model` with `keras_torch_shim.KerasCompatModel` from the module folder
+    (the same weights in a torch twin of the network); the flag applies exactly that hook right after the module import.
+    One difference: the shim's `<weights>_torch.pth` cache is not written next to the weights (the checkout stays
+    read-only; a cache would hold the same tensors). Every load is recorded in the JSON as `keras_torch_shim_loads`.
+    Needs a TensorFlow that imports: the `out/envs/np1_walkaround` venv (README inside).
 """
 
 from __future__ import annotations
@@ -136,6 +144,30 @@ def drop_tracker_state_keys(keys: list) -> None:
     tracked_object.TrackedObject.from_state_dict = from_state_dict
 
 
+def apply_keras_torch_shim() -> list:
+    """`single_run.py` hook of the walk-around tdv_cone branches: tf.keras.models.load_model -> KerasCompatModel.
+
+    Returns the list that records the path of every load (kept in the result JSON)."""
+    import tensorflow as tf
+    import torch
+
+    import keras_torch_shim  # module folder, sys.path[0]
+
+    loads = []
+
+    def load_model(keras_path):
+        loads.append(str(keras_path))
+        save = torch.save
+        torch.save = lambda *args, **kwargs: None  # no <weights>_torch.pth cache next to the .keras file
+        try:
+            return keras_torch_shim.KerasCompatModel(keras_path)
+        finally:
+            torch.save = save
+
+    tf.keras.models.load_model = load_model
+    return loads
+
+
 def module_source(moddir: str) -> str:
     """`PF_SOURCE.txt` of a branch export (`<branch>@<commit>`), else the git HEAD of the clone."""
     marker = os.path.join(moddir, "PF_SOURCE.txt")
@@ -178,6 +210,8 @@ def main() -> int:
     ap.add_argument("--drop-state-keys", default="", help="comma list of tracker state keys removed before cv_common TrackedObject.from_state_dict")
     ap.add_argument("--native-pathlib", action="store_true", help="accepted for compatibility; the runner always undoes a "
                     "module's import-time `pathlib.WindowsPath = pathlib.PosixPath` alias on Windows")
+    ap.add_argument("--keras-torch-shim", action="store_true", help="route tf.keras.models.load_model through the module's "
+                    "keras_torch_shim.KerasCompatModel, as the walk-around tdv_cone single_run.py does")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -210,6 +244,7 @@ def main() -> int:
         "prepend_path": prepend,
         "drop_state_keys": [k for k in a.drop_state_keys.split(",") if k],
         "native_pathlib": a.native_pathlib,
+        "keras_torch_shim": a.keras_torch_shim,
     }
     substituted = os.path.join(moddir, "cv_common", "SUBSTITUTED_PIN.txt")
     if os.path.exists(substituted):
@@ -222,6 +257,8 @@ def main() -> int:
         if os.name == "nt" and pathlib.WindowsPath is not native_windows_path:
             pathlib.WindowsPath = native_windows_path
             result["native_pathlib_restored"] = True
+        if a.keras_torch_shim:
+            result["keras_torch_shim_loads"] = apply_keras_torch_shim()
         if a.numpy1_scalars:
             prod.float, prod.int = numpy1_scalar_types()
         if result["drop_state_keys"]:
