@@ -34,6 +34,7 @@ NUMPY1 = {
     "lead-marshaller-and-wing-walkers-in-position",
     "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
     "wing-walkers-in-proper-position-and-using-approved-wands",
+    "safety-zone-confirmed-clear",  # "only 0-dimensional arrays can be converted to Python scalars"
 }
 
 DEVICE = {"wing-walkers-in-proper-position-and-using-approved-wands": "0"}
