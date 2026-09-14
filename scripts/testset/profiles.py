@@ -73,6 +73,11 @@ MODULE_DIR = {
     # 8/8 events = New output (default branch 5/8)
     "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready":
         "external/_branches/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready@obstruction_plane_track",
+    # ties with the default branch on 8/8 events; the branch carries the production fixes ("Fix prod issue ...") and the
+    # new pre-arrival absence logic (needs cv_common/modules, overlaid from the archive @2759daf, PF_MODULES_OVERLAY.txt)
+    "all-cargo-bin-doors-opened-and-verified": "external/_branches/all-cargo-bin-doors-opened-and-verified@bl_approach",
+    "chocks-and-cones-available-and-staged-for-arrival":
+        "external/_branches/chocks-and-cones-available-and-staged-for-arrival@not_observed_logic",
 }
 
 
