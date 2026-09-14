@@ -39,8 +39,17 @@ L2 gate can compare module verdicts on streaming outputs with production.
   re-identification frame — identical between production and GM v2 → Tracker v2
   (`stage/events_DjwtQRdZyt0sSk_production_vs_gmv2_trackerv2.json`).
 - PUSHBACK_ATTACHED on the 7 ATL-C5 videos: `stage/pushback_attached_atlc5.json`.
-- Streaming run: pending — realtime factor, ms/frame per stage, publication lag, streaming-vs-batch GM rows, tracker events
-  and L2 verdicts on the streaming outputs.
+- **Smoke run, the first 4 200 frames of DjwtQRdZyt0sSk** (GPU shared with the GM chain): 70 chunks, 65.2 ms/frame = 1.9× real
+  time (GM heads + context 41.6, causal rows 0.16, Tracker v2 16.8, events and bus 0.3). Tracker records are published 5 frames
+  after their frame at the median, 22 at p99 and 60 at most (the airplane buffer around arrival). T_ARR fires with frame 3 669 —
+  the production value — and is published at frame 3 729, 7.5 s later.
+- Streaming vs batch second-run rows from the same first-run rows: every main-aircraft row is there (695 of 695); on 6 % of those
+  frames only the height written into the conf slot differs (running mode 680, final 670). Obstacle rows are identical from the
+  frame the front wheel is first known (3 945: the same rows on 243 of 243 frames). The 2 563 batch obstacle rows before that
+  frame exist only because v1 applies the final front wheel to the whole video — the first one at frame 4, long before the
+  aircraft appears. No causal pipeline can produce them; the L2 run on the full streaming outputs shows whether a module
+  depends on them.
+- Full streaming run and L2 on its outputs: queued after the idle speed suite.
 
 ## Known limitations of v0
 
