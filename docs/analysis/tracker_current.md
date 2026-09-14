@@ -273,6 +273,12 @@ keypoint sampling is unseeded — yet the production pin's own run-to-run floor 
 identities and `_status` identical, 6 of 3 186 object-frames differ on `_moving_frames`/`_is_stopped`), so the status
 gap between the backends is behavioural (PF-Q1-17).
 
+**v2 stream port (14.09).** `pf.tracker.stream.TrackerStream` runs this loop causally per frame on the vendored production
+classes. With NumPy seeded at the same point on both sides, its output is byte-identical to the production pin on the busy
+slice (1 200 of 1 200 lines, including `_p0`/`_st`), with and without the exact fast paths (grey frames once per frame,
+vectorised in-box test, no frame copies, bit-identical threaded noise estimate, parallel DeepSORT). Under contention the
+fast paths take it from 50.6 to 39.2 ms/frame (`tasks/notes/PF-Q1-17.md`).
+
 ### 8.1 Where the time goes (from code; confirmed by the profile)
 
 Per frame, in decreasing expected cost (RTX-class GPU, 1080p):

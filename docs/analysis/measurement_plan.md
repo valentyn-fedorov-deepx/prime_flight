@@ -31,6 +31,9 @@ only where fail labels exist.
    on the production hardware/runtime bitwise parity (`compare_gm_ndjson`, ndigits=1) is expected and must be reported too.
 2. L1 Tracker: 100 % match on the consumed non-private fields (`arrival_frame`, `departure_frame`, statuses, `_class_name`,
    `_obj_id` identity by IoU) with a tolerance of ±1 frame on events; the number of unique aircraft per video = as in v1 (X1).
+   Measured 14.09: with NumPy seeded identically the v2 tracker file is byte-identical to the production pin (the strongest
+   form; `tracker_v2_run.py --seed` vs `tracker_v1_profile.py --pin prod --seed`); two unseeded production runs differ from
+   each other on 0.2 % of object-frames, movement counters only. Changes that alter numerics are judged against that floor.
 3. L2: 0 verdict changes on ATL-C5 and on the balanced sample; a change "Not observed → verdict" is counted separately and
    explained.
 4. L3: recall/precision no worse than v1 on Main gear chocks (30 fail) — the only check with sufficient labels.

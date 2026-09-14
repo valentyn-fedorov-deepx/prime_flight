@@ -74,8 +74,14 @@ TensorRT engines are hardware-specific (built at deploy time, cached).
 - RT branch (125 ms/frame per camera at 8 fps): GM alone is 13–17 % of the budget on CUDA EP and 6–9 % on TensorRT on this
   GPU; a T4-class production GPU is roughly 3–4× slower (to be measured on the production runtime — `measurement_plan.md`
   §2 rule: numbers only count on the pinned hardware).
-- Real-time factor on a full turnaround (37 530 frames, incl. decode): to be re-run with the fixed options
-  (`scripts/gm_v2_run.py --parallel-heads`); the 1.58× figure is void.
+- **Full turnaround, measured 14.09** (`DjwtQRdZyt0sSk`, 37 530 frames, `scripts/gm_v2_run.py --parallel-heads`, fixed
+  options, near-idle machine): **28.3 ms/frame end-to-end = 4.42× real time at 8 fps**, including OpenCV decode 2.5 ms,
+  the three heads ≈ 16.4 ms (upload 0.7 + letterbox 0.4 + parallel run 15.4), and ≈ 9.4 ms of CPU work (GM rows, the
+  incremental video context, the v1-compat second-run writer, the preprocessor's noise estimate every 48 frames). The
+  regenerated second-run file against production on all rows: pair recall 99.90 %, 99.1 % of pairs within ±2 px /
+  ±0.02 conf, 85.5 % of frames fully within tolerance — the same figures as the earlier replay (`gm_prod_delta.md`), so
+  the fixed session options changed speed, not agreement. Report: `out/DjwtQRdZyt0sSk_full_v2/`. The void 1.58× figure
+  is superseded.
 
 ## 4. Reproduce
 
@@ -90,7 +96,8 @@ the session silently fell back to CUDA.
 
 ## 5. Next
 
-1. `GmStream`/`Detectors(parallel=True)` as the default (proven byte-identical); re-run the full turnaround with decode.
+1. `GmStream`/`Detectors(parallel=True)` as the default (proven byte-identical); ~~re-run the full turnaround with decode~~
+   done (28.3 ms/frame, 4.42× RT); the GM preprocessor's noise estimate can use the bit-identical `pf.tracker.fast_sigma`.
 2. TensorRT adoption gate: full-video tolerant L1 + L2 on the 7 ATL-C5 videos; engine build/cache policy at deploy.
 3. Vehicle head re-export check (2.1× the GM head cost at the same size); batched postprocess / NMS in graph.
 4. Batching across cameras for the RT branch (one session, N frames) — after the tracker cost is known.
