@@ -64,7 +64,12 @@ DROP_STATE_KEYS = {
     "pre-departure-walk-around-completed": AIRPLANE_STAGE_KEYS + "," + BL_TYPE_KEYS,
 }
 
-ENV = {"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1"}
+ENV = {
+    "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1",
+    # ultralytics otherwise runs `pip install <missing package>` (e.g. lap for YOLO.track) into whatever interpreter
+    # is on PATH, i.e. the shared global one
+    "YOLO_AUTOINSTALL": "False",
+}
 
 # hair-policy: CPython 3.8 venv in WSL Ubuntu-24.04 (scripts/testset/wsl_run_module.sh picks it from the Pyarmor header)
 LAUNCHER = {"hair-policy": ["wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "/mnt/g/prime_flight/scripts/testset/wsl_run_module.sh"]}
