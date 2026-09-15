@@ -8,6 +8,9 @@ subject to validation by measurements (baseline: PF-Q1-08).
 - Confirm the baseline and the delivery KPI.
 - Agree on the architecture direction (two branches, stage detector as the orchestrator, hierarchy GM → group → module).
 - Confirm the roadmap priorities and assumptions (roadmap deadline ≥3 months: Sun 14.09.2026).
+- **2026-09-15 — priority change:** the client's strongest interest is live alerts about violations so they are fixed on
+  the spot → the real-time alerts MVP (PF-Q2-07) starts now; alerting (Q3) and parts of the Q2 real-time work are pulled
+  forward.
 
 ## Q1 (months 1–3) — Continuous Upload + Faster Post-Processing
 

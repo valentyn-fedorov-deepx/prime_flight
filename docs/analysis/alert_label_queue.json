@@ -1,0 +1,1141 @@
+{
+ "purpose": "PF-Q2-09: label the moment of every wave-1 violation so live alerts can be scored for recall, false alerts and time to alert (PF-Q2-07, PF-Q2-08)",
+ "source": "monthly CI report, job 16263924101: 69 events / 90 videos; validated truth per task",
+ "label_record": {
+  "event_id": "event id from this file",
+  "video": "<id>.mp4 (cone or wing camera of the event)",
+  "report_task": "report task key from this file",
+  "object": "which object violated, e.g. the belt loader at the front door",
+  "rule_met_frame": "1-based frame id (8 fps) where the client rule is met, e.g. the BL is stopped and still not chocked",
+  "fixed_frame": "1-based frame id where the fix is first seen; null if never",
+  "notes": "free text: occlusion, doubtful truth label; several violations in one event give one record each"
+ },
+ "fails_total": 130,
+ "tasks": [
+  {
+   "report_task": "loaderchock",
+   "check": "Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+   "module": "beltloader-chocks",
+   "alert": "Belt loader stopped without forward chock",
+   "fails": [
+    {
+     "event_id": "641969128471f56e5287138a",
+     "videos": [
+      "sAHYpFpM01Dg.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "641a25728471f56e528714e9",
+     "videos": [
+      "zHxIAF2vUGxJ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "639ae213a5bfb3ac1b83b658",
+     "videos": [
+      "bs7uphCSzrsn.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c956f3a21a0350ac516483",
+     "videos": [
+      "7PytHarRNqmT.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63e52c05e4a3b4a9cb4f79ad",
+     "videos": [
+      "MwCSLbQ7QvXQ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c5d96bb780596793fe5f22",
+     "videos": [
+      "2Z4FucUIOXc6.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "639f893257b58499ae47b580",
+     "videos": [
+      "Gcr7jQ2gZlMQ.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "4lyUahxqcA1p.mp4",
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633f2ea849b81f645f95efa0",
+     "videos": [
+      "Tjli6o2rIV7N.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633ed5e253aacea6bf54007d",
+     "videos": [
+      "hmMUVO4MdtU8.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "636ec4d0ff49dbab677b7c19",
+     "videos": [
+      "beqQ5Q0FoFWP.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    }
+   ]
+  },
+  {
+   "report_task": "beltloader_rear_cone",
+   "check": "Beltloader rear cone positioned after BL is in place to alert clearance",
+   "module": "bl_rear_cone",
+   "alert": "BL rear cone missing",
+   "fails": [
+    {
+     "event_id": "641a25728471f56e528714e9",
+     "videos": [
+      "zHxIAF2vUGxJ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "64343b0d6209ede667fae99e",
+     "videos": [
+      "gIMaUgPfoRj3.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "642b25958ed6ec1b93ba2c65",
+     "videos": [
+      "RVCqAvSzV0vX.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "643c888f054c2c8fce2a3878",
+     "videos": [
+      "kfN9tsDAmaxv.mp4",
+      "NFmhbQt1rpDx.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643cecee054c2c8fce2a392d",
+     "videos": [
+      "KOlRIvK7wCq1.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "64883d37c0961b8ba9f8acfd",
+     "videos": [
+      "HwGR6Wvf7mE2K3.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61c19dc174eef225ccfce",
+     "videos": [
+      "8tve3pVzl5D8.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63dcd9f168216641783f0e30",
+     "videos": [
+      "QSAQTpVDQIQr.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63bdbb9ed0ecf8bf0691e1df",
+     "videos": [
+      "Ov7vCjpFwVBf.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "4lyUahxqcA1p.mp4",
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63235d119a74033e78fb6c71",
+     "videos": [
+      "8pSh3SBek2Sw.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "632f63d667f9d2420ef13356",
+     "videos": [
+      "hNbhZ6XeGkk2.mp4",
+      "jI6tTM7YdhNE.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633f93ed49b81f645f95f077",
+     "videos": [
+      "y0lZAExtmDDV.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "636ec4d0ff49dbab677b7c19",
+     "videos": [
+      "beqQ5Q0FoFWP.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    }
+   ]
+  },
+  {
+   "report_task": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "check": "Cones are removed only after all GSE is clear of A/C and chocked",
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "alert": "Cones removed while GSE is not clear",
+   "fails": [
+    {
+     "event_id": "641a25728471f56e528714e9",
+     "videos": [
+      "zHxIAF2vUGxJ.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63f7fceac19967266168ead0",
+     "videos": [
+      "LFaccZVJAl6G.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643cecee054c2c8fce2a392d",
+     "videos": [
+      "KOlRIvK7wCq1.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "62cab4e6154218a4b2608510",
+     "videos": [
+      "1b3ayMVYk6RO.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "64811c05e5286ffa1d0bd2bc",
+     "videos": [
+      "MfyA0s5BtCBINp.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61c19dc174eef225ccfce",
+     "videos": [
+      "8tve3pVzl5D8.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c956f3a21a0350ac516483",
+     "videos": [
+      "7PytHarRNqmT.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c5d96bb780596793fe5f22",
+     "videos": [
+      "2Z4FucUIOXc6.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63235d119a74033e78fb6c71",
+     "videos": [
+      "8pSh3SBek2Sw.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "631d8a0d0abbb5963062f5c2",
+     "videos": [
+      "weuYWsbYvdIQ.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    }
+   ]
+  },
+  {
+   "report_task": "aircraftchockback",
+   "check": "Main gear chocks removed only after aircraft is attached to pushback",
+   "module": "aircraft-chocks",
+   "alert": "Main gear chocks removed before pushback is attached",
+   "fails": [
+    {
+     "event_id": "63f7ff0ec19967266168ead1",
+     "videos": [
+      "e0w9l4LmMDI7.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "64133f082aec48b6b969c517",
+     "videos": [
+      "0wW3jgdtn1d1.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "64131e332aec48b6b969c514",
+     "videos": [
+      "F9jIwLEhmU7E.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "642b25958ed6ec1b93ba2c65",
+     "videos": [
+      "N3JGftb6q7Bs.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62ea1e3d7310ee530d39c518",
+     "videos": [
+      "JXd64x5TJ1k4.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62eadd6baa154d4c6dcef2e8",
+     "videos": [
+      "VMs674q6kYwa.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62c7742c154218a4b2608130",
+     "videos": [
+      "hBrH3YC2Oeoa.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62cab4e6154218a4b2608510",
+     "videos": [
+      "fp77ySs5od54.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63c3a947b780596793fe5e71",
+     "videos": [
+      "XYAzWPrI4M5m.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "63e8c734e4a3b4a9cb4f7cf6",
+     "videos": [
+      "cXWY5u4HkFeq.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "63c77b9aa21a0350ac51607f",
+     "videos": [
+      "prD4z9DQim0S.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "6328189893ce641c01fe71db",
+     "videos": [
+      "KB04bkqBI7ms.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63173786e572b19b2c778ba3",
+     "videos": [
+      "NVpcFIWuoR1z.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "631d8a0d0abbb5963062f5c2",
+     "videos": [
+      "weuYWsbYvdIQ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "632fed29ba88d5210c76a291",
+     "videos": [
+      "ytQDROiCyhBh.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "632f63d667f9d2420ef13356",
+     "videos": [
+      "jI6tTM7YdhNE.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "6348a67e49b81f645f96007f",
+     "videos": [
+      "WpjOp8dgqOKp.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633ed5e253aacea6bf54007d",
+     "videos": [
+      "hmMUVO4MdtU8.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    }
+   ]
+  },
+  {
+   "report_task": "aircraftchockfront",
+   "check": "Nose gear chocks applied immediately",
+   "module": "aircraft-chocks",
+   "alert": "Nose gear not chocked 30 s after arrival",
+   "fails": [
+    {
+     "event_id": "638bbabf9ef3b9afa9d3af04",
+     "videos": [
+      "4MUL7UiXXBXg.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    }
+   ]
+  },
+  {
+   "report_task": "gse_chocks",
+   "check": "Motorized GSE parked and properly chocked",
+   "module": "gse-chocks",
+   "alert": "Motorized GSE parked without chock",
+   "fails": [
+    {
+     "event_id": "641969128471f56e5287138a",
+     "videos": [
+      "sAHYpFpM01Dg.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "6418700c0ec7f9c1adbb864d",
+     "videos": [
+      "LUgKa9ppmIFi.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "64133f082aec48b6b969c517",
+     "videos": [
+      "0wW3jgdtn1d1.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "642b25958ed6ec1b93ba2c65",
+     "videos": [
+      "RVCqAvSzV0vX.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643c888f054c2c8fce2a3878",
+     "videos": [
+      "kfN9tsDAmaxv.mp4",
+      "NFmhbQt1rpDx.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643cecee054c2c8fce2a392d",
+     "videos": [
+      "KOlRIvK7wCq1.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "64883d37c0961b8ba9f8acfd",
+     "videos": [
+      "HwGR6Wvf7mE2K3.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62c8d2e3154218a4b2608361",
+     "videos": [
+      "SlCPDwI3xuaG.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61733dc174eef225ccf58",
+     "videos": [
+      "eO71136WjSmZ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c956f3a21a0350ac516483",
+     "videos": [
+      "7PytHarRNqmT.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "63e52c05e4a3b4a9cb4f79ad",
+     "videos": [
+      "MwCSLbQ7QvXQ.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "63bdbb9ed0ecf8bf0691e1df",
+     "videos": [
+      "Ov7vCjpFwVBf.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c3a947b780596793fe5e71",
+     "videos": [
+      "XYAzWPrI4M5m.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c7f121a21a0350ac51616a",
+     "videos": [
+      "3LcvAdAKtgUr.mp4",
+      "bqt0tK3Zurbb.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63d9a6d405baa7ca0fada0fe",
+     "videos": [
+      "juIFQTpth9Ma.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "4lyUahxqcA1p.mp4",
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c77b9aa21a0350ac51607f",
+     "videos": [
+      "2aRbtVqwxFBI.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63173786e572b19b2c778ba3",
+     "videos": [
+      "NVpcFIWuoR1z.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "632fed29ba88d5210c76a291",
+     "videos": [
+      "NTWAvMOKK7az.mp4",
+      "ytQDROiCyhBh.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "6359562749b81f645f9615c1",
+     "videos": [
+      "bH2llDkvWIg9.mp4",
+      "gLPdq1dI9A6R.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633ed5e253aacea6bf54007d",
+     "videos": [
+      "hmMUVO4MdtU8.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "636ec4d0ff49dbab677b7c19",
+     "videos": [
+      "beqQ5Q0FoFWP.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    }
+   ]
+  },
+  {
+   "report_task": "safetyvests",
+   "check": "Employees wearing safety vests secured to body",
+   "module": "safety-vests-secured-to-body",
+   "alert": "Safety vest unzipped",
+   "fails": [
+    {
+     "event_id": "641969128471f56e5287138a",
+     "videos": [
+      "sAHYpFpM01Dg.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "6418700c0ec7f9c1adbb864d",
+     "videos": [
+      "LUgKa9ppmIFi.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "641a25728471f56e528714e9",
+     "videos": [
+      "zHxIAF2vUGxJ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63f7fceac19967266168ead0",
+     "videos": [
+      "LFaccZVJAl6G.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "643093126209ede667fae893",
+     "videos": [
+      "Y2806rd7ODS9.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643030be6209ede667fae7b3",
+     "videos": [
+      "nlwsSAb9Fk4N.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "643c888f054c2c8fce2a3878",
+     "videos": [
+      "kfN9tsDAmaxv.mp4",
+      "NFmhbQt1rpDx.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643cecee054c2c8fce2a392d",
+     "videos": [
+      "KOlRIvK7wCq1.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62ed2fe1aa154d4c6dcef472",
+     "videos": [
+      "4YzvEkjm1or6.mp4",
+      "Bdx1iGrXPEfe.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "64883d37c0961b8ba9f8acfd",
+     "videos": [
+      "HwGR6Wvf7mE2K3.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "6489f605c0961b8ba9f8ad8b",
+     "videos": [
+      "GOzwvkLY7fpKB3.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "62cdff458a8624455a8a7dd7",
+     "videos": [
+      "T0Pu2LMe9rqk.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "648137b4e5286ffa1d0bd329",
+     "videos": [
+      "b8ijKDWsLlQi8W.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62c8d2e3154218a4b2608361",
+     "videos": [
+      "SlCPDwI3xuaG.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f3c7e7f2f1c747475a8680",
+     "videos": [
+      "mazLnvqj4KzF.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61733dc174eef225ccf58",
+     "videos": [
+      "eO71136WjSmZ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61c19dc174eef225ccfce",
+     "videos": [
+      "8tve3pVzl5D8.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63d9a46d05baa7ca0fada0fd",
+     "videos": [
+      "14W4oeRHdbsq.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c956f3a21a0350ac516483",
+     "videos": [
+      "7PytHarRNqmT.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63e52c05e4a3b4a9cb4f79ad",
+     "videos": [
+      "MwCSLbQ7QvXQ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "639fd0c257b58499ae47b5e4",
+     "videos": [
+      "OPsMEZUPjBtv.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63bdbb9ed0ecf8bf0691e1df",
+     "videos": [
+      "Ov7vCjpFwVBf.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63c3a947b780596793fe5e71",
+     "videos": [
+      "XYAzWPrI4M5m.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "638bbabf9ef3b9afa9d3af04",
+     "videos": [
+      "N5xLStcC6YTB.mp4",
+      "4MUL7UiXXBXg.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63d99e5105baa7ca0fada0fc",
+     "videos": [
+      "ICfrXaND7Jqf.mp4",
+      "B1BtQWGUShsv.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63d9a6d405baa7ca0fada0fe",
+     "videos": [
+      "juIFQTpth9Ma.mp4",
+      "fAkpu3dj2NIj.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "4lyUahxqcA1p.mp4",
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "63235d119a74033e78fb6c71",
+     "videos": [
+      "8pSh3SBek2Sw.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "631d8a0d0abbb5963062f5c2",
+     "videos": [
+      "weuYWsbYvdIQ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "632fed29ba88d5210c76a291",
+     "videos": [
+      "NTWAvMOKK7az.mp4",
+      "ytQDROiCyhBh.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "632f63d667f9d2420ef13356",
+     "videos": [
+      "hNbhZ6XeGkk2.mp4",
+      "jI6tTM7YdhNE.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "6348a67e49b81f645f96007f",
+     "videos": [
+      "WpjOp8dgqOKp.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633f79d449b81f645f95f021",
+     "videos": [
+      "wMk1umBGpV8f.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633ed5e253aacea6bf54007d",
+     "videos": [
+      "hmMUVO4MdtU8.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    },
+    {
+     "event_id": "636ec4d0ff49dbab677b7c19",
+     "videos": [
+      "beqQ5Q0FoFWP.mp4"
+     ],
+     "new_output": "pass",
+     "previous_output": "pass"
+    }
+   ]
+  },
+  {
+   "report_task": "safetyhandrails",
+   "check": "Safety handrails fully extended and used",
+   "module": "safety-handrails-fully-extended",
+   "alert": "Belt loader handrails not extended",
+   "fails": [
+    {
+     "event_id": "6409de70e19f73c32e12c8ea",
+     "videos": [
+      "75cFSaZYmRPe.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643093126209ede667fae893",
+     "videos": [
+      "Y2806rd7ODS9.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643030be6209ede667fae7b3",
+     "videos": [
+      "nlwsSAb9Fk4N.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "643c888f054c2c8fce2a3878",
+     "videos": [
+      "kfN9tsDAmaxv.mp4",
+      "NFmhbQt1rpDx.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62ed2fe1aa154d4c6dcef472",
+     "videos": [
+      "4YzvEkjm1or6.mp4",
+      "Bdx1iGrXPEfe.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f387c0f2f1c747475a860a",
+     "videos": [
+      "63xitGPpUtLy.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62a33db25ab51c2e3609ff2b",
+     "videos": [
+      "TtKESVA7IEIU.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f3c7e7f2f1c747475a8680",
+     "videos": [
+      "mazLnvqj4KzF.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61733dc174eef225ccf58",
+     "videos": [
+      "eO71136WjSmZ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "62f61c19dc174eef225ccfce",
+     "videos": [
+      "8tve3pVzl5D8.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63edb43fe4a3b4a9cb4f809c",
+     "videos": [
+      "cW6CAtSHGsQh.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "639f893257b58499ae47b580",
+     "videos": [
+      "Gcr7jQ2gZlMQ.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63c7f121a21a0350ac51616a",
+     "videos": [
+      "3LcvAdAKtgUr.mp4",
+      "bqt0tK3Zurbb.mp4"
+     ],
+     "new_output": "notObserved",
+     "previous_output": "notObserved"
+    },
+    {
+     "event_id": "63bd1ef5d0ecf8bf0691dfc4",
+     "videos": [
+      "4lyUahxqcA1p.mp4",
+      "n96M7fASlhGn.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "63235d119a74033e78fb6c71",
+     "videos": [
+      "8pSh3SBek2Sw.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "633f2ee049b81f645f95efd5",
+     "videos": [
+      "VIeEFGCUxgUY.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    },
+    {
+     "event_id": "636ec4d0ff49dbab677b7c19",
+     "videos": [
+      "beqQ5Q0FoFWP.mp4"
+     ],
+     "new_output": "fail",
+     "previous_output": "fail"
+    }
+   ]
+  }
+ ]
+}

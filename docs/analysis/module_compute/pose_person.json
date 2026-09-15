@@ -1,0 +1,1094 @@
+{
+ "_meta": {
+  "title": "Per-frame compute inventory of the pose / person-crop modules on their monthly test-set checkouts",
+  "generated": "2026-09-15",
+  "modules": [
+   "hand-signals",
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "pin-verification",
+   "lead-marshaller-and-wing-walkers-in-position",
+   "wing-walkers-in-proper-position-and-using-approved-wands",
+   "fod-walk-completed",
+   "safety-vests-secured-to-body",
+   "hair-policy"
+  ],
+  "method": "Read-only audit of the checkout that scripts.testset.profiles.profile(<module>) resolves (module_dir, else external/<module>). Weight files hashed with sha256 (first 16 hex kept). Architectures taken from the code and, for weight files, from a non-executing scan of the pickle class references and tensor shapes (no unpickling of objects, no torch import) and from the ONNX graph header. mmpose behaviour read from the overlay that the test set runs (out/envs/mmpose1, mmpose 1.3.1). No module, model or GPU code was run.",
+  "line_references": "file:line relative to the module checkout unless a path is given; mmpose paths are relative to out/envs/mmpose1/mmpose/.",
+  "frame_size": "one decoded 1920x1080x3 uint8 frame = 6 220 800 B (about 6.2 MB); buffer sizes below are frame counts from the code times this size",
+  "risk_classes": {
+   "EXACT": "outputs expected bit-identical",
+   "NEAR": "small numeric change (export, fp16, changed batch composition without deterministic kernels)",
+   "SEMANTIC": "can change verdicts"
+  },
+  "brief_costs": "median ms per recorded frame from the batch test-set runs on a contended machine, as given in the task brief (not measured here); early-exiting modules look cheaper per recorded frame than per active frame",
+  "sources_used": [
+   "scripts/testset/profiles.py",
+   "scripts/run_module.py",
+   "scripts/testset/wsl_run_module.sh",
+   "docs/analysis/module_consumption.md/.json (default branches; re-verified here on the actual checkouts)",
+   "docs/arch_review/REVIEW_DETAILED.md (M11, M13, M15, M16, M23, M26, M27)",
+   "docs/04_modules.md",
+   "tasks/notes/PF-Q1-18.md",
+   "tasks/notes/PF-Q1-19.md",
+   "out/envs/mmpose1/README.md and out/testset/modules/envtest/*/*.counts.json (measured pose call counts)"
+  ]
+ },
+ "shared": {
+  "frame_access": {
+   "facts": [
+    "All eight checkouts carry the same cv_common/utils/datasets.py (sha256 94e2577e800c283f, substituted cv_common ac5098d2) and db_worker/ML_worker.py (5a2aadf511e20699).",
+    "VideoWorker.load_source opens LoadImages(source, img_size=1280) (db_worker/ML_worker.py:225-238; cv_common/global_config.yaml:4); LoadImages reads CAP_PROP_FRAME_COUNT at open (cv_common/utils/datasets.py:282-285).",
+    "get_im0s(n) = get_frame(n)[2] (datasets.py:279-280). get_frame decodes forward only: cap.grab() for every skipped frame, cap.read() for the requested one, asserts n >= last loaded frame, caches the last frame (datasets.py:235-277).",
+    "get_frame and __next__ also build a YOLOv5 letterbox to 1280 plus a CHW/RGB contiguous copy on every decoded frame (datasets.py:226-231, 267-272); none of the eight modules uses it (they take im0s only).",
+    "get_frame / __next__ print one line per decoded frame (datasets.py:217, 265).",
+    "cap.read() returns a new array per decode (datasets.py:205, 258), so a frame held by reference is not overwritten by later decodes."
+   ]
+  },
+  "metadata_access": {
+   "facts": [
+    "load_metadata opens both ndjson files and yields one parsed GM line and one parsed tracker line per frame (db_worker/ML_worker.py:240-280); a second load_metadata() call re-opens and re-parses from frame 1.",
+    "Track().from_json is a dict update (cv_common/track.py:19-21); restoring an airplane or vehicle calls TrackedObject.from_state_dict, which copies the dict and converts _p0 (up to 250 points) and _st to numpy on every call (cv_common/tracked_object.py:604-636; transport.py:129-145). Observed on a production tracker file: _p0 list length mean 206, max 250 (docs/analysis/ndjson_observed.json)."
+   ]
+  },
+  "json_logger": {
+   "facts": [
+    "The test-set runner always passes a real JsonLogger with filename None (scripts/run_module.py:284), so every module writes <module dir>/None.ndjson; production passes json_fn.",
+    "JsonLogger.update appends Python lists per box/text/keypoint set and, whenever the frame id changes, serialises the previous frame as an ndjson row (cv_common/log_utils.py:85-88, 90-123). state_dict=True extracts 4 fields only (log_utils.py:45-60), but callers that pass obj.to_state_dict() first serialise the whole object (tracked_object.py:538-600)."
+   ],
+   "evidence_file_sizes_after_last_test_set_run_bytes": {
+    "hand-signals": 13679540,
+    "wing-walkers@obstruction_hand_signals": 9675903,
+    "pin-verification": 8319708,
+    "lead-marshaller@pre_arrival_departure": 4644374,
+    "safety-vests@tdv_cone": 2995142,
+    "fod-walk@dev": 1824551,
+    "steering": 861936,
+    "hair-policy": 462372
+   }
+  },
+  "drawing_without_write_video": {
+   "facts": [
+    "plot_one_box returns immediately when img is None (cv_common/utils/plots.py:30-33).",
+    "TrackedObject.draw_OF_points loops over up to 250 optical-flow points calling cv2.circle even when img is None (cv_common/tracked_object.py:511-516)."
+   ]
+  },
+  "mmpose_topdown_pipeline": {
+   "facts": [
+    "inference_topdown runs init_default_scope and builds Compose(test pipeline) from the config on every call (apis/inference.py:155-158), runs the pipeline per bbox, then one model.test_step for all bboxes of the call: one batch per call (apis/inference.py:179-196).",
+    "Per bbox: GetBBoxCenterScale padding 1.25 (datasets/transforms/common_transforms.py:52), TopdownAffine fixes the aspect ratio to the input size and cv2.warpAffine INTER_LINEAR from the full image passed in (datasets/transforms/topdown_transforms.py:56-118), PackPoseInputs; normalisation and BGR->RGB on the device in PoseDataPreprocessor.",
+    "flip_test=True in both pose configs used here: TopdownPoseEstimator.predict runs extract_feat twice per call (inputs and inputs.flip(-1)) (models/pose_estimators/topdown.py:102-104); heads average both (models/heads/heatmap_heads/heatmap_head.py:253-263; models/heads/coord_cls_heads/simcc_head.py:259-273)."
+   ]
+  },
+  "identical_models": [
+   {
+    "what": "HRNet-W48 top-down heatmap, COCO-17, input 192x256",
+    "weights": "td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+    "size_bytes": 269176125,
+    "sha256_16": "0e67c6167d6a10fe",
+    "config": "td-hm_hrnet-w48_8xb32-210e_coco-256x192.py, sha256 40b6c83573144c66 in all four checkouts",
+    "loaded_by": [
+     "hand-signals main.py:734-739 (local_config.yaml:3-4)",
+     "steering main.py:653-657 (local_config.yaml:3-4)",
+     "lead-marshaller@pre_arrival_departure main.py:946-951 (local_config.yaml:3-4)",
+     "wing-walkers@obstruction_hand_signals main.py:797-802 (local_config.yaml:4-5)"
+    ],
+    "module_preprocessing": {
+     "same": "full-frame CLAHE (BGR->LAB, CLAHE clip 4.0 tiles 16x16 on L, LAB->BGR) with identical code and bbox = person track box add_offset(0.1, 0.1), batch = all selected persons of the frame: hand-signals main.py:43-51 and :537; lead-marshaller path A main.py:295-303 and :161; wing-walkers helpers.py:208-216 and main.py:243",
+     "different": "steering: YCrCb equalizeHist of the add_offset(0.2, 0.1) region pasted into a copy of the frame, one bbox per call (main.py:510-527); lead-marshaller path B: raw buffered frame, raw track box, no CLAHE (main.py:594-613)"
+    },
+    "stage_windows": "lead-marshaller A: airplane visible before arrival; hand-signals: after arrival until departure (BL approaches); steering: up to 240 s after arrival; wing-walkers: departure movement. Only hand-signals and steering overlap in time, and their preprocessing differs, so sharing is one model instance, not shared results."
+   }
+  ],
+  "present_not_loaded_in_several_checkouts": [
+   {
+    "what": "HRNet-W48 DARK COCO 384x288 checkpoint (mmpose 0.x name)",
+    "size_bytes": 255012316,
+    "sha256_16": "741844ba1678a257",
+    "paths": [
+     "hand-signals weights/hrnet_w48_coco_384x288_dark-741844ba_20200812 copy.pth",
+     "steering weights/hrnet_w48_coco_384x288_dark-741844ba_20200812.pth (plus config hrnet_w48_coco_384x288_dark.py, sha256 d7841217bc5ad754)",
+     "lead-marshaller@pre_arrival_departure weights/hrnet_w48_coco_384x288_dark-741844ba_20200812 copy.pth",
+     "wing-walkers@obstruction_hand_signals weights/hrnet_w48_coco_384x288_dark-741844ba_20200812 copy.pth"
+    ],
+    "note": "named only in cv_common/global_config.yaml:96-97 (mmpose 0.x config); none of the eight active code paths loads it"
+   }
+  ],
+  "same_architecture_different_weights_or_preprocessing": [
+   "torchvision swin_t x2 in safety-vests (3-class orientation with mean/std normalisation; 2-class vest without normalisation; different crops)",
+   "torchvision resnet18 x2 in safety-vests (2-class presence gate at 192x192 bicubic; 1-logit v4 small-band CNN at 224x112)",
+   "torchvision efficientnet_b0 x2 referenced by hair-policy (both 2-class heads; preprocessing not readable)",
+   "COCO-17 keypoint models on person crops: HRNet-W48 (four modules), SimCC-ResNet50 288x384 (pin-verification), MoveNet SinglePose Thunder 256x256 (fod-walk, uses shoulder x order only), YOLOv8m-pose (safety-vests v4 gate, uses shoulders only)"
+  ],
+  "shared_frame_hazards": [
+   "fod-walk@dev draws in place on the cached decoded frame when write_video is False (main.py:145-146, 162-176, 225-227). Before decoded frames are shared between modules in one real-time process this must be removed (fod-walk candidate F-E2).",
+   "Holding frames by reference instead of copying (steering S-E1, lead-marshaller L-E1) is exact only while no module writes into shared frames."
+  ]
+ },
+ "modules": [
+  {
+   "module": "hand-signals",
+   "m_id": "M13",
+   "checkout": {
+    "profile_module_dir": "",
+    "path": "external/hand-signals",
+    "source": "default branch HEAD 60c0faf (2025-11-13); docs/04_modules.md pins 6bd027f2, so HEAD != pin",
+    "launcher": null,
+    "prepend_path": ["out/envs/mmpose1"],
+    "numpy1": false,
+    "device": "cuda:0",
+    "job_class": null,
+    "cv_common": "pin 8e3a7bf6 not in the local archive, substituted with ac5098d2 (cv_common/SUBSTITUTED_PIN.txt)",
+    "db_worker": "5a4aa83d"
+   },
+   "brief_median_ms_per_recorded_frame": 10,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "role": "wrist/elbow keypoints of helpers in the workers ROI; standing test for the driver",
+     "weights_path": "weights/td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_bytes": 269176125,
+     "sha256_16": "0e67c6167d6a10fe",
+     "architecture": "mmpose TopdownPoseEstimator: HRNet-W48 backbone + HeatmapHead (17x48x1x1 final layer), MSRAHeatmap codec, heatmap 48x64",
+     "framework": "torch via mmpose 1.3.1 / mmengine 0.10.4 (overlay out/envs/mmpose1)",
+     "loaded_at": "main.py:734-739 (config td-hm_hrnet-w48_8xb32-210e_coco-256x192.py, local_config.yaml:3-4)",
+     "used_for_verdict": true,
+     "input": {
+      "size": "192x256 (w x h) per bbox",
+      "crop_rule": "person track box add_offset(0.1, 0.1), clamped to 1920x1080 (main.py:537; cv_common/common.py:136-165)",
+      "padding": "GetBBoxCenterScale x1.25, aspect ratio fixed to 0.75, warpAffine INTER_LINEAR",
+      "resize": "affine warp from the full frame",
+      "normalization": "mean [123.675, 116.28, 103.53], std [58.395, 57.12, 57.375] (config :103-115)",
+      "colour_order": "full frame converted by CLAHE (BGR->LAB, clip 4.0, tiles 16x16, LAB->BGR, main.py:43-51), then bgr_to_rgb in the preprocessor"
+     },
+     "device": "cuda:0 unless device == 'cpu' (main.py:734)",
+     "precision": "fp32",
+     "batch": "one inference_topdown call per frame, batch = all selected persons of that frame; flip_test=True (config :133) = 2 backbone passes per call",
+     "invocation": {
+      "condition": "after airplane.arrived and before departured (main.py:861-870), no active stopped beltloader found (:886), beltloader_track_delay > 60 frames (:888-889), workers ROI defined, at least one person whose bottom-centre is in the ROI (:530-538). (a) Immediate: if a beltloader track taller than 50 px is not STOPPED (:523-524) -> pose on this frame (:553-567). (b) Replay: when a new active stopped beltloader id appears with roi_present and it was in the moving history (:646-650) -> check_hand_signals runs pose on every buffered frame older than frame-40 whose persons are not yet in the history (:338-364).",
+      "calls_per_frame_in_window": "(a) 1 call per frame; (b) on the replay frame, one call per buffered frame in (frame-240, frame-40], up to about 200 calls",
+      "batched": "per frame yes; the replay frames are processed as separate sequential calls",
+      "measured": "375 inference_topdown calls, 462 person instances on zHxIAF2vUGxJ.mp4 (out/testset/modules/envtest/zHxIAF2vUGxJ.mp4/hand-signals.counts.json)"
+     }
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [
+    {"path": "weights/hrnet_w48_coco_384x288_dark-741844ba_20200812 copy.pth", "size_bytes": 255012316, "sha256_16": "741844ba1678a257"},
+    {"path": "mmpose/, mmdetection/ (vendored source trees)", "note": "main.py imports the mmpose 1.x API (main.py:11-15), served by the out/envs/mmpose1 overlay"}
+   ],
+   "pixel_work": {
+    "frame_reads": [
+     "dataset.get_im0s(frame).copy() into the replay buffer (main.py:549)",
+     "dataset.get_im0s(frame).copy() for immediate pose (main.py:554)",
+     "write_video only: main.py:804"
+    ],
+    "copies_and_conversions": [
+     "full-frame copy before CLAHE (main.py:554) and a second copy of each buffered frame at replay (main.py:358); apply_clahe_to_color_image allocates new arrays and does not modify its input (main.py:43-51)",
+     "full-frame CLAHE per pose call: 2 colour conversions, split, CLAHE, merge (main.py:43-51)",
+     "every frame after arrival with a door box: two 1080x1920 uint8 masks allocated, rectangles filled, full-frame bitwise_and and two full-frame sums for the ROI occlusion ratio (main.py:183-196)"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "print per frame (main.py:801)",
+     "JsonLogger rows per detection of interest, per track state, per text line and per keypoint set (main.py:411, 422, 440, 443, 457, 567, 671)",
+     "PoseLocalVisualizer built at start (main.py:740-741); used only with write_video (:569-587)"
+    ],
+    "raw_frame_buffers": [
+     "workers_image_buffer deque(maxlen=max_prev_frame_to_consider=240) of (frame, bboxes, full frame) (main.py:758; local_config.yaml:18): up to 240 x 6.2 MB = about 1.49 GB; appended on frames with workers in the ROI while no active beltloader and no moving beltloader (main.py:548-550); never cleared except by maxlen"
+    ]
+   },
+   "time_structure": {
+    "passes": 2,
+    "pass1": "main.py:761-794: from frame 1 until the raw tracker arrival_frame <= frame, then the biggest door box per frame into a 60 s deque; breaks when 480 door boxes are collected (average_door), otherwise reads to the end. average_door is the ROI fallback while no door has been seen in pass 2 (main.py:157-161).",
+    "pass2": "metadata re-opened and re-parsed from frame 1 (main.py:797-924)",
+    "length_reads": [],
+    "lookback_windows": [
+     "keypoint history window (frame-240, frame-40] = 30 s to 5 s before the stop decision (main.py:282; local_config.yaml:18-19)",
+     "ROI presence and obstacle rate over the same window (main.py:202-220)",
+     "door and plane boxes averaged over 80 frames (main.py:118-120; local_config.yaml:16)",
+     "moving-beltloader history 80 frames (main.py:759; local_config.yaml:20)"
+    ],
+    "decision": "per beltloader visit when its id first becomes the active stopped beltloader (main.py:649-650, latched signal_registered); overall report after the loop (main.py:931)",
+    "early_exit": "breaks when the airplane departed (tracker departure_frame, main.py:867-870); otherwise reads to the end"
+   },
+   "reimplemented_shared_components": [
+    {"component": "BL at door / BL stop: active beltloader = STOPPED track inside the right half of the workers ROI, visit handover and expiry, confirmed stay > 480 frames", "evidence": ["main.py:502-520", "main.py:632-665", "main.py:386-388"]},
+    {"component": "door prepass over future frames (pass 1)", "evidence": ["main.py:761-794"]},
+    {"component": "workers ROI from averaged door, plane and back-wheel boxes plus obstacle occlusion", "evidence": ["main.py:128-200"]},
+    {"component": "aircraft type jet/airplane from wing/engine geometry; result plane_type is never read by the verdict", "evidence": ["main.py:675-717", "main.py:872-873", "main.py:919-920"]},
+    {"component": "driver standing test from keypoints", "evidence": ["main.py:288-297", "main.py:591-604"]}
+   ],
+   "lightening_candidates": [
+    {"id": "H-E1", "risk": "EXACT", "change": "compute the ROI occlusion ratio on masks the size of the clipped ROI (or with integer rectangle arithmetic) instead of two full-frame masks", "removes": "two 1920x1080 allocations, one full-frame bitwise_and and two full-frame sums on every frame after arrival", "evidence": ["main.py:183-196"], "caveat": "reproduce cv2.rectangle clipping and inclusive corners; check on recorded inputs"},
+    {"id": "H-E2", "risk": "EXACT", "change": "drop the .copy() before CLAHE", "removes": "one full-frame copy per pose call (immediate and replay)", "evidence": ["main.py:554-555", "main.py:358"]},
+    {"id": "H-E3", "risk": "EXACT", "change": "buffer CLAHE'd sampled regions instead of raw full frames: CLAHE on the full frame at buffering time, keep the region the affine warp samples for each bbox (+1 px), paste into a canvas at replay", "removes": "up to 240 raw frames (about 1.49 GB) and the replay-time copies", "evidence": ["main.py:549", "main.py:758", "main.py:338-364"], "caveat": "CLAHE tile statistics depend on the whole frame, so raw crops would not be exact; CLAHE moves to every buffered frame, including frames that are never replayed (more CPU)"},
+    {"id": "H-E4", "risk": "EXACT", "change": "batch runs: parse metadata once and iterate it twice", "removes": "re-opening and re-parsing both ndjson files for the pass-1 range", "evidence": ["main.py:725", "main.py:797"], "caveat": "batch only; the streaming port removes pass 1 (H-S1)"},
+    {"id": "H-E5", "risk": "EXACT", "change": "build the mmpose test pipeline and scope once instead of per inference_topdown call", "removes": "config-to-Compose construction per call (up to about 200 on a replay frame)", "evidence": ["out/envs/mmpose1/mmpose/apis/inference.py:155-158"]},
+    {"id": "H-E6", "risk": "EXACT", "change": "share one HRNet-W48 instance with steering, lead-marshaller and wing-walkers (same sha256 0e67c6167d6a10fe and config sha256 40b6c83573144c66)", "removes": "duplicate weight copies on the GPU and duplicate initialisation; calls unchanged", "evidence": ["main.py:734-739"]},
+    {"id": "H-E7", "risk": "EXACT", "change": "skip the discarded YOLOv5 letterbox and CHW copy in the frame reader", "removes": "one resize and one contiguous copy per decoded frame", "evidence": ["cv_common/utils/datasets.py:267-272"]},
+    {"id": "H-E8", "risk": "EXACT", "change": "RT branch: drop JsonLogger rows, per-frame prints, the unused plane-type evaluation and the visualizer when no video is written", "removes": "per-detection list building, per-frame ndjson serialisation and disk writes, prints", "evidence": ["main.py:801", "main.py:411-457", "main.py:740-741", "main.py:872-873", "main.py:919-920"], "caveat": "verdict unaffected; the per-frame overlay file is not produced"},
+    {"id": "H-N1", "risk": "NEAR", "change": "export HRNet-W48 (with the flip pass) to ONNX Runtime / TensorRT, optionally fp16", "removes": "framework overhead; fp16 halves weight/activation memory", "evidence": ["main.py:734-739"]},
+    {"id": "H-N2", "risk": "NEAR", "change": "merge the replay burst into fewer, larger batches", "removes": "up to about 200 separate calls on one frame", "evidence": ["main.py:343-364"], "caveat": "batch composition changes; exact only if kernels are deterministic across batch sizes"},
+    {"id": "H-S1", "risk": "SEMANTIC", "change": "replace pass 1 (average_door from future frames) by a causal door estimate (RETHINK in docs/04_modules.md)", "removes": "the second pass", "evidence": ["main.py:761-797", "main.py:157-161"]},
+    {"id": "H-S2", "risk": "SEMANTIC", "change": "flip_test=False", "removes": "one of the two backbone passes per call", "evidence": ["td-hm_hrnet-w48_8xb32-210e_coco-256x192.py:133"]},
+    {"id": "H-S3", "risk": "SEMANTIC", "change": "pose on a subsample of the buffered frames, crop-local CLAHE or no CLAHE, or a smaller pose model", "removes": "pose calls and full-frame CLAHE", "evidence": ["main.py:282", "main.py:43-51"]}
+   ],
+   "unverified": ["whether the vendored mmpose/ tree can shadow the overlay in other environments (in the test set the 1.x API resolves)"]
+  },
+  {
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "m_id": "M26",
+   "checkout": {
+    "profile_module_dir": "",
+    "path": "external/steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "source": "default branch HEAD 60dca73 = pin 60dca736 (steering_observability_fix ties 5/5 and is not used, profiles.py:128-129)",
+    "launcher": null,
+    "prepend_path": ["out/envs/mmpose1"],
+    "numpy1": false,
+    "device": "cuda:0",
+    "job_class": null,
+    "cv_common": "pin 8e3a7bf6 substituted with ac5098d2",
+    "db_worker": "5a4aa83d"
+   },
+   "brief_median_ms_per_recorded_frame": 1.9,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "role": "keypoints for the 200-frame action clip of a person who stopped near the nose wheel",
+     "weights_path": "weights/td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_bytes": 269176125,
+     "sha256_16": "0e67c6167d6a10fe",
+     "architecture": "mmpose TopdownPoseEstimator HRNet-W48 + HeatmapHead, MSRAHeatmap 48x64 (same checkpoint and config file as hand-signals)",
+     "framework": "torch via mmpose 1.3.1",
+     "loaded_at": "main.py:653-657 (local_config.yaml:3-4); visualizer built at main.py:658-659",
+     "used_for_verdict": true,
+     "input": {
+      "size": "192x256 per bbox",
+      "crop_rule": "big_xyxy = add_offset(person track box, 0.2, 0.1) (main.py:516)",
+      "padding": "GetBBoxCenterScale x1.25, aspect 0.75, warpAffine INTER_LINEAR",
+      "resize": "affine warp from a copy of the buffered full frame",
+      "normalization": "ImageNet mean/std in PoseDataPreprocessor",
+      "colour_order": "big_xyxy region converted BGR->YCrCb, equalizeHist on Y, back to BGR and written into the frame copy (main.py:518-522); then bgr_to_rgb"
+     },
+     "device": "cuda:0 when CUDA is available (main.py:645-646)",
+     "precision": "fp32",
+     "batch": "1 bbox per call (inference_pose_model wraps [bbox], main.py:62-74); flip_test=True = 2 backbone passes per call",
+     "invocation": {
+      "condition": "only in create_recording, triggered when a person's stop sequence (>= 5 consecutive low-velocity frames in stop_roi) has its minimum-distance frame at middle_frame = frame - 100 (main.py:452-491); the recording loops over the 200 buffered frames and calls pose on every frame where that person's track exists (main.py:510-527)",
+      "calls_per_frame_in_window": "0 on most frames; up to 200 sequential calls on a trigger frame",
+      "batched": "no",
+      "measured": "310 inference_topdown calls / 310 instances / 2 get_X_preds on MwCSLbQ7QvXQ.mp4 (out/testset/modules/envtest/MwCSLbQ7QvXQ.mp4/...counts.json); 0 on zHxIAF2vUGxJ.mp4, where the module stops at frame 4 804 before its pose stage (out/envs/mmpose1/README.md section 1)"
+     }
+    },
+    {
+     "name": "tsai InceptionTime pin-installation classifier",
+     "role": "classifies the 200-frame keypoint/position sequence; LEFT_PIN or AUTO_PIN latches Pass",
+     "weights_path": "weights/model_newaug.pkl",
+     "size_bytes": 2177497,
+     "sha256_16": "bfa75c6ce2f6e6da",
+     "architecture": "fastai Learner wrapping tsai.models.InceptionTime (Conv1d, BatchNorm1d, GAP1d, Linear), CategoryMap labels (pickle class scan)",
+     "framework": "fastai 2.7.18 + tsai 0.3.9 on torch (overlay)",
+     "loaded_at": "main.py:662 (load_learner, cpu=device=='cpu')",
+     "used_for_verdict": true,
+     "input": {
+      "size": "(1, 57, 200): 200 frames x (4 wheel-relative box values scaled by the MinMaxScaler, 2 mid-ankle values, 17x3 ankle-relative keypoints)",
+      "crop_rule": "not an image model",
+      "padding": "NaN rows prepended to 200 frames (main.py:616-618)",
+      "resize": "none",
+      "normalization": "ankle-relative conversion, medfilt(7) + linear interpolation, MinMaxScaler on 6 features, NaN -> 0 (main.py:619-632)",
+      "colour_order": "n/a"
+     },
+     "device": "GPU when device is CUDA (cpu flag false)",
+     "precision": "fp32",
+     "batch": "1",
+     "invocation": {
+      "condition": "once per recording (main.py:490, 635)",
+      "calls_per_frame_in_window": "0 or 1 per trigger",
+      "batched": "no"
+     }
+    },
+    {
+     "name": "MinMaxScaler",
+     "role": "scales the 6 box/ankle features of the clip",
+     "weights_path": "weights/scaler.gz",
+     "size_bytes": 695,
+     "sha256_16": "03248ad564e45926",
+     "architecture": "sklearn.preprocessing.MinMaxScaler, pickled with scikit-learn 1.6.1 (joblib, gzip)",
+     "framework": "scikit-learn / joblib",
+     "loaded_at": "main.py:663",
+     "used_for_verdict": true,
+     "device": "CPU",
+     "precision": "float64",
+     "batch": "200 rows per clip",
+     "invocation": {"condition": "once per recording (main.py:629)", "calls_per_frame_in_window": "0 or 1", "batched": "n/a"}
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [
+    {"path": "weights/hrnet_w48_coco_384x288_dark-741844ba_20200812.pth", "size_bytes": 255012316, "sha256_16": "741844ba1678a257"},
+    {"path": "hrnet_w48_coco_384x288_dark.py", "note": "config, sha256 d7841217bc5ad754, not referenced"}
+   ],
+   "pixel_work": {
+    "frame_reads": [
+     "dataset.get_im0s(frame) on every frame from arrival (with the local arrival stage) until Pass, the 240 s deadline or the no-arrival-stage stop (main.py:818-823)",
+     "write_video only: main.py:702"
+    ],
+    "copies_and_conversions": [
+     "image.copy() of every frame appended to the buffer (main.py:284)",
+     "per recording: img.copy() of each of the 200 buffered frames, also for frames where the person is absent (main.py:510-512)",
+     "YCrCb conversion + equalizeHist of the person region per pose call (main.py:518-521)"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "prints per frame and per analysed person (main.py:699, 296-298)",
+     "JsonLogger text and boxes per frame (main.py:58, 770-771, 829-830, 848-849)",
+     "output_clips/ directories created on every run (main.py:254-256); clips written only with write_clips"
+    ],
+    "raw_frame_buffers": [
+     "image_buffer deque(maxlen=200) of full frames (main.py:260): up to 200 x 6.2 MB = about 1.24 GB for the whole post-arrival window"
+    ]
+   },
+   "time_structure": {
+    "passes": 1,
+    "pass1": null,
+    "length_reads": [],
+    "lookback_windows": [
+     "200-frame (25 s) clip centred on the stop frame: 100 frames back and 100 frames of look-ahead, so the decision lags 12.5 s (main.py:453, 497-498)",
+     "installation window 240 s after the tracker arrival_frame (main.py:675, 790)",
+     "front wheel missing > 60 s -> Not observed (main.py:42, 795, 804-805)"
+    ],
+    "decision": "Pass latched on the frame a recording is classified LEFT_PIN/AUTO_PIN (main.py:861-869); Fail or Not observed at the 240 s deadline (main.py:790-801) or Not observed when the local arrival stage is missing (main.py:781-787); report after the loop (main.py:881-887)",
+    "early_exit": "yes: 5 s after Pass, deadline or missing arrival stage (main.py:716-724)"
+   },
+   "reimplemented_shared_components": [
+    {"component": "arrival-stage block from _p0/_prev_p0/_st (have_arrival_stage_custom, have_pre_arrival_stage_custom)", "evidence": ["main.py:198-228"]},
+    {"component": "own person velocity and stop-episode detector on tracker boxes", "evidence": ["main.py:345-431", "main.py:452-493"]},
+    {"component": "front-wheel rolling average, stop and movement ROIs", "evidence": ["main.py:308-343"]}
+   ],
+   "lightening_candidates": [
+    {"id": "S-E1", "risk": "EXACT", "change": "hold the decoded frame by reference instead of image.copy()", "removes": "one full-frame copy per frame for up to 240 s", "evidence": ["main.py:284", "cv_common/utils/datasets.py:258"], "caveat": "requires that nothing writes into shared frames (create_recording copies first, main.py:511; fod-walk's in-place drawing must be removed before frames are shared)"},
+    {"id": "S-E2", "risk": "EXACT", "change": "in create_recording copy nothing when the person is absent, and replace the full-frame copy by save / equalise / run pose / restore of the region", "removes": "up to 200 full-frame copies per recording", "evidence": ["main.py:510-527"], "caveat": "add_offset clamps big_xyxy to the frame (cv_common/common.py:136-165), so the saved region is always a valid slice"},
+    {"id": "S-E3", "risk": "EXACT", "change": "buffer, per frame, the regions the pose warp samples for every person track present (big_xyxy with x1.25 padding and aspect fix, +1 px) instead of full frames", "removes": "up to 200 full frames (about 1.24 GB); memory becomes proportional to person area", "evidence": ["main.py:260", "main.py:284", "main.py:508-524"], "caveat": "any person track can later trigger a recording (track_dict uses person_tracks, main.py:508), so all person tracks must be kept"},
+    {"id": "S-E4", "risk": "EXACT", "change": "share the HRNet-W48 instance; build the mmpose pipeline once", "removes": "duplicate GPU weights; up to 200 pipeline constructions per recording", "evidence": ["main.py:653-657", "out/envs/mmpose1/mmpose/apis/inference.py:155-158"]},
+    {"id": "S-E5", "risk": "EXACT", "change": "move the local arrival-stage block verbatim into the stage detector and read its flag", "removes": "per-frame _p0/_st differencing in the module", "evidence": ["main.py:198-228"], "caveat": "exact only as a verbatim port on the same tracker fields; prove by parity"},
+    {"id": "S-E6", "risk": "EXACT", "change": "RT branch: no visualizer, prints, JsonLogger rows or output_clips directories", "removes": "per-frame logging and start-up work", "evidence": ["main.py:658-659", "main.py:699", "main.py:254-256"]},
+    {"id": "S-N1", "risk": "NEAR", "change": "batch the up to 200 single-bbox pose calls of a recording", "removes": "up to 200 separate calls per trigger", "evidence": ["main.py:510-527"], "caveat": "batch size changes"},
+    {"id": "S-N2", "risk": "NEAR", "change": "HRNet-W48 in ONNX Runtime / TensorRT / fp16", "removes": "framework overhead", "evidence": ["main.py:653-657"]},
+    {"id": "S-S1", "risk": "SEMANTIC", "change": "pose on a subsample of the 200-frame clip (the classifier expects 200 steps, so it needs retraining), or flip_test=False", "removes": "pose calls / backbone passes", "evidence": ["main.py:614-635"]},
+    {"id": "S-S2", "risk": "SEMANTIC", "change": "decide without the 100-frame look-ahead (trigger-change)", "removes": "12.5 s latency and half the clip buffer", "evidence": ["main.py:453", "main.py:497-498"]}
+   ],
+   "unverified": ["whether tsai get_X_preds applies the pickled training augmentations (TSCutOut, TSMagMulNoise, TSRandomTimeScale, TSTimeWarp) at inference"]
+  },
+  {
+   "module": "pin-verification",
+   "m_id": "M16",
+   "checkout": {
+    "profile_module_dir": "",
+    "path": "external/pin-verification",
+    "source": "default branch HEAD 8e1863c = pin 8e1863c7",
+    "launcher": null,
+    "prepend_path": ["out/envs/mmpose1"],
+    "numpy1": false,
+    "device": "cuda:0",
+    "job_class": null,
+    "cv_common": "pin dd5b5547 substituted with ac5098d2",
+    "db_worker": "6efc0b05"
+   },
+   "brief_median_ms_per_recorded_frame": 3.9,
+   "models": [
+    {
+     "name": "SimCC ResNet-50 top-down pose (COCO-17)",
+     "role": "bend/sit/stand keypoints of workers next to the nose wheel after pushback attachment",
+     "weights_path": "weights/simcc_res50_8xb32-140e_coco-384x288-45c3ba34_20220913.pth (relative to the working directory)",
+     "size_bytes": 178318737,
+     "sha256_16": "9e3c7ee446c0cc3a",
+     "architecture": "mmpose TopdownPoseEstimator: ResNet-50 backbone + SimCCHead (deconv head, 17 channels), SimCCLabel codec input 288x384, sigma 6.0, split ratio 2.0",
+     "framework": "torch via mmpose 1.3.1",
+     "loaded_at": "main.py:496-499, config from the installed package mmpose/.mim/configs/body_2d_keypoint/simcc/coco/simcc_res50_8xb32-140e_coco-384x288.py",
+     "used_for_verdict": true,
+     "input": {
+      "size": "288x384 per bbox",
+      "crop_rule": "raw person track box (main.py:781, 798, 817)",
+      "padding": "GetBBoxCenterScale x1.25, aspect 0.75, warpAffine INTER_LINEAR",
+      "resize": "affine warp from the decoded frame as is (no copy)",
+      "normalization": "ImageNet mean/std (config :36-40)",
+      "colour_order": "BGR frame, bgr_to_rgb in the preprocessor"
+     },
+     "device": "cuda:0 hard-coded (main.py:499)",
+     "precision": "fp32",
+     "batch": "one call per frame, batch = near-wheel persons; flip_test=True (config :55) = 2 backbone passes",
+     "invocation": {
+      "condition": "pass 2, airplane arrived and not departed, pushback attached (pushback_frames > 80), frame <= pass-1 departure_frame - 80, no obstacle in the wheel ROI (obstacle frames skip, main.py:719-729), airplane is_stopped and a front wheel known (main.py:769), at least one person whose lower 10 % intersects the wheel ROI > 0.5 and height <= 5 x wheel height (main.py:786-801)",
+      "calls_per_frame_in_window": "1",
+      "batched": "yes, per frame",
+      "measured": "3 SimCC calls on zHxIAF2vUGxJ.mp4 (out/envs/mmpose1/README.md section 1)"
+     },
+     "note": "the file name tag 45c3ba34 does not match the sha256 prefix 9e3c7ee4 (the two HRNet files' tags do match theirs), so this file is not byte-identical to the upstream-named checkpoint"
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [],
+   "pixel_work": {
+    "frame_reads": [
+     "dataset.get_im0s(frame) passed directly to inference_topdown on pose frames (main.py:814-818)",
+     "write_video only: main.py:589"
+    ],
+    "copies_and_conversions": [
+     "none on the verdict path"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "merge_data_samples(pose_results) and print(data_samples) on every pose call (main.py:820, 829); from scipy.special import expit inside the loop, unused (main.py:821)",
+     "every frame: main_plane.draw_bbox -> json_logger.update(self.to_state_dict()) serialises the whole airplane state (including _p0.tolist()) to log 4 fields (main.py:99-101, 641)",
+     "every frame: main_plane.draw_OF_points(None) loops over up to 250 points (main.py:642; cv_common/tracked_object.py:511-516)",
+     "tracks parsed a second time on processing frames (main.py:777-781, after main.py:634-642)",
+     "prints per frame (main.py:586, 745-766, 884)"
+    ],
+    "raw_frame_buffers": []
+   },
+   "time_structure": {
+    "passes": 2,
+    "pass1": "main.py:504-549: from frame 1 to aircraft.departured (tracker departure_frame) or frame == video_worker.number_of_frames; keeps the biggest pushback box per frame (None when absent) in a 120 s deque; median_pushback = median of the non-None boxes in its first half (120 s to 60 s before departure); departure_frame",
+    "pass2": "metadata re-opened (main.py:554), loop main.py:585-891",
+    "length_reads": ["video_worker.number_of_frames (main.py:530)"],
+    "lookback_windows": [
+     "pushback reference from 120-60 s before departure (future relative to attachment) (main.py:505, 532-533)",
+     "evidence cut-off 10 s before the pass-1 departure_frame (main.py:763)",
+     "wheel box median over 60 s (main.py:567, 435-457); obstacle >= 120 s -> Not observed (main.py:908)"
+    ],
+    "decision": "Pass latched when a near-wheel worker bends/sits >= 1.5 s or stands static >= 2.5 s (main.py:317-320, 858-866); provisional Fail at pushback attachment (main.py:677-679); final status after the loop (main.py:893-929)",
+    "early_exit": "yes: 80 frames after Pass (main.py:604-612), 15 s after departure (main.py:734-738)"
+   },
+   "reimplemented_shared_components": [
+    {"component": "pushback_attached: IoU > 0.8 with the pass-1 median pushback for > 80 frames, or nose geometry", "evidence": ["main.py:662-684", "main.py:504-549"]},
+    {"component": "departure-relative cut-off from pass 1", "evidence": ["main.py:763"]},
+    {"component": "front-wheel selection and smoothing, wheel and pushback ROIs", "evidence": ["main.py:33-117", "main.py:435-457"]},
+    {"component": "obstacle-in-wheel-ROI detection", "evidence": ["main.py:627-631", "main.py:708-729"]}
+   ],
+   "lightening_candidates": [
+    {"id": "P-E1", "risk": "EXACT", "change": "remove print(data_samples); build merge_data_samples only with write_video", "removes": "an instance merge and a string dump of arrays on every pose call", "evidence": ["main.py:820", "main.py:829"]},
+    {"id": "P-E2", "risk": "EXACT", "change": "parse the tracker line once per frame", "removes": "a second Track().from_json pass over all tracks on processing frames", "evidence": ["main.py:634-642", "main.py:777-781"]},
+    {"id": "P-E3", "risk": "EXACT", "change": "log box/class/id/status directly instead of to_state_dict(); skip draw_OF_points and draw_bbox when img is None", "removes": "one full state serialisation and a loop over up to 250 points per frame", "evidence": ["main.py:99-101", "main.py:641-642", "cv_common/tracked_object.py:511-516, 538-600"]},
+    {"id": "P-E4", "risk": "EXACT", "change": "batch runs: parse metadata once for both passes; build the mmpose pipeline once", "removes": "re-parsing both ndjson files up to departure; pipeline construction per call", "evidence": ["main.py:493", "main.py:554", "out/envs/mmpose1/mmpose/apis/inference.py:155-158"]},
+    {"id": "P-N1", "risk": "NEAR", "change": "SimCC-R50 in ONNX Runtime / TensorRT / fp16", "removes": "framework overhead", "evidence": ["main.py:496-499"]},
+    {"id": "P-S1", "risk": "SEMANTIC", "change": "remove pass 1 (median_pushback, departure_frame from the future); use the stage detector's pushback_attached event (PATCH in docs/04_modules.md)", "removes": "the first pass", "evidence": ["main.py:504-549", "main.py:665", "main.py:763"]},
+    {"id": "P-S2", "risk": "SEMANTIC", "change": "flip_test=False, or replace SimCC-R50 288x384 by the shared HRNet-W48 192x256 (different model and crop scale)", "removes": "a backbone pass per call / a separate model", "evidence": ["mmpose/.mim/configs/body_2d_keypoint/simcc/coco/simcc_res50_8xb32-140e_coco-384x288.py:55"]}
+   ],
+   "unverified": []
+  },
+  {
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "m_id": "M15",
+   "checkout": {
+    "profile_module_dir": "external/_branches/lead-marshaller-and-wing-walkers-in-position@pre_arrival_departure",
+    "path": "external/_branches/lead-marshaller-and-wing-walkers-in-position@pre_arrival_departure",
+    "source": "branch pre_arrival_departure @ 9e1a9f0 (PF_SOURCE.txt); the default branch 9b37ccf is pixel-free, this branch adds pose (profiles.py:32-34)",
+    "launcher": null,
+    "prepend_path": ["out/envs/sklearn161", "out/envs/mmpose1"],
+    "numpy1": true,
+    "device": "cuda:0",
+    "job_class": null,
+    "cv_common": "pin dd5b5547 substituted with ac5098d2",
+    "db_worker": "5a4aa83d"
+   },
+   "brief_median_ms_per_recorded_frame": 5.7,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "role": "raised-hand frames of wing walkers during the approach (path A) and on buffered frames before movement start (path B)",
+     "weights_path": "weights/td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_bytes": 269176125,
+     "sha256_16": "0e67c6167d6a10fe",
+     "architecture": "mmpose TopdownPoseEstimator HRNet-W48 + HeatmapHead (same checkpoint and config as hand-signals)",
+     "framework": "torch via mmpose 1.3.1",
+     "loaded_at": "main.py:946-951 (local_config.yaml:3-4); visualizer main.py:953-954",
+     "used_for_verdict": true,
+     "input": {
+      "size": "192x256 per bbox",
+      "crop_rule": "path A: add_offset(track box, 0.1, 0.1) (main.py:161); path B: raw track box from worker_buffer (main.py:1076, 517-518, 607)",
+      "padding": "GetBBoxCenterScale x1.25, aspect 0.75, warpAffine INTER_LINEAR",
+      "resize": "affine warp from the full frame",
+      "normalization": "ImageNet mean/std",
+      "colour_order": "path A: full-frame CLAHE (main.py:295-303, identical to hand-signals); path B: raw buffered BGR frame; bgr_to_rgb in the preprocessor"
+     },
+     "device": "cuda:0 unless device == 'cpu' (main.py:946)",
+     "precision": "fp32",
+     "batch": "path A: one call per frame, batch = all worker tracks; path B: one call per buffered frame, batch = classified wing walkers of that frame; flip_test=True = 2 backbone passes",
+     "invocation": {
+      "condition": "path A: every frame while an airplane track is present or disappeared < 10 s ago and the plane has not arrived (plane_passing_by and plane_dissapearance_counter > 0 and not plane_arrived, main.py:1086-1087; main.py:1033-1044); path B: once, on the arrival decision frame, over buffered frames within 12 s before start_moving (main.py:506-518, 594-613)",
+      "calls_per_frame_in_window": "path A: 1 per frame; path B: up to one per buffered frame (buffer <= 96) on the decision frame",
+      "batched": "per frame yes"
+     }
+    },
+    {
+     "name": "worker role classifier (SVC)",
+     "role": "per-frame worker type: non / left / right wing walker at the turnaround position",
+     "weights_path": "models/worker_classifier_svc.pkl",
+     "size_bytes": 32049,
+     "sha256_16": "6a049e293cf13f2d",
+     "architecture": "imblearn Pipeline(StandardScaler, SMOTE, SVC), scikit-learn 1.6.1 (pickle class scan)",
+     "framework": "scikit-learn 1.6.1 + imbalanced-learn 0.13.0 (overlay out/envs/sklearn161)",
+     "loaded_at": "main.py:939",
+     "used_for_verdict": true,
+     "input": {"size": "6 features per worker: box middle x, bottom y, width, height, pseudo angle, pseudo distance (main.py:1066, 120)"},
+     "device": "CPU",
+     "precision": "float64",
+     "batch": "all workers of the frame in one predict",
+     "invocation": {"condition": "every frame with at least one worker track (main.py:1082, 115-121)", "calls_per_frame_in_window": "1", "batched": "yes"}
+    },
+    {
+     "name": "walk-along classifier (RandomForest)",
+     "role": "classifies each worker trajectory as left/right wing walker at the decision",
+     "weights_path": "models/walk_along_classifier_rfc.pkl",
+     "size_bytes": 1502182,
+     "sha256_16": "74fb67d1012e8a19",
+     "architecture": "imblearn Pipeline(SMOTE, RandomForestClassifier), scikit-learn 1.6.1",
+     "framework": "scikit-learn / imbalanced-learn",
+     "loaded_at": "main.py:940",
+     "used_for_verdict": true,
+     "input": {"size": "5 trajectory features per worker (main.py:446-452)"},
+     "device": "CPU",
+     "precision": "float64",
+     "batch": "1 worker per predict",
+     "invocation": {"condition": "once per trajectory on the decision frame (main.py:454)", "calls_per_frame_in_window": "number of worker trajectories, decision frame only", "batched": "no"}
+    },
+    {
+     "name": "walker movement-start models (left, right)",
+     "role": "first frame a wing walker starts moving; hand-signal frames are counted from there",
+     "weights_path": "models/left_walk_start_prediction_sgb.pkl; models/right_walk_start_prediction_sgb.pkl",
+     "size_bytes": [2006597, 2142405],
+     "sha256_16": ["893f608cd177a307", "5ecf5ddccf278a5d"],
+     "architecture": "sklearn Pipeline(StandardScaler, GradientBoostingClassifier), scikit-learn 1.6.1",
+     "framework": "scikit-learn",
+     "loaded_at": "main.py:941-944",
+     "used_for_verdict": true,
+     "input": {"size": "6 per-frame path features (walker_movement_start.py:101-114)"},
+     "device": "CPU",
+     "precision": "float64",
+     "batch": "all frames of one walker path",
+     "invocation": {"condition": "once per wing walker with enough path frames on the decision frame (main.py:682-686; walker_movement_start.py:118)", "calls_per_frame_in_window": "decision frame only", "batched": "per walker"}
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [
+    {"path": "models/worker_type_classifier.pkl", "size_bytes": 16711, "sha256_16": "531727afd20f8bcf", "note": "Pipeline(StandardScaler, SMOTE, DecisionTreeClassifier)"},
+    {"path": "models/worker_type_classifier_kn.pkl", "size_bytes": 276444, "sha256_16": "a0a9d0aa7b404ba8", "note": "Pipeline(StandardScaler, SMOTE, KNeighborsClassifier)"},
+    {"path": "weights/hrnet_w48_coco_384x288_dark-741844ba_20200812 copy.pth", "size_bytes": 255012316, "sha256_16": "741844ba1678a257"},
+    {"path": "scripts/worker_related_models_training/**/*.pkl", "note": "training statistics"}
+   ],
+   "pixel_work": {
+    "frame_reads": [
+     "path A: dataset.get_im0s(frame).copy() + CLAHE per frame in the approach window (main.py:166-167)",
+     "buffer: dataset.get_im0s(frame).copy() on every frame with at least one worker while no airplane track is visible (plane_dissapearance_counter == 0) (main.py:1078-1079)",
+     "write_video only: main.py:990"
+    ],
+    "copies_and_conversions": [
+     "full-frame copy before CLAHE (main.py:166)",
+     "full-frame copy into the image buffer (main.py:1079)",
+     "full-frame CLAHE per path-A call (main.py:295-303)"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "prints per frame until the prearrival decision (main.py:987-992)",
+     "Python logging to a file per frame (main.py:912-914, 885, 1167)",
+     "JsonLogger rows per worker, text, obstacle and keypoint set (main.py:177, 747, 1103, 1126, 1177)",
+     "decision frame: matplotlib figure 28x14 in, plot_points with 10 000-point predictions per trajectory, savefig PNG (main.py:477-481, 535, 556-560; helpers.py:51-74)",
+     "bboxes_for_pose built every frame and never used (main.py:1058, 1073)",
+     "deepcopy of the walker list at plane appearance and full stop (main.py:1037, 1108-1109)"
+    ],
+    "raw_frame_buffers": [
+     "image_buffer deque(maxlen=max_buffer_duration x fps = 12 x 8 = 96) of (frame, full frame) (main.py:930; local_config.yaml:50): up to 96 x 6.2 MB = about 0.60 GB; consumed only on the decision frame; cleared when a passing plane disappears (main.py:1130-1134)"
+    ]
+   },
+   "time_structure": {
+    "passes": 1,
+    "pass1": null,
+    "length_reads": ["dataset.nframes in a per-frame print (main.py:992) and in the report text when no stop was detected (main.py:1197); not in the decision"],
+    "lookback_windows": [
+     "prearrival window from frame 1 to start_moving; presence >= 90 s, minimum prearrival 450 s (local_config.yaml:15, 51; main.py:371)",
+     "worker buffer of 33 entries within 12 s before start_moving (main.py:506-518; local_config.yaml:49-50)"
+    ],
+    "decision": "on the first frame with the tracker's airplane.arrival_frame (main.py:866-872): prearrival check, walk-along check and hand-signals check (main.py:1106-1158)",
+    "early_exit": "yes: 10 s after the decision (main.py:1156-1165)"
+   },
+   "reimplemented_shared_components": [
+    {"component": "start_moving = first STOPPING/MOVING frame of the airplane track", "evidence": ["main.py:874-878"]},
+    {"component": "false plane / passing plane handling with frozen walker state", "evidence": ["main.py:1033-1048", "main.py:1107-1110"]},
+    {"component": "obstacle side classification", "evidence": ["main.py:796-851"]},
+    {"component": "pseudo distance and angle from box height and x", "evidence": ["helpers.py:6-17"]},
+    {"component": "note: no _p0/_st arrival-stage block on this branch (unlike the default branch in module_consumption.md); T_arr is the tracker arrival_frame", "evidence": ["main.py:866"]}
+   ],
+   "lightening_candidates": [
+    {"id": "L-E1", "risk": "EXACT", "change": "hold buffered frames by reference, then keep only the regions the pose warp samples for each buffered worker box (path B uses raw pixels and raw boxes, so no CLAHE dependency)", "removes": "one full-frame copy per buffered frame and up to 96 full frames (about 0.60 GB)", "evidence": ["main.py:1076-1079", "main.py:930", "main.py:607"], "caveat": "reference holding requires that no module writes into shared frames"},
+    {"id": "L-E2", "risk": "EXACT", "change": "drop the .copy() before CLAHE", "removes": "one full-frame copy per path-A call", "evidence": ["main.py:166-167"]},
+    {"id": "L-E3", "risk": "EXACT", "change": "remove dead bboxes_for_pose, the matplotlib figure and savefig, file logging and per-frame prints in the RT branch", "removes": "per-frame list building, logging I/O and one figure render at the decision", "evidence": ["main.py:1058", "main.py:1073", "main.py:477-481", "main.py:535", "main.py:556-560", "main.py:885", "main.py:987-992", "main.py:1167"]},
+    {"id": "L-E4", "risk": "EXACT", "change": "share the HRNet-W48 instance; build the mmpose pipeline once; JsonLogger off in RT", "removes": "duplicate GPU weights, pipeline construction per call, ndjson rows", "evidence": ["main.py:946-951"]},
+    {"id": "L-N1", "risk": "NEAR", "change": "HRNet-W48 in ONNX Runtime / TensorRT / fp16", "removes": "framework overhead", "evidence": ["main.py:946-951"]},
+    {"id": "L-S1", "risk": "SEMANTIC", "change": "flip_test=False or pose on a subsample of the approach frames", "removes": "backbone passes / calls during the approach", "evidence": ["main.py:1086-1087"]},
+    {"id": "L-S2", "risk": "SEMANTIC", "change": "replace start_moving and the false-plane logic by stage-detector events", "removes": "module-local stage logic", "evidence": ["main.py:874-878", "main.py:1033-1048"]}
+   ],
+   "unverified": []
+  },
+  {
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "m_id": "M27",
+   "checkout": {
+    "profile_module_dir": "external/_branches/wing-walkers-in-proper-position-and-using-approved-wands@obstruction_hand_signals",
+    "path": "external/_branches/wing-walkers-in-proper-position-and-using-approved-wands@obstruction_hand_signals",
+    "source": "branch obstruction_hand_signals @ 3460afc (PF_SOURCE.txt)",
+    "launcher": null,
+    "prepend_path": ["out/envs/mmpose1"],
+    "numpy1": true,
+    "device": "0 (bare index for YOLOv5 select_device, profiles.py:46); the pose device becomes cuda:0 (main.py:797)",
+    "job_class": null,
+    "cv_common": "pin dd5b5547 substituted with ac5098d2",
+    "db_worker": "5a4aa83d"
+   },
+   "brief_median_ms_per_recorded_frame": 3.2,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "role": "wrist/elbow keypoints of all persons during the departure; counted for workers later classified as wing walkers",
+     "weights_path": "weights/td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_bytes": 269176125,
+     "sha256_16": "0e67c6167d6a10fe",
+     "architecture": "mmpose TopdownPoseEstimator HRNet-W48 + HeatmapHead (same checkpoint and config as hand-signals)",
+     "framework": "torch via mmpose 1.3.1",
+     "loaded_at": "main.py:797-802 (local_config.yaml:4-5); visualizer main.py:804-805",
+     "used_for_verdict": true,
+     "input": {
+      "size": "192x256 per bbox",
+      "crop_rule": "add_offset(person track box, 0.1, 0.1) (main.py:243)",
+      "padding": "GetBBoxCenterScale x1.25, aspect 0.75, warpAffine INTER_LINEAR",
+      "resize": "affine warp from the full frame",
+      "normalization": "ImageNet mean/std",
+      "colour_order": "full-frame CLAHE (helpers.py:208-216, identical to hand-signals), then bgr_to_rgb"
+     },
+     "device": "cuda:0",
+     "precision": "fp32",
+     "batch": "one call per frame, batch = all person tracks minus pushback drivers; flip_test=True = 2 backbone passes",
+     "invocation": {
+      "condition": "every frame with main_plane.movement_counter > 0 (plane stopped by the module's own 5 s rule, then MOVING) and at least one person track after remove_pushback_drivers (main.py:946, 950-952), until the decision at start_moving_frame + 60 s or a false-departure reset",
+      "calls_per_frame_in_window": "1",
+      "batched": "yes, per frame",
+      "note": "keypoints are only used for workers classified as wing walkers at the decision and for frames in [start_moving, stop_frame] (main.py:458-459, 494-505)"
+     }
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [
+    {"path": "wand_detector.pt", "size_bytes": 14707381, "sha256_16": "3a85f450b0416369", "note": "YOLOv5 (models.yolo.Model with C3/SPPF per pickle scan); its load is commented out on this branch (main.py:810); on the default branch it was loaded and never run (module_consumption.md)"},
+    {"path": "weights/hrnet_w48_coco_384x288_dark-741844ba_20200812 copy.pth", "size_bytes": 255012316, "sha256_16": "741844ba1678a257"},
+    {"path": "local_config.yaml:3 weights: wand_classifier_resnet18_flip_invert.pt", "note": "never read by the code; file absent"}
+   ],
+   "pixel_work": {
+    "frame_reads": [
+     "dataset.get_im0s(frame).copy() + CLAHE on every pose frame (main.py:248-249)",
+     "write_video only: main.py:892"
+    ],
+    "copies_and_conversions": [
+     "full-frame copy before CLAHE (main.py:248)",
+     "full-frame CLAHE per call (helpers.py:208-216)"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "prints per frame (main.py:852, 894) and per plane update (main.py:107, 128)",
+     "JsonLogger rows per detection of interest, person, obstacle, text and keypoint set (main.py:235, 269, 649, 688, 692; helpers.py:233-237)",
+     "decision frame: matplotlib figure and savefig (save_figure=True, main.py:1010, 379-392)",
+     "after the loop: pickle dumps of handsign_stats and trajectory_data (main.py:1046-1060)"
+    ],
+    "raw_frame_buffers": []
+   },
+   "time_structure": {
+    "passes": 1,
+    "pass1": null,
+    "length_reads": ["dataset.nframes in the decision condition (last frame with >= 20 s of departure) and as the stop-frame cap (main.py:988, 1009-1010); per-frame print (main.py:894)"],
+    "lookback_windows": [
+     "departure window [start_moving_frame, start_moving_frame + 60 s] (main.py:1008-1010; local_config.yaml:10)",
+     "own stop 5 s, own departure 8 s (local_config.yaml:8-9; main.py:130-158)"
+    ],
+    "decision": "at start_moving_frame + 60 s, or on the last frame with >= 20 s of departure (main.py:982-1012); reset instead when the plane box area changed by < 0.175 (main.py:993-1003)",
+    "early_exit": "yes, break at the decision (main.py:1012)"
+   },
+   "reimplemented_shared_components": [
+    {"component": "own T_arr (STOPPED 5 s) and T_dep (MOVING 8 s, reset on STOPPED) with a bbox-area false-departure check", "evidence": ["main.py:130-158", "main.py:200-211", "main.py:993-1003"]},
+    {"component": "aircraft type jet/aircraft from wing/engine geometry", "evidence": ["main.py:65-98", "main.py:161-189"]},
+    {"component": "pushback driver removal, obstacle side logic, pseudo depth, trajectory turn detection", "evidence": ["main.py:741-753", "obstacle_logic.py:64-133", "helpers.py:9-20", "helpers.py:91-187"]}
+   ],
+   "lightening_candidates": [
+    {"id": "W-E1", "risk": "EXACT", "change": "drop the .copy() before CLAHE", "removes": "one full-frame copy per frame of the departure window", "evidence": ["main.py:248-249"]},
+    {"id": "W-E2", "risk": "EXACT", "change": "RT branch: skip plot_points/savefig (keep figure_data, it feeds analyze_trajectories), the pickle dumps, prints and JsonLogger rows", "removes": "a figure render and two pickle writes at the decision; per-frame logging", "evidence": ["main.py:379-392", "main.py:410-445", "main.py:1046-1060", "main.py:852", "main.py:894"]},
+    {"id": "W-E3", "risk": "EXACT", "change": "share the HRNet-W48 instance; build the mmpose pipeline once", "removes": "duplicate GPU weights; pipeline construction per frame", "evidence": ["main.py:797-802"]},
+    {"id": "W-N1", "risk": "NEAR", "change": "defer pose to the decision for workers classified as wing walkers: buffer CLAHE'd sampled regions (CLAHE on the full frame at buffering time) and run pose only for the selected tracks", "removes": "pose on persons that never become wing walkers", "evidence": ["main.py:237-253", "main.py:456-506"], "caveat": "memory side is exact; batch composition changes, so keypoints are exact only with deterministic kernels"},
+    {"id": "W-N2", "risk": "NEAR", "change": "HRNet-W48 in ONNX Runtime / TensorRT / fp16", "removes": "framework overhead", "evidence": ["main.py:797-802"]},
+    {"id": "W-S1", "risk": "SEMANTIC", "change": "flip_test=False, pose subsampling, or stage-detector departure anchors instead of the own 5 s / 8 s rules (the pose window start moves)", "removes": "backbone passes / calls", "evidence": ["main.py:130-158", "main.py:950-952"]}
+   ],
+   "unverified": []
+  },
+  {
+   "module": "fod-walk-completed",
+   "m_id": "M11",
+   "checkout": {
+    "profile_module_dir": "external/_branches/fod-walk-completed@dev",
+    "path": "external/_branches/fod-walk-completed@dev",
+    "source": "branch dev @ a30826f (PF_SOURCE.txt)",
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "device": "cuda:0 (not used by the ONNX session, which takes ort.get_available_providers())",
+    "job_class": null,
+    "cv_common": "ac5098d2 plus cv_common/modules overlaid from the archive @2759daf (cv_common/PF_MODULES_OVERLAY.txt)",
+    "db_worker": "5a4aa83d"
+   },
+   "brief_median_ms_per_recorded_frame": 3.0,
+   "models": [
+    {
+     "name": "MoveNet SinglePose Thunder v4",
+     "role": "shoulder x order of each pre-arrival worker -> is_backside, which splits the worker paths",
+     "weights_path": "weights/movenet_singlepose_thunder_4.onnx",
+     "size_bytes": 25141613,
+     "sha256_16": "7fae4dc3cdd07ebd",
+     "architecture": "MoveNet SinglePose Thunder, ONNX from tf2onnx, opset 11, 229 nodes; input 'input' int32 [1,256,256,3], output [1,1,17,3] (y, x, score)",
+     "framework": "onnxruntime",
+     "loaded_at": "main.py:290-291; onnx_thunder_inference.py:41-50",
+     "used_for_verdict": true,
+     "input": {
+      "size": "256x256, NHWC, batch fixed at 1",
+      "crop_rule": "decoded frame[y1:y2, x1:x2] of the person track box, no offset (main.py:442-443)",
+      "padding": "aspect-preserving resize so the long side is 256, zero padding centred (copyMakeBorder BORDER_CONSTANT 0) (onnx_thunder_inference.py:57-76)",
+      "resize": "cv2.resize default INTER_LINEAR (onnx_thunder_inference.py:72)",
+      "normalization": "none; int32 pixel values (onnx_thunder_inference.py:86)",
+      "colour_order": "BGR->RGB (onnx_thunder_inference.py:55)"
+     },
+     "device": "providers = ort.get_available_providers() (onnx_thunder_inference.py:43). Production requirements pin the CPU package onnxruntime==1.14.1 (requirements.txt) -> CPU execution. Test-set interpreter: onnxruntime-gpu 1.29 lists TensorRT, CUDA, CPU; the TensorRT provider needs its DLL directory registered (docs/analysis/gm_speed.md:93), which this module does not do, so a CUDA fallback is expected (not verified without running)",
+     "precision": "fp32 graph",
+     "batch": "1 crop per session.run",
+     "invocation": {
+      "condition": "every frame while no airplane track has appeared yet in the session (main_plane is None, main.py:434), for every person track with width and height >= 20 px (main.py:438-439); computed before the vehicle-occupant filter (main.py:443 vs 446-456)",
+      "calls_per_frame_in_window": "number of person tracks >= 20x20 px in the frame",
+      "batched": "no"
+     }
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [],
+   "pixel_work": {
+    "frame_reads": [
+     "dataset.get_im0s(frame) slices per person per frame in the pre-plane window (main.py:443)",
+     "arrival frame read only for drawing when write_video is False (main.py:145-146)",
+     "write_video only: main.py:298"
+    ],
+    "copies_and_conversions": [
+     "per crop: BGR->RGB, resize, copyMakeBorder, int32 cast (onnx_thunder_inference.py:52-87)",
+     "arrival frame: polylines, text, circles and lines drawn in place on the cached decoded frame (main.py:162-176, 225-227)"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "every frame with an airplane track: json_logger.update(main_plane.to_state_dict()) serialises the full state (main.py:387); draw_OF_points(None) loops over up to 250 points (main.py:386)",
+     "JsonLogger rows per person, front wheel and text (main.py:325, 333, 364, 459); after a Pass one text row per frame of each walk (main.py:559-565)",
+     "prints per frame (main.py:295)"
+    ],
+    "raw_frame_buffers": []
+   },
+   "time_structure": {
+    "passes": 1,
+    "pass1": null,
+    "length_reads": [],
+    "lookback_windows": [
+     "inspection corridor from the front-wheel / airplane approach history (30 m target distance) (main.py:113-141, 284)",
+     "worker paths from frame 1 until the first airplane track (main.py:434-466)",
+     "PlaneArrivalDetector: first 3 s vs last 8 s of airplane box area, forced after 300 s, prearrival if first seen >= 90 s (cv_common/modules/plane_arrival_detector.py:61-77, 196-229)",
+     "obstacle frames / arrival frame > 0.8 -> Not observed (main.py:513)"
+    ],
+    "decision": "on the frame the tracker's arrival_frame is first set (main.py:428-431, 500-548)",
+    "early_exit": "yes, break at arrival (main.py:548)"
+   },
+   "reimplemented_shared_components": [
+    {"component": "PlaneArrivalDetector: arrival and prearrival observability from airplane box growth", "evidence": ["main.py:287", "main.py:422-426", "cv_common/modules/plane_arrival_detector.py:85-229"]},
+    {"component": "camera-blocked obstacle filter", "evidence": ["main.py:356-367"]},
+    {"component": "pseudo depth and inspection corridor", "evidence": ["main.py:31-43", "main.py:113-241"]},
+    {"component": "note: the old _p0/_st arrival-stage block is commented out on this branch", "evidence": ["main.py:389-416"]}
+   ],
+   "lightening_candidates": [
+    {"id": "F-E1", "risk": "EXACT", "change": "evaluate the vehicle-occupant filter before MoveNet and skip pose for filtered persons", "removes": "one preprocessing + session.run per occupant crop per frame; their orientation only reaches a plot label", "evidence": ["main.py:443", "main.py:446-456", "main.py:449-451"]},
+    {"id": "F-E2", "risk": "EXACT", "change": "skip the arrival-frame read and all ROI drawing when write_video is False", "removes": "a decode request and in-place drawing on the cached frame (also a prerequisite for sharing decoded frames between modules)", "evidence": ["main.py:145-146", "main.py:162-176", "main.py:225-227"]},
+    {"id": "F-E3", "risk": "EXACT", "change": "log plane box/class/id/status directly instead of to_state_dict(); skip draw_OF_points and draw_bbox when img is None", "removes": "a full state serialisation and a loop over up to 250 points per frame", "evidence": ["main.py:385-387", "main.py:490", "cv_common/tracked_object.py:511-516"]},
+    {"id": "F-E4", "risk": "EXACT", "change": "RT branch: no prints or JsonLogger rows; compute driver_detected once", "removes": "per-frame logging", "evidence": ["main.py:295", "main.py:446", "main.py:454"]},
+    {"id": "F-N1", "risk": "NEAR", "change": "re-export MoveNet with a dynamic batch and run all crops of a frame together; or run on CUDA / TensorRT instead of the production CPU provider", "removes": "per-crop session calls", "evidence": ["onnx_thunder_inference.py:43", "onnx_thunder_inference.py:89-92"]},
+    {"id": "F-S1", "risk": "SEMANTIC", "change": "take shoulder order from a shared pose model, or evaluate orientation every N frames per track", "removes": "the MoveNet model or most of its calls", "evidence": ["onnx_thunder_inference.py:111-121"]},
+    {"id": "F-S2", "risk": "SEMANTIC", "change": "replace PlaneArrivalDetector with stage-detector anchors", "removes": "module-local stage logic", "evidence": ["main.py:422-426"]}
+   ],
+   "unverified": ["which ONNX Runtime provider actually executes MoveNet in the test-set runs"]
+  },
+  {
+   "module": "safety-vests-secured-to-body",
+   "m_id": "M23",
+   "checkout": {
+    "profile_module_dir": "external/_branches/safety-vests-secured-to-body@tdv_cone",
+    "path": "external/_branches/safety-vests-secured-to-body@tdv_cone",
+    "source": "branch tdv_cone @ 8f58d7e (PF_SOURCE.txt)",
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "device": "cuda:0",
+    "job_class": null,
+    "cv_common": "copied from the default checkout (pin 4291b0d9), substituted with ac5098d2; branch pin 29def488 (PF_EXPORT.json)",
+    "db_worker": "branch pin 5a4aa83d"
+   },
+   "brief_median_ms_per_recorded_frame": 28,
+   "models": [
+    {
+     "name": "Swin-T orientation classifier (back / head / side)",
+     "role": "only head/side persons get a vest classification and a vote",
+     "weights_path": "weights/pose_classifier.pt",
+     "size_bytes": 110381711,
+     "sha256_16": "175e87d3668a5c9c",
+     "architecture": "torchvision swin_t(num_classes=3) state dict (head 3x768)",
+     "framework": "torch / torchvision",
+     "loaded_at": "main.py:335-339; classifier_utils.py:15-25",
+     "used_for_verdict": true,
+     "input": {
+      "size": "256x256",
+      "crop_rule": "add_offset(person track box, 0.15, 0) cut from the decoded frame (main.py:418; classifier_utils.py:42-44)",
+      "padding": "none",
+      "resize": "PIL Resize(260) on the shorter side (bilinear), CenterCrop(256) (main.py:326-328)",
+      "normalization": "mean [0.27, 0.215, 0.18], std [0.16, 0.14, 0.125] (main.py:330)",
+      "colour_order": "BGR array handed to PIL.Image.fromarray as is (classifier_utils.py:48)"
+     },
+     "device": "cuda:0",
+     "precision": "fp32",
+     "batch": "all persons of the frame matched to a vest box (relative intersection > 0.85) in one forward (classifier_utils.py:48-50)",
+     "invocation": {
+      "condition": "every frame with at least one GM detection and one matched person, whole video (main.py:383, 398-419)",
+      "calls_per_frame_in_window": "1",
+      "batched": "yes"
+     }
+    },
+    {
+     "name": "Swin-T vest classifier (unzipped / zipped)",
+     "role": "per-frame vest vote together with HSV segmentation",
+     "weights_path": "weights/vest_classifier.pt",
+     "size_bytes": 110378639,
+     "sha256_16": "b0a5f34b168a97f6",
+     "architecture": "torchvision swin_t(num_classes=2) state dict (head 2x768)",
+     "framework": "torch / torchvision",
+     "loaded_at": "main.py:352-356",
+     "used_for_verdict": true,
+     "input": {
+      "size": "256x256",
+      "crop_rule": "add_offset(vest box, 0.15, 0) (main.py:424)",
+      "padding": "none",
+      "resize": "Resize(260), CenterCrop(256) (main.py:342-345)",
+      "normalization": "none (ToTensor only, main.py:346-347)",
+      "colour_order": "BGR array handed to PIL as is"
+     },
+     "device": "cuda:0",
+     "precision": "fp32",
+     "batch": "vests of the head/side persons of the frame in one forward",
+     "invocation": {"condition": "frames with at least one head/side person (main.py:421-424)", "calls_per_frame_in_window": "0 or 1", "batched": "yes"}
+    },
+    {
+     "name": "ResNet-18 vest-presence gate",
+     "role": "a frame does not vote when p(vest) < 0.5 on the vest crop",
+     "weights_path": "weights/presence_bbox_r18.pt",
+     "size_bytes": 44790667,
+     "sha256_16": "4bcb3e3f2a242f24",
+     "architecture": "torchvision resnet18(num_classes=2) state dict",
+     "framework": "torch / torchvision",
+     "loaded_at": "main.py:307-321 (loaded because the file exists)",
+     "used_for_verdict": true,
+     "input": {
+      "size": "192x192",
+      "crop_rule": "vest box shrunk (y1 + 15 % h, y2 - 5 % h) cut from the decoded frame (main.py:79-80, 85-86)",
+      "padding": "none",
+      "resize": "Resize((192,192), BICUBIC) (main.py:316-317)",
+      "normalization": "ImageNet mean/std (main.py:319)",
+      "colour_order": "BGR array handed to PIL as is"
+     },
+     "device": "cuda:0",
+     "precision": "fp32",
+     "batch": "1 per call",
+     "invocation": {"condition": "inside Person.update_params for a known person with a vest box, vest_cls set, pose head/side and vest height <= 0.5 x person height (main.py:67-96)", "calls_per_frame_in_window": "one per eligible person", "batched": "no"}
+    },
+    {
+     "name": "YOLOv8m-pose (v4 belly-visible gate)",
+     "role": "front-hemisphere gate for v4 crops; shoulders only",
+     "weights_path": "weights/yolov8m-pose.pt",
+     "size_bytes": 53266977,
+     "sha256_16": "dbe539ea268db253",
+     "architecture": "ultralytics PoseModel (C2f, SPPF, Pose head) (pickle class scan)",
+     "framework": "ultralytics 8.4.83 on torch",
+     "loaded_at": "v4_override.py:152, lazily, only when the master verdict is Pass (main.py:493-496)",
+     "used_for_verdict": true,
+     "input": {
+      "size": "ultralytics default imgsz 640 letterbox (ultralytics/cfg/default.yaml:16)",
+      "crop_rule": "JPEG-decoded person crop buffered every 12th frame (v4_override.py:106, 134, 208)",
+      "padding": "letterbox",
+      "resize": "letterbox to 640",
+      "normalization": "/255",
+      "colour_order": "channel-reversed array passed to predict (v4_override.py:178)"
+     },
+     "device": "GPU 0 (v4_override.py:179)",
+     "precision": "fp32 (predict default)",
+     "batch": "1 per call",
+     "invocation": {"condition": "session end, Pass videos only, once per buffered pair (v4_override.py:207-214)", "calls_per_frame_in_window": "not per frame; one per buffered pair at the end", "batched": "no"}
+    },
+    {
+     "name": "ResNet-18 small-band vest CNN (v4_cnn2)",
+     "role": "may flip Pass to Fail for 28-70 px vests",
+     "weights_path": "weights/v4_cnn2.pt",
+     "size_bytes": 44787723,
+     "sha256_16": "66d4a8f79a4843c2",
+     "architecture": "torchvision resnet18, fc -> 1 logit (v4_override.py:154-158)",
+     "framework": "torch / torchvision",
+     "loaded_at": "v4_override.py:154-158, lazily in Pass videos",
+     "used_for_verdict": true,
+     "input": {
+      "size": "224x112",
+      "crop_rule": "JPEG-decoded vest crop of original height 28-70 px, aspect < 0.88 (v4_override.py:248-254)",
+      "padding": "none",
+      "resize": "x4 bicubic when height < 90 px, then Resize((224,112)) (v4_override.py:255-257, 159)",
+      "normalization": "ImageNet mean/std (v4_override.py:160)",
+      "colour_order": "channel reversed before ToPILImage (v4_override.py:265)"
+     },
+     "device": "cuda:0",
+     "precision": "fp32",
+     "batch": "64 (v4_override.py:267-268)",
+     "invocation": {"condition": "session end, Pass videos only", "calls_per_frame_in_window": "not per frame", "batched": "yes"}
+    }
+   ],
+   "loaded_not_used_for_verdict": [],
+   "files_present_not_loaded": [
+    {"path": "weights/v4_probe_head.npz", "size_bytes": 6258, "sha256_16": "b7061dbbefe424d3", "note": "CLIP ViT-H-14 probe; skipped because main_autofail is false (v4_config.yaml:25; v4_override.py:162-166)"},
+    {"path": "fail_guard.py", "note": "not imported by main.py"},
+    {"path": "local_config.yaml:3-4 pose_config / pose_checkpoint (mmpose HRNet-W32)", "note": "never read; no file present"}
+   ],
+   "pixel_work": {
+    "frame_reads": [
+     "iterates the decoded video: enumerate(dataset) decodes every frame and builds a discarded 1280 letterbox and CHW copy (main.py:365; cv_common/utils/datasets.py:205, 226-233)"
+    ],
+    "copies_and_conversions": [
+     "img_to_draw = im0s.copy() and putText on every frame regardless of write_video (main.py:367-368, 464-480)",
+     "per-crop .copy() and PIL conversion in SwinTClassifier.predict (classifier_utils.py:44, 48)",
+     "per eligible person: GaussianBlur, HSV, 4 inRange masks, 2 morphology operations, findContours, drawContours on a crop-sized mask and moments per contour (main.py:152-221); V-channel mean on the vest crop (main.py:131-139)",
+     "every 12th frame: person and vest crops JPEG-encoded at quality 95 (v4_override.py:65-67, 90-141)"
+    ],
+    "drawing_and_logging_without_write_video": [
+     "prints per person per frame (main.py:101, 402, 436)",
+     "JsonLogger rows per person and text lines per frame (main.py:446-447, 466-480)"
+    ],
+    "raw_frame_buffers": [
+     "no full frames; v4 keeps JPEG bytes of person and vest crops every 12th frame, up to 20 000 pairs (v4_config.yaml:4, 29; v4_override.py:131-141)"
+    ]
+   },
+   "time_structure": {
+    "passes": 1,
+    "pass1": null,
+    "length_reads": [],
+    "lookback_windows": ["20-vote consensus per person (main.py:41, 129-149)"],
+    "decision": "session end: per-person VEST_UNZIPPED latch (> 20 votes with <= 75 % zipped, V >= 200, h >= 70, w >= 40, age >= 100 frames; main.py:129-149), report (main.py:490), v4 Pass -> Fail override (main.py:493-501)",
+    "early_exit": "no; whole video, frames numbered from 0 (main.py:365)"
+   },
+   "reimplemented_shared_components": [
+    {"component": "person-to-vest association by relative intersection", "evidence": ["main.py:401-409", "v4_override.py:57-62"]},
+    {"component": "orientation classification with a Swin-T instead of keypoints; v4 uses its own YOLOv8m-pose shoulders", "evidence": ["main.py:333-339", "v4_override.py:177-189"]}
+   ],
+   "measured": [
+    "real-time prototype, first 60 s: module 35.6 ms/frame, p50 16 ms, model loading in the first frames (tasks/notes/PF-Q1-19.md:45)"
+   ],
+   "lightening_candidates": [
+    {"id": "V-E1", "risk": "EXACT", "change": "skip im0s.copy() and the putText calls when write_video is False", "removes": "one full-frame copy and several text renders per frame", "evidence": ["main.py:367-368", "main.py:464-480"]},
+    {"id": "V-E2", "risk": "EXACT", "change": "iterate decoded frames without the YOLOv5 letterbox and CHW copy", "removes": "one resize to 1280 and one contiguous copy per frame", "evidence": ["cv_common/utils/datasets.py:226-231", "main.py:365"]},
+    {"id": "V-E3", "risk": "EXACT", "change": "drop the per-crop .copy() before PIL (PIL copies a non-contiguous slice itself; transforms only read)", "removes": "one crop copy per classified crop", "evidence": ["classifier_utils.py:44"]},
+    {"id": "V-E4", "risk": "EXACT", "change": "RT branch: no per-person prints or JsonLogger rows", "removes": "per-frame logging", "evidence": ["main.py:402", "main.py:436", "main.py:446-447"]},
+    {"id": "V-N1", "risk": "NEAR", "change": "Swin-T x2 in TensorRT / ONNX Runtime / fp16", "removes": "framework overhead and half the activation memory with fp16", "evidence": ["classifier_utils.py:15-25"]},
+    {"id": "V-N2", "risk": "NEAR", "change": "batch the presence gate over the eligible persons of a frame; batch YOLOv8m-pose over the buffered pairs", "removes": "one call per person per frame; one call per pair at the end", "evidence": ["main.py:84-96", "v4_override.py:207-214"], "caveat": "batch composition changes"},
+    {"id": "V-S1", "risk": "SEMANTIC", "change": "classify every N frames (the 20-vote consensus counts frames), a smaller or shared backbone for the two heads (different normalisation and crops), or raw crops instead of JPEG in the v4 buffer (the verifier was calibrated on JPEG-decoded crops)", "removes": "Swin-T calls / a model / JPEG encoding", "evidence": ["main.py:129-149", "main.py:326-356", "v4_override.py:134"]}
+   ],
+   "unverified": []
+  },
+  {
+   "module": "hair-policy",
+   "m_id": null,
+   "checkout": {
+    "profile_module_dir": "",
+    "path": "external/hair-policy",
+    "source": "master HEAD 8a343bf (2025-06-19); branches python_3_10 / python3_10 carry the same build",
+    "launcher": ["wsl", "-d", "Ubuntu-24.04", "--exec", "bash", "/mnt/g/prime_flight/scripts/testset/wsl_run_module.sh"],
+    "launcher_environment": "venv ~/pf_envs/hair-policy-py38: CPython 3.8, torch 2.4.1+cpu, torchvision 0.19.1, NumPy 1.24.4, mediapipe 0.10.5, timm 1.0.29 (pf-freeze.txt, pf-constraints.txt); 2 threads by default (wsl_run_module.sh:38, 119-123)",
+    "prepend_path": [],
+    "numpy1": false,
+    "device": "cpu (profiles.py:47)",
+    "job_class": "mod_cpu (profiles.py:89)",
+    "cv_common": "pin 2ae1b1a3 substituted with ac5098d2",
+    "db_worker": "7883fa43"
+   },
+   "brief_median_ms_per_recorded_frame": null,
+   "code_status": "main.py is a Pyarmor 8.3.7 (trial) build for CPython 3.8 (main.py:1-3; pyarmor_runtime_000000/pyarmor_runtime.so). Every main.py since 18564d6 (2023-09-18, 'Cambox version') is obfuscated; plaintext exists only up to 7e07648 (2023-09-07), which used mmpose 0.x HRNet plus a Unet(mit_b0) hair segmenter with different weights. Invocation, pixel work and time structure of the running code cannot be read.",
+   "models": [
+    {
+     "name": "hair classifier (config key hair_classifier_model_name)",
+     "role": "unverifiable (obfuscated)",
+     "weights_path": "weights/night_efficientNetb0_223_epoch_06_01_2024.pth",
+     "size_bytes": 16348553,
+     "sha256_16": "190ea0473a253df4",
+     "architecture": "torchvision efficientnet_b0 state dict layout (features.*, classifier.1 2x1280): EfficientNet-B0, 2 classes",
+     "framework": "torch / torchvision (requirements.txt since 18564d6)",
+     "loaded_at": "named in local_config.yaml:8; the load itself is not readable",
+     "used_for_verdict": "unverifiable",
+     "input": {"size": "unverifiable", "crop_rule": "unverifiable", "padding": "unverifiable", "resize": "unverifiable", "normalization": "unverifiable", "colour_order": "unverifiable"},
+     "device": "CPU in the test set",
+     "precision": "fp32 (CPU torch)",
+     "batch": "unverifiable",
+     "invocation": {"condition": "unverifiable", "calls_per_frame_in_window": "unverifiable", "batched": "unverifiable"}
+    },
+    {
+     "name": "inside/outside classifier (config key inside_outside_model_name)",
+     "role": "unverifiable (obfuscated)",
+     "weights_path": "weights/inside_outside_efficientnet_b0_best_model_17_epoch.pt",
+     "size_bytes": 16342834,
+     "sha256_16": "93640745399b6e71",
+     "architecture": "torchvision efficientnet_b0 state dict layout, 2 classes",
+     "framework": "torch / torchvision",
+     "loaded_at": "named in local_config.yaml:10; the load itself is not readable",
+     "used_for_verdict": "unverifiable",
+     "input": {"size": "unverifiable", "crop_rule": "unverifiable", "padding": "unverifiable", "resize": "unverifiable", "normalization": "unverifiable", "colour_order": "unverifiable"},
+     "device": "CPU in the test set",
+     "precision": "fp32 (CPU torch)",
+     "batch": "unverifiable",
+     "invocation": {"condition": "unverifiable", "calls_per_frame_in_window": "unverifiable", "batched": "unverifiable"}
+    },
+    {
+     "name": "MediaPipe (package dependency)",
+     "role": "unverifiable; installed with --no-deps (no_deps_req.txt: mediapipe==0.10.1; 0.10.5 on python_3_10), no .task/.tflite files in weights/",
+     "weights_path": null,
+     "size_bytes": null,
+     "sha256_16": null,
+     "architecture": "unknown which MediaPipe solution, if any, runs",
+     "framework": "mediapipe",
+     "loaded_at": "unverifiable",
+     "used_for_verdict": "unverifiable"
+    }
+   ],
+   "loaded_not_used_for_verdict": "unverifiable",
+   "files_present_not_loaded": [
+    {"path": "weights/efficientNetb0_300_epoch_general_classifier_dataset_hair_policy_v1_23_09_2023.pth", "size_bytes": 16386541, "sha256_16": "249b8bb5e148e8ce"},
+    {"path": "weights/efficientNetb0_300_epoch_hair_policy_general_dataset_classifier_31_10_2023_splited_25_12_2023.pth", "size_bytes": 16388351, "sha256_16": "d5f0ddd9393a30f3", "note": "2 classes"},
+    {"path": "weights/efficientNetb0_500_epoch_general_classifier_dataset_hair_policy_v1_23_09_2023.pth", "size_bytes": 16386541, "sha256_16": "7f99f751767ef65b"},
+    {"path": "weights/general_dataset_v1_inside_outside_not_observed_efficientNetb0_300_epoch_24_10_2023.pth", "size_bytes": 16393471, "sha256_16": "1a480e3016161e06", "note": "3 classes"},
+    {"path": "weights/hair_policy_efficientnet_b0_dataset_without_korea_with_duplicates_best_model_165_epoch.pt", "size_bytes": 16343198, "sha256_16": "0a2129e2424728db"},
+    {"path": "weights/hair_policy_efficientnet_b0_dataset_without_korea_with_duplicates_best_model_216_epoch.pt", "size_bytes": 16343198, "sha256_16": "fb8227f8048f48e1", "note": "commented out in local_config.yaml:9"},
+    {"path": "weights/inside_outside_efficientNetb0_300_epoch_17_09_2023.pth", "size_bytes": 16355199, "sha256_16": "22e11d0d267b7822", "note": "2 classes"}
+   ],
+   "files_present_not_loaded_note": "not referenced by local_config.yaml; whether main.py opens them cannot be read",
+   "pixel_work": "unverifiable. The README (describing the MediaPipe predecessor) says: per frame, per person track, predict hair level; infer when the main plane is stopped and break the loop. docs/05_module_logic.md:13: 'Currently, this module is executed throughout the entire video.'",
+   "time_structure": "unverifiable (see README and 05_module_logic.md quotes above)",
+   "reimplemented_shared_components": "unverifiable",
+   "measured": [
+    "about 0.87 CPU-s per frame on CPU in WSL, about 4 CPU-hours per video (tasks/notes/PF-Q1-18.md:168-170); profiles.py:89: '~0.9 CPU-s per frame on 2 threads'",
+    "external/hair-policy/None.ndjson (462 372 B, 2026-09-14 19:48) shows an environment-test run wrote its JsonLogger file"
+   ],
+   "lightening_candidates": [
+    {"id": "HP-0", "risk": "prerequisite", "change": "obtain the plaintext source (or a non-trial build for a Python version with GPU torch for sm_120) from the owners", "removes": "nothing by itself; without it no candidate below can be verified", "evidence": ["main.py:1-3", "scripts/testset/wsl_run_module.sh:5-10"]},
+    {"id": "HP-N1", "risk": "NEAR", "change": "run the same EfficientNet-B0 weights on GPU instead of CPU", "removes": "CPU inference cost (about 0.9 CPU-s per frame measured)", "evidence": ["profiles.py:47", "profiles.py:89"], "caveat": "needs a build that loads with GPU torch"},
+    {"id": "HP-E1", "risk": "EXACT (unverified)", "change": "drop the 7 weight files that local_config does not reference from the image", "removes": "image size and DVC pull only; no runtime effect unless main.py loads them", "evidence": ["local_config.yaml:8-10"], "caveat": "confirm with a file-access trace of one CPU run before removing"},
+    {"id": "HP-S1", "risk": "SEMANTIC", "change": "temporal subsampling or a shared crop classifier", "removes": "per-frame classifier calls", "evidence": ["docs/05_module_logic.md:13"]}
+   ],
+   "unverified": ["everything about invocation, crops, preprocessing, batching, frame reads, buffers, passes and decision timing"]
+  }
+ ]
+}

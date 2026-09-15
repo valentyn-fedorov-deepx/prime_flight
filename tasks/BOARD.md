@@ -2,8 +2,25 @@
 
 Statuses: `todo` · `in-progress` · `review` · `blocked` · `done` · `dropped`. Tags: `trigger-change`, `decision-needed`, `external`.
 ID: `PF-Qn-nn`. Task note — `tasks/notes/<ID>.md`. Updated by the owner or `pm-coordinator`.
-State as of 2026-09-14 (updated 12:30): **the lead's draft** — to be aligned with Maksym Ch., Yurii, Aryan; after the review by Ihor/Serhii remove the draft mark.
+State as of 2026-09-15 (real-time alerts MVP added): **the lead's draft** — to be aligned with Maksym Ch., Yurii, Aryan; after the review by Ihor/Serhii remove the draft mark.
 The "GM/Tracker/modules analysis" phase started on 14.09: tasks PF-Q1-12…17, reports in `docs/analysis/`. Code is assembled in the `pf/` package of this repo (GitHub — PF-X-04).
+
+## Now — real-time alerts MVP (client priority, from 2026-09-15)
+
+The client's strongest interest is real time: live notifications about violations at the gate so they are fixed on the spot.
+Plan, alert catalogue and milestones: `tasks/notes/PF-Q2-07.md`. The pieces meet at M1 — three alert types (belt loader
+forward chock, GSE chock, vest unzipped) end to end on recorded events.
+
+| Person | Tasks | First deliverable (1–2 weeks) | Needs |
+|---|---|---|---|
+| Maksym Ch. | PF-Q2-01, PF-Q1-02, PF-Q1-03, PF-Q1-01 | RT service skeleton per gate on the GPU host: chunks in → receiver and session → frames with stage events out, built from `pf/rt` and `pf/tracker/events.py`; transport options for one pilot gate with latency numbers | transport decision (Ihor) |
+| Yurii | PF-Q2-02, PF-Q3-04 | GM v2 + Tracker v2 per frame inside `pf/rt` with the frame budget measured; then the main gear removal and GSE chock alerts | GPU time on a free machine |
+| Aryan | PF-Q3-01, PF-X-02 | ADR for the alert record and lifecycle; a prototype alert service on the `pf/rt` outputs with deduplication, quiet windows and resolve, posting to a demo channel | delivery channel and recipients (Ihor, client) |
+| Vladyslav | PF-Q2-10 | hooks for beltloader-chocks, bl_rear_cone and cones-are-removed with verdicts unchanged; a feasibility note on hair-policy in real time | — |
+| Denys | PF-Q2-09 | label format and labels for the 130 wave-1 fails in `docs/analysis/alert_label_queue.json` | access to the videos (buckets) |
+| Oksana | PF-Q2-08 | catalogue v1 from the draft in PF-Q2-07, reviewed with Ihor and Serhii; alert gate metrics and thresholds; a scorer spec on Denys's labels | Ihor, Serhii, client |
+| Valentyn (+ agents) | PF-Q2-07, PF-Q2-11, PF-Q2-12, PF-Q3-06 | the vest alert through the chain on a recorded event; EXACT lightening fixes for vests and handrails; ADR drafts for the pushback walkers and pathway triggers | — |
+| Maksym St. | — | hour-logging entries for the tasks above | — |
 
 ---
 
@@ -35,23 +52,29 @@ The "GM/Tracker/modules analysis" phase started on 14.09: tasks PF-Q1-12…17, r
 
 | ID | Task | Owner | Agent | Status | Deps | Acceptance |
 |---|---|---|---|---|---|---|
-| PF-Q2-01 | RT branch: frame-by-frame (not chunked) ingestion onto the GPU host, decoding on the spot, contract bus, module gating by the stage detector | Maksym Ch. | pipeline-architect | todo | PF-Q1-02, PF-Q1-03 | end-to-end latency frame → contract ≤ 125 ms (p95) on 1 camera; 3.95× RT on a full turnaround does not degrade |
-| PF-Q2-02 | GM/Tracker for RT: RT-GM (≈6 classes), batching/ONNX or TensorRT, the 1080p vs 720p decision (recall −≈3 %), memory profile for N cameras | Yurii + Valentyn | gm-tracker-engineer | todo | PF-Q1-05, PF-Q1-06 | GM ≤ 28 ms/frame kept or improved; the number of cameras per 1 GPU documented |
-| PF-Q2-03 | **First RT module**: `beltloader-chocks` (E0·I1, NOW, recall 83 %/precision 91 %) via the gate BL@door…BL leave | Valentyn / Yurii | module-porter | todo | PF-Q2-01 | batch↔stream parity 0 discrepancies on a balanced sample; the verdict at the moment of BL leave, before the merge |
+| PF-Q2-01 | RT branch: frame-by-frame (not chunked) ingestion onto the GPU host, decoding on the spot, contract bus, module gating by the stage detector | Maksym Ch. | pipeline-architect | todo (pulled forward on 2026-09-15 for PF-Q2-07: start from the `pf/rt` prototype — chunks → receiver → frames with stage events) | PF-Q1-02, PF-Q1-03 | end-to-end latency frame → contract ≤ 125 ms (p95) on 1 camera; 3.95× RT on a full turnaround does not degrade |
+| PF-Q2-02 | GM/Tracker for RT: RT-GM (≈6 classes), batching/ONNX or TensorRT, the 1080p vs 720p decision (recall −≈3 %), memory profile for N cameras | Yurii + Valentyn | gm-tracker-engineer | todo (pulled forward for PF-Q2-07: first GM v2 + Tracker v2 per frame inside `pf/rt`, frame budget measured) | PF-Q1-05, PF-Q1-06 | GM ≤ 28 ms/frame kept or improved; the number of cameras per 1 GPU documented |
+| PF-Q2-03 | **First RT module**: `beltloader-chocks` (E0·I1, NOW, recall 83 %/precision 91 %) via the gate BL@door…BL leave | Valentyn / Yurii | module-porter | todo (runs live in the RT prototype with verdict and report identical to batch on a whole video — PF-Q1-19; its live alert — PF-Q2-10) | PF-Q2-01 | batch↔stream parity 0 discrepancies on a balanced sample; the verdict at the moment of BL leave, before the merge |
 | PF-Q2-04 | Hedge candidates without dependency on GM/Tracker changes: `pushback-does-not-start-until-wing-walkers…` (E0·I1), `bl_rear_cone`, `3-stop-brake-check` | Valentyn / Yurii | module-porter | todo | PF-Q2-01 | at least one additional module in RT with parity |
 | PF-Q2-05 | Module gating in the RT branch (open/close by events, 4–9 active per stage instead of 27) | Maksym Ch. | pipeline-architect | todo | PF-Q1-03 | resource per event ↓ ≥ 2× vs always-on; lookback modules without a replay buffer |
 | PF-Q2-06 | Delivery Q2: demo "a module delivers a result before the merge completes" | Valentyn | pm-coordinator | todo | PF-Q2-03 | demo to the client + a Time to Result measurement for the RT check |
+| PF-Q2-07 | **Real-time alerts MVP** (client priority, 2026-09-15): a violation seen at the gate → the ramp notified within seconds → fixed on the spot; alert catalogue in waves, end-to-end chain, milestones, team distribution — `tasks/notes/PF-Q2-07.md` | Valentyn | pm-coordinator (+ all zones) | in-progress (RT prototype runs production modules live with batch-identical verdicts — PF-Q1-19; wave 1 drafted: 8 alert types) | PF-Q1-19, PF-Q1-06 | M1: 3 wave-1 alerts end to end on recorded events with time to alert and precision measured; M2: wave 1 on GM v2 + Tracker v2 in the loop; M3: one pilot gate |
+| PF-Q2-08 | **Alert catalogue and alert quality gate**: which violations are fixable on the spot, wording, recipient, severity, provisional-alert policy; metrics and thresholds per alert type (false alerts per event, recall on labelled violations, time from the rule being met to the notification) | Oksana (+Valentyn) | qa-parity | todo | PF-Q2-07 draft | catalogue v1 signed off by Ihor / Serhii with the client; a gate every alert type passes before it goes live |
+| PF-Q2-09 | **Violation-moment labels** for wave 1: for every Fail of the monthly report, the object and the frame where the client rule is met (and the fix, if seen) — queue `docs/analysis/alert_label_queue.json` (130 fails, 8 alert types) | Denys | qa-parity | todo | access to the videos | labels for all wave-1 fails in a versioned format; a scorer computes recall, false alerts and time to alert from them |
+| PF-Q2-10 | **Live alert hooks for the light real-time modules**: beltloader-chocks (BL stopped without forward chock → alert; chock seen → resolved), bl_rear_cone, cones-are-removed — hooks like `pf/rt/hooks/vests.py`, verdict logic untouched; end-of-session marker for modules that read the session length | Vladyslav | module-porter | todo | PF-Q1-19 | verdicts and reports identical to batch with the hooks installed (`scripts/rt_modules.py`); alerts scored on the PF-Q2-09 labels |
+| PF-Q2-11 | **Module budget and lightening programme**: cost per active frame, EXACT / NEAR / SEMANTIC gates, shared frames and model runtime — `tasks/notes/PF-Q2-11.md`, inventory `docs/analysis/module_compute/` | Valentyn | module-porter + qa-parity | in-progress (batch ranking: the modules of the download/upload stage cost 89 ms per recorded frame, 3–4× over target; inventory: one HRNet-W48 file loaded by 4 modules, the same handrail classifier in 2) | PF-Q1-19, PF-Q1-18 | every module behind a live alert fits the budget (≤ 10 ms per active frame, stage sum ≤ 25 ms) with its gate passed |
+| PF-Q2-12 | **Safety vests and handrails alerts**: vest unzipped (hook exists, provisional) and belt loader handrails not extended, with lightening to budget — shared handrail classifier and frame reads moved (EXACT), batching and TensorRT for the classifiers (NEAR) | Valentyn | module-porter | todo | PF-Q2-11 | both alerts pass the PF-Q2-08 gate; safety-vests ≤ 10 ms per active frame |
 
 ## Q3 — Real-Time Expansion + Alerting (months 7–9)
 
 | ID | Task | Owner | Agent | Status | Deps | Acceptance |
 |---|---|---|---|---|---|---|
-| PF-Q3-01 | Alert bus: deduplication, quiet windows, alert lifecycle, MongoDB schema, endpoint, rendering on RampVision (case: 357 alerts on a single video without deduplication) | Aryan | alerting-engineer | todo | PF-Q2-03 | ≤ 1 alert per violation event; latency verdict → alert ≤ 5 s; the list of open questions to Ihor closed |
+| PF-Q3-01 | Alert bus: deduplication, quiet windows, alert lifecycle, MongoDB schema, endpoint, rendering on RampVision (case: 357 alerts on a single video without deduplication) | Aryan | alerting-engineer | todo — **pulled forward to now for PF-Q2-07**: first an ADR for the alert record and lifecycle and a prototype service on the `pf/rt` outputs posting to a demo channel | PF-Q1-19 | ≤ 1 alert per violation event; latency verdict → alert ≤ 5 s; the list of open questions to Ihor closed |
 | PF-Q3-02 | Wave E0 (12 modules "as is"): by weight I1 → I2 → I3 | Valentyn / Yurii / Vladyslav | module-porter | todo | PF-Q2-05 | each — parity + a measurement on fail videos; done status only after qa-parity |
 | PF-Q3-03 | Wave E1 (frames without own models, 4 modules) | module-porter (assignment at the start of Q3) | module-porter | todo | PF-Q3-02 | the same + the per-frame cost measured |
-| PF-Q3-04 | PATCH modules via a detector event: `aircraft-chocks` (main_stream, 0 discrepancies Main gear), `pin-verification` | Yurii | module-porter | todo | PF-Q1-03 | both single-pass; `pushback_attached` only from the detector |
+| PF-Q3-04 | PATCH modules via a detector event: `aircraft-chocks` (main_stream, 0 discrepancies Main gear), `pin-verification`; **pulled forward for PF-Q2-07** with live chocks alerts — main gear removed before pushback is attached, nose gear not chocked 30 s after arrival — and `gse-chocks` (GSE parked without chock) | Yurii | module-porter | todo | PF-Q1-03, PF-Q1-06 | both single-pass; `pushback_attached` only from the detector; the three alerts pass the PF-Q2-08 gate |
 | PF-Q3-05 | Architecture tech debt: unification of the `cv_common` pins in modules, gzip ndjson, registry (crew-present full_name, aircraft/jet), removal of the arrival-stage duplicates from 9 modules | Maksym Ch. | pipeline-architect | todo | PF-Q1-10 | a single cv_common pin for the E0/E1 modules; no local arrival stage computation whatsoever |
-| PF-Q3-06 | `trigger-change` track for S1: safety zone (causal zone along the entry trajectory), pushback pathway (continuously during motion), walkers (alert on pushback_attached ∧ walkers absent), hand signals (two-pass → event) | Valentyn + Yurii | module-porter | todo `decision-needed` | Ihor/Oksana | an ADR per trigger change; the client logic in `05_module_logic.md` updated after agreement |
+| PF-Q3-06 | `trigger-change` track for S1: safety zone (causal zone along the entry trajectory), pushback pathway (continuously during motion), walkers (alert on pushback_attached ∧ walkers absent), hand signals (two-pass → event) | Valentyn + Yurii | module-porter | todo `decision-needed` (pulled forward for wave 2 of PF-Q2-07: pushback walkers, pathway, cones-placed deadline after T_arr, safety zone) | Ihor/Oksana | an ADR per trigger change; the client logic in `05_module_logic.md` updated after agreement |
 | PF-Q3-07 | Delivery Q3: more RT modules + alerts to station managers | Valentyn | pm-coordinator | todo | Q3-01…04 | demo + report |
 
 ## Q4 — Maximum Real-Time Coverage + Optimization (months 10–12)
