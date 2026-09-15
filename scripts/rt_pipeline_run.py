@@ -1,16 +1,20 @@
-"""Real-time GM + tracker + one production module in the real-time branch, compared with the batch files.
+"""Real-time GM + tracker + production modules in the real-time branch, compared with the batch files.
 
-The module runs through `pf.rt.simulate --adapter pipeline` with the launch facts of the test set (checkout, overlays,
-device, environment). GM v2 and Tracker v2 run per frame inside the branch (detector heads and tracked classes selectable)
-and the module is fed the rows they produce. Afterwards, per run:
-  * verdict and report against the batch runs on the GM v2 + Tracker v2 files (label v2) and on the production files (ctl);
-  * the GM second-run rows handed to the module against the batch GM v2 second-run file (all classes; the module's classes);
+The primary module runs through `pf.rt.simulate --adapter pipeline` with the launch facts of the test set (checkout,
+overlays, device, environment); extra pixel-free modules run in their own processes (`pf.rt.module_host`) on the same
+rows. GM v2 and Tracker v2 run per frame inside the branch (detector heads and tracked classes selectable) and the modules
+are fed the rows they produce. Afterwards, per run:
+  * every module's verdict and report against the batch runs on the GM v2 + Tracker v2 files (label v2) and on the
+    production files (ctl);
+  * the GM second-run rows handed to the modules against the batch GM v2 second-run file (all classes; the primary module's
+    classes; the same without obstacle rows);
   * the airplane tracker records against the batch Tracker v2 file (seed 0): boxes, status, arrival and departure frames;
   * frame latency, keeps-up, cost per frame per component, process memory.
 
     python scripts/rt_pipeline_run.py --video zHxIAF2vUGxJ.mp4 --module pushback-pathway-confirmed-clear-of-obstacles \
         --tag pp_full_rt [--speed 1] [--max-seconds 120] [--heads gm,chocks,vehicle] \
-        [--tracker-classes airplane,beltloader,gse,person] [--provider cuda|tensorrt] [--no-write-rows]
+        [--tracker-classes airplane,beltloader,gse,person] [--provider cuda|tensorrt] [--no-write-rows] \
+        [--extra-modules pushback-does-not-start-until-wing-walkers-are-in-place-and-ready,3-stop-brake-check]
 """
 
 from __future__ import annotations
@@ -95,41 +99,50 @@ def head_of_file(src: str, dst: str, n: int) -> str:
     return dst
 
 
+def verdict_parity(outs: list, module: str, video: str, comparable: bool) -> dict:
+    verdict = next((x for x in outs if x["kind"] == "verdict" and x["name"] == module), None)
+    live = (verdict or {}).get("payload", {})
+    rec = {"module": module, "live_status": live.get("status"), "live_report": live.get("report"),
+           "decided_after_frame": live.get("decided_after_frame"), "session_closed_at_decision": live.get("session_closed"),
+           "verdict_latency_s": (verdict or {}).get("latency_s")}
+    for label in ("v2", "ctl"):
+        bp = os.path.join(ROOT, "out", "testset", "modules", label, video, f"{module}.json")
+        b = json.load(io.open(bp, encoding="utf-8")) if os.path.exists(bp) else {}
+        rec[f"batch_{label}"] = {
+            "status": b.get("status"),
+            "status_identical": (live.get("status") == b.get("status")) if verdict and b and comparable else None,
+            "report_identical": (live.get("report") == b.get("report")) if verdict and b and comparable else None}
+    return rec
+
+
 def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     run = os.path.join(ROOT, out)
     p = o.paths(a.video)
-    rec = {"video": a.video, "module": a.module, "tag": a.tag, "speed": a.speed, "max_seconds": a.max_seconds,
-           "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider, "exit_code": rc,
-           "wall_s": round(wall_s, 1)}
+    rec = {"video": a.video, "module": a.module, "extra_modules": a.extra_modules, "tag": a.tag, "speed": a.speed,
+           "max_seconds": a.max_seconds, "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider,
+           "exit_code": rc, "wall_s": round(wall_s, 1)}
     report_path = os.path.join(run, "report.json")
     if not os.path.exists(report_path):
         rec["error"] = "no report (see the run log)"
         return rec
     r = json.load(io.open(report_path, encoding="utf-8"))
     outs = [json.loads(line) for line in io.open(os.path.join(run, "outputs.ndjson"), encoding="utf-8")]
-    verdict = next((x for x in outs if x["kind"] == "verdict"), None)
-    error = next((x for x in outs if x["name"] == "module_error"), None)
-    audit = next((x for x in outs if x["name"] == "real_time_audit"), {}).get("payload", {})
-    live = (verdict or {}).get("payload", {})
     comparable = not a.max_seconds  # batch verdicts cover the whole video
-    for label in ("v2", "ctl"):
-        bp = os.path.join(ROOT, "out", "testset", "modules", label, a.video, f"{a.module}.json")
-        b = json.load(io.open(bp, encoding="utf-8")) if os.path.exists(bp) else {}
-        rec[f"batch_{label}"] = {
-            "status": b.get("status"),
-            "status_identical": (live.get("status") == b.get("status")) if verdict and b and comparable else None,
-            "report_identical": (live.get("report") == b.get("report")) if verdict and b and comparable else None}
     if not comparable:
         rec["verdict_note"] = "partial run: the batch verdicts cover the whole video, not compared"
+    primary = verdict_parity(outs, a.module, a.video, comparable)
+    rec.update({k: v for k, v in primary.items() if k != "module"})
+    rec["extra_module_verdicts"] = [verdict_parity(outs, m, a.video, comparable)
+                                    for m in (a.extra_modules.split(",") if a.extra_modules else []) if m]
+    errors = [x for x in outs if x["name"] in ("module_error", "module_host_error")]
+    audits = [x for x in outs if x["name"] == "real_time_audit"]
     rec.update({
-        "live_status": live.get("status"), "live_report": live.get("report"),
-        "decided_after_frame": live.get("decided_after_frame"), "session_closed_at_decision": live.get("session_closed"),
-        "verdict_latency_s": (verdict or {}).get("latency_s"), "module_error": (error or {}).get("payload", {}).get("error"),
+        "module_error": [e.get("payload", {}).get("error") for e in errors] or None,
         "frames": r.get("frames"), "keeps_up": r.get("keeps_up"), "pipeline_ms_per_frame": r.get("module_ms_per_frame"),
         "frame_latency_s": r.get("frame_latency_s"),
         "latency_drift_s_per_recording_minute": r.get("latency_drift_s_per_recording_minute"),
         "max_frame_queue": r.get("max_frame_queue"), "runtime_error": r.get("error"),
-        "non_causal_reads": audit.get("non_causal_reads"),
+        "non_causal_reads": [x.get("payload", {}).get("non_causal_reads") for x in audits],
     })
     pipeline_path = os.path.join(run, "pipeline_report.json")
     if os.path.exists(pipeline_path):
@@ -138,7 +151,8 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
                     "tracker_ms_per_frame": (pj.get("tracker") or {}).get("timings_ms_per_frame"),
                     "gm_heads": pj.get("gm_heads"), "memory_gb": pj.get("process_memory_gb"), "init_s": pj.get("init_s"),
                     "max_unpublished_frames": pj.get("max_unpublished_frames"),
-                    "row_files_ms_per_frame": pj.get("row_files_ms_per_frame")})
+                    "row_files_ms_per_frame": pj.get("row_files_ms_per_frame"),
+                    "module_hosts": pj.get("module_hosts"), "host_send_ms_per_frame": pj.get("host_send_ms_per_frame")})
     live_gm = os.path.join(run, f"general_model{a.video}.ndjson")
     live_trk = os.path.join(run, f"trackers{a.video}.ndjson")
     if os.path.exists(live_gm) and os.path.getsize(live_gm):
@@ -160,6 +174,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", required=True)
     ap.add_argument("--module", required=True)
+    ap.add_argument("--extra-modules", default="", help="comma list of pixel-free modules hosted in their own processes")
     ap.add_argument("--tag", required=True)
     ap.add_argument("--speed", type=float, default=1.0)
     ap.add_argument("--max-seconds", type=float, default=None)
@@ -167,7 +182,7 @@ def main() -> int:
     ap.add_argument("--tracker-classes", default="airplane,beltloader,gse,person")
     ap.add_argument("--provider", default="cuda", choices=["cuda", "tensorrt"])
     ap.add_argument("--chunks", default=None, help="default out/rt/chunks/<video stem>_gop1")
-    ap.add_argument("--no-write-rows", action="store_true", help="timing runs: do not write the rows handed to the module")
+    ap.add_argument("--no-write-rows", action="store_true", help="timing runs: do not write the rows handed to the modules")
     a = ap.parse_args()
 
     stem = os.path.splitext(a.video)[0]
@@ -177,11 +192,16 @@ def main() -> int:
     plan = o.Plan([a.video])
     prof = profiles.profile(a.module)
     margs = adapter_args(a.module, a.video, plan, os.path.join("out", "rt", "work", a.tag))
+    extras = []
+    for m in [x for x in a.extra_modules.split(",") if x]:
+        if not profiles.profile(m).get("pixel_free"):
+            raise SystemExit(f"{m} reads pixels: module hosts serve pixel-free modules only")
+        extras.append({"module": m, "module_args": adapter_args(m, a.video, plan, os.path.join("out", "rt", "work", a.tag, m))})
     pargs = {"module": a.module, "module_args": margs, "heads": [h for h in a.heads.split(",") if h],
              "gm_variant": "entity_clip", "gm_provider": a.provider,
              "tracker_classes": [c for c in a.tracker_classes.split(",") if c], "exact_fast": True, "seed": 0,
              "cone_camera": plan.cone(a.video), "pixels": not prof.get("pixel_free"), "out_dir": out,
-             "write_rows": not a.no_write_rows}
+             "write_rows": not a.no_write_rows, "extra_modules": extras}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]
     if a.max_seconds:
@@ -195,10 +215,14 @@ def main() -> int:
     brief = {k: summary.get(k) for k in ("exit_code", "error", "module_error", "runtime_error", "live_status", "batch_v2",
                                          "batch_ctl", "decided_after_frame", "keeps_up", "pipeline_ms_per_frame",
                                          "frame_latency_s", "max_unpublished_frames", "memory_gb", "wall_s")}
+    brief["extra_modules"] = [{k: v.get(k) for k in ("module", "live_status", "batch_v2", "decided_after_frame")}
+                              for v in summary.get("extra_module_verdicts") or []]
     brief["components_mean_ms"] = {k: (v or {}).get("mean") for k, v in (summary.get("components_ms_per_frame") or {}).items()}
     brief["tracker_ms"] = summary.get("tracker_ms_per_frame")
-    brief["gm_parity_module_classes"] = {k: ((summary.get("gm_rows_vs_batch_v2") or {}).get("module_classes_and_airplane") or {}).get(k)
-                                         for k in ("pair_recall", "frame_parity_tolerant")}
+    brief["module_hosts"] = summary.get("module_hosts")
+    brief["gm_parity_without_obstacles"] = {
+        k: ((summary.get("gm_rows_vs_batch_v2") or {}).get("module_classes_and_airplane_without_obstacles") or {}).get(k)
+        for k in ("pair_recall", "frame_parity_tolerant")}
     brief["tracker_parity"] = {k: (summary.get("tracker_vs_batch_v2") or {}).get(k)
                                for k in ("frames_with_records", "share_same", "anchors")}
     print(json.dumps(brief, indent=1, default=str))

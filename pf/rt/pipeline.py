@@ -1,16 +1,17 @@
-"""GM v2 + Tracker v2 inside the real-time branch: decoded frames in, a production module fed with rows produced live.
+"""GM v2 + Tracker v2 inside the real-time branch: decoded frames in, production modules fed with rows produced live.
 
     decoded frame ─► GM heads ─► first-run rows ─► VideoContextV2 ─► causal second-run rows (pf.pipeline.causal_rows)
                                                                           │
                           Tracker v2 (one per event, scoped classes) ◄────┘  records final after the N_INIT delay (1 s)
                                   │ (frame_id, records), in frame order
-                                  └─► production module (pf.rt.prod_module, metadata="live"): rows, records, pixels
+                                  ├─► primary production module in this process (pf.rt.prod_module, metadata="live")
+                                  └─► extra pixel-free modules, one process each (pf.rt.module_host), fed without waiting
 
 A real-time GM and tracker are scoped to the modules they serve:
   * `heads` keeps only the detector heads whose rows are read (downstream: the causal second run, the tracker, the modules);
   * `tracker_classes` keeps only the tracked classes the modules read (`TrackerOptions.classes` says what dropping changes).
-The adapter writes exactly what it handed to the module — the streaming second-run GM file and the v1-compat tracker file — so
-a run can be compared with the batch files, and it reports the cost per frame of every component (`pipeline_report.json`).
+The adapter writes exactly what it handed to the modules — the streaming second-run GM file and the v1-compat tracker file —
+so a run can be compared with the batch files, and it reports the cost per frame of every component (`pipeline_report.json`).
 """
 
 from __future__ import annotations
@@ -49,7 +50,7 @@ class RtPipelineAdapter(Adapter):
                  gm_weights_dir: str | None = None, gm_variant: str = "entity_clip", gm_provider: str = "cuda",
                  str2id: str | None = None, tracker_weights_dir: str | None = None, tracker_classes=None,
                  exact_fast: bool = True, seed: int = 0, cone_camera: bool = True, refresh_every: int = 60,
-                 pixels: bool = True, out_dir: str | None = None, write_rows: bool = True):
+                 pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -69,11 +70,21 @@ class RtPipelineAdapter(Adapter):
         args.pop("inferences_dir", None)
         args.update(module=module, metadata="live", cone_camera=cone_camera)
         self.module = ProductionModuleAdapter(**args)
+        self.hosts = []
+        if extra_modules:
+            from pf.rt.module_host import ModuleHost
+
+            for extra in extra_modules:
+                extra_args = dict(extra.get("module_args") or {})
+                extra_args["cone_camera"] = cone_camera
+                self.hosts.append(ModuleHost(extra["module"], extra_args))
         self.video_name = None
+        self.manifest: dict = {}
         self._rows2: dict = {}
         self._images: dict = {}
         self._times = {"gm": [], "second_run_rows": [], "tracker": [], "module": [], "total": []}
         self._write_s = 0.0
+        self._host_send_s = 0.0
         self._published = 0
         self._max_unpublished = 0
         self._blank = None
@@ -81,6 +92,7 @@ class RtPipelineAdapter(Adapter):
         self.init_s: dict = {}
 
     def configure(self, manifest: dict) -> None:
+        self.manifest = manifest
         self.video_name = os.path.basename(manifest["video"])
         self.module.configure(manifest)
 
@@ -89,6 +101,10 @@ class RtPipelineAdapter(Adapter):
         os.environ.update({k: str(v) for k, v in (self.module.env or {}).items()})
         if ROOT not in sys.path:
             sys.path.insert(0, ROOT)
+        t_hosts = time.perf_counter()
+        for host in self.hosts:  # before anything changes the working directory
+            host.start(self.manifest, fps)
+        self.init_s["module_hosts"] = round(time.perf_counter() - t_hosts, 1)
         import torch  # noqa: F401
 
         from pf.gm.onnx_detector import YoloV8Onnx, YoloV8OnnxConfig
@@ -148,6 +164,8 @@ class RtPipelineAdapter(Adapter):
             self._images[fid] = image
         self._max_unpublished = max(self._max_unpublished, len(self._rows2))
         outs = self._publish(published)
+        for host in self.hosts:
+            outs.extend(host.poll())
         t4 = time.perf_counter()
         for key, value in (("gm", t1 - t0), ("second_run_rows", t2 - t1), ("tracker", t3 - t2), ("module", t4 - t3),
                            ("total", t4 - t0)):
@@ -167,12 +185,19 @@ class RtPipelineAdapter(Adapter):
                 self._gm_fh.write(ndjson_line(fno, rows2))
                 self._trk_fh.write(json.dumps({str(self._published): records}) + "\n")
                 self._write_s += time.perf_counter() - tw
-            outs.extend(self.module.push(fno, image, {"general_model": rows2, "trackers": records}))
+            meta = {"general_model": rows2, "trackers": records}
+            th = time.perf_counter()
+            for host in self.hosts:
+                outs.extend(host.push(fno, meta))
+            self._host_send_s += time.perf_counter() - th
+            outs.extend(self.module.push(fno, image, meta))
         return outs
 
     def close(self) -> list:
         outs = self._publish(self.tracker.finish())
         outs.extend(self.module.close())
+        for host in self.hosts:
+            outs.extend(host.close())
         self.tracker.close()
         for fh in (self._gm_fh, self._trk_fh):
             if fh:
@@ -183,7 +208,8 @@ class RtPipelineAdapter(Adapter):
                 json.dump(report, fh, indent=1, default=str)
         outs.append(Output("note", "pipeline_report", None, {
             "heads": report["heads"], "tracker_classes": report["tracker_classes"],
-            "ms_per_frame_mean": {k: v.get("mean") for k, v in report["ms_per_frame"].items()}}))
+            "ms_per_frame_mean": {k: v.get("mean") for k, v in report["ms_per_frame"].items()},
+            "module_hosts": report["module_hosts"]}))
         return outs
 
     def report(self) -> dict:
@@ -204,6 +230,8 @@ class RtPipelineAdapter(Adapter):
             "frames": frames, "published_frames": self._published, "max_unpublished_frames": self._max_unpublished,
             "ms_per_frame": {k: _ms(v) for k, v in self._times.items()},
             "row_files_ms_per_frame": round(1000 * self._write_s / max(frames, 1), 3),
+            "module_hosts": {h.module: {"per_frame": h.stats, "failed": h.failed} for h in self.hosts},
+            "host_send_ms_per_frame": round(1000 * self._host_send_s / max(frames, 1), 3),
             "gm_heads": self.detectors.timings(), "tracker": self.tracker.report(), "causal_rows": vars(self.causal.stats),
             "gm_context_final": context,
             "process_memory_gb": {"private": round(getattr(mem, "private", 0) / 2**30, 2),
