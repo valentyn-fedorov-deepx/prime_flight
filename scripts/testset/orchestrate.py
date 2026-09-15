@@ -465,7 +465,11 @@ def run(a) -> int:
     ctl["stop"] = False
     if not a.dry_run:
         jsave(CONTROL, ctl)
-    log(f"start: {len(plan.order)} videos, control {json.dumps(ctl)}")
+    msg = f"start: {len(plan.order)} videos, control {json.dumps(ctl)}"
+    if a.dry_run:
+        print("dry run (not logged):", msg)  # the log marks real starts only (log analysis keys on them)
+    else:
+        log(msg)
     running: list = []
     last_idle = 0.0
     while True:
