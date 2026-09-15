@@ -78,6 +78,8 @@ def main() -> int:
     ap.add_argument("--videos", required=True, help="comma list of test-set videos with a finished Tracker v2 step")
     ap.add_argument("--device", default="0")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--wait", action="store_true", help="wait until the tracker step of each video is done or failed in the "
+                    "ledger (polls every 5 minutes) before checking it")
     a = ap.parse_args()
 
     plan = o.Plan()
@@ -86,6 +88,8 @@ def main() -> int:
         if video in summary and summary[video].get("status") == "done" and not a.force:
             print(f"{video}: already checked: {json.dumps(summary[video].get('comparison'))}")
             continue
+        while a.wait and o.load_ledger(video)["steps"].get("tracker", {}).get("status") not in ("done", "failed"):
+            time.sleep(300)
         p = o.paths(video)
         gm_rows, v2_file = p["gm_compat"], p["trk_compat"]
         missing = [f for f in (p["video"], gm_rows, v2_file) if not os.path.exists(f)]
