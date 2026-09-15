@@ -27,11 +27,12 @@ from scripts.testset import profiles  # noqa: E402
 from scripts.testset.orchestrate import Plan  # noqa: E402
 
 
-def adapter_args(module: str, video: str, plan: Plan, work_dir: str) -> dict:
+def adapter_args(module: str, video: str, plan: Plan, work_dir: str, inferences_dir: str | None = None) -> dict:
     prof = profiles.profile(module)
     if prof.get("launcher"):
         raise SystemExit(f"{module} runs in another interpreter ({prof['launcher'][0]}); not supported by this script")
-    return {"module": module, "module_dir": prof["module_dir"] or None, "inferences_dir": f"out/testset/prod/{video}",
+    return {"module": module, "module_dir": prof["module_dir"] or None,
+            "inferences_dir": inferences_dir or f"out/testset/prod/{video}",
             "device": prof["device"], "cone_camera": plan.cone(video), "airplane_type": plan.airplane_type(video),
             "numpy1_scalars": prof["numpy1"], "drop_state_keys": prof["drop_state_keys"],
             "prepend_path": prof["prepend_path"], "env": profiles.ENV, "work_dir": work_dir}
@@ -57,7 +58,14 @@ def summarise(module: str, out: str, video: str) -> dict:
     audit = next((o for o in outs if o["name"] == "real_time_audit"), {}).get("payload", {})
     batch_path = os.path.join(ROOT, "out", "testset", "modules", "ctl", video, f"{module}.json")
     batch = json.load(io.open(batch_path, encoding="utf-8")) if os.path.exists(batch_path) else {}
+    v2_path = os.path.join(ROOT, "out", "testset", "modules", "v2", video, f"{module}.json")
+    batch_v2 = json.load(io.open(v2_path, encoding="utf-8")) if os.path.exists(v2_path) else {}
     live = (verdict or {}).get("payload", {})
+    rec.update({
+        "batch_v2_status": batch_v2.get("status"),
+        "status_identical_v2": live.get("status") == batch_v2.get("status") if verdict and batch_v2 else None,
+        "report_identical_v2": live.get("report") == batch_v2.get("report") if verdict and batch_v2 else None,
+    })
     rec.update({
         "live_status": live.get("status"), "batch_status": batch.get("status"),
         "status_identical": live.get("status") == batch.get("status") if verdict and batch else None,
@@ -83,6 +91,8 @@ def main() -> int:
     ap.add_argument("--tag", default=None, help="run folder under out/rt/runs (default: modules_<video stem>_<time>)")
     ap.add_argument("--max-seconds", type=float, default=None)
     ap.add_argument("--speed", type=float, default=1.0)
+    ap.add_argument("--inferences-dir", default=None,
+                    help="GM / tracker ndjson to feed (default out/testset/prod/<video>; e.g. the rows a pipeline run wrote)")
     a = ap.parse_args()
 
     stem = os.path.splitext(a.video)[0]
@@ -94,7 +104,7 @@ def main() -> int:
     procs = []
     for module in [m for m in a.modules.split(",") if m]:
         out = os.path.join(root, module)
-        args = adapter_args(module, a.video, plan, os.path.join("out", "rt", "work", tag, module))
+        args = adapter_args(module, a.video, plan, os.path.join("out", "rt", "work", tag, module), a.inferences_dir)
         cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "prod", "--adapter-args",
                json.dumps(args), "--out", out, "--speed", str(a.speed)]
         if a.max_seconds:
