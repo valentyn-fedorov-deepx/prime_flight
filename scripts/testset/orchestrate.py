@@ -18,10 +18,12 @@ Live control: `out/testset/orchestrator_control.json` is re-read every loop:
    "min_free_gb": 60,
    "cleanup": false, "retry_failed": false, "stop": false}
 `stop` drains (no new jobs, exit when the running ones finish); `retry_failed` resets failed steps once; `cleanup` deletes the
-mp4 and the v2 bus file of a video once all its enabled module jobs have finished.
+mp4 of a video once all its enabled steps are done or failed (not the videos listed in `keep_videos`).
 `event_window` N > 0 processes events one after another (smallest first): jobs start only for the videos of the first N
 unfinished events, downloads also for the next `prefetch_events`. An event is finished when every enabled step of each of
 its videos is done or failed. With N = 2 the head event runs its modules while the next one runs GM v2 and Tracker v2.
+`module_event_limit` N and `module_events` [event ids] restrict the module steps (both labels) to the videos of the first N
+events in event order and of the listed events; every other video runs fetch, GM v2 and Tracker v2 only.
 
     python scripts/testset/orchestrate.py run --steps fetch,gm,tracker,mod:ctl,mod:v2 --disabled-modules hair-policy
     python scripts/testset/orchestrate.py run --dry-run
@@ -357,19 +359,19 @@ def finish(job: Job, rc: int, plan: Plan) -> dict:
 
 
 def cleanup_video(video: str, plan: Plan, ctl: dict) -> bool:
+    """Delete the mp4 once every enabled step of the video is done or failed; the inference files stay (the v2 bus too, for
+    the ADR-002 decisions). A module step that needs pixels later downloads the video again."""
     led = load_ledger(video)
-    if led.get("cleaned"):
+    if led.get("cleaned") or video in set(ctl.get("keep_videos") or []):
         return False
-    mods = [f"mod:{lb}:{m}" for lb in ("ctl", "v2") for m in plan.modules(video)]
-    mods = [s for s in mods if step_enabled(s, ctl)]
-    if not mods or any(led["steps"].get(s, {}).get("status") not in ("done", "failed") for s in mods):
+    steps = video_steps(video, plan, ctl)
+    if not steps or any(led["steps"].get(s, {}).get("status") not in ("done", "failed") for s in steps):
         return False
     p = paths(video)
-    freed = 0
-    for f in (p["video"], p["trk_bus"]):
-        if os.path.exists(f):
-            freed += os.path.getsize(f)
-            os.remove(f)
+    if not os.path.exists(p["video"]):
+        return False
+    freed = os.path.getsize(p["video"])
+    os.remove(p["video"])
     led["cleaned"] = {"at": now(), "freed_gb": round(freed / 1e9, 2)}
     save_ledger(led)
     return True
@@ -396,8 +398,25 @@ def chain_ok(step: str, led: dict, ctl: dict) -> bool:
     return True
 
 
+def module_scope(plan: Plan, ctl: dict):
+    """Videos whose module steps are enabled: those of `module_events` and of the first `module_event_limit` events in event
+    order. None when neither is set (every video)."""
+    ids, limit = set(ctl.get("module_events") or []), ctl.get("module_event_limit")
+    if not ids and not limit:
+        return None
+    scope = set()
+    for i, event in enumerate(plan.events):
+        if event["event_id"] in ids or (limit and i < int(limit)):
+            scope.update(event["videos"])
+    return scope
+
+
 def video_steps(video: str, plan: Plan, ctl: dict) -> list:
+    """The enabled steps of a video, in scheduling order (the single definition used by the loop, cleanup and status)."""
     steps = [s for s in ("fetch", "gm", "tracker") if step_enabled(s, ctl)]
+    scope = module_scope(plan, ctl)
+    if scope is not None and video not in scope:
+        return steps
     return steps + [f"mod:{lb}:{m}" for lb in ("v2", "ctl") for m in plan.modules(video)
                     if step_enabled(f"mod:{lb}:{m}", ctl)]
 
@@ -505,9 +524,7 @@ def run(a) -> int:
         for video in plan.order:
             led = load_ledger(video)
             p = paths(video)
-            steps = [s for s in ("fetch", "gm", "tracker") if step_enabled(s, ctl)]
-            steps += [f"mod:{lb}:{m}" for lb in ("v2", "ctl") for m in plan.modules(video)
-                      if step_enabled(f"mod:{lb}:{m}", ctl)]
+            steps = video_steps(video, plan, ctl)
             for step in steps:
                 rec = led["steps"].get(step)
                 if rec and rec.get("status") == "done" and stale(step, rec, video, plan) and not a.dry_run:

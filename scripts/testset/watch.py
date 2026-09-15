@@ -74,8 +74,7 @@ def complete(leds: dict) -> bool:
     plan = o.Plan()
     for video in plan.order:
         led = leds.get(video, {"steps": {}})
-        steps = [s for s in ("fetch", "gm", "tracker") if o.step_enabled(s, ctl)]
-        steps += [f"mod:{lb}:{m}" for lb in ("ctl", "v2") for m in plan.modules(video) if o.step_enabled(f"mod:{lb}:{m}", ctl)]
+        steps = o.video_steps(video, plan, ctl)
         if any(led["steps"].get(s, {}).get("status") not in ("done", "failed") for s in steps):
             return False
     return True
