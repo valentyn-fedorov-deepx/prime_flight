@@ -51,7 +51,7 @@ class ChunkReceiver:
             if arrival.index < self._next_index:
                 self.stats.late_dropped += 1  # already declared lost; its frames were filled
                 return
-            self._pending[arrival.index] = (arrival, time.monotonic())
+            self._pending[arrival.index] = (arrival, time.perf_counter())
             self.stats.chunks_in += 1
             self.stats.max_pending = max(self.stats.max_pending, len(self._pending))
             self._cv.notify_all()
@@ -70,7 +70,7 @@ class ChunkReceiver:
         self.stats.chunks_lost += len(lost)
         self.stats.frames_filled += n_frames
         self.stats.gaps.append({"first_frame_id": first_frame_id, "n_frames": n_frames, "chunks": list(lost)})
-        return Release(None, first_frame_id, n_frames, time.monotonic(), lost)
+        return Release(None, first_frame_id, n_frames, time.perf_counter(), lost)
 
     def next(self, poll_s: float = 0.05):
         """Block until the next release; None once the recording is closed and everything has been released."""
@@ -81,12 +81,12 @@ class ChunkReceiver:
                     arrival = item[0]
                     self._next_index += 1
                     self._next_frame_id = arrival.first_frame_id + arrival.n_frames
-                    return Release(arrival, arrival.first_frame_id, arrival.n_frames, time.monotonic())
+                    return Release(arrival, arrival.first_frame_id, arrival.n_frames, time.perf_counter())
                 closed = self._total_frames is not None
                 if self._pending:
                     later = min(self._pending)
                     arrival, received = self._pending[later]
-                    waited = time.monotonic() - received
+                    waited = time.perf_counter() - received
                     if closed or waited >= self.timeout:
                         rel = self._gap(self._next_frame_id, arrival.first_frame_id - self._next_frame_id,
                                         tuple(range(self._next_index, later)))

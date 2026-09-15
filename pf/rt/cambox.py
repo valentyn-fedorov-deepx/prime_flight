@@ -76,7 +76,7 @@ class CameraBoxSim:
         return self.t0 + (frame_id - 1) / self.fps / self.speed
 
     def start(self, deliver: Callable[[ChunkArrival], None], t0: float | None = None) -> float:
-        self.t0 = time.monotonic() if t0 is None else t0
+        self.t0 = time.perf_counter() if t0 is None else t0
         self.arrivals = schedule(self.manifest, self.link, self.t0, self.speed, self.root)
         self._thread = threading.Thread(target=self._run, args=(deliver,), name="cambox", daemon=True)
         self._thread.start()
@@ -86,12 +86,12 @@ class CameraBoxSim:
         try:
             for a in self.arrivals:
                 # Event.wait can return up to a timer tick early on Windows: re-check until the due time has passed
-                while (remaining := a.due - time.monotonic()) > 0:
+                while (remaining := a.due - time.perf_counter()) > 0:
                     if self._stop.wait(remaining):
                         break
                 if self._stop.is_set():
                     break
-                a.arrived = time.monotonic()
+                a.arrived = time.perf_counter()
                 deliver(a)
         finally:
             self.done.set()

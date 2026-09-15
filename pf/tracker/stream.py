@@ -64,6 +64,11 @@ class TrackerOptions:
     exact_fast: bool = False  # output-identical performance paths (see module docstring)
     grouped_lk: bool = True  # within exact_fast: grouped optical flow for beltloaders/GSE
     fast_noise_gate: bool = False  # NOT exact: sigma on a half-resolution frame (needs calibration before use)
+    # --- scope (production tracks all four) -------------------------------------------------------------
+    # A real-time tracker keeps only the classes its modules read. Dropping a class skips its DeepSORT update, state
+    # machines and segmentor; the airplane records are then NOT byte-identical to the full tracker (np.random draws
+    # shift and the noise gate sees fewer tracked objects), so a scoped tracker is gated by module verdicts.
+    classes: tuple = ("airplane", "beltloader", "gse", "person")
 
 
 @dataclass
@@ -187,17 +192,18 @@ class TrackerStream:
 
         t = self.ds_cfg.DEEPSORT_TRANSPORT
         w = self.ds_cfg.DEEPSORT_WORKER
-        self.bl_tracker = DeepSort(
+        wanted = set(self.opt.classes)
+        self.bl_tracker = None if "beltloader" not in wanted else DeepSort(
             max_dist=t.MAX_DIST, min_confidence=t.MIN_CONFIDENCE, nms_max_overlap=t.NMS_MAX_OVERLAP,
             max_iou_distance=t.MAX_IOU_DISTANCE, max_age=t.MAX_AGE, n_init=t.N_INIT, nn_budget=t.NN_BUDGET,
             use_cuda=use_cuda, resnet=True,
         )
-        self.gse_tracker = DeepSort(
+        self.gse_tracker = None if "gse" not in wanted else DeepSort(
             max_dist=t.MAX_DIST, min_confidence=t.MIN_CONFIDENCE, nms_max_overlap=t.NMS_MAX_OVERLAP,
             max_iou_distance=t.MAX_IOU_DISTANCE, max_age=t.MAX_AGE, n_init=t.N_INIT, nn_budget=t.NN_BUDGET,
             use_cuda=use_cuda, resnet=True, metric_type=t.METRIC_TYPE,
         )
-        self.workers_tracker = DeepSort(
+        self.workers_tracker = None if "person" not in wanted else DeepSort(
             os.path.join(self.opt.weights_dir, self.cfg["deepsort_weights"]),
             max_dist=w.MAX_DIST, min_confidence=w.MIN_CONFIDENCE, nms_max_overlap=w.NMS_MAX_OVERLAP,
             max_iou_distance=w.MAX_IOU_DISTANCE, max_age=w.MAX_AGE, n_init=w.N_INIT, nn_budget=w.NN_BUDGET,
@@ -213,7 +219,8 @@ class TrackerStream:
         LOGGER.setLevel(logging.WARNING)
         device = "cpu" if self.opt.device == "cpu" else "cuda:0"
         self.plane_segmentor = YOLO(os.path.join(self.opt.weights_dir, self.opt.plane_seg_weights)).to(device)
-        self.bl_gse_segmentor = YOLO(os.path.join(self.opt.weights_dir, self.opt.bl_gse_seg_weights)).to(device)
+        self.bl_gse_segmentor = (YOLO(os.path.join(self.opt.weights_dir, self.opt.bl_gse_seg_weights)).to(device)
+                                 if wanted & {"beltloader", "gse"} else None)
         ObjectSegmenter.Classwise_buffer_mask = {}  # class-level cache in cv_common: reset per stream
 
         self.fast = None
@@ -270,12 +277,16 @@ class TrackerStream:
         confss_gse = torch.Tensor(g_confs)
 
         def beltloaders():
+            if self.bl_tracker is None:
+                return []
             if bl_xywh is not None and len(bl_xywh):
                 return self.bl_tracker.update(xywhs_beltloaders, confss_beltloaders, im0s)
             self.bl_tracker.increment_ages()
             return []
 
         def workers():
+            if self.workers_tracker is None:
+                return [], []
             if w_xywh is not None and len(w_xywh):
                 out = self.workers_tracker.update(xywhs_workers, confss_workers, im0s)
                 return out, self.workers_tracker.get_tentative_tracks()
@@ -283,6 +294,8 @@ class TrackerStream:
             return [], []
 
         def gse():
+            if self.gse_tracker is None:
+                return []
             if g_xywh is not None and len(g_xywh):
                 return self.gse_tracker.update(xywhs_gse, confss_gse, im0s)
             self.gse_tracker.increment_ages()
@@ -521,7 +534,9 @@ class TrackerStream:
         biggest_doors_xyxy = {"front": front_door_xyxy, "back": back_door_xyxy}
 
         # ------------------------- beltloaders -------------------------
-        if self.grouped is not None:
+        if self.bl_tracker is None:
+            pass
+        elif self.grouped is not None:
             self._beltloaders_grouped(outputs_beltloaders, det, frame_number, img_to_track, bboxes_to_ignore,
                                       beltloader_type, biggest_doors_xyxy, engines_det, back_wheels_det, tracked_data)
         else:
@@ -603,7 +618,9 @@ class TrackerStream:
             tracked_data_tentative.append(Track(worker_id, w_xyxy, "person"))
 
         # ------------------------- GSE -------------------------
-        if self.grouped is not None:
+        if self.gse_tracker is None:
+            pass
+        elif self.grouped is not None:
             self._gse_grouped(outputs_gse, frame_number, img_to_track, bboxes_to_ignore, tracked_data)
         else:
             for *gse_xyxy, gse_id in outputs_gse:
@@ -686,6 +703,7 @@ class TrackerStream:
         return {
             "frames": self.frames_seen,
             "exact_fast": self.opt.exact_fast,
+            "classes": list(self.opt.classes),
             "grouped_lk": self.grouped is not None,
             "grouped_lk_stats": dict(self.grouped_stats),
             "timings_ms_per_frame": self.timings.as_ms_per_frame(),

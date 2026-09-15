@@ -109,7 +109,7 @@ class RealtimeRun:
                     break
                 if rel.arrival is None:  # lost range: placeholder frames, ids kept
                     for fid in range(rel.first_frame_id, rel.first_frame_id + rel.n_frames):
-                        now = time.monotonic()
+                        now = time.perf_counter()
                         frames_q.put(Frame(fid, None, sim.capture_time(fid), None, decode_start_t=now, decoded_t=now,
                                            missing=True))
                     continue
@@ -118,9 +118,9 @@ class RealtimeRun:
                 cap = cv2.VideoCapture(a.path)
                 decoded = 0
                 for fid in range(a.first_frame_id, a.first_frame_id + a.n_frames):
-                    t_start = time.monotonic()
+                    t_start = time.perf_counter()
                     ok, image = cap.read()
-                    t_end = time.monotonic()
+                    t_end = time.perf_counter()
                     if not ok:
                         break
                     decoded += 1
@@ -132,7 +132,7 @@ class RealtimeRun:
                 if decoded != a.n_frames or extra:
                     self.decode_mismatches.append({"chunk": a.index, "manifest": a.n_frames, "decoded": decoded, "extra": extra})
                     for fid in range(a.first_frame_id + decoded, a.first_frame_id + a.n_frames):
-                        now = time.monotonic()
+                        now = time.perf_counter()
                         frames_q.put(Frame(fid, None, sim.capture_time(fid), a.index, closed_t, a.arrived, now, now, True))
         except Exception as e:  # surface decoder failures in the report instead of hanging the run
             self.error = f"decoder: {type(e).__name__}: {e}"
@@ -141,7 +141,7 @@ class RealtimeRun:
 
     def _sample(self, receiver: ChunkReceiver, frames_q: queue.Queue, sim: CameraBoxSim, stop: threading.Event) -> None:
         while not stop.wait(self.sample_s):
-            now = time.monotonic()
+            now = time.perf_counter()
             last = self.frames[-1] if self.frames else None
             self.samples.append({
                 "t": round(now - sim.t0, 3),
@@ -195,16 +195,16 @@ class RealtimeRun:
                 f = frames_q.get()
                 if f is _END:
                     break
-                t_proc = time.monotonic()
+                t_proc = time.perf_counter()
                 outs = self.adapter.on_frame(f)
-                t_done = time.monotonic()
+                t_done = time.perf_counter()
                 self.frames.append({
                     "frame_id": f.frame_id, "chunk": f.chunk_index, "missing": f.missing, "capture_t": f.capture_t,
                     "closed_t": f.closed_t, "arrived_t": f.arrived_t, "decode_start_t": f.decode_start_t,
                     "decoded_t": f.decoded_t, "proc_start_t": t_proc, "done_t": t_done,
                 })
                 emit(outs, t_done)
-            emit(self.adapter.close(), time.monotonic())
+            emit(self.adapter.close(), time.perf_counter())
         except Exception as e:
             self.error = f"module: {type(e).__name__}: {e}"
             sim.stop()

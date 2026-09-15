@@ -12,7 +12,8 @@ What real time does not have is recorded, not hidden:
   * frames the module asks for after they left the look-back window (`lookback_frames`): an error naming the frame.
 The module never gets the video file: `source` points to a path that does not exist, so a module that opens the file behind
 the branch's back fails visibly. Metadata rows per frame come from GM / tracker ndjson files (`inferences_dir`: GM and
-tracker assumed to deliver in step with the frames) or are empty (`metadata="empty"`, for modules that do not read them).
+tracker assumed to deliver in step with the frames), are empty (`metadata="empty"`, for modules that do not read them), or
+are produced by GM + tracker in the loop (`metadata="live"`: `pf.rt.pipeline` hands each frame over with `push`).
 One production module per process: its `main`, `cv_common` and `db_worker` packages are imported by name.
 A `hook` can observe the module's own state without changing it (e.g. `pf.rt.hooks.vests:install`) and emit outputs
 while the session runs.
@@ -252,8 +253,8 @@ class ProductionModuleAdapter(Adapter):
                  cone_camera: bool = True, airplane_type: str | None = None, weights_dir: str = "weights",
                  numpy1_scalars: bool = False, drop_state_keys: str = "", prepend_path=(), lookback_frames: int = 64,
                  work_dir: str | None = None, env: dict | None = None, hook: str | None = None):
-        if metadata not in ("files", "empty"):
-            raise ValueError("metadata must be 'files' or 'empty'")
+        if metadata not in ("files", "empty", "live"):
+            raise ValueError("metadata must be 'files', 'empty' or 'live'")
         self.module, self.name = module, f"prod:{module}"
         self.module_dir = os.path.abspath(module_dir) if module_dir else os.path.join(ROOT, "external", module)
         self.inferences_dir = os.path.abspath(inferences_dir) if inferences_dir else None
@@ -269,6 +270,7 @@ class ProductionModuleAdapter(Adapter):
         self.done = threading.Event()
         self._outbox: queue.Queue = queue.Queue()
         self._gm = self._trk = None
+        self._blank = None
 
     def configure(self, manifest: dict) -> None:
         """Session facts from the chunk manifest (the runner calls this before start)."""
@@ -330,7 +332,7 @@ class ProductionModuleAdapter(Adapter):
         if self.metadata == "files":
             self._gm = io.open(os.path.join(self.inferences_dir, f"general_model{self.video_name}.ndjson"), encoding="utf-8")
             self._trk = io.open(os.path.join(self.inferences_dir, f"trackers{self.video_name}.ndjson"), encoding="utf-8")
-        self._t_start = time.monotonic()
+        self._t_start = time.perf_counter()
         self._thread = threading.Thread(target=self._run, args=(prod.detect, kwargs), name=self.name, daemon=True)
         self._thread.start()
 
@@ -345,7 +347,7 @@ class ProductionModuleAdapter(Adapter):
                 "status": _jsonable(values[0]) if values else None,
                 "report": _jsonable(values[1]) if len(values) > 1 else None,
                 "decided_after_frame": self.feed.requested, "frames_delivered": self.feed.last_id,
-                "session_closed": self.feed.closed, "module_seconds": round(time.monotonic() - self._t_start, 1)}))
+                "session_closed": self.feed.closed, "module_seconds": round(time.perf_counter() - self._t_start, 1)}))
         except Exception as e:
             self._outbox.put(Output("note", "module_error", self.feed.requested or None, {
                 "error": f"{type(e).__name__}: {str(e)[:400]}", "traceback": traceback.format_exc()[-3000:]}))
@@ -372,7 +374,21 @@ class ProductionModuleAdapter(Adapter):
             except queue.Empty:
                 return out
 
+    def push(self, frame_id: int, image, meta: dict) -> list:
+        """metadata='live': one frame with the rows the branch produced for it, in frame order. `image` None = a module that
+        never reads pixels (a shared blank frame is handed over)."""
+        if image is None:
+            if self._blank is None:
+                self._blank = np.zeros((1080, 1920, 3), np.uint8)
+            image = self._blank
+        self.feed.put(frame_id, image, meta)
+        if not self.done.is_set():
+            self.feed.wait_past(frame_id, self.done)
+        return self._drain()
+
     def on_frame(self, frame: Frame) -> list:
+        if self.metadata == "live":
+            raise RuntimeError("metadata='live': the branch hands frames over with push()")
         image = frame.image if not frame.missing else np.zeros((1080, 1920, 3), np.uint8)
         self.feed.put(frame.frame_id, image, self._row())
         if not self.done.is_set():

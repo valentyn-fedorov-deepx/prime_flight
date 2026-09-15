@@ -149,3 +149,26 @@ def test_vests_hook_emits_status_changes_while_the_session_runs(tmp_path, fake_m
     verdict = next(o for o in r.outputs if o["kind"] == "verdict")
     assert alert["emitted_t"] < verdict["emitted_t"]  # the alert left while frames were still arriving
     assert alert["payload"] == {"worker": 7, "from": "zipped", "to": "unzipped", "provisional": True}
+
+
+def test_live_metadata_is_pushed_by_the_branch_in_frame_order(tmp_path, fake_module):
+    # metadata="live": GM + tracker in the loop hand each frame over with its rows (pf.rt.pipeline), no files involved
+    import numpy as np
+
+    from pf.rt.prod_module import ProductionModuleAdapter
+
+    adapter = ProductionModuleAdapter("fake", module_dir=fake_module, metadata="live", device="cpu",
+                                      work_dir=str(tmp_path / "work"))
+    adapter.configure({"video": "src.mp4", "n_frames": 96})
+    adapter.start(8.0)
+    image = np.full((240, 320, 3), 128, np.uint8)
+    outs = []
+    for fid in range(1, 97):
+        outs += adapter.push(fid, image, {"general_model": [[0, 0, 10, 10, 0.9, 0]] * 2, "trackers": []})
+    with pytest.raises(RuntimeError):
+        adapter.on_frame(None)  # frames come through push() only
+    outs += adapter.close()
+    verdict = next(o for o in outs if o.kind == "verdict")
+    assert verdict.payload["status"] == "Pass"
+    assert verdict.payload["report"] == ["48 frames read, 192 rows, total None"]
+    assert verdict.payload["session_closed"] is True
