@@ -16,6 +16,9 @@ of the prod output on real data, (d) how to measure that module accuracy has not
 | `contract_observed.md` + `ndjson_observed.json` + `scripts/inspect_ndjson.py` | real prod ndjson `G:\gat_stages\atlc5_inferences` (7 videos, 5.8 GB) | qa-parity | in-progress |
 | `tracker_current.md` | code of `cv_trackers` + `cv_common` — **no access** (ssh key not in GitLab, https "not found", local clones are gone) | gm-tracker-engineer | **done → review** (389 lines; production bd43c3c covered in §12; note `tasks/notes/PF-Q1-13.md`) |
 | `measurement_plan.md` | baseline: speed (ms/frame per component) + module accuracy (parity of v1↔v2 verdicts on the same videos, fail samples) | Valentyn / qa-parity | draft v1 |
+| `module_compute/` (`pose_person`, `scene_gse`) | read-only audit of the 27 modules' test-set checkouts: models with sha256, calls per frame, pixel work and buffers, passes, lightening candidates with risk class and file:line | module-porter | **done 15.09** — input for PF-Q2-11 |
+| `rt_module_selection.md` | which modules run in real time (groups A / B / C / not in real time) and what that fixes for GM, the tracker, the stage detector and the event context | Valentyn (module-porter) | **done 15.09** — PF-Q2-07, ADR-004 |
+| `alert_label_queue.json` | wave-1 fails of the monthly report to be labelled with violation moments | Valentyn (qa-parity) | **done 15.09** — input for PF-Q2-09 |
 
 ## Data for measurements available locally
 

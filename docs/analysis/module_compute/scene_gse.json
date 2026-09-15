@@ -1,0 +1,4603 @@
+{
+ "_meta": {
+  "generated": "2026-09-15",
+  "scope": "compute inventory per frame of 9 pixel modules (main scope) + confirmation pass on 10 pixel-free modules, on the checkouts of the monthly test set (scripts/testset/profiles.py)",
+  "method": "read-only code audit of each checkout (module code + its cv_common/db_worker copies); weights hashed with sha256 (first 16 hex); .pt/.pth/.keras archives inspected without torch (pickle stubs), ONNX inputs and head shapes read by seeking through the protobuf; nothing was run, nothing on the GPU",
+  "refs": "file:line relative to the module checkout root unless the path starts with G:/ or tasks/",
+  "batch_ms_note": "batch_median_ms_per_recorded_frame = the lead's figures from the monthly test set on a contended machine; early-exiting modules look cheaper per recorded frame than per active frame",
+  "risk_classes": {
+   "EXACT": "outputs expected bit-identical",
+   "NEAR": "small numeric change",
+   "SEMANTIC": "can change verdicts"
+  }
+ },
+ "shared_runtime": {
+  "note": "Verified by the parent on the checkouts' own cv_common/db_worker copies. cv_common/utils/datasets.py sha256 prefix 94e2577e (ac5098d2) in 8 of 9 main-scope checkouts; post-arrival tdv_cone has cv_common c11573b8 (datasets.py 627ddbd1, no get_frame). log_utils.py b6cae17e and db_worker/ML_worker.py 5a2aadf5 in all 9; tracked_object.py d210ae82 / transport.py c03babdc in 8 of 9 (post-arrival 50fd1505 / 95cab326).",
+  "runner": [
+   {
+    "what": "--no-video (stub dataset whose get_im0s raises) is added only when the mp4 is absent; otherwise pixel-free modules get the real LoadImages (VideoCapture opened, CAP_PROP_FRAME_COUNT read, frames decoded only on get_im0s)",
+    "ref": "G:/prime_flight/scripts/testset/orchestrate.py:304-307; G:/prime_flight/scripts/run_module.py:70-76,274"
+   },
+   {
+    "what": "--write-video is never passed, so code under write_video does not run",
+    "ref": "G:/prime_flight/scripts/testset/orchestrate.py:300-317"
+   },
+   {
+    "what": "module stdout/stderr are redirected to a per-step log file: per-frame print() calls are file writes",
+    "ref": "G:/prime_flight/scripts/testset/orchestrate.py:324-330"
+   }
+  ],
+  "frame_access": [
+   {
+    "what": "dataset.get_im0s(n) = get_frame(n)[2]",
+    "ref": "cv_common/utils/datasets.py:279-280"
+   },
+   {
+    "what": "one-frame cache: a second get_im0s of the same frame is free",
+    "ref": "cv_common/utils/datasets.py:239-241"
+   },
+   {
+    "what": "sequential only (assert n >= last frame); frames in between are skipped with cap.grab() (still decoded, not converted)",
+    "ref": "cv_common/utils/datasets.py:247,250-255"
+   },
+   {
+    "what": "cap.read() of the requested frame + print per read",
+    "ref": "cv_common/utils/datasets.py:258,265"
+   },
+   {
+    "what": "letterbox to img_size 1280 (stride 64, auto: 1920x1080 -> 1280x768), HWC->CHW, BGR->RGB, np.ascontiguousarray copy on EVERY get_frame; the result is stored in _loaded_items and never returned by get_im0s",
+    "ref": "cv_common/utils/datasets.py:268-276; cv_common/global_config.yaml:4; cv_common/utils/augmentations.py:94-124 (cv2.resize INTER_LINEAR :120, copyMakeBorder :123)"
+   },
+   {
+    "what": "iteration (walk-arounds): cap.read, print, letterbox, CHW/RGB contiguous copy per frame; the walk-arounds unpack img but never use it",
+    "ref": "ac5098d2 cv_common/utils/datasets.py:197-233; c11573b8 (post-arrival) :193-229; post-arrival main.py:68; pre-departure main.py:79"
+   },
+   {
+    "what": "session length read at open: nframes = CAP_PROP_FRAME_COUNT; VideoWorker.number_of_frames",
+    "ref": "cv_common/utils/datasets.py:285; db_worker/ML_worker.py:235-237"
+   }
+  ],
+  "json_logger": [
+   {
+    "what": "the test-set runner passes filename None; JsonLogger opens None.ndjson for writing in the module folder (cwd = checkout)",
+    "ref": "cv_common/log_utils.py:31; G:/prime_flight/scripts/run_module.py:231,284"
+   },
+   {
+    "what": "update(): state_dict -> list parse, default colour lookup, per-frame defaultdict; when the frame id changes, the previous frame is serialised with ndjson.writer(NpEncoder) and written",
+    "ref": "cv_common/log_utils.py:90-123,85-88"
+   },
+   {
+    "what": "save() writes the last frame and closes the file",
+    "ref": "cv_common/log_utils.py:125-137"
+   }
+  ],
+  "metadata": [
+   {
+    "what": "load_metadata() = generator over ndjson.reader of the tracker and GM files, zipped per line: one json parse of a GM line and one of a tracker line per frame; two-pass modules call it twice and parse everything twice",
+    "ref": "db_worker/ML_worker.py:240-248,257-280"
+   },
+   {
+    "what": "size of that parse: the production-pin tracker file of zHxIAF2vUGxJ is 287 078 694 bytes (LF) for 17 280 lines, i.e. about 16.6 KB of JSON per frame",
+    "ref": "tasks/notes/PF-Q1-18.md:66-72"
+   }
+  ],
+  "track_restore": [
+   {
+    "what": "Track().from_json = __dict__.update (cheap)",
+    "ref": "cv_common/track.py:19-21"
+   },
+   {
+    "what": "TrackedObject.from_state_dict: dict copy, np.array() of every to_numpy key (_p0, _st: up to the tracker's optical-flow point set), Status() of to_status keys",
+    "ref": "cv_common/tracked_object.py:604-616"
+   },
+   {
+    "what": "Airplane.from_state_dict and Vehicle.from_state_dict copy the dict again before calling the base",
+    "ref": "cv_common/transport.py:129-144,200-208"
+   }
+  ],
+  "candidates": [
+   {
+    "risk": "EXACT",
+    "what": "get_im0s/iteration without the letterbox and CHW/RGB copy (no module in scope reads the letterboxed img)",
+    "removes": "one resize to 1280x768 + border + one contiguous 1280x768x3 copy + one print per decoded frame, for every pixel module",
+    "refs": [
+     "cv_common/utils/datasets.py:268-272,227-231,265,217"
+    ]
+   },
+   {
+    "risk": "EXACT",
+    "what": "in the RT branch, frames come from the receiver's single decode and parsed contract objects replace the per-module ndjson parse",
+    "removes": "per-module JSON parse of ~16.6 KB tracker line + GM line per frame; the second parse in two-pass modules",
+    "refs": [
+     "db_worker/ML_worker.py:240-280"
+    ]
+   },
+   {
+    "risk": "EXACT (verdict) / product decision",
+    "what": "null JsonLogger when the per-frame overlay ndjson is not needed",
+    "removes": "per-frame dict building, NpEncoder serialisation and file write to None.ndjson",
+    "refs": [
+     "cv_common/log_utils.py:31,85-123"
+    ]
+   },
+   {
+    "risk": "EXACT",
+    "what": "restore each track once per frame in a shared adapter (or only the classes a module reads)",
+    "removes": "repeated dict copies and np.array conversions of _p0/_st per module per track",
+    "refs": [
+     "cv_common/tracked_object.py:604-616",
+     "cv_common/transport.py:130,201"
+    ]
+   }
+  ],
+  "rt_adapter": [
+   {
+    "cost": "discarded 1280x768 letterbox + CHW/RGB contiguous copy on every frame read",
+    "batch_ref": "cv_common/utils/datasets.py:268-272 (get_frame), :227-231 (iteration)",
+    "rt": "still done: LiveDataset._items calls the same cv_common letterbox with img_size 1280 and builds the CHW copy for every get_frame and every iterated frame",
+    "rt_ref": "G:/prime_flight/pf/rt/prod_module.py:168-171, 177-183, 185-196, 315-316"
+   },
+   {
+    "cost": "per-frame print",
+    "batch_ref": "cv_common/utils/datasets.py:265 (get_frame), :217 (iteration); module prints",
+    "rt": "the dataset print is gone (LiveDataset has no print); module-level prints still run on the adapter thread",
+    "rt_ref": "G:/prime_flight/pf/rt/prod_module.py:151-202"
+   },
+   {
+    "cost": "JSON parse of one GM line and one ~16.6 KB tracker line per frame (twice in two-pass modules)",
+    "batch_ref": "db_worker/ML_worker.py:240-248, 257-280",
+    "rt": "still one json.loads of the GM line and the tracker line per frame per module process (each adapter opens its own ndjson files). LiveFeed.meta pops each row, so a second load_metadata() from frame 1 (aircraft-chocks pass 2, safety-zone pass 2) hits an already-popped row: the second parse cannot happen and the module fails instead",
+    "rt_ref": "G:/prime_flight/pf/rt/prod_module.py:106-113, 215-225, 330-332, 360-365"
+   },
+   {
+    "cost": "state_dict copy + np.array/Status conversion on every restore",
+    "batch_ref": "cv_common/tracked_object.py:604-616; cv_common/transport.py:129-144, 200-208",
+    "rt": "unchanged: the adapter hands the parsed dicts to the unchanged module and its cv_common copy",
+    "rt_ref": "G:/prime_flight/pf/rt/prod_module.py:360-377"
+   },
+   {
+    "cost": "None.ndjson written into the module checkout",
+    "batch_ref": "cv_common/log_utils.py:31; G:/prime_flight/scripts/run_module.py:231, 284",
+    "rt": "unchanged: the adapter also passes JsonLogger(..., None) after chdir into the module folder",
+    "rt_ref": "G:/prime_flight/pf/rt/prod_module.py:286, 324"
+   }
+  ],
+  "pixel_free_frame_reads": "none of the 10 pixel-free modules decodes a frame in the test set: every get_im0s is under write_video. With the mp4 present, load_source still opens cv2.VideoCapture and reads CAP_PROP_FRAME_COUNT. dataset.nframes is read per frame in all-cargo (print), chocks-and-cones (print), cones-placed (print + decision) and pushback-does-not-start (print + decision)."
+ },
+ "model_identity": [
+  {
+   "question": "handrails-on-gse and safety-handrails: same EfficientNetB0 handrail classifier on the same crop?",
+   "answer": "Same model and same preprocessing code; same crop formula; different BL selection and cadence.",
+   "weights": {
+    "file": "efficientNetb0_300_epoch_general_classifier_dataset_safety_handrails_v3_26_09_2023.pth",
+    "sha256_16": "31aae690e256c54b",
+    "bytes": 16388351,
+    "identical_in": [
+     "handrails-on-gse-being-used@per_component_improvement",
+     "safety-handrails-fully-extended"
+    ]
+   },
+   "code": {
+    "file": "handrails local_models/efficientnet.py == safety-handrails efficientnet.py",
+    "sha256_16": "234cddf0d1645d31"
+   },
+   "architecture": "torchvision efficientnet_b0, classifier[1] = Linear(1280, 2); 360 tensors, 4 052 175 params, float32 storage (efficientnet.py:29-37)",
+   "preprocessing": "RGB crop (cv2.cvtColor BGR2RGB of the full frame, then slice) -> ToPILImage -> Resize((224,224)) (PIL bilinear) -> ToTensor (/255, CHW) -> Normalize ImageNet mean/std; batch 1, fp32; argmax of softmax (efficientnet.py:20-27,39-48)",
+   "crop": "BL box with top raised by int(0.3*h): safety-handrails main.py:77 (no clamp), handrails main.py:149-150 (clamped to >= 0); slice safety-handrails main.py:279-280, handrails main.py:1061-1062",
+   "differences": [
+    "BL choice: both start from tracker bl_type front/back; safety-handrails adds a cone-camera rear-wheel filter and has no fallbacks (main.py:235-248); handrails has no rear-wheel filter but, only when no BL of that type exists, falls back to a wing engine/back-wheel rule, a wing enface-below-back-door rule and a cone front-door alignment rule (main.py:987-1028); both take the largest box (safety-handrails main.py:248, handrails main.py:1043)",
+    "cadence: safety-handrails classifies only when frame_number % 8 == 0 and holds the label (main.py:283-285); handrails classifies every frame with a stopped active BL (main.py:1065)",
+    "negative top: handrails clamps, safety-handrails slices with a negative start"
+   ],
+   "sharing": "EXACT as a memoised call keyed by (frame_id, crop box): identical inputs give identical outputs; on frames % 8 == 0 with the same BL and a non-negative top, safety-handrails' call is a duplicate of handrails' call"
+  },
+  {
+   "question": "aircraft-chocks and gse-chocks: same effnetb0 difference classifier?",
+   "answer": "Same architecture and transform code, different weights and different input formation: not shareable without changing outputs.",
+   "weights": [
+    {
+     "module": "aircraft-chocks",
+     "file": "effnetb0_ext_fix_993.pt",
+     "sha256_16": "8211b62aa9c367aa",
+     "bytes": 16331050
+    },
+    {
+     "module": "gse-chocks@per_component_improvement",
+     "file": "effnetb0_small_clean_64_960.pt",
+     "sha256_16": "e6453d73c4e59538",
+     "bytes": 16328049
+    }
+   ],
+   "architecture": "timm efficientnet_b0 num_classes=1 (aircraft main.py:1228-1229; gse main.py:1624-1625); both state dicts 360 tensors, 4 050 894 params, 3-channel stem, float32",
+   "preprocessing_common": "grey crops of the stop-time and current frame around the wheel box (+search_padding) resized to 512x256 INTER_AREA; template = central part; cv2.matchTemplate; input image = stack(clip(match - template + 127), template, match) -> PIL RGB -> Resize(224,224) -> ToTensor -> Normalize ImageNet; sigmoid >= 0.5 (aircraft complex_difference.py:21-34,52-56,74-80,122-133; gse complex_difference.py:21-34,54-58,79-85,127-138)",
+   "differences": [
+    "gse restricts template and search to the bottom 20 % of the crop (gse complex_difference.py:45-46,48,51); aircraft matches the whole template (aircraft :41,46,49)",
+    "gse returns None without classifying when the match score < not_observed_diff_thresh (gse :144-145); in aircraft that check is commented out (aircraft :139-140)",
+    "simple_difference.test_env_static: TM_CCORR_NORMED in aircraft (:35) vs TM_CCOEFF_NORMED in gse (:35)"
+   ],
+   "sharing": "SEMANTIC (one set of weights for both, or one input rule for both, changes outputs); EXACT only inside each module (batching wheel crops of one frame)"
+  },
+  {
+   "question": "Pose models: handrails-on-gse (DWpose) vs gse-chocks (rtmpose-l)",
+   "handrails": {
+    "file": "dw-ll_ucoco_384.onnx",
+    "sha256_16": "724f4ff2439ed61a",
+    "bytes": 134399116,
+    "onnx": "opset 11, input 'input' [batch,3,384,288] float32, outputs simcc_x/simcc_y, head.final_layer [133,1024,7,7] -> 133 COCO-WholeBody keypoints (DWPose-l, RTMCC/SimCC head)",
+    "load": "main.py:842 DWposeDetector(weights/dw-ll_ucoco_384.onnx); config local_config.yaml:5"
+   },
+   "gse_chocks": {
+    "file": "rtmpose-l-4dba18fc.onnx",
+    "sha256_16": "cff059fd58a2c0d5",
+    "bytes": 110596989,
+    "onnx": "opset 11, input [batch,3,256,192] float32, outputs simcc_x (384 bins) / simcc_y (512 bins), head.final_layer [17,1024,7,7] -> 17 body keypoints (RTMPose-l)",
+    "load": "local_config.yaml:5 onnx_pose_checkpoint; onnx_model_utils.py:111-123 build_session"
+   },
+   "sharing": "Different weights, input size and keypoint set: not interchangeable. Replacing either with the other is SEMANTIC (handrails needs hand keypoints)."
+  },
+  {
+   "question": "Other identical files",
+   "items": [
+    {
+     "file": "mobile_sam.pt",
+     "sha256_16": "6dbb90523a35330f",
+     "bytes": 40728226,
+     "in": [
+      "safety-zone-confirmed-clear",
+      "post-arrival@tdv_cone",
+      "pre-departure@tdv_cone"
+     ],
+     "content": "MobileSAM state dict (TinyViT image encoder), 439 tensors, 10 140 231 params, float32"
+    },
+    {
+     "file": "best_acc.keras",
+     "sha256_16": "9b2df8cb8edd8bfe",
+     "bytes": 44254701,
+     "in": [
+      "post-arrival@tdv_cone",
+      "pre-departure@tdv_cone"
+     ],
+     "content": "Keras 2.15 Sequential, 47 layers (10 Conv2D/BN/Activation, 5 MaxPool, 4 Dense), input 224x224x3, sigmoid output"
+    },
+    {
+     "file": "depth_anything_v2_metric_vkitti_vitb.pth",
+     "sha256_16": "4dad67a7cc10b462",
+     "bytes": 389964656,
+     "in": [
+      "post-arrival@tdv_cone",
+      "pre-departure@tdv_cone"
+     ],
+     "content": "Depth Anything V2 metric ViT-B (DINOv2 + DPT), 239 tensors, 97 470 785 params, pos_embed 1370 tokens (518 px at patch 14), float32"
+    },
+    {
+     "file": "sam_vit_b_01ec64.pth",
+     "sha256_16": "ec2df62732614e57",
+     "bytes": 375042383,
+     "in": [
+      "post-arrival@tdv_cone",
+      "pre-departure@tdv_cone"
+     ],
+     "content": "SAM ViT-B state dict, 314 tensors, 93 735 728 params, float32"
+    },
+    {
+     "file": "yolov8m-pose.pt",
+     "sha256_16": "2d0c64408d6b4015",
+     "bytes": 53262566,
+     "in": [
+      "post-arrival@tdv_cone",
+      "pre-departure@tdv_cone"
+     ],
+     "content": "ultralytics 8.0.77 PoseModel, kpt_shape [17,3], train imgsz 640, FP16 storage (26 516 805 params)"
+    }
+   ]
+  }
+ ],
+ "other_weights": [
+  {
+   "module": "handrails",
+   "file": "safety_handrails_mit_b0_best_model_293_epoch_30_10_2023.pth",
+   "sha256_16": "13c5f321659ee6f3",
+   "bytes": 22335205,
+   "content": "pickled segmentation_models_pytorch Unet, MiT-B0 encoder, 1-class head, 5 551 483 params, float32"
+  },
+  {
+   "module": "handrails",
+   "file": "effnetb0_weighted_norm_aug_929.pt",
+   "sha256_16": "7fc4e4fdf8db0d4d",
+   "bytes": 16360702,
+   "content": "state dict base_model.* (timm efficientnet_b0 layout) + batch_norm + fc [1,1280], 4 056 015 params"
+  },
+  {
+   "module": "conditioned-air@new_logic",
+   "file": "best28_full.onnx",
+   "sha256_16": "47c42e531ab78f47",
+   "bytes": 12555697,
+   "content": "opset 17, input images [1,3,1088,1088], output0 [1,5,24276] (single-class YOLOv8-style detection head)"
+  },
+  {
+   "module": "conditioned-air@new_logic",
+   "file": "yolo11s_seg-det_ac_tr18_noalb.pt",
+   "sha256_16": "1a24fb38ea03ae4f",
+   "bytes": 20582638,
+   "content": "ultralytics 8.3.229 SegmentationModel yolo11s-seg, nc 1, train imgsz 992, FP16 storage"
+  },
+  {
+   "module": "post-arrival@tdv_cone",
+   "file": "best_model.pth",
+   "sha256_16": "480c6f871f125e8c",
+   "bytes": 14718882,
+   "content": "small CNN state dict (features.0.0 [8,3,3,3] ... classifier.9 [1,128]), 3 673 171 params"
+  }
+ ],
+ "modules": [
+  {
+   "module": "handrails-on-gse-being-used",
+   "checkout": "external/_branches/handrails-on-gse-being-used@per_component_improvement",
+   "checkout_source": "per_component_improvement@f2c4793",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/handrails-on-gse-being-used@per_component_improvement",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "31",
+   "entry": "main.py:826 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None, debug=False)",
+   "versions": "branch export per_component_improvement@f2c4793; cv_common pin 33c188d0 not in the local archive, substituted with ac5098d2 (cv_common/SUBSTITUTED_PIN.txt); db_worker 5a4aa83d",
+   "audit_source": "parent read of the checkout; a subagent audit returned only its tail (caveats consistent with this record)",
+   "config": [
+    {
+     "key": "classifier_model / segmentation_model / pose_estimation_model / hand_classifier_model",
+     "value": "efficientNetb0_300_epoch_...v3_26_09_2023.pth / safety_handrails_mit_b0_best_model_293_epoch_30_10_2023.pth / dw-ll_ucoco_384.onnx / effnetb0_weighted_norm_aug_929.pt",
+     "ref": "local_config.yaml:3-6"
+    },
+    {
+     "key": "departure_bbox_change",
+     "value": "0.18 (aircraft box shrink that confirms departure)",
+     "ref": "local_config.yaml:9; main.py:934-938"
+    },
+    {
+     "key": "blind check storage",
+     "value": "deque(maxlen=20) = 2.5 s at 8 fps",
+     "ref": "main.py:870, 667"
+    },
+    {
+     "key": "climber box expansion",
+     "value": "x +-0.5*w, y +-0.2*h, clipped to 1920x1080",
+     "ref": "main.py:414-420"
+    },
+    {
+     "key": "coverage thresholds",
+     "value": "fail > 0.3 (0.4 left side), pass > 0.25",
+     "ref": "main.py:623-627"
+    },
+    {
+     "key": "departure bbox windows",
+     "value": "3*fps boxes at start and end of movement",
+     "ref": "main.py:33-34, 917-922"
+    }
+   ],
+   "models": [
+    {
+     "name": "EfficientNetB0 handrail-extension classifier",
+     "weights_in_code": "EfficientNetB0(model_name=config['classifier_model'], weights_dir=weights_dir) -> torch.load(os.path.join(weights_dir, model_name))",
+     "weights_file": "weights/efficientNetb0_300_epoch_general_classifier_dataset_safety_handrails_v3_26_09_2023.pth",
+     "framework": "torch / torchvision",
+     "architecture": "torchvision efficientnet_b0(weights=None), classifier[1] = Linear(1280, 2), classes ['extended','not_extended']; 4 052 175 params, float32",
+     "loaded_at": "main.py:838-839; local_models/efficientnet.py:15-37",
+     "called_at": [
+      "main.py:1065",
+      "local_models/efficientnet.py:39-48"
+     ],
+     "input": {
+      "size": "224x224",
+      "crop_rule": "active beltloader box (tracker xyxy) with the top raised by int(0.3*h) and clamped to >= 0 (main.py:149-150), sliced from the full-frame RGB conversion (main.py:1059-1062)",
+      "padding": "none",
+      "resize": "torchvision Resize((224,224)) on PIL (bilinear, antialias)",
+      "normalization": "ToTensor (/255) + ImageNet mean/std",
+      "colour_order": "RGB (cvtColor BGR2RGB of the whole frame, main.py:1061)",
+      "layout_dtype": "uint8 HWC -> PIL -> float32 CHW, batch 1"
+     },
+     "preprocessing_excerpt": [
+      "main.py:149-150  self.xyxy[1] -= int(0.3 * get_hw(self.xyxy)[0]); self.xyxy[1] = max(self.xyxy[1], 0)",
+      "main.py:1061-1062  rgb_im0s = cv2.cvtColor(im0s, cv2.COLOR_BGR2RGB); beltloader_rgb_img = rgb_im0s[bl_y1:bl_y2, bl_x1:bl_x2, :]",
+      "local_models/efficientnet.py:20-27  Normalize(ImageNet); Compose([ToPILImage(), Resize((224, 224)), ToTensor(), normalize])"
+     ],
+     "device": "cuda:0 if available (main.py:828; the device argument is ignored)",
+     "precision": "fp32",
+     "batch": "1",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every frame inside the window (no subsampling)",
+      "condition": "aircraft arrived and not confirmed departed (main.py:928-941), an active beltloader exists (tracker bl_type of the camera side, else wing engine/back-wheel, wing enface-under-back-door or cone front-door fallbacks, main.py:987-1041), the largest active BL is stopped (main.py:1051-1056)",
+      "calls_per_frame_in_window": "1",
+      "batched_within_frame": "n/a",
+      "caching": "none",
+      "refs": [
+       "main.py:928-941",
+       "main.py:987-1056",
+       "main.py:1065"
+      ]
+     },
+     "sha256_16": "31aae690e256c54b",
+     "bytes": 16388351
+    },
+    {
+     "name": "SegFormer-style handrail segmentation (smp Unet, MiT-B0 encoder)",
+     "weights_in_code": "MixVisionTransformer(model_name=config['segmentation_model'], weights_dir=weights_dir) -> torch.load(full pickled model)",
+     "weights_file": "weights/safety_handrails_mit_b0_best_model_293_epoch_30_10_2023.pth",
+     "framework": "torch + segmentation_models_pytorch (pickled segmentation_models_pytorch.decoders.unet.model.Unet; loads only with TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1, G:/prime_flight/scripts/testset/profiles.py:73)",
+     "architecture": "smp Unet, encoder mit_b0, 1-class head; 5 551 483 params, float32",
+     "loaded_at": "main.py:840-841; local_models/mix_vision_transformer.py:15-29",
+     "called_at": [
+      "main.py:1074",
+      "local_models/mix_vision_transformer.py:40-54"
+     ],
+     "input": {
+      "size": "320x256 (WxH)",
+      "crop_rule": "the same RGB beltloader crop as the classifier",
+      "padding": "none (aspect not kept)",
+      "resize": "cv2.resize INTER_AREA to (320,256); mask resized back to crop size INTER_AREA",
+      "normalization": "smp get_preprocessing_fn('mit_b0','imagenet'): /255 + ImageNet mean/std",
+      "colour_order": "RGB",
+      "layout_dtype": "HWC -> CHW float32, batch 1"
+     },
+     "preprocessing_excerpt": [
+      "local_models/mix_vision_transformer.py:19-21  preprocessing_fn = smp.encoders.get_preprocessing_fn(self._encoder, self._encoder_weights)",
+      "local_models/mix_vision_transformer.py:41-44  dim = (320, 256); image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA); image = self.model_preprocessing(image)",
+      "local_models/mix_vision_transformer.py:49-53  mask = self._model.predict(image); mask = (mask.squeeze().cpu().numpy().round() * 255).astype(np.uint8); cv2.resize(mask, orig_image.shape[:2][::-1], INTER_AREA)"
+     ],
+     "device": "cuda:0 if available (map_location=device)",
+     "precision": "fp32",
+     "batch": "1",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every window frame where the classifier said 'extended'",
+      "condition": "beltloader.extended (main.py:1074)",
+      "calls_per_frame_in_window": "0 or 1",
+      "batched_within_frame": "n/a",
+      "caching": "none",
+      "refs": [
+       "main.py:1074-1110"
+      ]
+     },
+     "sha256_16": "13c5f321659ee6f3",
+     "bytes": 22335205
+    },
+    {
+     "name": "DWPose-l whole-body pose (133 keypoints incl. hands)",
+     "weights_in_code": "DWposeDetector(os.path.join(weights_dir, config['pose_estimation_model'])) -> onnxruntime.InferenceSession",
+     "weights_file": "weights/dw-ll_ucoco_384.onnx",
+     "framework": "onnxruntime (providers ['CUDAExecutionProvider'] only, device hard-coded 'cuda:0')",
+     "architecture": "RTMPose/SimCC head, head.final_layer [133,1024,7,7]; ONNX opset 11, input [batch,3,384,288]; the YOLOX person detector of DWPose is commented out: the whole crop is the box",
+     "loaded_at": "main.py:842; local_models/dwpose/__init__.py:32-35; local_models/dwpose/wholebody.py:9-19",
+     "called_at": [
+      "main.py:1212",
+      "main.py:423-427",
+      "local_models/dwpose/wholebody.py:21-26",
+      "local_models/dwpose/onnxpose.py:353-358"
+     ],
+     "input": {
+      "size": "288x384 (WxH)",
+      "crop_rule": "tracker person box expanded +-0.5*w and +-0.2*h, clipped (main.py:414-420), sliced from the BGR frame (main.py:426)",
+      "padding": "top-down affine with bbox padding 1.25 (local_models/dwpose/onnxpose.py:35), border 0",
+      "resize": "cv2.warpAffine INTER_LINEAR (local_models/dwpose/onnxpose.py:38, 283)",
+      "normalization": "(x - [123.675,116.28,103.53]) / [58.395,57.12,57.375] (local_models/dwpose/onnxpose.py:41-43); before that BGR->YUV, equalizeHist(Y), YUV->BGR and a copy (local_models/dwpose/__init__.py:37-46)",
+      "colour_order": "BGR data with RGB-ordered mean/std (no channel flip found)",
+      "layout_dtype": "HWC float -> CHW (local_models/dwpose/onnxpose.py:65), batch 1"
+     },
+     "preprocessing_excerpt": [
+      "main.py:416-419  x1 = int(max(x1-climber_w*0.5, 0)); y1 = int(max(y1-climber_h*0.2, 0)); x2 = int(min(x2+climber_w*0.5, config['width'])); y2 = int(min(y2+climber_h*0.2, config['height']))",
+      "local_models/dwpose/__init__.py:38-42  image_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV); image_yuv[:, :, 0] = cv2.equalizeHist(image_yuv[:, :, 0]); cv2.cvtColor(image_yuv, cv2.COLOR_YUV2BGR)",
+      "local_models/dwpose/wholebody.py:24-25  height, width = oriImg.shape[:2]; det_result = [[0, 0, width, height]]",
+      "local_models/dwpose/onnxpose.py:35,38  center, scale = bbox_xyxy2cs(bbox, padding=1.25); resized_img, scale = top_down_affine(input_size, scale, center, img)"
+     ],
+     "device": "CUDA EP (local_models/dwpose/wholebody.py:10-12)",
+     "precision": "fp32",
+     "batch": "1 per person",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every window frame, per climber, even when the handrail is not extended (ankle scores gate coverage frames, main.py:436-449, 534-537)",
+      "condition": "same window as the classifier; person tracks inside the beltloader area (main.py:1181-1184)",
+      "calls_per_frame_in_window": "number of person tracks inside the stopped beltloader area",
+      "batched_within_frame": "no (one session run per person; the graph has a dynamic batch axis)",
+      "caching": "none",
+      "refs": [
+       "main.py:1181-1212"
+      ]
+     },
+     "sha256_16": "724f4ff2439ed61a",
+     "bytes": 134399116
+    },
+    {
+     "name": "Hand-contact classifier (blind checks)",
+     "weights_in_code": "EfficientNetB0WithRegularization(); load_state_dict(torch.load(os.path.join(weights_dir, config['hand_classifier_model'])))",
+     "weights_file": "weights/effnetb0_weighted_norm_aug_929.pt",
+     "framework": "torch + timm",
+     "architecture": "timm efficientnet_b0 (num_classes=0, created with pretrained=True) + BatchNorm1d + Dropout + Linear(1280,1); state dict 365 tensors, 4 056 015 params",
+     "loaded_at": "main.py:845-851; local_models/efficientnet_reg.py:11-39",
+     "called_at": [
+      "main.py:636",
+      "main.py:673",
+      "local_models/efficientnet_reg.py:57-64"
+     ],
+     "input": {
+      "size": "224x224",
+      "crop_rule": "square patches of side 2*h (h = int(beltloader.height)//3, or bl_h//5 when < 5) warped with getPerspectiveTransform + warpPerspective from the full BGR frame at points spaced h along the fitted handrail line (main.py:1127-1172)",
+      "padding": "none",
+      "resize": "torchvision Resize((224,224)) on PIL",
+      "normalization": "ToTensor + ImageNet mean/std",
+      "colour_order": "BGR patch data passed through PIL convert('RGB') without a channel swap",
+      "layout_dtype": "stacked NCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "main.py:1169-1170  M = cv2.getPerspectiveTransform(roi.astype(np.float32), dst_points); warped_region = cv2.warpPerspective(im0s, M, dsize=output_size)",
+      "local_models/efficientnet_reg.py:58  image_tensor = torch.stack([cls_transform(Image.fromarray(image).convert('RGB')) for image in images]).to(device)"
+     ],
+     "device": "cuda:0 if available",
+     "precision": "fp32",
+     "batch": "all check points of one stored frame in one forward",
+     "used_for_verdict": true,
+     "dead_load_note": "pretrained=True in the constructor fetches or reads ImageNet timm weights that load_state_dict then overwrites (local_models/efficientnet_reg.py:15; main.py:847-848)",
+     "invocation": {
+      "when": "current check: at most one batched forward per frame (the first climber classifies the newest storage entry and writes the result back; later climbers reuse it). New climber: every stored entry still unclassified (<= 20)",
+      "condition": "extended handrail with a line fit and handrail extents, beltloader not left-side (main.py:1124-1126, 1191-1192, 1233-1235); climber seen in the last 20 frames (main.py:667-668)",
+      "calls_per_frame_in_window": "0-1 current + up to 20 when a climber appears",
+      "batched_within_frame": "yes, per stored frame",
+      "caching": "results cached in blind_check_storage (main.py:654-655, 691-692)",
+      "refs": [
+       "main.py:633-704",
+       "main.py:1124-1178",
+       "main.py:1233-1235"
+      ]
+     },
+     "sha256_16": "7fc4e4fdf8db0d4d",
+     "bytes": 16360702
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "im0s = dataset.get_im0s(frame_number)",
+      "condition": "EVERY recorded frame from frame 1, before the arrival, beltloader and stop gates",
+      "ref": "main.py:882"
+     },
+     {
+      "what": "im0s.copy() for drawing",
+      "condition": "write_video only",
+      "ref": "main.py:884-887"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "full-frame BGR->RGB conversion per window frame; only the beltloader crop is used",
+      "ref": "main.py:1061-1062"
+     },
+     {
+      "what": "update_handrail_mask: full-frame 1920x1080x3 zeros + GRAY2BGR paste of the crop mask, then warpAffine of the whole 3-channel frame to scan 10 rows",
+      "ref": "main.py:295-311, 326-340"
+     },
+     {
+      "what": "analyze_hand_trajectory rebuilds the full-frame global mask when handrail extents are missing",
+      "ref": "main.py:491-498"
+     },
+     {
+      "what": "distanceTransform of the inverted edge map (crop size)",
+      "ref": "main.py:274-276"
+     },
+     {
+      "what": "one warpPerspective of the full frame per handrail check point",
+      "ref": "main.py:1167-1172"
+     },
+     {
+      "what": "DWPose preprocessing per person: YUV round trip + equalizeHist + copy + warpAffine",
+      "ref": "local_models/dwpose/__init__.py:37-46; local_models/dwpose/onnxpose.py:38"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "smp segmentation on the beltloader crop, then Sobel, threshold, HoughLinesP, dilate/erode",
+      "ref": "main.py:1074-1103"
+     },
+     {
+      "what": "no optical flow",
+      "ref": "main.py:826-1280"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "print per frame",
+      "ref": "main.py:875"
+     },
+     {
+      "what": "json_logger: airplane state_dict per frame, beltloader box per window frame, one box per climber per frame, status texts",
+      "ref": "main.py:925, 1068 -> 353, 1230 -> 728, 971-972"
+     },
+     {
+      "what": "cv2.putText on img_to_draw=None per climber frame with an extended handrail",
+      "ref": "main.py:529-531"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "blind_check_storage",
+      "content": "crops",
+      "count": "20 frames x (check points per frame) warped patches",
+      "ref": "main.py:870, 1175"
+     },
+     {
+      "what": "per-climber _coverage_data (frame, person box, BL box, handrail_mask, enface)",
+      "content": "crops",
+      "count": "one BL-crop mask reference per coverage frame per climber for the whole session (climbers_dict is never reset); assess_coverage never reads the mask field",
+      "ref": "main.py:537, 547-620, 869"
+     },
+     {
+      "what": "Airplane._front_door_deque (unbounded deque of boxes; median over all of it on each access)",
+      "content": "other",
+      "count": "one box per frame with a front door, until 5 s without one",
+      "ref": "main.py:31, 36-50, 970, 1012-1014"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "tracks parsed once per frame (good); Airplane.update_inner_state + state_dict logging every frame",
+     "scales_with": "tracks; airplane LK points",
+     "ref": "main.py:893, 911-925"
+    },
+    {
+     "what": "front_door median over the whole deque on access",
+     "scales_with": "front-door history length",
+     "ref": "main.py:46-50, 1012-1014"
+    },
+    {
+     "what": "process_current_blind_checks loop over every climber ever seen",
+     "scales_with": "climbers in the session",
+     "ref": "main.py:1233-1235, 667-668"
+    },
+    {
+     "what": "stair-usage window over right-zone person detections",
+     "scales_with": "person detections",
+     "ref": "main.py:140, 196-262, 1113"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single causal pass; climber touch/coverage state accumulated online",
+    "length_reads": [
+     {
+      "what": "none in the module",
+      "ref": "main.py:826-1280"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "blind checks kept for new climbers",
+      "seconds": "2.5 (20 frames)",
+      "ref": "main.py:870, 667"
+     },
+     {
+      "what": "departure size-change windows",
+      "seconds": "3 + 3",
+      "ref": "main.py:33-34"
+     },
+     {
+      "what": "stair entry re-arm gap",
+      "seconds": "300",
+      "ref": "main.py:1198"
+     }
+    ],
+    "decision_moment": "after the loop: assess_coverage(end_of_video=True) for every climber, then make_inference (the per-frame assess_coverage returns immediately without write_video)",
+    "early_exit": "break when the tracker reports departure AND the aircraft box shrank by > 0.18; otherwise the departure windows are cleared and the loop continues",
+    "refs": [
+     "main.py:934-941",
+     "main.py:541-542",
+     "main.py:1243-1251"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "departure confirmation by aircraft box shrink (start/end deques)",
+     "shared_equivalent": "stage detector T_dep",
+     "ref": "main.py:28-50, 917-941"
+    },
+    {
+     "what": "beltloader-at-door fallbacks when no tracker bl_type matches (engine/back wheel, enface below back door, cone front-door alignment)",
+     "shared_equivalent": "stage detector BL@door / tracker bl_type",
+     "ref": "main.py:987-1028"
+    },
+    {
+     "what": "beltloader view side (left_side, enface) from door geometry",
+     "shared_equivalent": "none",
+     "ref": "main.py:167-190"
+    },
+    {
+     "what": "stair-usage detector from raw person detections",
+     "shared_equivalent": "none",
+     "ref": "main.py:196-262"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Fetch the frame only after the gates (aircraft arrived, active beltloader, beltloader stopped)",
+     "removes": "the retrieve + discarded letterbox/CHW copy on every frame before arrival, without an active beltloader, or with a moving one (batch: those frames are still grabbed)",
+     "refs": [
+      "main.py:882",
+      "main.py:928-1056"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Convert only the beltloader crop to RGB (slice BGR with the clamped box, then cvtColor)",
+     "removes": "one full-frame 1920x1080x3 conversion per window frame",
+     "refs": [
+      "main.py:1061-1062"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Share one memoised handrail classifier call with safety-handrails-fully-extended (byte-identical weights and model code)",
+     "removes": "duplicate EfficientNetB0 forwards on frames where both modules classify the same crop; one model instance",
+     "refs": [
+      "main.py:838-839",
+      "local_models/efficientnet.py:13-48"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Warp a single-channel global mask in update_handrail_mask (the 3 channels are identical and the scan uses np.any over channels)",
+     "removes": "the GRAY2BGR copy and 2 of 3 channels of a full-frame warpAffine per extended window frame",
+     "refs": [
+      "main.py:298-301",
+      "main.py:338-339"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Drop the handrail_mask reference from _coverage_data (assess_coverage reads only boxes and enface)",
+     "removes": "one crop mask kept alive per climber per coverage frame for the whole session",
+     "refs": [
+      "main.py:537",
+      "main.py:547-620"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Construct the hand classifier with pretrained=False (strict load_state_dict replaces every tensor)",
+     "removes": "the ImageNet timm weight fetch or cache read at startup",
+     "refs": [
+      "local_models/efficientnet_reg.py:15",
+      "main.py:847-848"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Cache the front_door median until the deque changes",
+     "removes": "an O(history) np.median per access",
+     "refs": [
+      "main.py:46-50"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove the per-frame print and putText(None) calls",
+     "removes": "stdout/file writes and no-op cv2 calls per frame",
+     "refs": [
+      "main.py:875",
+      "main.py:529-531"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "Batch the DWPose crops of one frame into one session run; TensorRT EP or fp16 for DWPose, the classifier, the segmentation and the hand classifier",
+     "removes": "per-person session runs and host/device copies; fp32 eager inference",
+     "refs": [
+      "main.py:1187-1212",
+      "local_models/dwpose/wholebody.py:10-19"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Classify every 8th frame like safety-handrails (or reuse its held label); subsample pose",
+     "removes": "7 of 8 classifier and segmentation calls; pose calls",
+     "refs": [
+      "main.py:1065",
+      "main.py:1074",
+      "main.py:1212"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Replace the box-shrink departure confirmation and the beltloader fallbacks with stage-detector events",
+     "removes": "departure deques and BL geometry per frame",
+     "refs": [
+      "main.py:28-50",
+      "main.py:917-941",
+      "main.py:987-1028"
+     ]
+    }
+   ],
+   "open_questions": [
+    "DWPose gets BGR pixels normalised with RGB-ordered mean/std after a YUV equalisation; kept as is for exactness, but any shared pose service must reproduce it.",
+    "The timm pretrained=True call needs network or a warm timm cache in an RT image.",
+    "The pickled smp model ties the module to the segmentation_models_pytorch version that pickled it."
+   ]
+  },
+  {
+   "module": "pre-departure-walk-around-completed",
+   "checkout": "external/_branches/pre-departure-walk-around-completed@tdv_cone",
+   "checkout_source": "tdv_cone@e407de2",
+   "testset_profile": {
+    "launcher": [
+     "G:\\prime_flight\\out\\envs\\np1_walkaround\\Scripts\\python.exe",
+     "scripts/run_module.py",
+     "--keras-torch-shim"
+    ],
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/pre-departure-walk-around-completed@tdv_cone",
+    "drop_state_keys": "_moving_counter,_stopped_counter,have_pre_arrival_stage,have_arrival_stage,departure_frame,_height_mode,_bl_type_bbox,_bl_type_frames",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "26",
+   "entry": "main.py:129 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None, cache_folder=None, only_workers=False, debug_cv_common_modules=False) -> main.py:171 process_video -> main.py:79 frame loop -> code/states.py:737 Gate.update",
+   "versions": "branch export tdv_cone@e407de2; cv_common pin d7f907cd substituted with ac5098d2 + cv_common/modules overlay @2759daf; db_worker 6efc0b05 (branch pin); venv out/envs/np1_walkaround with --keras-torch-shim (ultralytics 8.2.48)",
+   "audit_source": "subagent audit, key lines re-read by the parent (main.py; code/states.py:716-760, 1072-1180; code/walk_around/detection_processor.py; code/walk_around/walk_around.py:215-330, 486-500; code/walk_around/gs1737_addons.py:196-232; local_config.yaml)",
+   "config": [
+    {
+     "key": "tdv_model_path",
+     "value": "./weights/best_acc.keras (loaded through keras_torch_shim.KerasCompatModel)",
+     "ref": "local_config.yaml:18; code/walk_around/walk_around.py:490"
+    },
+    {
+     "key": "pre_departure.worker_window_sec",
+     "value": "480",
+     "ref": "local_config.yaml:61; code/states.py:659-661"
+    },
+    {
+     "key": "artifacts.draw_annotations / verbose / write_tdv_debug_artifacts",
+     "value": "True / True / True",
+     "ref": "local_config.yaml:55-58"
+    },
+    {
+     "key": "gs1737.cnn_threshold / outlier_second_pass / outlier_threshold",
+     "value": "0.5 / true / 0.8",
+     "ref": "local_config.yaml:67-69"
+    },
+    {
+     "key": "gs1737.rescue_solo_track",
+     "value": "enabled true, window_back_s 720, target_fps 2.0, imgsz 1280",
+     "ref": "local_config.yaml:72-81"
+    }
+   ],
+   "models": [
+    {
+     "name": "YOLOv8m-pose (worker keypoints, singleton)",
+     "weights_in_code": "./weights/yolov8m-pose.pt (code/walk_around/_pose_model.py:18-22)",
+     "weights_file": "weights/yolov8m-pose.pt",
+     "framework": "ultralytics 8.2.48 (venv)",
+     "architecture": "YOLOv8m-pose, 17 keypoints",
+     "loaded_at": "code/walk_around/_pose_model.py:18-22 via code/walk_around/detection_processor.py:23",
+     "called_at": [
+      "code/walk_around/detection_processor.py:44 (per person crop)",
+      "code/walk_around/temp/plane_tdv_extractor.py:391 (one ROI per TDV build)"
+     ],
+     "input": {
+      "size": "640 long side, rectangular letterbox (single image)",
+      "crop_rule": "tracker person xyxy slice, no margin",
+      "padding": "114 to a multiple of 32",
+      "resize": "INTER_LINEAR",
+      "normalization": "/255",
+      "colour_order": "BGR -> RGB inside ultralytics",
+      "layout_dtype": "BCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/detection_processor.py:41-44  roi = frame[ymin:ymax, xmin:xmax]; results = self.__model(roi)"
+     ],
+     "device": "cuda:0 (ultralytics default)",
+     "precision": "fp32",
+     "batch": "1 crop per call (verbose logging on every call)",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every frame in POST_ARRIVAL, DOWNLOAD and DOWNLOAD_NO_BL, from the aircraft stop to the departure-confirmed frame; the 480 s window is applied only at the decision, so pose runs on all of those frames",
+      "condition": "person tracks present",
+      "calls_per_frame_in_window": "N_person_tracks",
+      "batched_within_frame": "no",
+      "caching": "none",
+      "refs": [
+       "code/states.py:1112, 1131",
+       "code/walk_around/walk_around.py:79-92"
+      ]
+     },
+     "sha256_16": "2d0c64408d6b4015",
+     "bytes": 53262566
+    },
+    {
+     "name": "YOLOv8m-pose rescue re-track (second YOLO instance, BoT-SORT)",
+     "weights_in_code": "rescue pose_weights ./weights/yolov8m-pose.pt",
+     "weights_file": "weights/yolov8m-pose.pt",
+     "framework": "ultralytics 8.2.48 track()",
+     "architecture": "YOLOv8m-pose boxes + BoT-SORT ids",
+     "loaded_at": "code/walk_around/gs1737_addons.py:202-204 (lazy, module-global)",
+     "called_at": [
+      "code/walk_around/gs1737_addons.py:219-220"
+     ],
+     "input": {
+      "size": "imgsz 1280 on full frames",
+      "crop_rule": "full frame from a second cv2.VideoCapture",
+      "padding": "letterbox 114",
+      "resize": "INTER_LINEAR",
+      "normalization": "/255",
+      "colour_order": "BGR -> RGB",
+      "layout_dtype": "BCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/gs1737_addons.py:206-213  cap = cv2.VideoCapture(video_source); start = max(0, int(departure_frame - cfg['window_back_s'] * fps)); stride = max(1, int(round(fps / cfg['target_fps']))); cap.set(cv2.CAP_PROP_POS_FRAMES, start)"
+     ],
+     "device": "cuda:0",
+     "precision": "fp32",
+     "batch": "1 frame",
+     "used_for_verdict": true,
+     "dead_load_note": "duplicate load of the same weights as the singleton",
+     "invocation": {
+      "when": "once per event at the decision, only if the status is still Fail after the CNN and the outlier pass",
+      "condition": "rescue_solo_track.enabled (local_config.yaml:72-81)",
+      "calls_per_frame_in_window": "decodes every frame of [dep - 720 s, dep + forward window]; track() on every 4th frame",
+      "batched_within_frame": "no",
+      "caching": "none",
+      "refs": [
+       "code/walk_around/walk_around.py:539-560",
+       "code/walk_around/gs1737_addons.py:197-232"
+      ]
+     },
+     "sha256_16": "2d0c64408d6b4015",
+     "bytes": 53262566
+    },
+    {
+     "name": "Depth Anything V2 metric ViT-B",
+     "weights_in_code": "weights/depth_anything_v2_metric_vkitti_vitb.pth",
+     "weights_file": "weights/depth_anything_v2_metric_vkitti_vitb.pth",
+     "framework": "torch (vendored depth_anything/)",
+     "architecture": "DINOv2 ViT-B/14 + DPT head",
+     "loaded_at": "code/walk_around/temp/plane_tdv_extractor.py:82-91 (Gate.__init__, code/states.py:722-725)",
+     "called_at": [
+      "code/walk_around/temp/plane_tdv_extractor.py:371 (TDV frame)",
+      "code/walk_around/temp/plane_tdv_extractor.py:175 (queued frames)"
+     ],
+     "input": {
+      "size": "518x924 for 1080p",
+      "crop_rule": "full frame",
+      "padding": "none",
+      "resize": "INTER_CUBIC",
+      "normalization": "/255 + ImageNet",
+      "colour_order": "BGR -> RGB",
+      "layout_dtype": "NCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "depth_anything/dpt.py:216  image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB) / 255.0"
+     ],
+     "device": "cuda if available",
+     "precision": "fp32",
+     "batch": "1",
+     "used_for_verdict": true,
+     "dead_load_note": "loaded at gate construction even when never used",
+     "invocation": {
+      "when": "POST_ARRIVAL frames while airplane_tvd.png is missing or only a silhouette placeholder",
+      "condition": "mask stage succeeded; on a later-stage failure a silhouette is written and SAM + depth repeat on the next POST_ARRIVAL frame",
+      "calls_per_frame_in_window": "<= 8 per attempt",
+      "batched_within_frame": "no",
+      "caching": "none",
+      "refs": [
+       "code/states.py:1080-1101"
+      ]
+     },
+     "sha256_16": "4dad67a7cc10b462",
+     "bytes": 389964656
+    },
+    {
+     "name": "MobileSAM vit_t (TDV masks)",
+     "weights_in_code": "weights/mobile_sam.pt",
+     "weights_file": "weights/mobile_sam.pt",
+     "framework": "torch, mobile_sam",
+     "architecture": "TinyViT encoder + SAM decoder",
+     "loaded_at": "code/walk_around/temp/plane_tdv_extractor.py:93-96",
+     "called_at": [
+      "code/walk_around/temp/plane_tdv_extractor.py:45-52 (set_image + predict per box)"
+     ],
+     "input": {
+      "size": "long side 1024",
+      "crop_rule": "full frame + box prompt",
+      "padding": "zero pad",
+      "resize": "PIL",
+      "normalization": "SAM mean/std",
+      "colour_order": "BGR passed as RGB",
+      "layout_dtype": "float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/temp/plane_tdv_extractor.py:45  predictor.set_image(image)"
+     ],
+     "device": "cuda if available",
+     "precision": "fp32",
+     "batch": "1 box",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "same TDV attempts as depth",
+      "condition": "person gate passed",
+      "calls_per_frame_in_window": "one encoder pass per airplane-part box + 1 person box",
+      "batched_within_frame": "no",
+      "caching": "none",
+      "refs": [
+       "code/walk_around/temp/plane_tdv_extractor.py:301-321"
+      ]
+     },
+     "sha256_16": "6dbb90523a35330f",
+     "bytes": 40728226
+    },
+    {
+     "name": "Walk-around canvas CNN best_acc.keras via torch twin",
+     "weights_in_code": "tf.keras.models.load_model(tdv_model_path) replaced by keras_torch_shim.KerasCompatModel (G:/prime_flight/scripts/run_module.py:151-172)",
+     "weights_file": "weights/best_acc.keras",
+     "framework": "PyTorch twin of a Keras 2.15 Sequential (keras_torch_shim.py:22-141)",
+     "architecture": "VGG-style 10 conv + BN + 5 max-pool + 4 dense, sigmoid; input 224x224x3",
+     "loaded_at": "code/walk_around/walk_around.py:490 (once per event at the decision)",
+     "called_at": [
+      "code/walk_around/walk_around.py:291 (per canvas)",
+      "code/walk_around/walk_around.py:524-525 (outlier pass on Fail)"
+     ],
+     "input": {
+      "size": "224x224",
+      "crop_rule": "rendered trajectory canvas JPEG",
+      "padding": "none",
+      "resize": "cv2.resize 224x224",
+      "normalization": "/255",
+      "colour_order": "BGR -> RGB",
+      "layout_dtype": "NHWC -> NCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/walk_around.py:239-243  img = cv2.imread(image_path); cv2.cvtColor(img, cv2.COLOR_BGR2RGB); cv2.resize(img, (target_size[1], target_size[0])); img / 255.0; np.expand_dims(img, axis=0)",
+      "code/walk_around/walk_around.py:289-291  csv_data = self.load_and_process_csv(csv_path, num_csv_features); probability = model.predict(img, verbose=0)[0][0]"
+     ],
+     "device": "cuda if available",
+     "precision": "fp32",
+     "batch": "1 canvas per call",
+     "used_for_verdict": true,
+     "dead_load_note": "TensorFlow is imported (code/walk_around/walk_around.py:9) but its only use is replaced by the shim",
+     "invocation": {
+      "when": "once per event at the departure-confirmed frame",
+      "condition": "departure confirmed and TDV present",
+      "calls_per_frame_in_window": "one per canvas at the decision (repeated for the outlier pass on Fail)",
+      "batched_within_frame": "no",
+      "caching": "none",
+      "refs": [
+       "code/walk_around/walk_around.py:215-236, 486-531"
+      ]
+     },
+     "sha256_16": "9b2df8cb8edd8bfe",
+     "bytes": 44254701
+    }
+   ],
+   "unused_weight_files": [
+    {
+     "file": "weights/sam_vit_b_01ec64.pth",
+     "evidence": "only sam_model_registry['vit_t'] with mobile_sam.pt is built (code/walk_around/temp/plane_tdv_extractor.py:71, 93); code/walk_around_copy, new_trajectory_estimation, main_test_metric3d_surface.py are not imported on the path",
+     "sha256_16": "ec2df62732614e57",
+     "bytes": 375042383
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "enumerate(dataset): every frame decoded, letterboxed to 1280 (img unused) and printed",
+      "condition": "every frame until the loop breaks after the verdict",
+      "ref": "main.py:79; cv_common/utils/datasets.py:197-233"
+     },
+     {
+      "what": "img_to_draw = im0s.copy() and a timestamp box drawn onto it after gate.update",
+      "condition": "every frame (no writer needed)",
+      "ref": "main.py:91, 104-118"
+     },
+     {
+      "what": "second decoder for the rescue (up to 720 s back from departure)",
+      "condition": "Fail after CNN and outlier pass",
+      "ref": "code/walk_around/gs1737_addons.py:206-232"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "full-frame copy per frame; timestamp overlay per frame; draw_annotations boxes per person/airpart/obstacle",
+      "ref": "main.py:91, 104-118; code/states.py:1138-1157"
+     },
+     {
+      "what": "depth on up to 8 frames and SAM per box per TDV attempt; canvases written/read as JPEG at the decision",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:161-177, 45; code/walk_around/walk_around.py:179, 239-243"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "MobileSAM + depth (TDV attempts); BoT-SORT GMC optical flow in the rescue",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:40-56, 161-177; code/walk_around/gs1737_addons.py:219"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "timestamp overlay and annotation boxes on every frame without a writer",
+      "ref": "main.py:104-118; code/states.py:1138-1157"
+     },
+     {
+      "what": "TDV debug PNGs (write_tdv_debug_artifacts True), tdv_debug.log, verbose prints, ultralytics per-call log lines, phase and pushback prints per frame",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:132-159, 329-368; code/states.py:902"
+     },
+     {
+      "what": "decision exports: CSVs, JPEG canvases, pass copies, report.json",
+      "ref": "code/walk_around/walk_around.py:439-454, 492-505; main.py:179-181"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "plane_movement_queue (the per-frame timestamp overlay is drawn onto these arrays after they are queued, so depth sees it)",
+      "content": "full frames",
+      "count": "<= 7 1080p frames",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:80, 155; main.py:104-118"
+     },
+     {
+      "what": "worker trajectories from POST_ARRIVAL to departure, never pruned",
+      "content": "other",
+      "count": "all person-frames",
+      "ref": "code/walk_around/walk_around.py:79-92"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "Track objects for every tracker record per extraction (up to 3 per frame); detection scans per class",
+     "scales_with": "tracks; detections",
+     "ref": "code/states.py:1105-1110, 1124-1129"
+    },
+    {
+     "what": "departure detector, beltloader presence detector, pushback obstruction detector updates per frame (geometry only)",
+     "scales_with": "detections; history windows",
+     "ref": "code/states.py:652, 1058-1068, 1117, 1136"
+    },
+    {
+     "what": "pose post-processing and trajectory appends per person",
+     "scales_with": "person tracks",
+     "ref": "code/walk_around/detection_processor.py:44-48"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single pass; decision stage (trim to the 480 s window, preprocessing, recombination, canvases, CNN, outlier pass, rescue re-decode on Fail) on the departure-confirmed frame",
+    "length_reads": [
+     {
+      "what": "none in module code; the rescue seeks by frame index in the source video",
+      "ref": "code/walk_around/gs1737_addons.py:207-213"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "worker window before departure start",
+      "seconds": "480",
+      "ref": "local_config.yaml:61; code/states.py:810-819"
+     },
+     {
+      "what": "rescue re-track window",
+      "seconds": "720 back",
+      "ref": "local_config.yaml:76"
+     },
+     {
+      "what": "departure confirmation after movement start",
+      "seconds": "30",
+      "ref": "cv_common/modules/plane_departure_detector.py:123-130"
+     }
+    ],
+    "decision_moment": "departure-confirmed frame (PlaneDepartureDetector), or gate.finish() after the last frame (Not observed)",
+    "early_exit": "loop breaks after the verdict; without a confirmed departure the whole video is consumed",
+    "refs": [
+     "main.py:88-89, 123-124",
+     "code/states.py:779-821"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "own six-phase stage machine, departure detector (8 s moving + 30 s + bbox shrink), beltloader presence, pushback obstruction",
+     "shared_equivalent": "stage detector T_arr/T_dep, BL@door/BL leave, pushback_attached",
+     "ref": "code/states.py:597-1006; cv_common/modules/plane_departure_detector.py; code/walk_around/pushback_obstruction_detector.py"
+    },
+    {
+     "what": "worker ground position; trajectory split/recombination; second person tracker (BoT-SORT) in the rescue",
+     "shared_equivalent": "shared ground coordinates (none); shared tracker person tracks",
+     "ref": "code/walk_around/distance_estimator.py; code/walk_around/preprocessing; code/walk_around/gs1737_addons.py:197-232"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Drop the per-frame copy, timestamp drawing and annotation boxes when there is no writer, but still draw the timestamp overlay on frames that enter plane_movement_queue (the depth model sees it)",
+     "removes": "one 6.2 MB copy and overlay rendering per frame",
+     "refs": [
+      "main.py:91, 104-118",
+      "code/states.py:1138-1157",
+      "code/walk_around/temp/plane_tdv_extractor.py:155"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "SAM: set_image once per attempt frame, predict per box",
+     "removes": "(n_boxes - 1) encoder passes per TDV attempt",
+     "refs": [
+      "code/walk_around/temp/plane_tdv_extractor.py:45, 302-316"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove the unused per-canvas CSV parse in predict_image_with_csv; keep canvases in memory with an identical JPEG encode/decode",
+     "removes": "a pandas parse and a file write/read per canvas",
+     "refs": [
+      "code/walk_around/walk_around.py:287-291",
+      "code/walk_around/walk_around.py:179, 239"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Drop verdict-unused debug output (TDV PNGs, verbose/phase prints, ultralytics verbose); load depth and SAM lazily; remove import tensorflow; reuse the loaded pose weights for the rescue in an isolated predictor",
+     "removes": "PNG writes per buffered frame, stdout per frame/crop, idle 390 + 41 MB loads, the TF import, a second 53 MB load",
+     "refs": [
+      "code/walk_around/temp/plane_tdv_extractor.py:132-159",
+      "code/states.py:902",
+      "code/walk_around/walk_around.py:9",
+      "code/walk_around/gs1737_addons.py:202-204"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Post branch: metadata-only prepass for phases and departure, then pose only on [window_start, departure_start]; real time: prune trajectory points older than 480 s",
+     "removes": "pose calls outside the window (post branch); unbounded trajectory memory (RT)",
+     "refs": [
+      "code/states.py:810-819",
+      "code/walk_around/walk_around.py:79-92"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove never-loaded sam_vit_b_01ec64.pth",
+     "removes": "375 MB file",
+     "refs": [
+      "code/walk_around/temp/plane_tdv_extractor.py:71, 93"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "Batch pose crops per frame (switches to a square letterbox when crop shapes differ); fp16/TensorRT for pose, depth, SAM, CNN",
+     "removes": "per-crop calls; fp32 compute",
+     "refs": [
+      "code/walk_around/detection_processor.py:36-48"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Replace the rescue re-decode with shared GM+tracker person tracks; subsample pose; stage-detector anchors; shared identities instead of recombination",
+     "removes": "up to ~6000 decodes and ~1500 full-frame pose-track calls on Fail; most pose calls; phase machine; O(n^2) recombination",
+     "refs": [
+      "code/walk_around/gs1737_addons.py:197-232",
+      "code/walk_around/detection_processor.py:44",
+      "code/states.py:597-1006"
+     ]
+    }
+   ],
+   "open_questions": [
+    "The timestamp overlay is burned into the buffered TDV frames (main.py:104-118 after code/walk_around/temp/plane_tdv_extractor.py:155): keep for parity or decide to drop it.",
+    "The rescue needs up to 750 s of past frames: not available in the RT branch without a trigger-change or the post branch.",
+    "Recombination BFS wall-clock cap (code/walk_around/preprocessing/recombination.py) makes results load-dependent if hit."
+   ]
+  },
+  {
+   "module": "safety-zone-confirmed-clear",
+   "checkout": "external/safety-zone-confirmed-clear",
+   "checkout_source": "default@91676a5",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": true,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "10",
+   "entry": "main.py:831 detect(source, output_path, device, video_worker=None, write_video=False, weights_dir='', cone_camera=False, json_logger=None)",
+   "versions": "default branch 91676a55; cv_common pin dd5b5547 substituted with ac5098d2; db_worker 5a4aa83d; NumPy-1 scalar shim (main.py:552 float() of cv2.fitLine rows)",
+   "audit_source": "subagent audit, key lines re-read by the parent (main.py:846-1450; cv_common/tracked_object.py:98-196, 365-403)",
+   "config": [
+    {
+     "key": "l_th_sec / fit_traj_sec",
+     "value": "120 s window / 15 s wheel line fit",
+     "ref": "main.py:851-852, 1010"
+    },
+    {
+     "key": "analysis tail skip",
+     "value": "from max(1, trajectory_start - 5 s, stop_frame - 30 s)",
+     "ref": "main.py:969-976"
+    },
+    {
+     "key": "full_frame_obstacled",
+     "value": "w > 600, h > 400, centre x < 0.75*width",
+     "ref": "local_config.yaml:3-6"
+    },
+    {
+     "key": "zone.intersect_thresh",
+     "value": "0.3",
+     "ref": "local_config.yaml:11-12"
+    },
+    {
+     "key": "norfair Tracker",
+     "value": "iou_distance, distance_threshold 0.8, initialization_delay 8",
+     "ref": "main.py:990-994"
+    },
+    {
+     "key": "vehicle TrackedObject params",
+     "value": "tracking.beltloader.tracked_object for every class (init_dots_lifetime 10 -> SAM re-seed every 10 LK updates)",
+     "ref": "main.py:1420-1423; cv_common/global_config.yaml:62-76"
+    }
+   ],
+   "models": [
+    {
+     "name": "MobileSAM vit_t (SamPredictor, box prompt)",
+     "weights_in_code": "os.path.join(weights_dir, 'mobile_sam.pt'); sam_model_registry['vit_t']",
+     "weights_file": "weights/mobile_sam.pt",
+     "framework": "torch, package mobile_sam",
+     "architecture": "TinyViT image encoder (1024 input -> 256x64x64 embedding) + SAM prompt encoder + mask decoder (3 masks); state dict 439 tensors, 10 140 231 params",
+     "loaded_at": "main.py:855-865 (unconditionally, before pass 1)",
+     "called_at": [
+      "main.py:1426 -> cv_common/tracked_object.py:393-403 -> 385 -> 367 -> 111-114 -> 180-195 (set_image :185, predict :187)"
+     ],
+     "input": {
+      "size": "full frame, ResizeLongestSide(1024) -> 576x1024, zero-padded to 1024x1024",
+      "crop_rule": "no crop; one box prompt = the vehicle's norfair estimate",
+      "padding": "bottom/right zero pad",
+      "resize": "PIL bilinear on CPU",
+      "normalization": "SAM pixel mean/std on GPU",
+      "colour_order": "BGR frame passed with image_format 'RGB' (no flip)",
+      "layout_dtype": "HWC uint8 -> CUDA float32 1x3x1024x1024"
+     },
+     "preprocessing_excerpt": [
+      "cv_common/tracked_object.py:185  predictor.set_image(image)",
+      "cv_common/tracked_object.py:187-191  masks, scores, _ = predictor.predict(point_coords=None, point_labels=None, box=input_box[None, :], multimask_output=True)"
+     ],
+     "device": "cuda:0 (main.py:859)",
+     "precision": "fp32",
+     "batch": "1 image + 1 box per call",
+     "used_for_verdict": true,
+     "dead_load_note": "never called on videos where no zone is built, every scored frame has an obstacle, or no vehicle is tracked on consecutive frames",
+     "invocation": {
+      "when": "pass 2, scored frames only (stop_frame-120 s <= f < skip start, zone exists, no obstacle in zone), on a vehicle's first update and then every 10 LK updates or whenever it has no LK points",
+      "condition": "vehicle already in truck_dict and previous frame was also a tracker frame (main.py:1419-1426); re-seed rule cv_common/tracked_object.py:384",
+      "calls_per_frame_in_window": "k = module vehicles needing a re-seed on this frame (full-frame encoder pass each)",
+      "batched_within_frame": "no: set_image is recomputed per vehicle on the same frame",
+      "caching": "none",
+      "refs": [
+       "main.py:1410-1437",
+       "cv_common/tracked_object.py:373-403"
+      ]
+     },
+     "sha256_16": "6dbb90523a35330f",
+     "bytes": 40728226
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "raw_frame = dataset.get_im0s(frame_number).copy(); img_to_draw = raw_frame.copy()",
+      "condition": "pass 2, EVERY frame from 1 to stop_frame, before the frame_start skip",
+      "ref": "main.py:1027-1033, 1145-1146"
+     },
+     {
+      "what": "get_im0s passed to Vehicle.update_params (cache hit); prev_im0s = get_im0s(...).copy()",
+      "condition": "tracker frames",
+      "ref": "main.py:1426, 1437"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "2 full-frame copies per pass-2 frame",
+      "ref": "main.py:1032-1033"
+     },
+     {
+      "what": "per updated vehicle: 2 full-frame BGR2GRAY + worker-box zeroing",
+      "ref": "cv_common/tracked_object.py:377-378, 116-119, 141-145"
+     },
+     {
+      "what": "always-on rendering: _blend_rect full-frame copy + addWeighted per drawn box and 8-10 per render_frame_ui; draw_zone_overlay full-frame blend",
+      "ref": "main.py:53-67, 493-502, 1148-1233, 1398"
+     },
+     {
+      "what": "Zone.intersect_bbox full-frame masks per MOVING vehicle and obstacle test",
+      "ref": "main.py:716-728"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "MobileSAM mask -> FAST (<= 250 points) -> calcOpticalFlowPyrLK on full gray frames per vehicle",
+      "ref": "cv_common/tracked_object.py:111-153"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "all drawing runs without write_video (consumer: one stop-frame PNG)",
+      "ref": "main.py:1148-1233, 1198-1203, 1296-1301"
+     },
+     {
+      "what": "prints per frame and per vehicle; json_logger per frame incl. to_state_dict per vehicle",
+      "ref": "main.py:1028, 1399, 1409-1414, 1435"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "prev_im0s",
+      "content": "full frames",
+      "count": "1",
+      "ref": "main.py:1437"
+     },
+     {
+      "what": "per-vehicle SAM mask (never read)",
+      "content": "other",
+      "count": "1 full-frame uint8 per re-seeded vehicle",
+      "ref": "cv_common/tracked_object.py:195"
+     },
+     {
+      "what": "zone mask",
+      "content": "other",
+      "count": "1 full-frame uint8",
+      "ref": "main.py:700, 987"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "metadata parsed twice (pass 2 restarts at frame 1)",
+     "scales_with": "detections + tracks up to stop_frame",
+     "ref": "main.py:847, 1009"
+    },
+    {
+     "what": "Airplane.from_state_dict + arrival-stage block in both passes",
+     "scales_with": "LK points",
+     "ref": "main.py:910-949, 1099-1138"
+    },
+    {
+     "what": "class-name reverse lookup building two 32-element lists per detection",
+     "scales_with": "detections",
+     "ref": "main.py:1058"
+    },
+    {
+     "what": "norfair update with Python IoU distance",
+     "scales_with": "vehicle detections x tracks",
+     "ref": "main.py:1410"
+    }
+   ],
+   "time_structure": {
+    "passes": 2,
+    "pass1_computes": "metadata only, frames 1..stop_frame (first frame whose selected aircraft state has arrival_frame): cone clusters, front-wheel trajectory, a discarded arrival-stage copy; then line fit, skip start and the zone diamond",
+    "length_reads": [
+     {
+      "what": "none in main.py",
+      "ref": "main.py:846-1545"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "scored window before stop_frame",
+      "seconds": "120 minus 5-30 s tail",
+      "ref": "main.py:1010, 969-976"
+     },
+     {
+      "what": "wheel trajectory history / fit",
+      "seconds": "120 / 15",
+      "ref": "main.py:571-582"
+     }
+    ],
+    "decision_moment": "after pass 2 breaks at stop_frame (T_arr)",
+    "early_exit": "both passes break at stop_frame; with no arrival both passes consume everything (pass 2 decodes the whole video)",
+    "refs": [
+     "main.py:957-959",
+     "main.py:1205",
+     "main.py:1303",
+     "main.py:1520-1545"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "own vehicle tracking with norfair + SAM-seeded LK motion per vehicle (beltloader, gse, fuel_truck, trailer, vehicle/obstacle classes, far pushback)",
+     "shared_equivalent": "shared tracker BL/GSE/pushback tracks and _status (same TrackedObject machinery and MobileSAM inside the tracker)",
+     "ref": "main.py:990-994, 1017-1089, 1410-1446"
+    },
+    {
+     "what": "arrival-stage block from _p0/_prev_p0/_st, twice",
+     "shared_equivalent": "stage detector",
+     "ref": "main.py:910-949, 1099-1138"
+    },
+    {
+     "what": "stop_frame anchor from arrival_frame",
+     "shared_equivalent": "T_arr",
+     "ref": "main.py:957-959"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Without write_video, draw only the stop frame (PNG); skip all other overlays",
+     "removes": "8-10 full-frame blends per rendered frame and 1-2 per drawn box on every frame from frame 1; the img_to_draw copy",
+     "refs": [
+      "main.py:53-67",
+      "main.py:1033",
+      "main.py:1148-1233"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Read pixels only on tracker frames and stop_frame; drop raw_frame (thumbnail only)",
+     "removes": "retrieve + letterbox + 2 full-frame copies on frames before the window, in the skip tail and on zone-less/obstacle frames",
+     "refs": [
+      "main.py:1032-1033",
+      "main.py:1145-1146"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "One set_image per frame for all re-seeding vehicles (then one predict per box)",
+     "removes": "(k-1) TinyViT encoder passes per frame (verify GPU determinism once)",
+     "refs": [
+      "cv_common/tracked_object.py:185",
+      "main.py:1416-1426"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Gray conversions once per frame; zone intersection on the box ROI; drop per-vehicle SAM mask retention; remove pass-1 arrival-stage copy; parse metadata once (batch)",
+     "removes": "2(k-1) full-frame cvtColor, full-frame mask temporaries, retained masks, dead per-frame math, second JSON parse",
+     "refs": [
+      "cv_common/tracked_object.py:377-378",
+      "main.py:716-728",
+      "cv_common/tracked_object.py:195",
+      "main.py:914-949",
+      "main.py:1009"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "fp16/TensorRT for MobileSAM; GPU resize; shared LK pyramids",
+     "removes": "encoder fp32 cost, CPU resize, per-vehicle pyramids",
+     "refs": [
+      "main.py:861-865"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Use shared tracker tracks/_status instead of own norfair+SAM+LK; causal single pass instead of waiting for stop_frame; subsample re-seeds",
+     "removes": "SAM, LK, norfair and the second pass",
+     "refs": [
+      "main.py:990-994",
+      "main.py:1410-1446",
+      "main.py:1010"
+     ]
+    }
+   ],
+   "open_questions": [
+    "Is weights/mobile_sam.pt byte-identical to the shared tracker's copy (cv_trackers not hashed here)?",
+    "FAST subsampling uses an unseeded np.random.choice (cv_common/tracked_object.py:131-132)."
+   ]
+  },
+  {
+   "module": "safety-handrails-fully-extended",
+   "checkout": "external/safety-handrails-fully-extended",
+   "checkout_source": "default@8b9a2a9",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "8.4",
+   "entry": "main.py:120 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "versions": "default branch HEAD 8b9a2a9b; cv_common pin 33c188d0 not in the local archive, substituted with ac5098d2 (cv_common/SUBSTITUTED_PIN.txt); db_worker 5a4aa83d",
+   "config": [
+    {
+     "key": "classifier_model",
+     "value": "efficientNetb0_300_epoch_general_classifier_dataset_safety_handrails_v3_26_09_2023.pth",
+     "ref": "local_config.yaml:3"
+    },
+    {
+     "key": "min_extended_time_thresh",
+     "value": "0.45 (extended ratio per BL)",
+     "ref": "local_config.yaml:19"
+    },
+    {
+     "key": "min_bl_swap_time_thresh",
+     "value": "120 frames (15 s at 8 fps): a new BL id within this gap is treated as the previous BL",
+     "ref": "local_config.yaml:20; main.py:251-258"
+    },
+    {
+     "key": "bl_min_detection_streak",
+     "value": "4 consecutive frames before first_frame is set",
+     "ref": "local_config.yaml:21; main.py:66-73"
+    },
+    {
+     "key": "cone/wing obstacle",
+     "value": "width 0.3 of frame width, centre in [0.3, 1.0] of frame width",
+     "ref": "local_config.yaml:6-17; main.py:145-146,215-216"
+    },
+    {
+     "key": "minimum stay (hard-coded)",
+     "value": "a BL counts only with > 60*8 = 480 stored statuses (60 s at 8 fps, hard-coded fps)",
+     "ref": "main.py:24"
+    }
+   ],
+   "models": [
+    {
+     "name": "EfficientNetB0 handrail-extension classifier",
+     "weights_in_code": "EfficientNetB0(model_name=config['classifier_model'], weights_dir=weights_dir) -> torch.load(os.path.join(weights_dir, model_name))",
+     "weights_file": "weights/efficientNetb0_300_epoch_general_classifier_dataset_safety_handrails_v3_26_09_2023.pth",
+     "framework": "torch / torchvision",
+     "architecture": "torchvision efficientnet_b0(weights=None), classifier[1] = Linear(1280, 2), classes ['extended', 'not_extended']; state dict 360 tensors, 4 052 175 params, float32",
+     "loaded_at": "main.py:131-133; efficientnet.py:15-18,29-37",
+     "called_at": [
+      "main.py:284",
+      "efficientnet.py:39-48"
+     ],
+     "input": {
+      "size": "224x224",
+      "crop_rule": "chosen BL box from the tracker state with the top raised by int(0.3*h) (h = box height, cv_common/common.py:107-110); no clamp, so a negative top slices from the frame bottom; crop taken from the full-frame RGB conversion",
+      "padding": "none",
+      "resize": "torchvision Resize((224,224)) on a PIL image (bilinear, antialias)",
+      "normalization": "ToTensor (/255) then Normalize mean [0.485,0.456,0.406] std [0.229,0.224,0.225]",
+      "colour_order": "RGB (cv2.cvtColor BGR2RGB of the whole frame, main.py:279)",
+      "layout_dtype": "uint8 HWC -> PIL -> float32 CHW, unsqueeze to batch 1"
+     },
+     "preprocessing_excerpt": [
+      "main.py:77  self.xyxy[1] -= int(0.3 * get_hw(self.xyxy)[0])",
+      "main.py:279  rgb_im0s = cv2.cvtColor(dataset.get_im0s(frame_number), cv2.COLOR_BGR2RGB)",
+      "main.py:280  beltloader_rgb_img = rgb_im0s[bl_y1:bl_y2, bl_x1:bl_x2, :]",
+      "efficientnet.py:20-27  Normalize(ImageNet); Compose([ToPILImage(), Resize((224, 224)), ToTensor(), normalize])",
+      "efficientnet.py:40-47  img = self._preprocessing(img).to(device); unsqueeze(0); softmax; argmax -> class name"
+     ],
+     "device": "torch.device('cuda:0' if torch.cuda.is_available() else 'cpu') - the device argument is ignored (main.py:122)",
+     "precision": "fp32",
+     "batch": "1",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every 8th recorded frame inside the window",
+      "condition": "aircraft arrived and not departed (main.py:189-198), a tracker beltloader of the camera's type exists (front for cone, back for wing; cone camera also drops BLs overlapping a rear wheel and lower than it) (main.py:235-245), the largest such BL is stopped (main.py:269-274), and frame_number % 8 == 0 (main.py:283)",
+      "calls_per_frame_in_window": "1/8 (at most one BL per frame: the largest qualifying one, main.py:248)",
+      "batched_within_frame": "n/a (one crop)",
+      "caching": "the last label is held and counted on the 7 frames in between (main.py:285-291)",
+      "refs": [
+       "main.py:189-198",
+       "main.py:235-248",
+       "main.py:269-274",
+       "main.py:283-291"
+      ]
+     },
+     "sha256_16": "31aae690e256c54b",
+     "bytes": 16388351
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "dataset.get_im0s(frame_number) + cv2.cvtColor BGR2RGB of the full 1920x1080 frame",
+      "condition": "EVERY frame inside the window (stopped qualifying BL), although the classifier uses it only when frame_number % 8 == 0: 7 of 8 reads and conversions are unused",
+      "ref": "main.py:277-284"
+     },
+     {
+      "what": "dataset.get_im0s(frame_number).copy() for drawing",
+      "condition": "write_video only",
+      "ref": "main.py:157-160"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "full-frame BGR->RGB conversion (a new 1920x1080x3 array) per window frame",
+      "ref": "main.py:279"
+     },
+     {
+      "what": "inside get_im0s: letterbox to 1280x768 + CHW/RGB contiguous copy that is discarded (shared runtime)",
+      "ref": "cv_common/utils/datasets.py:268-272"
+     },
+     {
+      "what": "PIL conversion + 224x224 resize of the crop per classifier call",
+      "ref": "efficientnet.py:22-27"
+     }
+    ],
+    "optical_flow_segmentation": [],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "print per frame",
+      "ref": "main.py:155"
+     },
+     {
+      "what": "json_logger.update of the airplane state_dict on every frame with an airplane track (also before arrival)",
+      "ref": "main.py:186"
+     },
+     {
+      "what": "json_logger text entries (waiting / camera blocked / no BL / waiting to stop / extended)",
+      "ref": "main.py:113-117,191,223,242,271,288"
+     },
+     {
+      "what": "json_logger obstacle boxes and BL state_dict",
+      "ref": "main.py:220,266"
+     },
+     {
+      "what": "json_logger.save at the end",
+      "ref": "main.py:297-298"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "per-BL list of booleans _handrail_status_storage, one entry per window frame",
+      "content": "other",
+      "count": "grows with the stopped time of each BL",
+      "ref": "main.py:57,89-90,291"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "Track().from_json for every track, twice per frame (airplane loop and beltloader loop)",
+     "scales_with": "number of tracks",
+     "ref": "main.py:177-178,226-227"
+    },
+    {
+     "what": "Airplane.update_inner_state (dict copies + np.array of _p0/_st + Status) every frame",
+     "scales_with": "airplane optical-flow point count",
+     "ref": "main.py:181-183; cv_common/transport.py:107-108,129-144; cv_common/tracked_object.py:604-616"
+    },
+    {
+     "what": "Loader.update_inner_state -> Vehicle.from_state_dict for the chosen BL (plus a second from_state_dict when the BL id is new)",
+     "scales_with": "1 per frame after arrival",
+     "ref": "main.py:260-263,63-77"
+    },
+    {
+     "what": "obstacle filter over all person/trailer/gse detections (feeds only the JSON log)",
+     "scales_with": "detections",
+     "ref": "main.py:201-223"
+    },
+    {
+     "what": "rear-wheel filter BL x back wheels (cone camera)",
+     "scales_with": "BLs x back wheels",
+     "ref": "main.py:237-239"
+    },
+    {
+     "what": "max over all BL ids ever seen to find the last active one",
+     "scales_with": "BL ids in the session",
+     "ref": "main.py:251-253"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single causal pass; the per-BL extended ratio is accumulated online",
+    "length_reads": [
+     {
+      "what": "none in the module; VideoWorker.load_source sets number_of_frames (unused here)",
+      "ref": "db_worker/ML_worker.py:235-237"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "BL id swap gap",
+      "seconds": "15 (120 frames)",
+      "ref": "local_config.yaml:20; main.py:253"
+     },
+     {
+      "what": "minimum stored statuses per BL",
+      "seconds": "60 (480 frames, hard-coded 8 fps)",
+      "ref": "main.py:24"
+     }
+    ],
+    "decision_moment": "after the loop (make_inference over all BLs), i.e. at aircraft departure or at the end of the metadata",
+    "early_exit": "break when airplane.departured (tracker departure_frame) - the rest of the metadata is not read; frames before arrival continue right after the airplane restore",
+    "refs": [
+     "main.py:154",
+     "main.py:189-198",
+     "main.py:297-301",
+     "main.py:23-46"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "stopped beltloader at the door: tracker bl_type (front/back) + rear-wheel overlap filter + largest box + is_stopped",
+     "shared_equivalent": "stage detector BL_AT_DOOR / tracker bl_type + stop status",
+     "ref": "main.py:235-248,269"
+    },
+    {
+     "what": "BL identity handover (a new id within 120 frames continues the previous BL)",
+     "shared_equivalent": "tracker identity (X1: one tracker per event)",
+     "ref": "main.py:251-258"
+    },
+    {
+     "what": "'camera blocked' obstacle rule (logged only)",
+     "shared_equivalent": "none needed for the verdict",
+     "ref": "main.py:215-223"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "read and convert pixels only on frames where the classifier runs: move main.py:277-280 inside the frame_number % 8 == 0 branch",
+     "removes": "7 of 8 get_im0s retrievals (+ their discarded letterbox) and 7 of 8 full-frame BGR->RGB conversions inside the window; in batch the skipped frames are still decoded by cap.grab()",
+     "refs": [
+      "main.py:277-284",
+      "cv_common/utils/datasets.py:250-255"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "convert only the crop: slice the BGR frame with the same indices (keeping the unclamped negative-top behaviour), then cvtColor the crop",
+     "removes": "the full-frame 1920x1080x3 RGB copy per classifier call; only the BL crop is converted",
+     "refs": [
+      "main.py:77",
+      "main.py:279-280"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "one shared handrail classifier call memoised by (frame_id, crop box) with handrails-on-gse-being-used (same file sha256 31aae690e256c54b, same efficientnet.py sha256 234cddf0d1645d31)",
+     "removes": "duplicate EfficientNetB0 forward passes on frames where both modules classify the same crop; one model instance instead of two",
+     "refs": [
+      "efficientnet.py:13-48",
+      "main.py:131-133"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "parse tracks once per frame (reuse the first loop's Track objects in the beltloader loop)",
+     "removes": "a second Track().from_json per track per frame",
+     "refs": [
+      "main.py:177-178",
+      "main.py:226-227"
+     ]
+    },
+    {
+     "risk": "EXACT (verdict)",
+     "what": "drop the obstacle filter, text/state logging and per-frame print when the overlay log is not needed",
+     "removes": "per-detection obstacle filtering, JSON serialisation and stdout writes per frame",
+     "refs": [
+      "main.py:155",
+      "main.py:186",
+      "main.py:201-223",
+      "main.py:113-117",
+      "main.py:266"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "fp16 or TensorRT/ONNX Runtime export of the classifier",
+     "removes": "fp32 PyTorch eager execution of EfficientNetB0 at 224x224",
+     "refs": [
+      "efficientnet.py:29-48"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "any change of the every-8th-frame cadence or of the held label",
+     "removes": "classifier calls or held-label counting",
+     "refs": [
+      "main.py:283-291"
+     ]
+    }
+   ],
+   "open_questions": [
+    "main.py:24 counts stored statuses (frames in the window), not seconds of stay; the 60*8 literal assumes 8 fps.",
+    "main.py:77 can produce a negative top for BL boxes near the top of the frame; the crop then wraps (numpy negative index). Any crop-level refactor must reproduce it to stay EXACT."
+   ]
+  },
+  {
+   "module": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "checkout": "external/_branches/post-arrival-aircraft-walk-around-inspection-completed-accurately@tdv_cone",
+   "checkout_source": "tdv_cone@a0d9ee4",
+   "testset_profile": {
+    "launcher": [
+     "G:\\prime_flight\\out\\envs\\np1_walkaround\\Scripts\\python.exe",
+     "scripts/run_module.py"
+    ],
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/post-arrival-aircraft-walk-around-inspection-completed-accurately@tdv_cone",
+    "drop_state_keys": "_moving_counter,_stopped_counter,have_pre_arrival_stage,have_arrival_stage,departure_frame,_height_mode,_bl_type_bbox,_bl_type_frames",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "6.8",
+   "entry": "main.py:92 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None, cache_folder=None) -> main.py:131 process_video -> main.py:68 frame loop -> code/states.py:290 Gate.update",
+   "versions": "branch export tdv_cone@a0d9ee4; cv_common c11573b8 (branch pin extracted from external/cv_common; datasets.py has no get_frame); db_worker 5a4aa83d; venv out/envs/np1_walkaround (NumPy 1.26, TF-cpu 2.15, torch 2.11 cu128, ultralytics 8.2.48, mobile_sam)",
+   "audit_source": "subagent audit (tail) + parent read of main.py, code/states.py:286-410, code/walk_around/detection_processor.py, code/walk_around/temp/plane_tdv_extractor.py:60-175 and 313-356, model/predictor.py, local_config.yaml",
+   "config": [
+    {
+     "key": "tdv_model_path",
+     "value": "./weights/best_model.pth (best_acc.keras line commented out)",
+     "ref": "local_config.yaml:18-19"
+    },
+    {
+     "key": "post_arrival.max_walk_around_duration",
+     "value": "300 s (window cap, 2400 frames)",
+     "ref": "local_config.yaml; code/states.py:337-341"
+    },
+    {
+     "key": "gs1737.outlier_second_pass / rescue_solo_track.enabled",
+     "value": "false / false (no second CNN pass, no video re-read)",
+     "ref": "local_config.yaml (post_arrival.gs1737); code/walk_around/walk_around.py:365, 394"
+    },
+    {
+     "key": "artifacts.draw_annotations / verbose / write_tdv_debug_artifacts",
+     "value": "False / False / False",
+     "ref": "local_config.yaml (artifacts)"
+    },
+    {
+     "key": "TDV queue",
+     "value": "deque(maxlen=7), one candidate every 16 frames",
+     "ref": "code/walk_around/temp/plane_tdv_extractor.py:80, 131"
+    }
+   ],
+   "models": [
+    {
+     "name": "YOLOv8m-pose (worker keypoints; singleton shared with the TDV extractor)",
+     "weights_in_code": "./weights/yolov8m-pose.pt (code/walk_around/_pose_model.py:18-22)",
+     "weights_file": "weights/yolov8m-pose.pt",
+     "framework": "ultralytics 8.2.48 (venv)",
+     "architecture": "YOLOv8m-pose, 17 keypoints; checkpoint written by ultralytics 8.0.77, train imgsz 640, FP16 storage",
+     "loaded_at": "code/walk_around/_pose_model.py:18-22 via code/walk_around/detection_processor.py:23",
+     "called_at": [
+      "code/walk_around/detection_processor.py:53 (batched person crops per frame)",
+      "code/walk_around/temp/plane_tdv_extractor.py:347 (one person ROI per successful TDV build)"
+     ],
+     "input": {
+      "size": "640 long side",
+      "crop_rule": "tracker person xyxy slice of the frame, no margin",
+      "padding": "letterbox 114; square 640x640 when the crops of a frame differ in shape, rectangular when all crops share a shape (venv:ultralytics/engine/predictor.py:154-155)",
+      "resize": "cv2 INTER_LINEAR",
+      "normalization": "/255",
+      "colour_order": "BGR -> RGB inside ultralytics",
+      "layout_dtype": "BCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/detection_processor.py:41-49  roi = frame[ymin:ymax, xmin:xmax]; rois.append(roi)",
+      "code/walk_around/detection_processor.py:53  results = self.__model(rois, verbose=False)  # batched single inference",
+      "venv:ultralytics/engine/predictor.py:154-155  same_shapes = len({x.shape for x in im}) == 1; letterbox = LetterBox(self.imgsz, auto=same_shapes and self.model.pt, stride=self.model.stride)"
+     ],
+     "device": "cuda:0 (ultralytics default)",
+     "precision": "fp32",
+     "batch": "all person crops of the frame",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every POST_ARRIVAL frame with person tracks (from the aircraft stop until the DOWNLOAD transition)",
+      "condition": "Gate phase POST_ARRIVAL (code/states.py:358-376)",
+      "calls_per_frame_in_window": "1 batched call with N_person crops (+1 single call on the TDV build frame)",
+      "batched_within_frame": "yes",
+      "caching": "none",
+      "refs": [
+       "code/states.py:358-376",
+       "code/walk_around/walk_around.py:70-80"
+      ]
+     },
+     "sha256_16": "2d0c64408d6b4015",
+     "bytes": 53262566
+    },
+    {
+     "name": "Depth Anything V2 metric ViT-B",
+     "weights_in_code": "weights/depth_anything_v2_metric_vkitti_vitb.pth",
+     "weights_file": "weights/depth_anything_v2_metric_vkitti_vitb.pth",
+     "framework": "torch (vendored depth_anything/)",
+     "architecture": "DINOv2 ViT-B/14 + DPT head, max_depth 80; 97 470 785 params",
+     "loaded_at": "code/walk_around/temp/plane_tdv_extractor.py:80-87 (in Gate.__init__, code/states.py:272-275)",
+     "called_at": [
+      "code/walk_around/temp/plane_tdv_extractor.py:336 (TDV frame)",
+      "code/walk_around/temp/plane_tdv_extractor.py:169-175 (each queued nose frame, after gamma.correct_shadows)"
+     ],
+     "input": {
+      "size": "518 lower bound, keep aspect, multiple of 14 (518x924 for 1080p)",
+      "crop_rule": "full frame",
+      "padding": "none",
+      "resize": "INTER_CUBIC; output upsampled to frame size",
+      "normalization": "/255 + ImageNet mean/std",
+      "colour_order": "BGR -> RGB (depth_anything/dpt.py:216)",
+      "layout_dtype": "NCHW float32"
+     },
+     "preprocessing_excerpt": [
+      "depth_anything/dpt.py:190  def infer_image(self, raw_image, input_size=518)",
+      "depth_anything/dpt.py:216  image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB) / 255.0"
+     ],
+     "device": "cuda if available",
+     "precision": "fp32",
+     "batch": "1",
+     "used_for_verdict": true,
+     "dead_load_note": "loaded at gate construction even for events that never build a TDV",
+     "invocation": {
+      "when": "POST_ARRIVAL frames until airplane_tvd.png exists (normally one build)",
+      "condition": "get_mask_from_detection success (code/walk_around/temp/plane_tdv_extractor.py:313-316)",
+      "calls_per_frame_in_window": "1 + len(queue) <= 8 on the build frame; 0 otherwise",
+      "batched_within_frame": "no",
+      "caching": "none",
+      "refs": [
+       "code/states.py:366-372"
+      ]
+     },
+     "sha256_16": "4dad67a7cc10b462",
+     "bytes": 389964656
+    },
+    {
+     "name": "MobileSAM vit_t (TDV masks)",
+     "weights_in_code": "weights/mobile_sam.pt",
+     "weights_file": "weights/mobile_sam.pt",
+     "framework": "torch, mobile_sam",
+     "architecture": "TinyViT encoder + SAM decoder",
+     "loaded_at": "code/walk_around/temp/plane_tdv_extractor.py:91-94",
+     "called_at": [
+      "code/walk_around/temp/plane_tdv_extractor.py:44-51 ObjectSegmenter.segment_object (set_image + predict per box), from get_mask_from_detection (:245-311)"
+     ],
+     "input": {
+      "size": "long side 1024",
+      "crop_rule": "full frame + one box prompt per call",
+      "padding": "zero pad to 1024x1024",
+      "resize": "PIL",
+      "normalization": "SAM pixel mean/std",
+      "colour_order": "BGR passed as RGB (no flip)",
+      "layout_dtype": "1x3x1024x1024 float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/temp/plane_tdv_extractor.py:44  predictor.set_image(image)"
+     ],
+     "device": "cuda if available",
+     "precision": "fp32",
+     "batch": "1 box",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "each POST_ARRIVAL TDV attempt",
+      "condition": "until airplane_tvd.png exists",
+      "calls_per_frame_in_window": "one encoder + decoder per airplane-part box and per person box on the attempt frame",
+      "batched_within_frame": "no (set_image repeated per box on the same frame)",
+      "caching": "none",
+      "refs": [
+       "code/walk_around/temp/plane_tdv_extractor.py:245-311"
+      ]
+     },
+     "sha256_16": "6dbb90523a35330f",
+     "bytes": 40728226
+    },
+    {
+     "name": "Walk-around canvas CNN (TorchPredictor CNNModel)",
+     "weights_in_code": "local_config tdv_model_path ./weights/best_model.pth",
+     "weights_file": "weights/best_model.pth",
+     "framework": "torch",
+     "architecture": "small conv net (features 8->...) + MLP classifier ending Linear(128,1) + Sigmoid; 3 673 171 params",
+     "loaded_at": "code/walk_around/walk_around.py:330 -> code/walk_around/model/predictor.py:59-71 (once per event, at completion)",
+     "called_at": [
+      "code/walk_around/walk_around.py:341",
+      "code/walk_around/model/predictor.py:73-97"
+     ],
+     "input": {
+      "size": "224x224",
+      "crop_rule": "rendered trajectory canvas crop over the TDV template, written as JPEG and read back",
+      "padding": "none",
+      "resize": "Resize((224,224))",
+      "normalization": "ToTensor + ImageNet mean/std",
+      "colour_order": "OpenCV BGR canvas saved as JPEG, PIL reads RGB",
+      "layout_dtype": "Nx3x224x224 float32"
+     },
+     "preprocessing_excerpt": [
+      "code/walk_around/model/predictor.py:66-71  transforms.Compose([Resize((224, 224)), ToTensor(), Normalize(ImageNet)])",
+      "code/walk_around/model/predictor.py:84  tensors = [self.transform(Image.open(os.path.join(image_folder, f)).convert('RGB')) for f in files]"
+     ],
+     "device": "cuda if available",
+     "precision": "fp32",
+     "batch": "64",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "once per event at the DOWNLOAD transition",
+      "condition": "airplane_tvd.png exists and canvases exist",
+      "calls_per_frame_in_window": "0 in the window; ceil(N_canvas/64) at completion",
+      "batched_within_frame": "yes",
+      "caching": "none",
+      "refs": [
+       "code/states.py:405-407",
+       "code/walk_around/walk_around.py:276-421"
+      ]
+     },
+     "sha256_16": "480c6f871f125e8c",
+     "bytes": 14718882
+    }
+   ],
+   "unused_weight_files": [
+    {
+     "file": "weights/best_acc.keras",
+     "evidence": "tdv_model_path points to best_model.pth (local_config.yaml:18-19); no keras/tensorflow load on this code path; only pre-departure loads it",
+     "sha256_16": "9b2df8cb8edd8bfe",
+     "bytes": 44254701
+    },
+    {
+     "file": "weights/sam_vit_b_01ec64.pth",
+     "evidence": "only sam_model_registry['vit_t'] with mobile_sam.pt is built (code/walk_around/temp/plane_tdv_extractor.py:69, 91)",
+     "sha256_16": "ec2df62732614e57",
+     "bytes": 375042383
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "for frame_number, (path, img, im0s, vid_cap) in enumerate(dataset, 1): every frame decoded, letterboxed to 1280 (img unused) and printed",
+      "condition": "every frame until the loop breaks after the DOWNLOAD transition",
+      "ref": "main.py:68-70; cv_common/utils/datasets.py:193-229 (c11573b8)"
+     },
+     {
+      "what": "img_to_draw = im0s.copy()",
+      "condition": "every decoded frame",
+      "ref": "main.py:73"
+     },
+     {
+      "what": "queued nose frames for the TDV (references)",
+      "condition": "PRE_ARRIVAL/ARRIVAL, frame_number % 16 == 0, nose box present, IoU with the last queued nose <= 0.6",
+      "ref": "code/states.py:351-356; code/walk_around/temp/plane_tdv_extractor.py:131-153"
+     },
+     {
+      "what": "person crops for pose; full frame for SAM/depth on the TDV build frame",
+      "condition": "POST_ARRIVAL",
+      "ref": "code/states.py:358-376"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "full-frame copy per decoded frame",
+      "ref": "main.py:73"
+     },
+     {
+      "what": "gamma.correct_shadows + depth on up to 7 queued frames at TDV build",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:169-175"
+     },
+     {
+      "what": "canvas rendering, JPEG writes and reads at completion",
+      "ref": "code/walk_around/walk_around.py:156-166; code/walk_around/model/predictor.py:84"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "MobileSAM box masks + depth (TDV build only)",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:245-355"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "dataset print per decoded frame; os.path.exists(report.json) per PRE_ARRIVAL frame; images/ folder recreated per run; CSV/JPEG/report.json exports at completion",
+      "ref": "cv_common/utils/datasets.py:213 (c11573b8); code/states.py:326; main.py:113-120, 138-140; code/walk_around/walk_around.py:290-316"
+     },
+     {
+      "what": "json_logger is passed but not called on this path",
+      "ref": "code/states.py (no update calls); main.py:24, 130"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "plane_movement_queue",
+      "content": "full frames",
+      "count": "<= 7 1080p frames, kept for the rest of the run",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:80, 150"
+     },
+     {
+      "what": "worker trajectories (frame, angle, distance) per person track",
+      "content": "other",
+      "count": "all person-frames of the window",
+      "ref": "code/walk_around/walk_around.py:70-80"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "TracksExtractor/DetectionsExtractor build Track objects and scan detections per class",
+     "scales_with": "tracks; 15 x detections",
+     "ref": "code/states.py:359-364; code/utils/extractor.py"
+    },
+    {
+     "what": "airplane and beltloader managers restore state per frame",
+     "scales_with": "airplane/beltloader tracks",
+     "ref": "code/states.py:330, 334, 338"
+    },
+    {
+     "what": "pose post-processing and distance estimation per person",
+     "scales_with": "person tracks",
+     "ref": "code/walk_around/detection_processor.py:56-60; code/walk_around/distance_estimator.py"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single lockstep pass over video and metadata; batch completion stage (preprocess, split/recombine trajectories, canvases, CNN) at the DOWNLOAD transition",
+    "length_reads": [
+     {
+      "what": "none in the module",
+      "ref": "main.py; code/"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "post-arrival window cap",
+      "seconds": "300",
+      "ref": "code/states.py:339-341"
+     },
+     {
+      "what": "TDV approach samples",
+      "seconds": "2 s step, last 7",
+      "ref": "code/walk_around/temp/plane_tdv_extractor.py:80, 131"
+     }
+    ],
+    "decision_moment": "first DOWNLOAD frame: beltloader stopped (own rule) or 300 s after POST_ARRIVAL start; complete() + finish() on that frame",
+    "early_exit": "loop breaks after the verdict (main.py:69-70); if DOWNLOAD is never reached the whole video is consumed and detect() fails on result None (main.py:139)",
+    "refs": [
+     "code/states.py:337-341, 405-407",
+     "main.py:68-89, 136-146"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "own aircraft phase machine (stopping -> arrival, stopped -> post-arrival)",
+     "shared_equivalent": "stage detector T_arr",
+     "ref": "code/states.py:325-335"
+    },
+    {
+     "what": "own beltloader-stopped rule ends the window",
+     "shared_equivalent": "stage detector BL@door",
+     "ref": "code/states.py:337-341"
+    },
+    {
+     "what": "own worker ground position from pose + box height; trajectory split/recombination over tracker ids",
+     "shared_equivalent": "shared ground coordinates (none today); shared tracker identities",
+     "ref": "code/walk_around/distance_estimator.py; code/walk_around/walk_around.py:531-585"
+    },
+    {
+     "what": "aircraft top-down template from depth + SAM",
+     "shared_equivalent": "none (same extractor and weights in pre-departure)",
+     "ref": "code/walk_around/temp/plane_tdv_extractor.py:61-355"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Drop im0s.copy(): nothing mutates the frame on this branch (drawing off); cap.read returns a fresh array per frame",
+     "removes": "one 6.2 MB copy per decoded frame",
+     "refs": [
+      "main.py:73",
+      "code/states.py:378"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Do not letterbox in iteration; retrieve pixels only for frames that can enter the TDV queue (frame % 16 with a nose box, known from metadata) or have person tracks after arrival",
+     "removes": "the 1280 letterbox + CHW copy on every frame; BGR retrieve on most pre-arrival frames",
+     "refs": [
+      "main.py:68",
+      "cv_common/utils/datasets.py:222-227",
+      "code/walk_around/temp/plane_tdv_extractor.py:131-153"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "SAM: set_image once per TDV attempt frame, predict per box; stop part segmentation at the first non-empty mask when the composite only gates success",
+     "removes": "redundant TinyViT encoder passes on the same frame",
+     "refs": [
+      "code/walk_around/temp/plane_tdv_extractor.py:44-51",
+      "code/walk_around/temp/plane_tdv_extractor.py:245-311"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Release plane_movement_queue once the TDV exists; keep the template in memory",
+     "removes": "<= 7 retained 1080p frames for the rest of the window; PNG round trip",
+     "refs": [
+      "code/walk_around/temp/plane_tdv_extractor.py:80, 355",
+      "code/walk_around/walk_around.py:321-322"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Share model instances (pose, depth, SAM) with pre-departure if the files are byte-identical (they are: sha256 2d0c64408d6b4015 / 4dad67a7cc10b462 / 6dbb90523a35330f); do not share per-frame pose results (pre-departure calls per ROI, rect letterbox)",
+     "removes": "duplicate loads and GPU memory of 53 + 390 + 41 MB",
+     "refs": [
+      "code/walk_around/_pose_model.py:18-22",
+      "code/walk_around/temp/plane_tdv_extractor.py:80-94"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove never-loaded best_acc.keras and sam_vit_b_01ec64.pth; drop verdict-unused exports (CSVs, pass copies) where the portal does not need them",
+     "removes": "about 419 MB of files; file I/O at completion",
+     "refs": [
+      "local_config.yaml:18-19",
+      "code/walk_around/walk_around.py:290-316"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "fp16/TensorRT for pose, depth, SAM, CNN; move the TDV build and completion off the frame loop",
+     "removes": "fp32 compute; single-frame spikes",
+     "refs": [
+      "code/walk_around/detection_processor.py:53",
+      "code/states.py:366-372, 405-407"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Subsample pose; stage-detector anchors for the window; shared identities instead of recombination (its BFS has a wall-clock cap)",
+     "removes": "most pose calls; phase logic; O(n^2) recombination",
+     "refs": [
+      "code/walk_around/walk_around.py:70-80",
+      "code/states.py:325-341",
+      "code/walk_around/preprocessing/recombination.py"
+     ]
+    }
+   ],
+   "open_questions": [
+    "Recombination BFS has a 5-minute wall-clock cap (code/walk_around/preprocessing/recombination.py): results can depend on machine load.",
+    "If DOWNLOAD is never reached, detect() raises on result None (main.py:139): any test videos affected?"
+   ]
+  },
+  {
+   "module": "gse-chocks",
+   "checkout": "external/_branches/gse-chocks@per_component_improvement",
+   "checkout_source": "per_component_improvement@d3f92a5",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/gse-chocks@per_component_improvement",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "6.1",
+   "entry": "main.py:1597 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None, save_diff=False, save_full_diff=False, debug_*=False, timestamps=None, new_design=False)",
+   "versions": "branch export per_component_improvement@d3f92a5; cv_common pin dd5b5547 substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "subagent audit, key lines re-read by the parent (main.py:723-749, 1143-1380, 1534-1554, 1604-1834, 1937-1947; complex_difference.py; onnx_model_utils.py)",
+   "config": [
+    {
+     "key": "onnx_pose_checkpoint / difference_classifier",
+     "value": "rtmpose-l-4dba18fc.onnx / effnetb0_small_clean_64_960.pt",
+     "ref": "local_config.yaml:5-6"
+    },
+    {
+     "key": "frame_average_window / min_stop_depart_window / static_env_window",
+     "value": "8 / 4 / 24 frames",
+     "ref": "local_config.yaml:59-61"
+    },
+    {
+     "key": "static_env_threshold / stop_static_env_threshold / not_observed_diff_threshold",
+     "value": "0.995 / 0.99 / 0.8",
+     "ref": "local_config.yaml:62-64"
+    },
+    {
+     "key": "differentiation_timeout / max_checks_number",
+     "value": "80 frames / 6",
+     "ref": "local_config.yaml:67, 70"
+    },
+    {
+     "key": "min_park_duration / min_chock_frames / bend_window / point_confidence_threshold",
+     "value": "160 / 40 / 8 frames / 0.3",
+     "ref": "local_config.yaml:36, 42, 45, 56"
+    }
+   ],
+   "models": [
+    {
+     "name": "frame-difference chock classifier",
+     "weights_in_code": "os.path.join(weights_dir, config['difference_classifier'])",
+     "weights_file": "weights/effnetb0_small_clean_64_960.pt",
+     "framework": "torch + timm; OpenCV/PIL/torchvision preprocessing",
+     "architecture": "timm efficientnet_b0 pretrained=False num_classes=1 (state dict, 360 tensors, 4 050 894 params); sigmoid >= 0.5",
+     "loaded_at": "main.py:1622-1627",
+     "called_at": [
+      "main.py:1315-1318 (stop check)",
+      "main.py:1451-1454 (departure checks)",
+      "complex_difference.py:140-147 -> 54-60 -> 27-34"
+     ],
+     "input": {
+      "size": "224x224 from a 43x428 strip",
+      "crop_rule": "reference bbox (mean of the stop-capture boxes, or of the last 8 diff-window boxes) +10% per side, clipped; same rectangle cut from both images; gray; resized to 512x256; template = central part, then only its bottom 20%; search = bottom band of the compared image (complex_difference.py:39-51, 127-138)",
+      "padding": "10% bbox padding, no letterbox",
+      "resize": "cv2.resize (512,256) INTER_AREA, then torchvision Resize((224,224)) on PIL",
+      "normalization": "ToTensor + ImageNet mean/std",
+      "colour_order": "3-channel stack [clip(match - template + 127), template, match] of BGR2GRAY crops read as RGB",
+      "layout_dtype": "NCHW float32, batch 1"
+     },
+     "preprocessing_excerpt": [
+      "complex_difference.py:45-48  template = template[int(t_height*0.8):]; search_img = diff_img[int(s_height*0.8-height_padding):]; res = cv2.matchTemplate(search_img, template, cv2.TM_CCOEFF_NORMED)",
+      "complex_difference.py:144-145  if score < not_observed_diff_thresh: return None, score",
+      "complex_difference.py:55-58  subtraction = np.float32(template_match)-np.float32(template); ... np.stack([subtraction_scaled, template, template_match], axis=-1)"
+     ],
+     "device": "cuda if available and device != 'cpu' (main.py:1609-1610)",
+     "precision": "fp32",
+     "batch": "1 per check, departure checks sequential",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "sparse: one stop check per >= 80 stopped frames per GSE (<= 6 per stop); up to 6 departure checks on the frame that confirms departure",
+      "condition": "GSE STOPPING/STOPPED, _diff_timeout >= 80, full 24-frame static window, stop image present, < 6 results, template score >= 0.8 (main.py:1277-1318); departure: PROCEEDING and _moving_frames == _display_proceeding_time_thres+1 (main.py:1398-1458)",
+      "calls_per_frame_in_window": "0 on most frames; <= 1 per stationary GSE, <= 6 per departing GSE",
+      "batched_within_frame": "no",
+      "caching": "none; the reference side is re-cropped, re-grayed and re-resized per call",
+      "refs": [
+       "main.py:1277-1372",
+       "main.py:1380-1490"
+      ]
+     },
+     "sha256_16": "e6453d73c4e59538",
+     "bytes": 16328049
+    },
+    {
+     "name": "RTMPose-l body pose (17 keypoints)",
+     "weights_in_code": "os.path.join(weights_dir, config['onnx_pose_checkpoint']) -> build_session",
+     "weights_file": "weights/rtmpose-l-4dba18fc.onnx",
+     "framework": "onnxruntime-gpu (providers CUDA then CPU)",
+     "architecture": "RTMPose-l SimCC head, head.final_layer [17,1024,7,7]; ONNX opset 11, input [batch,3,256,192]",
+     "loaded_at": "main.py:1618-1620; onnx_model_utils.py:111-125",
+     "called_at": [
+      "main.py:747",
+      "onnx_model_utils.py:9-21, 128-150"
+     ],
+     "input": {
+      "size": "192x256 (WxH)",
+      "crop_rule": "tracker person box widened by 0.25*w per side and 0.1*h top/bottom, clipped (main.py:739-745), sliced from the BGR frame (onnx_model_utils.py:13)",
+      "padding": "bbox padding 1.25, aspect fixed to 192:256, warpAffine border 0",
+      "resize": "cv2.warpAffine INTER_LINEAR",
+      "normalization": "(x - [123.675,116.28,103.53]) / [58.395,57.12,57.375] (onnx_model_utils.py:104-106)",
+      "colour_order": "BGR data with RGB-ordered mean/std (no flip)",
+      "layout_dtype": "CHW float64 list -> FLOAT tensor, batch 1"
+     },
+     "preprocessing_excerpt": [
+      "main.py:742-745  new_xyxy[0] = max(xyxy[0] - int(person_width * 0.25), 0) ... new_xyxy[3] = min(xyxy[3] + int(person_height * 0.1), frame_orig.shape[0])",
+      "onnx_model_utils.py:13  image_to_proccess = img[y1:y2, x1:x2, :]",
+      "onnx_model_utils.py:139  input = [img.transpose(2, 0, 1)]"
+     ],
+     "device": "CUDAExecutionProvider",
+     "precision": "fp32",
+     "batch": "1 per (GSE, person) pair",
+     "used_for_verdict": true,
+     "dead_load_note": "",
+     "invocation": {
+      "when": "every frame while a GSE is STOPPING/STOPPED and persons stand in its action ROI",
+      "condition": "_action_roi set (stationary GSE) and person bottom corner in the ROI, not in the anti-ROI (main.py:727-736)",
+      "calls_per_frame_in_window": "sum over stationary GSEs of persons inside each GSE's action ROI (a person inside k ROIs is estimated k times)",
+      "batched_within_frame": "no",
+      "caching": "none (identical inputs for the k estimates of one person)",
+      "refs": [
+       "main.py:723-749",
+       "main.py:1793-1795"
+      ]
+     },
+     "sha256_16": "cff059fd58a2c0d5",
+     "bytes": 110596989
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "dataset.get_im0s(frame_number) passed as an argument to update_human_action and update_difference for every GSE track",
+      "condition": "every frame with >= 1 GSE track, whatever the GSE status (the first call decodes, later calls hit the one-frame cache)",
+      "ref": "main.py:1793, 1798"
+     },
+     {
+      "what": "get_im0s(...).copy() for drawing",
+      "condition": "write_video only",
+      "ref": "main.py:1678-1679"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "test_env_static per stationary GSE per frame: two crops, 2x BGR2GRAY, 2x GaussianBlur 3x3, matchTemplate on the bottom band; repeated with identical inputs in capture_stop_frames on stop frames 2..8",
+      "ref": "main.py:1244-1247, 1175-1185; simple_difference.py:7-52"
+     },
+     {
+      "what": "np.mean over <= 8 full frames (uint8 stack + float64 mean) for the stop image, each check image (computed twice per check) and the departure image",
+      "ref": "main.py:1197, 1214, 1306, 1365, 1388"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "none; orientation uses the tracker's _p0/_st from the state dict",
+      "ref": "main.py:122-132, 236-299"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "print per frame (two)",
+      "ref": "main.py:1676, 1681"
+     },
+     {
+      "what": "json_logger box per visible GSE built from a full to_state_dict(), plus 2-4 text entries per GSE per frame",
+      "ref": "main.py:136, 1869-1913"
+     },
+     {
+      "what": "cv2.putText(None) per frame; plot_one_box(None) per GSE",
+      "ref": "main.py:1726, 207-208"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "_diff_frames",
+      "content": "full frames",
+      "count": "<= 24 per stationary GSE (references to the decoded frame); not released at departure, so a departed GSE keeps them until its next stop or session end",
+      "ref": "main.py:1261-1267, 1145-1156"
+     },
+     {
+      "what": "_stop_frames",
+      "content": "full frames",
+      "count": "<= 8 per GSE at stop start",
+      "ref": "main.py:1171-1190"
+     },
+     {
+      "what": "_stop_img, _depart_img",
+      "content": "full frames",
+      "count": "1 + 1 averaged full frames per GSE",
+      "ref": "main.py:1197, 1214, 1388"
+     },
+     {
+      "what": "_checks_storage",
+      "content": "full frames",
+      "count": "<= 6 averaged full frames per GSE",
+      "ref": "main.py:1365-1372"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "Track().from_json over all tracks twice per frame",
+     "scales_with": "tracks",
+     "ref": "main.py:1750-1758, 1767-1768"
+    },
+    {
+     "what": "GSE Vehicle.from_state_dict + motion vector from tracker points",
+     "scales_with": "visible GSEs x LK points",
+     "ref": "main.py:118-132, 261-299"
+    },
+    {
+     "what": "update_invisible for every GSE ever seen (gse_dict never pruned)",
+     "scales_with": "GSE ids in the session",
+     "ref": "main.py:1761-1763"
+    },
+    {
+     "what": "obstacle window tests per GSE against persons, GSEs, beltloaders and detections",
+     "scales_with": "GSEs x (tracks + detections)",
+     "ref": "main.py:1046-1104"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single causal pass",
+    "length_reads": [
+     {
+      "what": "dataset.nframes printed every frame",
+      "ref": "main.py:1681"
+     },
+     {
+      "what": "last metadata index clips report ends",
+      "ref": "main.py:1947, 63-64"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "static diff window (middle 8 averaged)",
+      "seconds": "3",
+      "ref": "local_config.yaml:61"
+     },
+     {
+      "what": "timeout between stop checks",
+      "seconds": "10",
+      "ref": "local_config.yaml:67"
+     },
+     {
+      "what": "stored checks compared with the departure image",
+      "seconds": "up to 60",
+      "ref": "local_config.yaml:70"
+     }
+    ],
+    "decision_moment": "per GSE stop at departure confirmation (or end of video); video status after the loop",
+    "early_exit": "none in the test set (consumes all metadata; the only break is with --timestamps)",
+    "refs": [
+     "main.py:1665-1671",
+     "main.py:1937-1947"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "GSE stop/departure events from tracker private fields (_static_frames, _moving_frames, _stopping_time_thres, _display_proceeding_time_thres)",
+     "shared_equivalent": "tracker/stage-detector per-object parked/departed events",
+     "ref": "main.py:1159-1164, 1383, 1398, 1583-1587"
+    },
+    {
+     "what": "24-frame median box smoothing; IoU association of untracked GM obstacles",
+     "shared_equivalent": "tracker smoothed box / tracks for these classes",
+     "ref": "main.py:444-458, 1113-1127"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Fetch the frame once per frame and only when some GSE is STOPPING/STOPPED (every use of frame_orig is behind that status)",
+     "removes": "2G-1 redundant get_im0s calls per frame; the retrieve and discarded letterbox on frames where all GSEs move",
+     "refs": [
+      "main.py:1793",
+      "main.py:1798",
+      "main.py:728-729",
+      "main.py:1549-1550"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Compute the check image once (the same np.mean is on two lines)",
+     "removes": "one 8-frame stack + float64 mean per check",
+     "refs": [
+      "main.py:1306",
+      "main.py:1365"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Share one test_env_static score between capture_stop_frames and capture_diff_frames on stop frames 2..8 (same frames, boxes and padding; only the threshold differs)",
+     "removes": "one crop/gray/blur/match per stationary GSE per frame during stop capture",
+     "refs": [
+      "main.py:1181-1185",
+      "main.py:1244-1247"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Cache pose per (frame, person tr_id) across GSEs",
+     "removes": "k-1 RTMPose runs for a person inside k action ROIs",
+     "refs": [
+      "main.py:731-747"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Keep GSE-box crops (with a containment check) instead of full frames in _diff_frames/_stop_frames/_checks_storage/_stop_img/_depart_img; np.mean is per pixel",
+     "removes": "up to 24 referenced + 8 owned full frames per stationary GSE and full-frame averaging",
+     "refs": [
+      "main.py:1171",
+      "main.py:1266",
+      "main.py:1306",
+      "main.py:1365",
+      "main.py:1388"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Parse tracks once; build the log box from 4 fields instead of to_state_dict(); drop prints and putText(None)",
+     "removes": "second from_json pass, _p0.tolist() per GSE per frame, stdout and no-op draw calls",
+     "refs": [
+      "main.py:1750-1768",
+      "main.py:136",
+      "main.py:1676-1681",
+      "main.py:1726"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "Batch RTMPose crops of a frame; TensorRT/fp16 for RTMPose and the classifier",
+     "removes": "per-person session runs; fp32 inference",
+     "refs": [
+      "onnx_model_utils.py:139-148",
+      "main.py:1624-1627"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Release _diff_frames at departure (a stale window is reused by the next stop's static test); subsample the static test or pose; share weights or input rule with aircraft-chocks",
+     "removes": "24 full frames per departed GSE; per-frame template matching and pose",
+     "refs": [
+      "main.py:1145-1156",
+      "main.py:1247",
+      "main.py:747"
+     ]
+    }
+   ],
+   "open_questions": [
+    "effnetb0_small_clean_64_960.pt is fed a 43x428 strip squashed to 224x224; the training input is not in the checkout.",
+    "Prod db_worker defaults (--device cpu, --write_video t; db_worker/model_starter.py:344,348) differ from the test set; check the GKE job spec."
+   ]
+  },
+  {
+   "module": "aircraft-chocks",
+   "checkout": "external/aircraft-chocks",
+   "checkout_source": "default@fa00478",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "5.7",
+   "entry": "main.py:1214 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None, save_diff=False, debug_all=False)",
+   "versions": "default branch fa00478f; cv_common = ac5098d2 content (CRLF only); db_worker 5a4aa83d",
+   "audit_source": "subagent audit, key lines re-read by the parent (main.py:500-650, 894-924, 1222-1346, 1440-1709; complex_difference.py; simple_difference.py)",
+   "config": [
+    {
+     "key": "difference_classifier",
+     "value": "effnetb0_ext_fix_993.pt",
+     "ref": "local_config.yaml:16"
+    },
+    {
+     "key": "stop_capture_window / main_capture_window / main_check_timeframe",
+     "value": "80 / 80 / 80 frames",
+     "ref": "local_config.yaml:34-35, 39"
+    },
+    {
+     "key": "static_env_window / frame_average_window / differentiation_timeout",
+     "value": "16 / 8 / 80 frames",
+     "ref": "local_config.yaml:36-38"
+    },
+    {
+     "key": "static_env_threshold / not_observed_diff_threshold",
+     "value": "0.997 / 0.8 (score check commented out)",
+     "ref": "local_config.yaml:41, 50; complex_difference.py:139-140"
+    },
+    {
+     "key": "beltloader_in_thres / beltloader_out_thres",
+     "value": "16 / 40 frames",
+     "ref": "local_config.yaml:19-20"
+    },
+    {
+     "key": "pass-1 pushback window",
+     "value": "deque(maxlen=120*fps); median of the oldest half at departure",
+     "ref": "main.py:1241, 1268-1270"
+    }
+   ],
+   "models": [
+    {
+     "name": "frame-difference chock classifier (rear wheels)",
+     "weights_in_code": "os.path.join(weights_dir, config['difference_classifier'])",
+     "weights_file": "weights/effnetb0_ext_fix_993.pt",
+     "framework": "torch + timm; OpenCV/PIL/torchvision preprocessing",
+     "architecture": "timm efficientnet_b0 pretrained=False num_classes=1 (state dict, 360 tensors, 4 050 894 params); sigmoid >= 0.5",
+     "loaded_at": "main.py:1226-1231",
+     "called_at": [
+      "main.py:641 (initial checks)",
+      "main.py:731 (main check)",
+      "main.py:831 (support checks)",
+      "complex_difference.py:135-142 -> 52-59 -> 27-34"
+     ],
+     "input": {
+      "size": "224x224 from a 214x428 image",
+      "crop_rule": "_stop_bbox (mean of 8 smoothed wheel boxes, add_offset 10%) padded 10% per side, clipped; same rectangle from the averaged stop image and the averaged current image; gray; 512x256; template = central part (whole height)",
+      "padding": "none",
+      "resize": "cv2.resize (512,256) INTER_AREA; torchvision Resize((224,224))",
+      "normalization": "ToTensor + ImageNet mean/std",
+      "colour_order": "stack [clip(match - template + 127), template, match] of BGR2GRAY crops",
+      "layout_dtype": "NCHW float32, batch 1"
+     },
+     "preprocessing_excerpt": [
+      "complex_difference.py:46  res = cv2.matchTemplate(diff_img, template, cv2.TM_CCOEFF_NORMED)",
+      "complex_difference.py:139-141  # if score < not_observed_diff_thresh: (commented out); result = classify_subtraction(...)",
+      "main.py:559-561  self._stop_img = np.mean(self._stop_frames[start:end], axis=0).astype(np.uint8); self._stop_bbox = add_offset(..., 0.1, 0.1)"
+     ],
+     "device": "cuda if available and device != 'cpu' (main.py:1217-1218)",
+     "precision": "fp32",
+     "batch": "1 per call; wheels sequential",
+     "used_for_verdict": true,
+     "dead_load_note": "loaded for every video even when no rear wheel is captured",
+     "invocation": {
+      "when": "event-driven: initial checks after stop capture until chocks confirmed or the event; one main check per wheel 10 s after the event (max(pushback_attached, beltloader removal)); support checks every >= 10 s while the main result is None",
+      "condition": "_diff_timeout >= 80 and a full 16-frame static window (initial/support); event_time >= 80 with >= 8 captured frames (main)",
+      "calls_per_frame_in_window": "0 on almost every frame; <= 1 per rear wheel (<= 2 per frame)",
+      "batched_within_frame": "no",
+      "caching": "positive results latch; reference re-preprocessed per call",
+      "refs": [
+       "main.py:571-657",
+       "main.py:659-757",
+       "main.py:759-850",
+       "main.py:1636-1653"
+      ]
+     },
+     "sha256_16": "8211b62aa9c367aa",
+     "bytes": 16331050
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "dataset.get_im0s(frame_number) as an argument of update_difference per rear-wheel detection",
+      "condition": "pass 2 only, every frame from T_arr (tracker arrival_frame) until the departure break that has a rear-wheel detection; evaluated even when the wheel state will not use the frame (one decode per frame, cached for later wheels)",
+      "ref": "main.py:1653, 1475-1485, 1489-1492"
+     },
+     {
+      "what": "get_im0s(...).copy() for drawing",
+      "condition": "write_video only",
+      "ref": "main.py:1326-1327"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "test_env_static per wheel per frame in active phases (1 in stop capture/initial/support, 2 in the main capture window): crops, BGR2GRAY, GaussianBlur 3x3, matchTemplate TM_CCORR_NORMED on the bottom strip",
+      "ref": "main.py:531-535, 599-603, 692-696, 789-793; simple_difference.py:49-61"
+     },
+     {
+      "what": "np.mean over 8 full frames at stop-capture end and at every classifier call",
+      "ref": "main.py:559, 636, 723, 826"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "none; aircraft displacement from tracker _p0/_st",
+      "ref": "main.py:1446-1461"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "print per frame; cv2.putText(None) per frame",
+      "ref": "main.py:1324, 1338"
+     },
+     {
+      "what": "json_logger boxes per wheel/chock/pushback/beltloader and 1-6 texts per frame",
+      "ref": "main.py:246, 984, 1557, 1570, 1625-1712"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "_stop_frames per wheel candidate",
+      "content": "full frames",
+      "count": "<= 81 per candidate during T_arr..T_arr+80 (references to shared decoded frames; non-selected candidates keep theirs until detect() returns)",
+      "ref": "main.py:525-541, 1660-1680"
+     },
+     {
+      "what": "_main_frames / _diff_frames / _sup_frames",
+      "content": "full frames",
+      "count": "<= 81 / <= 16 / <= 16 per wheel",
+      "ref": "main.py:686-702, 615-621, 805-811"
+     },
+     {
+      "what": "_stop_img",
+      "content": "full frames",
+      "count": "1 averaged full frame per wheel for the session",
+      "ref": "main.py:559"
+     },
+     {
+      "what": "pass-1 pushback deque",
+      "content": "other",
+      "count": "<= 960 boxes",
+      "ref": "main.py:1241"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "GM + tracker ndjson parsed twice from frame 1 to T_dep (pass 1, then reload)",
+     "scales_with": "detections + tracks",
+     "ref": "main.py:1222, 1291"
+    },
+    {
+     "what": "Airplane.from_state_dict every frame in both passes + own anomaly means",
+     "scales_with": "airplane LK points",
+     "ref": "main.py:1253-1264, 1432-1472"
+    },
+    {
+     "what": "rear-wheel IoU association wheels x back_wheel detections",
+     "scales_with": "wheel candidates x detections",
+     "ref": "main.py:1502-1516"
+    }
+   ],
+   "time_structure": {
+    "passes": 2,
+    "pass1_computes": "metadata only: airplane state and largest pushback box per frame into a 960-entry deque; at departure (or frame == number_of_frames) median_pushback = median of the oldest 480 entries (about T_dep-120 s .. T_dep-60 s)",
+    "length_reads": [
+     {
+      "what": "video_worker.number_of_frames as pass-1 end fallback",
+      "ref": "main.py:1266"
+     },
+     {
+      "what": "last pass-2 frame clips the timeline",
+      "ref": "main.py:1772"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "pushback reference from the future relative to attach",
+      "seconds": "120 kept / 60 used",
+      "ref": "main.py:1241, 1268-1270"
+     },
+     {
+      "what": "stop capture and main capture",
+      "seconds": "10 + 10",
+      "ref": "local_config.yaml:34-35"
+     },
+     {
+      "what": "static window / average",
+      "seconds": "2 / 1",
+      "ref": "local_config.yaml:36-37"
+     }
+    ],
+    "decision_moment": "all three statuses after pass 2 ends at the tracker departure frame (or end of metadata); main-gear per wheel at event+10 s, can still change via support checks",
+    "early_exit": "pass 1 and pass 2 break at departure only on a frame that has an airplane track",
+    "refs": [
+     "main.py:1246-1291",
+     "main.py:1480-1485",
+     "main.py:1756-1783"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "arrival-stage block from tracker private fields (_p0, _prev_p0, _st, lifetimes)",
+     "shared_equivalent": "tracker have_arrival_stage / stage detector",
+     "ref": "main.py:1437-1472"
+    },
+    {
+     "what": "T_arr/T_dep by frame_number == arrival_frame/departure_frame",
+     "shared_equivalent": "stage detector anchors",
+     "ref": "main.py:1475-1485"
+    },
+    {
+     "what": "pushback_attached (IoU > 0.8 with pass-1 median_pushback, or nose geometry, > 40 frames)",
+     "shared_equivalent": "stage detector pushback_attached",
+     "ref": "main.py:1091-1102, 1523-1549"
+    },
+    {
+     "what": "beltloader in safety zone / removal frame (16/40 hysteresis)",
+     "shared_equivalent": "stage detector BL@door / BL leave",
+     "ref": "main.py:1561-1612"
+    },
+    {
+     "what": "rear/front wheel association and smoothing",
+     "shared_equivalent": "none (no wheel tracks)",
+     "ref": "main.py:296-304, 953-1003, 1502-1516"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Lazy frame fetch inside the difference phases that append or compare frame_orig",
+     "removes": "the per-frame per-wheel frame request on frames where no wheel state uses pixels (chocks confirmed before the event, latched results)",
+     "refs": [
+      "main.py:1653",
+      "main.py:518-541",
+      "main.py:574-621",
+      "main.py:662-702",
+      "main.py:762-811"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Crop at append for _diff/_main/_sup frames once _stop_bbox is known; average crops (np.mean of 8 uint8 then uint8 cast is per pixel)",
+     "removes": "up to 81+16+16 full-frame references per wheel and full-frame 8-frame means per classifier call",
+     "refs": [
+      "main.py:620",
+      "main.py:700",
+      "main.py:810",
+      "main.py:636",
+      "main.py:723",
+      "main.py:826"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Average only the padded _stop_bbox crop at stop-capture end and keep the crop instead of _stop_img",
+     "removes": "one 8-frame full stack and one averaged full frame per wheel for the session",
+     "refs": [
+      "main.py:555-564"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Clear the stop buffers of candidates not selected at T_arr+10 s",
+     "removes": "up to 81 full-frame references per non-selected candidate",
+     "refs": [
+      "main.py:1660-1680"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Restore only the airplane fields read; parse pass-1 rows once and replay for pass 2 (batch)",
+     "removes": "per-frame dict copies/array conversions; the second JSON parse",
+     "refs": [
+      "main.py:1253-1264",
+      "main.py:1291"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove print/putText(None) per frame",
+     "removes": "stdout and no-op draw calls",
+     "refs": [
+      "main.py:1324",
+      "main.py:1338"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "fp16/ONNX Runtime/TensorRT for the classifier; batch the two main checks that fire on the same frame",
+     "removes": "fp32 eager forwards; one of two forwards",
+     "refs": [
+      "main.py:1228-1231",
+      "main.py:708-734"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Remove pass 1: causal pushback_attached from the stage detector instead of median_pushback",
+     "removes": "the whole first pass and the non-causal input; moves the main-gear event anchor",
+     "refs": [
+      "main.py:1240-1291",
+      "main.py:1530-1549"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Stage-detector BL@door/BL leave and arrival stage instead of own logic; shared wheel track",
+     "removes": "per-frame BL/vehicle loops, anomaly math, wheel association",
+     "refs": [
+      "main.py:1561-1612",
+      "main.py:1437-1472",
+      "main.py:1502-1516"
+     ]
+    }
+   ],
+   "open_questions": [
+    "Prod Dockerfile base is cpu_base and detect() falls back to CPU (main.py:1217-1218): is the classifier on CPU in prod?",
+    "torch/torchvision/timm are unpinned in requirements.txt."
+   ]
+  },
+  {
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "checkout": "external/_branches/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed@new_logic",
+   "checkout_source": "new_logic@960bfe1",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed@new_logic",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "2.4",
+   "entry": "main.py:798 detect(source, output_path, device=None, weights_dir=None, video_worker=None, cone_camera=True, json_fn=None, write_video=False, json_logger=None)",
+   "versions": "branch export new_logic@960bfe1; cv_common pin dd5b5547 substituted with ac5098d2; db_worker 5a4aa83d; ultralytics 8.4.83 in the test env (requirements pin 8.3.226)",
+   "audit_source": "subagent audit, key lines re-read by the parent (main.py:540-620, 798-917)",
+   "config": [
+    {
+     "key": "ac_inference_period",
+     "value": "2*fps = 16 frames (no inference_interval key on this branch)",
+     "ref": "main.py:829"
+    },
+    {
+     "key": "hose predict args",
+     "value": "imgsz 992 from the checkpoint args, conf 0.25, iou 0.7, rect letterbox",
+     "ref": "main.py:579-583; ultralytics engine/model.py (checkpoint train_args imgsz 992)"
+    },
+    {
+     "key": "ac_hose.status_frame_history / min_usage_frames",
+     "value": "800 / 1700 frames",
+     "ref": "local_config.yaml:17, 19"
+    },
+    {
+     "key": "plane.departure_duration / departure_bbox_change",
+     "value": "30 s / 0.175",
+     "ref": "local_config.yaml:9-10"
+    }
+   ],
+   "models": [
+    {
+     "name": "AC hose detector (YOLO11s-seg, 1 class)",
+     "weights_in_code": "os.path.join(weights_dir, 'yolo11s_seg-det_ac_tr18_noalb.pt')",
+     "weights_file": "weights/yolo11s_seg-det_ac_tr18_noalb.pt",
+     "framework": "ultralytics YOLO on torch eager",
+     "architecture": "ultralytics SegmentationModel yolo11s-seg, nc 1, task segment (checkpoint written by 8.3.229, FP16 storage cast to fp32 at load)",
+     "loaded_at": "main.py:810-811",
+     "called_at": [
+      "main.py:579-583 (inside get_ac_hose_detections, called from main.py:900)"
+     ],
+     "input": {
+      "size": "rect letterbox of 1920x1080 to 992x558 padded to 992x576",
+      "crop_rule": "none (full frame)",
+      "padding": "114, 9 px top and bottom",
+      "resize": "cv2.resize INTER_LINEAR",
+      "normalization": "/255",
+      "colour_order": "BGR -> RGB inside ultralytics",
+      "layout_dtype": "BCHW float32, batch 1"
+     },
+     "preprocessing_excerpt": [
+      "main.py:578-583  if frame_number % ac_inference_period == 0 or prev_ac_detections is None: ac_results = ac_hose_detector.predict(source=dataset.get_im0s(frame_number).copy(), device=device, verbose=False)",
+      "main.py:584-585  else: ac_results = prev_ac_detections"
+     ],
+     "device": "cuda (main.py:808-811)",
+     "precision": "fp32",
+     "batch": "1",
+     "used_for_verdict": true,
+     "dead_load_note": "masks are computed but never read (they only drop boxes with empty masks)",
+     "invocation": {
+      "when": "every 16th absolute frame inside the window, plus the first in-window call; other in-window frames reuse the previous Results",
+      "condition": "airplane type evaluated, airplane track present, main_plane.plane_has_arrived, reference point (nose or engine) found (main.py:894-900); until the departure decision return (main.py:876)",
+      "calls_per_frame_in_window": "0 or 1 (1/16 on average)",
+      "batched_within_frame": "n/a",
+      "caching": "held Results reused on frames between inferences; the hold never expires",
+      "refs": [
+       "main.py:574-585",
+       "main.py:829-830",
+       "main.py:894-902"
+      ]
+     },
+     "sha256_16": "1a24fb38ea03ae4f",
+     "bytes": 20582638
+    }
+   ],
+   "unused_weight_files": [
+    {
+     "file": "weights/best28_full.onnx",
+     "evidence": "no import of util/yolov8_onnx.py and no reference to best28 in main.py (main.py:1-22, 810-811); only weights.dvc lists it",
+     "sha256_16": "47c42e531ab78f47",
+     "bytes": 12555697
+    }
+   ],
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "dataset.get_im0s(frame_number).copy() as the YOLO source",
+      "condition": "inference frames only (1 per 16 in the window)",
+      "ref": "main.py:578-583"
+     },
+     {
+      "what": "get_im0s(...).copy() for drawing",
+      "condition": "write_video only",
+      "ref": "main.py:835-836"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "full-frame copy before predict",
+      "ref": "main.py:580"
+     },
+     {
+      "what": "ultralytics letterbox + np.stack + contiguous copy + H2D",
+      "ref": "ultralytics engine/predictor.py preprocess"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "YOLO seg mask decoding per detection (unused by the module)",
+      "ref": "ultralytics models/yolo/segment/predict.py"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "prints per frame (incl. dataset.nframes); cv2.putText(None) per frame",
+      "ref": "main.py:833, 838, 844"
+     },
+     {
+      "what": "json_logger: plane state, nose/wing/engine boxes, status texts, obstacles and hose boxes",
+      "ref": "main.py:112, 298, 332, 367, 682"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "prev_ac_detections (Results with orig_img frame copy and GPU masks)",
+      "content": "full frames",
+      "count": "1",
+      "ref": "main.py:900"
+     },
+     {
+      "what": "status history deques",
+      "content": "other",
+      "count": "800 + 800 ints",
+      "ref": "main.py:211-212"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "Track().from_json for all tracks; plane from_state_dict per frame",
+     "scales_with": "tracks; LK points",
+     "ref": "main.py:848-849, 265-269, 113-117"
+    },
+    {
+     "what": "Counter over the 800-entry history per in-window frame",
+     "scales_with": "history length",
+     "ref": "main.py:217-225"
+    },
+    {
+     "what": "per hose box .tolist()/float() on CUDA tensors (device syncs), also on held frames",
+     "scales_with": "hose boxes",
+     "ref": "main.py:614-617"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single causal pass",
+    "length_reads": [
+     {
+      "what": "dataset.nframes printed every frame and used as last-frame departure fallback",
+      "ref": "main.py:838, 857, 867"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "decision look-back from departure start",
+      "seconds": "600 (literal 10*60*8)",
+      "ref": "main.py:714, 725"
+     },
+     {
+      "what": "departure confirmation",
+      "seconds": "30",
+      "ref": "main.py:851-866"
+     }
+    ],
+    "decision_moment": "inside the loop when departure is confirmed (30 s after departure start with bbox shrink)",
+    "early_exit": "return at the decision; otherwise consumes metadata to the end (Not observed)",
+    "refs": [
+     "main.py:851-876",
+     "main.py:909-917"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "own arrival (40 cumulative STOPPED frames) and departure (MOVING counter + bbox shrink)",
+     "shared_equivalent": "tracker arrival_frame/departure_frame, stage detector T_arr/T_dep",
+     "ref": "main.py:126-155, 851-887"
+    },
+    {
+     "what": "aircraft vs jet from wing/engine boxes",
+     "shared_equivalent": "GM airplane_type",
+     "ref": "main.py:51-80, 162-183"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Drop the frame .copy() before predict (ultralytics does not write into a numpy source)",
+     "removes": "one full-frame copy per inference",
+     "refs": [
+      "main.py:580"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Hold host-side boxes instead of the Results object",
+     "removes": "per-box device syncs on every in-window frame; a held frame copy and GPU masks",
+     "refs": [
+      "main.py:614-617",
+      "main.py:900"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Incremental status counts instead of Counter over 800 entries; remove prints and putText(None)",
+     "removes": "O(800) per in-window frame; stdout per frame",
+     "refs": [
+      "main.py:217-225",
+      "main.py:833",
+      "main.py:838",
+      "main.py:844"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove the dead best28_full.onnx and util/yolov8_onnx.py from the image",
+     "removes": "12.6 MB, no runtime call",
+     "refs": [
+      "main.py:1-22"
+     ]
+    },
+    {
+     "risk": "NEAR",
+     "what": "ONNX Runtime/TensorRT/fp16 export at the same 576x992 input; batch with other same-frame calls",
+     "removes": "eager fp32 forward",
+     "refs": [
+      "main.py:579-583"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Skip mask decoding; change the 16-frame cadence; stage-detector T_arr/T_dep instead of own counters",
+     "removes": "mask matmul/upsample; inference calls; plane counters",
+     "refs": [
+      "main.py:578-585",
+      "main.py:126-155"
+     ]
+    }
+   ],
+   "open_questions": [
+    "Prod pins ultralytics 8.3.226; preprocessing verified only on 8.4.83."
+   ]
+  },
+  {
+   "module": "pre-arrival-safety-huddle",
+   "checkout": "external/_branches/pre-arrival-safety-huddle@green_cone_median",
+   "checkout_source": "green_cone_median@a1210c5",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/pre-arrival-safety-huddle@green_cone_median",
+    "drop_state_keys": "",
+    "pixel_free": false
+   },
+   "batch_median_ms_per_recorded_frame": "1.9",
+   "entry": "main.py:276 detect(source, output_path, device, video_worker=None, write_video=False, weights_dir='', cone_camera=None, json_logger=None)",
+   "versions": "branch export green_cone_median@a1210c5; cv_common pin acfc0808 substituted with ac5098d2 + cv_common/modules overlay @2759daf; db_worker 5a4aa83d",
+   "audit_source": "subagent audit, key lines re-read by the parent (main.py:200-275, 296-456; cv_common/modules/plane_arrival_detector.py imports)",
+   "config": [
+    {
+     "key": "green cone test",
+     "value": "h/w > 1.2; crop drops 30% of width per side, top 50%, bottom 5%; median (G-R)/(R+G+B) > 0",
+     "ref": "main.py:218-241"
+    },
+    {
+     "key": "norfair cone tracker",
+     "value": "iou_distance, 0.8, initialization_delay 8, hit_counter_max 50",
+     "ref": "main.py:292-297"
+    },
+    {
+     "key": "post-arrival tail",
+     "value": "60*fps frames",
+     "ref": "main.py:440-441"
+    }
+   ],
+   "models": [],
+   "unused_weight_files": [],
+   "no_model_evidence": "imports are numpy/cv2/norfair/cv_common only (main.py:1-23); deep_sort_pytorch is never imported and its checkpoint dir is empty; PlaneArrivalDetector imports numpy and cv_common only (cv_common/modules/plane_arrival_detector.py:30-32); detect() ignores device and weights_dir",
+   "pixel_work": {
+    "full_frame_reads": [
+     {
+      "what": "bgr_image = dataset.get_im0s(frame_number) (no copy)",
+      "condition": "every frame with >= 1 GM cone detection (and a non-empty GM list), including the 60 s post-arrival tail and the break frame",
+      "ref": "main.py:345, 360-363, 384-390, 440-448"
+     },
+     {
+      "what": "get_im0s(...).copy() for drawing",
+      "condition": "write_video and frame % 4 == 0 only",
+      "ref": "main.py:320-322"
+     }
+    ],
+    "copies_resizes_colour": [
+     {
+      "what": "per cone crop: cvtColor BGR2RGB + float32 + channel ravels + median over crop pixels",
+      "ref": "main.py:202-215, 228-234"
+     }
+    ],
+    "optical_flow_segmentation": [
+     {
+      "what": "none (draw_OF_points loops over tracker points onto a None image)",
+      "ref": "main.py:406"
+     }
+    ],
+    "always_on_drawing_io_logging": [
+     {
+      "what": "prints per frame and per cone; putText(None) per frame and cone",
+      "ref": "main.py:318, 224, 334, 237-238, 451, 458"
+     },
+     {
+      "what": "json_logger per person track, obstacle, plane state, cones/ROIs/texts before arrival",
+      "ref": "main.py:354, 371, 379, 398, 481, 492, 512, 533, 540"
+     }
+    ],
+    "buffers": [
+     {
+      "what": "bgr_image reference to the cached frame",
+      "content": "full frames",
+      "count": "1 reference",
+      "ref": "main.py:385"
+     },
+     {
+      "what": "PlaneArrivalDetector bbox history",
+      "content": "other",
+      "count": "one box per plane frame until evaluation",
+      "ref": "cv_common/modules/plane_arrival_detector.py:137-144"
+     }
+    ]
+   },
+   "per_frame_cpu": [
+    {
+     "what": "Track().from_json for all tracks (only on frames with GM detections)",
+     "scales_with": "tracks",
+     "ref": "main.py:345-355"
+    },
+    {
+     "what": "Airplane from_state_dict + draw_OF_points(None) loop over LK points",
+     "scales_with": "LK points",
+     "ref": "main.py:399-406"
+    },
+    {
+     "what": "norfair update before arrival (Python IoU distances)",
+     "scales_with": "cone detections x tracked cones",
+     "ref": "main.py:450"
+    }
+   ],
+   "time_structure": {
+    "passes": 1,
+    "pass1_computes": "single causal pass",
+    "length_reads": [
+     {
+      "what": "none",
+      "ref": "main.py:276-593"
+     }
+    ],
+    "lookback_windows": [
+     {
+      "what": "huddle duration per cone",
+      "seconds": "15",
+      "ref": "main.py:44"
+     },
+     {
+      "what": "post-arrival tail",
+      "seconds": "60",
+      "ref": "main.py:440-441"
+     }
+    ],
+    "decision_moment": "after the loop; cone/huddle evidence stops at the first frame whose plane state has arrival_frame",
+    "early_exit": "break 60 s after arrival; without arrival consumes all metadata",
+    "refs": [
+     "main.py:436-449",
+     "main.py:545-593"
+    ]
+   },
+   "reimplemented_shared_components": [
+    {
+     "what": "own norfair cone tracking",
+     "shared_equivalent": "none (tracker has no cone tracks per docs)",
+     "ref": "main.py:292-297, 450-474"
+    },
+    {
+     "what": "pre-arrival stage flag and PlaneArrivalDetector",
+     "shared_equivalent": "stage detector PRE_ARRIVAL/T_arr",
+     "ref": "main.py:314, 408-412, 436-437"
+    }
+   ],
+   "candidates": [
+    {
+     "risk": "EXACT",
+     "what": "Update the plane first and skip get_im0s and the colour test on frames that will continue (arrived) or break",
+     "removes": "all frame reads and crop scoring in the 60 s post-arrival tail",
+     "refs": [
+      "main.py:384-390",
+      "main.py:440-453"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Apply the h/w > 1.2 gate before reading pixels",
+     "removes": "frame reads on frames where every cone box is too flat",
+     "refs": [
+      "main.py:223-226",
+      "main.py:384-388"
+     ]
+    },
+    {
+     "risk": "EXACT",
+     "what": "Remove draw_OF_points/putText/plot_one_box on None, prints and the unused timedelta; read arrival_frame without a full restore",
+     "removes": "per-point Python loop on plane frames; stdout; dict copies",
+     "refs": [
+      "main.py:331-334",
+      "main.py:399-406",
+      "main.py:451"
+     ]
+    },
+    {
+     "risk": "SEMANTIC",
+     "what": "Subsample the colour test; shared cone tracks; stage-detector T_arr",
+     "removes": "crop reads; norfair; arrival detector",
+     "refs": [
+      "main.py:384-390",
+      "main.py:450",
+      "main.py:408-412"
+     ]
+    }
+   ],
+   "open_questions": [
+    "prearrival_min_frames=90 is compared to a frame number although documented as seconds (cv_common/modules/plane_arrival_detector.py:56-58, 226)."
+   ]
+  }
+ ],
+ "pixel_free": [
+  {
+   "module": "3-stop-brake-check",
+   "checkout": "external/3-stop-brake-check",
+   "checkout_source": "default@14685f4",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "3.4",
+   "entry": "main.py:224 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None)",
+   "version": "default branch 14685f4; cv_common pin 86731e4c substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "parent scan of the checkout (the subagent batch result did not include this module)",
+   "model_loads": [
+    {
+     "what": "none: no torch.load / InferenceSession / YOLO( / Model( / load_model / joblib / pickle in main.py; torch, norfair (Color only) and pdb are imported but load nothing",
+     "ref": "main.py (grep, whole file)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:263-264",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "video_worker.load_source: cv2.VideoCapture opened, CAP_PROP_FRAME_COUNT read, no decode",
+     "ref": "main.py:243; db_worker/ML_worker.py:235-237",
+     "condition": "when the mp4 exists (else --no-video stub)",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded: the only get_im0s is under write_video",
+   "track_restore": {
+    "classes_used": [
+     "airplane",
+     "beltloader"
+    ],
+    "classes_restored": [
+     "airplane (every frame with an airplane track)",
+     "every beltloader track after arrival (Loader.from_state_dict / update_inner_state)"
+    ],
+    "how": "Track().from_json for every track in two loops per frame; Airplane.update_inner_state; Loader restore per beltloader",
+    "ref": "main.py:311-320, 359-371"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "two Track().from_json passes over all tracks per arrived frame",
+     "scales_with": "tracks",
+     "ref": "main.py:311-312, 359-360"
+    },
+    {
+     "what": "loader_obj.draw_OF_points(None): a cv2.circle per optical-flow point of each observed beltloader",
+     "scales_with": "beltloaders x LK points",
+     "ref": "main.py:382"
+    },
+    {
+     "what": "per-frame print and logging.info to the run log file (set_logging), incl. an f-string with get_relative_intersection per beltloader",
+     "scales_with": "frames; beltloaders",
+     "ref": "main.py:261, 272-273, 373-377"
+    },
+    {
+     "what": "obstacle scan over detections with a class-id list comprehension per detection",
+     "scales_with": "detections",
+     "ref": "main.py:280-293"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "airplane state_dict per frame; beltloader state_dict with colour; texts",
+     "ref": "main.py:320, 429, 291, 329",
+     "effect_with_log_file_none": "serialised and written to None.ndjson in the checkout on each frame change"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "airplane.draw_bbox(None); loader draw_OF_points(None); cv2.putText(None)",
+     "ref": "main.py:319, 382, 327-328"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "none",
+     "ref": "main.py:224-459"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break when airplane.departured (tracker departure_frame)",
+    "ref": "main.py:324-333"
+   },
+   "surprises": [
+    "per-frame file logging (logging.info) and prints are the most visible always-on work; draw_OF_points runs on a None image per beltloader"
+   ],
+   "exact_candidates": [
+    {
+     "what": "No-op JsonLogger and no per-frame print/logging.info",
+     "removes": "per-frame serialisation and two log sinks",
+     "refs": [
+      "main.py:261, 272-273, 320, 373-377, 429"
+     ]
+    },
+    {
+     "what": "Skip draw_OF_points/draw_bbox/putText when img_to_draw is None",
+     "removes": "per-point cv2.circle calls",
+     "refs": [
+      "main.py:319, 382"
+     ]
+    },
+    {
+     "what": "Parse tracks once per frame",
+     "removes": "second from_json pass",
+     "refs": [
+      "main.py:311-312, 359-360"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "checkout": "external/_branches/all-cargo-bin-doors-opened-and-verified@bl_approach",
+   "checkout_source": "bl_approach@3422bdc",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/all-cargo-bin-doors-opened-and-verified@bl_approach",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "1.2-2.4 (range given for the other pixel-free modules)",
+   "entry": "main.py:341 detect(...)",
+   "version": "branch export bl_approach@3422bdc; cv_common ac5098d2 substituted + cv_common/modules @2759daf; db_worker content 5a4aa83d",
+   "audit_source": "subagent batch 1 (partially returned) + parent scan",
+   "model_loads": [
+    {
+     "what": "none; PlaneArrivalDetector imports numpy and cv_common only",
+     "ref": "main.py (grep); cv_common/modules/plane_arrival_detector.py:30-32",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:382-383",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:346",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded; dataset.nframes read every frame for a print (main.py:385)",
+   "track_restore": {
+    "classes_used": [
+     "airplane (widest)",
+     "beltloader"
+    ],
+    "classes_restored": [
+     "widest airplane every frame",
+     "selected beltloader on arrived frames"
+    ],
+    "how": "Track wrappers for all tracks; Airplane restore; Beltloader.update_inner_state",
+    "ref": "main.py:223-238, 286-303, 126"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "main_plane.draw_OF_points(None): up to 250 cv2.circle per airplane frame",
+     "scales_with": "LK points",
+     "ref": "main.py:303"
+    },
+    {
+     "what": "beltloader search and door proximity on arrived frames; target-door boxes logged every frame",
+     "scales_with": "beltloader tracks x back wheels",
+     "ref": "main.py:143-174, 209"
+    },
+    {
+     "what": "PlaneArrivalDetector.update (bounded history)",
+     "scales_with": "constant",
+     "ref": "main.py:407-411"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "airplane state, door boxes, texts, beltloader states",
+     "ref": "main.py:335, 209, 113, 128, 171",
+     "effect_with_log_file_none": "written to None.ndjson on frame change"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "draw_OF_points(None), draw_bbox(None), putText(None)",
+     "ref": "main.py:303, 334, 392"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "dataset.nframes in a per-frame print",
+     "ref": "main.py:385"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break 10 s after doors confirmed and beltloader approach, or at departure",
+    "ref": "main.py:427-434, 443-447"
+   },
+   "surprises": [
+    "obstacle handling is inert on this branch (camera_config=None), so the obstacle Not-observed branch cannot fire (main.py:214, 421)"
+   ],
+   "exact_candidates": [
+    {
+     "what": "No-op JsonLogger; skip drawing on None (incl. the draw_OF_points loop); drop prints",
+     "removes": "per-frame serialisation, up to 250 cv2.circle calls, stdout",
+     "refs": [
+      "main.py:303, 334-335, 380, 385"
+     ]
+    },
+    {
+     "what": "Break as soon as the Pass inputs are frozen instead of 10 s later (reported exact by the audit; verify against make_inference)",
+     "removes": "about 80 frames per Pass video",
+     "refs": [
+      "main.py:24-29, 427-434"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "beltloader-chocks",
+   "checkout": "external/beltloader-chocks",
+   "checkout_source": "default@7056099",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "2.7",
+   "entry": "main.py:371 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "version": "default branch 7056099; own cv_common ac5098d2 (LF endings); db_worker 5a4aa83d",
+   "audit_source": "subagent batch 1 + parent scan",
+   "model_loads": [
+    {
+     "what": "none",
+     "ref": "main.py (grep)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:403-404",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:377",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded",
+   "track_restore": {
+    "classes_used": [
+     "airplane (first track in list order)",
+     "beltloader"
+    ],
+    "classes_restored": [
+     "first airplane track every frame",
+     "selected beltloader on arrived frames"
+    ],
+    "how": "collect_frame_tracks wraps all tracks; Airplane.update_inner_state; Beltloader.update_inner_state + median box window",
+    "ref": "main.py:205-230, 293-307"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "JSON box entry for every chock/cone/back_wheel/engine/back_door/wing detection and a state entry for every airplane/beltloader track, from frame 1 (long before arrival)",
+     "scales_with": "detections + tracks",
+     "ref": "main.py:183-189, 214-217"
+    },
+    {
+     "what": "airplane state logged twice per frame",
+     "scales_with": "constant",
+     "ref": "main.py:217, 228"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "detections, tracks, duplicate airplane, beltloader states, texts",
+     "ref": "main.py:189, 200, 217, 228, 305, 322",
+     "effect_with_log_file_none": "written to None.ndjson on frame change (7.55 MB after the last run)"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "plot_one_box(None) with built label f-strings; putText(None); draw_bbox(None)",
+     "ref": "main.py:216, 227, 413"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "none",
+     "ref": "main.py:371-524"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break when airplane.departured",
+    "ref": "main.py:456-459"
+   },
+   "surprises": [
+    "heavy per-frame JSON logging of all detections/tracks from frame 1; follows the first airplane track, not the largest (main.py:223)"
+   ],
+   "exact_candidates": [
+    {
+     "what": "No-op JsonLogger and skip label formatting for None images",
+     "removes": "per-detection and per-track entries, duplicate airplane entry, one json.dumps/write per frame",
+     "refs": [
+      "main.py:189, 217, 228, 305"
+     ]
+    },
+    {
+     "what": "Parse detections only on arrived, non-departed frames (before arrival they feed only logging)",
+     "removes": "per-detection parsing on pre-arrival frames",
+     "refs": [
+      "main.py:436-447"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "bl_rear_cone",
+   "checkout": "external/bl_rear_cone",
+   "checkout_source": "default@12429f5",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "1.2-2.4 (range given for the other pixel-free modules)",
+   "entry": "main.py:330 detect(source, output_path, device, video_worker=None, write_video=False, cone_camera=True, weights_dir='', json_logger=None)",
+   "version": "default branch 12429f5; cv_common pin 86731e4 substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "subagent batch 1 + parent scan",
+   "model_loads": [
+    {
+     "what": "none",
+     "ref": "main.py (grep)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:360-361",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:336",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded",
+   "track_restore": {
+    "classes_used": [
+     "airplane (first track)",
+     "beltloader"
+    ],
+    "classes_restored": [
+     "first airplane track every frame",
+     "selected beltloader on arrived frames"
+    ],
+    "how": "same scheme as beltloader-chocks",
+    "ref": "main.py:235-260, 297-311"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "JSON entry for every detection of 7 classes and every airplane/beltloader track from frame 1; duplicate airplane entry",
+     "scales_with": "detections + tracks",
+     "ref": "main.py:213-219, 244-247, 258"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "detections, tracks, duplicate airplane, beltloader states, texts",
+     "ref": "main.py:219, 230, 247, 258, 309, 326",
+     "effect_with_log_file_none": "written to None.ndjson (14.07 MB after the last run, the largest of the pixel-free set)"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "plot_one_box(None) with label f-strings; putText(None)",
+     "ref": "main.py:246, 257, 370"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "none",
+     "ref": "main.py:330-477"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break when airplane.departured",
+    "ref": "main.py:419-422"
+   },
+   "surprises": [
+    "heaviest JSON logging of the pixel-free set"
+   ],
+   "exact_candidates": [
+    {
+     "what": "No-op JsonLogger; parse detections only on arrived frames",
+     "removes": "per-detection/track serialisation; pre-arrival parsing",
+     "refs": [
+      "main.py:219, 247, 258",
+      "main.py:393-410"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "checkout": "external/_branches/chocks-and-cones-available-and-staged-for-arrival@not_observed_logic",
+   "checkout_source": "not_observed_logic@2b4fca9",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/chocks-and-cones-available-and-staged-for-arrival@not_observed_logic",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "1.2-2.4 (range given for the other pixel-free modules)",
+   "entry": "main.py:265 detect(source, output_path, device, video_worker=None, cone_camera=False, weights_dir='weights', write_video=False, json_logger=None, new_design=False)",
+   "version": "branch export not_observed_logic@2b4fca9; cv_common ac5098d2 substituted + cv_common/modules @2759daf; db_worker 5a4aa83d",
+   "audit_source": "subagent batch 1 + parent scan",
+   "model_loads": [
+    {
+     "what": "none: cv_common Model is imported but never instantiated; obstacle_logic.py and visualization_overlay.py import cv2/numpy only",
+     "ref": "main.py:10; obstacle_logic.py:1-5; visualization_overlay.py:15-16",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:298-299",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:278",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded; dataset.nframes read every frame for a print (main.py:301)",
+   "track_restore": {
+    "classes_used": [
+     "airplane (widest)"
+    ],
+    "classes_restored": [
+     "widest airplane every frame until arrival"
+    ],
+    "how": "Track wrappers for all tracks; Plane.from_state_dict / update_inner_state",
+    "ref": "main.py:134-150, 47-64"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "main_plane.draw_OF_points(None) per airplane frame",
+     "scales_with": "LK points",
+     "ref": "main.py:64"
+    },
+    {
+     "what": "process_obstacles runs a pairwise NMS twice; the second pass only draws and logs",
+     "scales_with": "obstacle candidates squared",
+     "ref": "main.py:359-360; obstacle_logic.py:95, 106-114"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "airplane state, cone/chock boxes, text lines, obstacle boxes",
+     "ref": "main.py:52, 175, 217; obstacle_logic.py:114",
+     "effect_with_log_file_none": "written to None.ndjson on frame change"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "draw_OF_points(None), draw_bbox(None), draw_detection_bbox(None)",
+     "ref": "main.py:63-64, 174"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "dataset.nframes in a per-frame print; frame count at the break is the obstruction-ratio denominator",
+     "ref": "main.py:301, 116-129"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break at the tracker arrival_frame of the widest airplane",
+    "ref": "main.py:329-333"
+   },
+   "surprises": [
+    "the module ends at arrival, so its per-recorded-frame cost is diluted over only the pre-arrival part"
+   ],
+   "exact_candidates": [
+    {
+     "what": "No-op JsonLogger; drop the second (display-only) NMS; skip drawing on None; drop prints",
+     "removes": "per-frame serialisation, one O(K^2) pass, up to 250 cv2.circle calls",
+     "refs": [
+      "main.py:52, 64, 175, 296, 301",
+      "obstacle_logic.py:106-114"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "checkout": "external/cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "checkout_source": "default@e2a25ba",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "4.9",
+   "entry": "main.py:65 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None)",
+   "version": "default branch e2a25ba; cv_common pin 33c188d substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "subagent batch 2 + parent read of main.py:95-344",
+   "model_loads": [
+    {
+     "what": "none: cv_common Model imported, never instantiated",
+     "ref": "main.py:8 (import); main.py (no Model( call)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:101-102",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:88",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded",
+   "track_restore": {
+    "classes_used": [
+     "airplane (widest)",
+     "beltloader (wrapper only)"
+    ],
+    "classes_restored": [
+     "widest airplane every frame (only on frames with GM detections)"
+    ],
+    "how": "Track wrappers for all tracks when det is non-empty; Plane.from_state_dict / update_inner_state",
+    "ref": "main.py:128-148"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "O(history): the cone window all_cones_bboxes keeps growing while any transport box is present anywhere in the frame (no spatial filter); every frame it is flattened with itertools.chain and converted with np.array into two arrays that are never read",
+     "scales_with": "cone boxes accumulated since the window last flushed (audit replay: mean 2 005, max 5 670 boxes on one video)",
+     "ref": "main.py:110-112, 275-286"
+    },
+    {
+     "what": "two class-id list comprehensions rebuilt per detection",
+     "scales_with": "detections",
+     "ref": "main.py:164, 185-186"
+    },
+    {
+     "what": "per beltloader track and vehicle: np.any over wheel overlap lists; JSON entries per cone/beltloader/vehicle + 2 texts per frame",
+     "scales_with": "beltloaders/vehicles x back wheels",
+     "ref": "main.py:216-238, 178, 271, 329"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "cone boxes, beltloader boxes, vehicle boxes, status texts",
+     "ref": "main.py:144-145, 178, 219, 238, 271, 329",
+     "effect_with_log_file_none": "written to None.ndjson on frame change"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "main_plane.draw_bbox(None); plot_one_box(None) with evaluated labels (incl. track.data['bl_type'])",
+     "ref": "main.py:143, 148, 179-197, 218, 237"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "none",
+     "ref": "main.py:65-389"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break when plane_departured, set by frame_number == main_plane.departure_frame (exact equality)",
+    "ref": "main.py:151-155, 335-336"
+   },
+   "surprises": [
+    "most expensive pixel-free module: per-frame O(history) flatten + unused np.array of an ever-growing cone window (estimated from code and data volume, not timed)",
+    "departure only by exact equality on a frame with detections: a miss runs the module to the end"
+   ],
+   "exact_candidates": [
+    {
+     "what": "Delete the two unused np.array conversions",
+     "removes": "O(window) array building per frame",
+     "refs": [
+      "main.py:285-286"
+     ]
+    },
+    {
+     "what": "Do not materialise last_cones_bboxes: truthiness via any(all_cones_bboxes), lazy itertools.chain in the dedupe loop (same order)",
+     "removes": "O(window) flatten per frame",
+     "refs": [
+      "main.py:283, 289-290, 314-322"
+     ]
+    },
+    {
+     "what": "No-op JsonLogger; skip label formatting for None images",
+     "removes": "per-frame serialisation and string work",
+     "refs": [
+      "main.py:178, 219, 238, 271, 329"
+     ]
+    },
+    {
+     "what": "NOT exact: capping or deduplicating the cone window (its oldest boxes decide the loop stop and last_frame_cones_overlapped)",
+     "removes": "-",
+     "refs": [
+      "main.py:279-309"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "checkout": "external/_branches/cones-placed-in-proper-positions-and-timely@not_observed_logic",
+   "checkout_source": "not_observed_logic@d2a6898",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "external/_branches/cones-placed-in-proper-positions-and-timely@not_observed_logic",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "1.2-2.4 (range given for the other pixel-free modules)",
+   "entry": "main.py:695 detect(source, output_path, device, video_worker=None, weights_dir='', write_video=False, cone_camera=True, json_logger=None, airplane_type=None)",
+   "version": "branch export not_observed_logic@d2a6898; cv_common pin dd5b554 substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "subagent batch 2 + parent scan",
+   "model_loads": [
+    {
+     "what": "none on the path; cones_helpers.py imports torch/torchvision but is imported by no file",
+     "ref": "cones_helpers.py:6-8; main.py (no import of cones_helpers)",
+     "runs_in_testset": false
+    },
+    {
+     "what": "weights/cones_v1.pt present but never referenced (audit)",
+     "ref": "main.py:695-853 (no reference)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:748-749",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:707",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded; dataset.nframes read every frame (print) and used in the departure decision",
+   "track_restore": {
+    "classes_used": [
+     "airplane (widest)"
+    ],
+    "classes_restored": [
+     "widest airplane every frame"
+    ],
+    "how": "Track wrappers; Plane.from_state_dict / update_inner_state",
+    "ref": "main.py:55-72, 350-366"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "aircraft-part NMS per class and part-history means; obstruction checks over all obstacle candidates",
+     "scales_with": "part detections squared; obstacle candidates",
+     "ref": "main.py:111-182, 402-583"
+    },
+    {
+     "what": "display_obstacles NMS and output_frame_info word wrapping (display/log only)",
+     "scales_with": "obstacles squared",
+     "ref": "main.py:640-685, 809, 814"
+    },
+    {
+     "what": "3 prints per frame",
+     "scales_with": "frames",
+     "ref": "main.py:746, 751, 812"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "airplane state, part/cone boxes, obstacle boxes, texts",
+     "ref": "main.py:62, 387, 589, 685",
+     "effect_with_log_file_none": "written to None.ndjson (22.9 MB after the last run)"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "cv2.putText(None) per frame; draw_bbox(None); plot_one_box(None)",
+     "ref": "main.py:757-758, 72, 386"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "dataset.nframes printed every frame and compared in the departure decision (frame_number == dataset.nframes)",
+     "ref": "main.py:751, 770, 780"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "return at departure confirmation (30 s after departure start with bbox shrink) or at frame_number == dataset.nframes",
+    "ref": "main.py:764-799"
+   },
+   "surprises": [
+    "decision depends on dataset.nframes, which differs between real-video and --no-video runs when the container count differs from the GM line count (X4)",
+    "jet thresholds dead: compares 'jet' with the 'JET' value passed"
+   ],
+   "exact_candidates": [
+    {
+     "what": "No-op JsonLogger; skip output_frame_info and display_obstacles without write_video; drop prints and None drawing",
+     "removes": "text wrapping, display NMS, serialisation, stdout",
+     "refs": [
+      "main.py:640-685, 746, 751, 757-758, 809, 812, 814"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "checkout": "external/crew-present-10-minutes-prior-to-aircraft-arrival",
+   "checkout_source": "default@5cfd25c",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "1.2-2.4 (range given for the other pixel-free modules)",
+   "entry": "main.py:29 detect(source, output_path, device=None, weights_dir=None, video_worker=None, write_video=False, cone_camera=True, json_fn=None, json_logger=None)",
+   "version": "default branch 5cfd25c; cv_common pin dd5b554 substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "subagent batch 2 + parent scan",
+   "model_loads": [
+    {
+     "what": "none",
+     "ref": "main.py (grep)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:63-64",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:32",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded",
+   "track_restore": {
+    "classes_used": [
+     "airplane (widest)"
+    ],
+    "classes_restored": [
+     "widest airplane every frame (frames with GM detections)"
+    ],
+    "how": "Track wrappers; Airplane.from_state_dict / update_inner_state; own movement-anomaly math on _p0/_st",
+    "ref": "main.py:81-85, 147-202"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "main_plane.draw_OF_points(None): a cv2.circle per airplane LK point",
+     "scales_with": "LK points",
+     "ref": "main.py:167"
+    },
+    {
+     "what": "main_plane.to_state_dict() only to log a box (_p0/_st tolist)",
+     "scales_with": "LK points",
+     "ref": "main.py:157, 168"
+    },
+    {
+     "what": "class-name reverse lookup building two lists per detection",
+     "scales_with": "detections",
+     "ref": "main.py:90"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "person boxes, texts, plane state via to_state_dict",
+     "ref": "main.py:93, 106, 118, 122, 126, 157, 168",
+     "effect_with_log_file_none": "written to None.ndjson on frame change"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "cv2.putText(None), draw_bbox(None), draw_OF_points(None), plot_one_box(None)",
+     "ref": "main.py:76-77, 94, 104-105, 156, 166-167"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "none",
+     "ref": "main.py:29-314"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "the verdict is fixed at the first frame whose airplane state has arrival_frame; the loop then keeps processing and breaks only after write_result_frames = 60*fps more non-obstacle frames",
+    "ref": "main.py:43, 123-133, 211-264"
+   },
+   "surprises": [
+    "60 s of frames are parsed, restored, logged and drawn on None after the verdict is already fixed"
+   ],
+   "exact_candidates": [
+    {
+     "what": "Break as soon as video_status is set",
+     "removes": ">= 480 frames of work per video after the decision",
+     "refs": [
+      "main.py:123-133"
+     ]
+    },
+    {
+     "what": "Skip draw_OF_points/putText/plot_one_box on None, to_state_dict for logging, the reverse class lookup; no-op JsonLogger",
+     "removes": "per-point cv2.circle calls, tolist conversions, list building per detection, serialisation",
+     "refs": [
+      "main.py:90, 157, 167-168"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "checkout": "external/_branches/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready@obstruction_plane_track",
+   "checkout_source": "obstruction_plane_track@6979d19",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": true,
+    "module_dir": "external/_branches/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready@obstruction_plane_track",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "1.2-2.4 (range given for the other pixel-free modules)",
+   "entry": "main.py:517 detect(source, output_path, device, video_worker=None, weights_dir=None, write_video=False, cone_camera=None, json_logger=None)",
+   "version": "branch export obstruction_plane_track@6979d19; cv_common pin dd5b554 substituted with ac5098d2; db_worker 5a4aa83d; NumPy-1 scalar shim",
+   "audit_source": "subagent batch 2 + parent scan",
+   "model_loads": [
+    {
+     "what": "no model load; sklearn LinearRegression().fit on trajectories once at the inference frame (CPU)",
+     "ref": "main.py:33-52, 243, 289",
+     "runs_in_testset": true
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:608-610 (main.py:584 is commented out)",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:520",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded; dataset.nframes read every frame (print) and used in the inference trigger",
+   "track_restore": {
+    "classes_used": [
+     "airplane (widest)",
+     "person (wrapper)"
+    ],
+    "classes_restored": [
+     "widest airplane every frame"
+    ],
+    "how": "Track wrappers for all tracks every frame; Airplane.from_state_dict / update_inner_state",
+    "ref": "main.py:87-95, 572-577"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "O(history): np.sum(np.array(not_observed_frames[side]) >= start) for both sides while movement is tracked, only to build a text",
+     "scales_with": "obstacle frames since arrival",
+     "ref": "obstacle_logic.py:126-137"
+    },
+    {
+     "what": "per-side obstacle NMS and a final display NMS; pushback x person driver loop",
+     "scales_with": "obstacles squared; pushbacks x persons",
+     "ref": "main.py:389-414, 444-461"
+    },
+    {
+     "what": "8-9 prints per frame",
+     "scales_with": "frames",
+     "ref": "main.py:563, 612, 643, 648, 698-701"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "plane state, plane box, detections, obstacles, workers, texts",
+     "ref": "main.py:89, 143, 364, 412, 433",
+     "effect_with_log_file_none": "written to None.ndjson (14.6 MB after the last run)"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "cv2.putText(None) per frame; draw_bbox(None); plot_one_box(None); a matplotlib trajectory PNG written once per run regardless of write_video",
+     "ref": "main.py:693, 142, 363, 260-283, 289"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "dataset.nframes printed every frame and used in the inference trigger",
+     "ref": "main.py:612, 664"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break after make_inference at departure confirmation (or last frame per dataset.nframes)",
+    "ref": "main.py:658-684"
+   },
+   "surprises": [
+    "writes a trajectory PNG into the checkout on every run; the largest stdout producer; O(history) numpy per frame for a discarded text"
+   ],
+   "exact_candidates": [
+    {
+     "what": "Skip the obstacle-counter text (keep the append)",
+     "removes": "2 O(history) array builds per frame",
+     "refs": [
+      "obstacle_logic.py:132-136"
+     ]
+    },
+    {
+     "what": "compute_trajectories with save_figure=False",
+     "removes": "figure rendering and PNG write",
+     "refs": [
+      "main.py:260-283, 289"
+     ]
+    },
+    {
+     "what": "No-op JsonLogger; skip display NMS, None drawing and prints",
+     "removes": "serialisation, O(obstacles^2) display pass, stdout",
+     "refs": [
+      "main.py:396-412, 563, 612, 693"
+     ]
+    }
+   ]
+  },
+  {
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "checkout": "external/pushback-pathway-confirmed-clear-of-obstacles",
+   "checkout_source": "default@104db85",
+   "testset_profile": {
+    "launcher": null,
+    "prepend_path": [],
+    "numpy1": false,
+    "module_dir": "",
+    "drop_state_keys": "",
+    "pixel_free": true
+   },
+   "batch_median_ms_per_recorded_frame": "3.4",
+   "entry": "main.py:201 detect(source, output_path, device, video_worker=None, write_video=False, weights_dir='weights', json_logger=None, cone_camera=None)",
+   "version": "default branch 104db85; cv_common pin dd5b554 substituted with ac5098d2; db_worker 5a4aa83d",
+   "audit_source": "subagent batch 2 + parent scan",
+   "model_loads": [
+    {
+     "what": "none (weights.dvc exists; weights_dir unused)",
+     "ref": "main.py (grep)",
+     "runs_in_testset": false
+    }
+   ],
+   "pixel_reads": [
+    {
+     "what": "dataset.get_im0s(frame_number).copy()",
+     "ref": "main.py:274-275",
+     "condition": "if write_video",
+     "runs_in_testset": false
+    },
+    {
+     "what": "load_source (VideoCapture open, no decode)",
+     "ref": "main.py:211",
+     "condition": "mp4 present",
+     "runs_in_testset": true
+    }
+   ],
+   "frame_read_when_video_present": "no frame decoded",
+   "track_restore": {
+    "classes_used": [
+     "airplane (the LAST airplane record, not the largest)"
+    ],
+    "classes_restored": [
+     "that airplane every frame with detections"
+    ],
+    "how": "Track wrappers; Plane.from_state_dict / update_inner_state + height bookkeeping",
+    "ref": "main.py:98-115, 319-332"
+   },
+   "per_frame_cpu": [
+    {
+     "what": "main_plane.draw_OF_points(None): a cv2.circle per LK point",
+     "scales_with": "LK points",
+     "ref": "main.py:334"
+    },
+    {
+     "what": "Plane.draw_bbox calls to_state_dict only to log",
+     "scales_with": "LK points",
+     "ref": "main.py:152-155, 333"
+    },
+    {
+     "what": "decreasing_height (mean + most_common) only for putText(None)",
+     "scales_with": "distinct plane heights",
+     "ref": "main.py:177-181, 338-341"
+    }
+   ],
+   "json_logging": [
+    {
+     "what": "plane state, parts, pushback/objects/vehicles, obstacles, texts",
+     "ref": "main.py:155, 192, 305, 317, 368, 441-478, 499",
+     "effect_with_log_file_none": "written to None.ndjson on frame change"
+    }
+   ],
+   "drawing_without_write_video": [
+    {
+     "what": "draw_OF_points(None), draw_bbox(None), putText(None), plot_one_box(None)",
+     "ref": "main.py:333-334, 339-341, 304, 316"
+    }
+   ],
+   "passes": 1,
+   "length_reads": [
+    {
+     "what": "none",
+     "ref": "main.py:201-574"
+    }
+   ],
+   "early_exit": {
+    "returns_early": true,
+    "condition": "break when frame_number >= main_plane.final_frame (tracker departure + 120 frames); frames without GM detections are skipped entirely",
+    "ref": "main.py:294-295, 504-505"
+   },
+   "surprises": [
+    "uses the last airplane record instead of the largest"
+   ],
+   "exact_candidates": [
+    {
+     "what": "Skip draw_OF_points/draw_bbox (and its to_state_dict) when img is None; drop the height bookkeeping used only for putText(None); no-op JsonLogger; drop the print",
+     "removes": "per-point cv2.circle calls, tolist conversions, statistics per frame, serialisation, stdout",
+     "refs": [
+      "main.py:105-115, 152-155, 177-181, 272, 333-341"
+     ]
+    }
+   ]
+  }
+ ]
+}
