@@ -111,13 +111,16 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     error = next((x for x in outs if x["name"] == "module_error"), None)
     audit = next((x for x in outs if x["name"] == "real_time_audit"), {}).get("payload", {})
     live = (verdict or {}).get("payload", {})
+    comparable = not a.max_seconds  # batch verdicts cover the whole video
     for label in ("v2", "ctl"):
         bp = os.path.join(ROOT, "out", "testset", "modules", label, a.video, f"{a.module}.json")
         b = json.load(io.open(bp, encoding="utf-8")) if os.path.exists(bp) else {}
         rec[f"batch_{label}"] = {
             "status": b.get("status"),
-            "status_identical": (live.get("status") == b.get("status")) if verdict and b else None,
-            "report_identical": (live.get("report") == b.get("report")) if verdict and b else None}
+            "status_identical": (live.get("status") == b.get("status")) if verdict and b and comparable else None,
+            "report_identical": (live.get("report") == b.get("report")) if verdict and b and comparable else None}
+    if not comparable:
+        rec["verdict_note"] = "partial run: the batch verdicts cover the whole video, not compared"
     rec.update({
         "live_status": live.get("status"), "live_report": live.get("report"),
         "decided_after_frame": live.get("decided_after_frame"), "session_closed_at_decision": live.get("session_closed"),
@@ -141,9 +144,13 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     if os.path.exists(live_gm) and os.path.getsize(live_gm):
         n = sum(1 for _ in io.open(live_gm, encoding="utf-8"))
         batch_gm = p["gm_compat"] if not a.max_seconds else head_of_file(p["gm_compat"], os.path.join(run, "batch_gm_head.ndjson"), n)
+        classes = module_classes(a.module) + ["airplane"]
         rec["gm_rows_vs_batch_v2"] = {
             "all_classes": gm_parity(batch_gm, live_gm),
-            "module_classes_and_airplane": gm_parity(batch_gm, live_gm, module_classes(a.module) + ["airplane"])}
+            "module_classes_and_airplane": gm_parity(batch_gm, live_gm, classes),
+            # the batch file writes obstacle rows with the FINAL layout from frame 1; a causal branch cannot (streaming_v0.md)
+            "module_classes_and_airplane_without_obstacles": gm_parity(
+                batch_gm, live_gm, [c for c in classes if c not in ("obstacle", "side_obstacle")])}
     if os.path.exists(live_trk) and os.path.getsize(live_trk):
         rec["tracker_vs_batch_v2"] = tracker_parity(p["trk_compat"], live_trk)
     return rec
