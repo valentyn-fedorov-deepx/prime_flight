@@ -52,7 +52,7 @@ class ProbeAdapter(Adapter):
 
 
 # name -> "module:Class"; imported only when used, so heavy module dependencies load only for their own runs
-ADAPTERS = {"probe": "pf.rt.adapters:ProbeAdapter"}
+ADAPTERS = {"probe": "pf.rt.adapters:ProbeAdapter", "prod": "pf.rt.prod_module:ProductionModuleAdapter"}
 
 
 def make_adapter(name: str, **kwargs) -> Adapter:

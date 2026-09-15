@@ -85,9 +85,11 @@ class RealtimeRun:
     def __init__(self, chunk_dir: str, manifest: dict, adapter: Adapter, link: LinkModel | None = None,
                  speed: float = 1.0, frame_queue: int = 64, reorder_timeout_s: float = 2.0, out_dir: str | None = None,
                  sample_s: float = 1.0):
-        self.chunk_dir, self.manifest, self.adapter = chunk_dir, manifest, adapter
+        # absolute paths: a production-module adapter changes the working directory to the module's folder
+        self.chunk_dir, self.manifest, self.adapter = os.path.abspath(chunk_dir), manifest, adapter
         self.link, self.speed = link or LinkModel(), speed
-        self.frame_queue, self.reorder_timeout_s, self.out_dir, self.sample_s = frame_queue, reorder_timeout_s, out_dir, sample_s
+        self.frame_queue, self.reorder_timeout_s, self.sample_s = frame_queue, reorder_timeout_s, sample_s
+        self.out_dir = os.path.abspath(out_dir) if out_dir else None
         self.fps = float(manifest["fps"])
         self.frames: list = []
         self.outputs: list = []
@@ -160,6 +162,8 @@ class RealtimeRun:
         if self.out_dir:
             os.makedirs(self.out_dir, exist_ok=True)
             sink = io.open(os.path.join(self.out_dir, "outputs.ndjson"), "w", encoding="utf-8")
+        if hasattr(self.adapter, "configure"):
+            self.adapter.configure(m)
         self.adapter.start(self.fps)
         arrivals = []
 
