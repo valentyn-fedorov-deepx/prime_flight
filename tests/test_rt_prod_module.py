@@ -119,3 +119,33 @@ def test_early_decision_is_emitted_before_the_session_ends_and_total_reads_are_a
     audit = next(o for o in r.outputs if o["name"] == "real_time_audit")
     assert audit["payload"]["non_causal_reads"]["dataset.nframes"]["count"] == 1
     assert report["frames"] == 96
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg")
+def test_vests_hook_emits_status_changes_while_the_session_runs(tmp_path, fake_module):
+    with open(os.path.join(fake_module, "main.py"), "a") as fh:
+        fh.write(textwrap.dedent("""
+            class Person:
+                VEST_ZIPPED, VEST_UNZIPPED, VEST_NOT_OBSERVED = 'zipped', 'unzipped', 'undefined'
+                def __init__(self, id):
+                    self._id, self._vest_status = id, self.VEST_NOT_OBSERVED
+                def update_params(self, person_xyxy, vest_xyxy, vest_cls, pose_cls, img, frame_id):
+                    self._vest_status = self.VEST_UNZIPPED if 20 <= frame_id < 60 else self.VEST_ZIPPED
+
+            _plain_detect = detect
+            def detect(**kw):
+                vw = kw['video_worker']
+                dataset, metadata = vw.load_source(kw['source']), vw.load_metadata()
+                worker = Person(7)
+                for frame_id, (_, _, im0s, _) in enumerate(dataset):
+                    next(metadata)
+                    worker.update_params(None, None, None, None, im0s, frame_id)
+                return 'Fail', ['worker 7'], []
+        """))
+    r, report = run(tmp_path, fake_module, adapter={"hook": "pf.rt.hooks.vests:install"})
+    changes = [(o["kind"], o["name"], o["frame_id"]) for o in r.outputs if o["name"].startswith("vest_")]
+    assert changes == [("event", "vest_zipped", 1), ("alert", "vest_unzipped", 21), ("event", "vest_zipped", 61)]
+    alert = next(o for o in r.outputs if o["name"] == "vest_unzipped")
+    verdict = next(o for o in r.outputs if o["kind"] == "verdict")
+    assert alert["emitted_t"] < verdict["emitted_t"]  # the alert left while frames were still arriving
+    assert alert["payload"] == {"worker": 7, "from": "zipped", "to": "unzipped", "provisional": True}

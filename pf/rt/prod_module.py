@@ -14,6 +14,8 @@ The module never gets the video file: `source` points to a path that does not ex
 the branch's back fails visibly. Metadata rows per frame come from GM / tracker ndjson files (`inferences_dir`: GM and
 tracker assumed to deliver in step with the frames) or are empty (`metadata="empty"`, for modules that do not read them).
 One production module per process: its `main`, `cv_common` and `db_worker` packages are imported by name.
+A `hook` can observe the module's own state without changing it (e.g. `pf.rt.hooks.vests:install`) and emit outputs
+while the session runs.
 """
 
 from __future__ import annotations
@@ -249,7 +251,7 @@ class ProductionModuleAdapter(Adapter):
                  video_name: str | None = None, total_frames: int | None = None, device: str = "cuda:0",
                  cone_camera: bool = True, airplane_type: str | None = None, weights_dir: str = "weights",
                  numpy1_scalars: bool = False, drop_state_keys: str = "", prepend_path=(), lookback_frames: int = 64,
-                 work_dir: str | None = None, env: dict | None = None):
+                 work_dir: str | None = None, env: dict | None = None, hook: str | None = None):
         if metadata not in ("files", "empty"):
             raise ValueError("metadata must be 'files' or 'empty'")
         self.module, self.name = module, f"prod:{module}"
@@ -262,6 +264,7 @@ class ProductionModuleAdapter(Adapter):
         self.lookback_frames = lookback_frames
         self.work_dir = os.path.abspath(work_dir or os.path.join(ROOT, "out", "rt", "work", module))
         self.env = env or {}
+        self.hook = hook  # "package.module:function" called as function(prod_main_module, emit) after import
         self.usage = NonCausalUsage()
         self.done = threading.Event()
         self._outbox: queue.Queue = queue.Queue()
@@ -300,6 +303,9 @@ class ProductionModuleAdapter(Adapter):
             prod.float, prod.int = numpy1_scalar_types()
         if self.drop_state_keys:
             drop_tracker_state_keys(self.drop_state_keys)
+        if self.hook:
+            hook_module, hook_fn = self.hook.split(":")
+            getattr(importlib.import_module(hook_module), hook_fn)(prod, self._emit)
         from cv_common.common import parse_config
         from cv_common.log_utils import JsonLogger
         import cv_common.utils.datasets as datasets
@@ -346,6 +352,10 @@ class ProductionModuleAdapter(Adapter):
         finally:
             self.done.set()
             self.feed.wake()
+
+    def _emit(self, kind: str, name: str, frame_id, payload: dict) -> None:
+        """Called by hooks from the module thread; the output is emitted after the current frame is processed."""
+        self._outbox.put(Output(kind, name, frame_id, payload))
 
     def _row(self) -> dict:
         if self.metadata == "empty":
