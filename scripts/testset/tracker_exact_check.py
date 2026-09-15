@@ -9,7 +9,8 @@ to whole videos.
 Per video: the production pin (`scripts/tracker_v1_profile.py --pin prod --seed 0`, start 0, every frame) on the GM v2
 second-run rows that Tracker v2 consumed in the test-set run (`scripts/tracker_v2_run.py --seed 0 --exact-fast`, same
 `--cone-camera` flag), then a line-by-line comparison of the two v1-compat tracker files. Line terminators are ignored
-(v1 writes through a text-mode file); `raw_bytes_identical` records whether the files are also equal byte for byte.
+(v1 writes through a text-mode file, CRLF on Windows; v2 writes LF); `raw_bytes_identical` records whether the files are
+also equal byte for byte and `line_terminators` which terminator each file uses.
 
 Outputs: out/testset/trk_v1_seed0/<video>/ (tracker file, profile JSON, log); summary out/testset/tracker_exact_check.json.
 Videos already in the summary are skipped unless --force.
@@ -40,6 +41,12 @@ SUMMARY = os.path.join(TS, "tracker_exact_check.json")
 PROFILE_WORKDIR = os.path.join(ROOT, "out", "tracker_profile_prod")
 
 
+def terminator(path: str) -> str:
+    with open(path, "rb") as fh:
+        line = fh.readline()
+    return "CRLF" if line.endswith(b"\r\n") else "LF" if line.endswith(b"\n") else "none"
+
+
 def compare_files(path_a: str, path_b: str) -> dict:
     lines = identical = 0
     first_diff = None
@@ -62,7 +69,8 @@ def compare_files(path_a: str, path_b: str) -> dict:
         with open(path_a, "rb") as fa, open(path_b, "rb") as fb:
             raw = fa.read() == fb.read()
     return {"lines_compared": lines, "lines_identical": identical, "first_different_line": first_diff,
-            "extra_lines_v1": extra_a, "extra_lines_v2": extra_b, "raw_bytes_identical": raw}
+            "extra_lines_v1": extra_a, "extra_lines_v2": extra_b, "raw_bytes_identical": raw,
+            "line_terminators": {"v1": terminator(path_a), "v2": terminator(path_b)}}
 
 
 def main() -> int:
