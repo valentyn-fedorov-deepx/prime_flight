@@ -119,6 +119,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     run = os.path.join(ROOT, out)
     p = o.paths(a.video)
     rec = {"video": a.video, "module": a.module, "extra_modules": a.extra_modules, "tag": a.tag, "speed": a.speed,
+           "ingest": a.ingest, "bandwidth_mbps": a.bandwidth_mbps,
            "max_seconds": a.max_seconds, "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider,
            "exit_code": rc, "wall_s": round(wall_s, 1)}
     report_path = os.path.join(run, "report.json")
@@ -183,6 +184,9 @@ def main() -> int:
     ap.add_argument("--provider", default="cuda", choices=["cuda", "tensorrt"])
     ap.add_argument("--chunks", default=None, help="default out/rt/chunks/<video stem>_gop1")
     ap.add_argument("--no-write-rows", action="store_true", help="timing runs: do not write the rows handed to the modules")
+    ap.add_argument("--ingest", default="chunks", choices=["chunks", "frames"],
+                    help="chunks: 3.75 s GOP files; frames: per-frame transport (RTSP-like)")
+    ap.add_argument("--bandwidth-mbps", type=float, default=1000.0)
     a = ap.parse_args()
 
     stem = os.path.splitext(a.video)[0]
@@ -206,6 +210,7 @@ def main() -> int:
              "write_rows": not a.no_write_rows, "extra_modules": extras}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]
+    cmd += ["--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps)]
     if a.max_seconds:
         cmd += ["--max-seconds", str(a.max_seconds)]
     t0 = time.time()

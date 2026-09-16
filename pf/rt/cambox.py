@@ -31,6 +31,37 @@ class LinkModel:
 
 
 @dataclass
+class FrameArrival:
+    """One encoded frame on its way to the server (per-frame transport: RTSP / SRT / WebRTC)."""
+
+    frame_id: int
+    due: float  # when the whole frame has arrived
+    bytes: int
+    keyframe: bool = False
+    arrived: float = 0.0
+
+
+def frame_schedule(sizes, link, t0: float, speed: float = 1.0, fps: float = 8.0, encode_ms: float = 0.0) -> list:
+    """Frame k leaves the box when it is encoded and occupies the uplink for its own bytes.
+
+    The link is serial: a frame starts only when the previous one has been sent, so at a bitrate close to the uplink
+    the queue grows — which is exactly what makes per-frame transport interesting to measure.
+    """
+    import random
+
+    rng = random.Random(getattr(link, "seed", 0))
+    out, free_at = [], 0.0
+    for i, item in enumerate(sizes, 1):
+        n_bytes, keyframe = (item if isinstance(item, (tuple, list)) else (item, False))
+        ready = (i - 1) / fps + encode_ms / 1000.0
+        start = max(ready, free_at)
+        free_at = start + (n_bytes * 8) / (link.bandwidth_mbps * 1e6)
+        jitter = rng.uniform(0, link.jitter_ms / 1000.0) if getattr(link, "jitter_ms", 0) else 0.0
+        out.append(FrameArrival(i, t0 + (free_at + link.rtt_ms / 1000.0 + jitter) / speed, int(n_bytes), bool(keyframe)))
+    return out
+
+
+@dataclass
 class ChunkArrival:
     index: int
     path: str | None  # chunk file; None when the chunk was lost

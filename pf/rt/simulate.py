@@ -37,13 +37,23 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--frame-queue", type=int, default=64)
     ap.add_argument("--reorder-timeout-s", type=float, default=2.0)
+    ap.add_argument("--ingest", default="chunks", choices=["chunks", "frames"],
+                    help="chunks: GOP files as the CameraBox writes them; frames: per-frame transport (RTSP-like)")
+    ap.add_argument("--encode-ms", type=float, default=0.0, help="per-frame encoding delay in the camera")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
     manifest = subset_manifest(load_manifest(a.chunks), a.max_seconds)
     adapter = make_adapter(a.adapter, **json.loads(a.adapter_args))
     link = LinkModel(a.bandwidth_mbps, a.rtt_ms, a.jitter_ms, a.loss, a.seed)
-    report = RealtimeRun(a.chunks, manifest, adapter, link, a.speed, a.frame_queue, a.reorder_timeout_s, a.out).run()
+    video = frame_sizes = None
+    if a.ingest == "frames":
+        from pf.rt.chunker import packet_sizes
+
+        video = manifest["video"]
+        frame_sizes = packet_sizes(video)[:manifest["n_frames"]]
+    report = RealtimeRun(a.chunks, manifest, adapter, link, a.speed, a.frame_queue, a.reorder_timeout_s, a.out,
+                         ingest=a.ingest, video=video, frame_sizes=frame_sizes, encode_ms=a.encode_ms).run()
     print(json.dumps({k: report.get(k) for k in BRIEF}, indent=1, default=str))
     return 0 if not report.get("error") else 1
 

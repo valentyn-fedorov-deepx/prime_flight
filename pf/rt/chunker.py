@@ -54,6 +54,17 @@ def keyframe_ids(video: str, fps: float) -> list:
     return sorted({round(float(t) * fps) for t in times if t})
 
 
+def packet_sizes(video: str) -> list:
+    """(bytes, keyframe) per video packet = per encoded frame, in decode order (for the per-frame delivery model)."""
+    out = _ffprobe(["-select_streams", "v:0", "-show_entries", "packet=size,flags", "-of", "csv=p=0", video])
+    sizes = []
+    for line in out.splitlines():
+        parts = line.split(",")
+        if len(parts) >= 2 and parts[0].strip().isdigit():
+            sizes.append((int(parts[0]), "K" in parts[1]))
+    return sizes
+
+
 def packet_count(path: str) -> int:
     out = _ffprobe(["-select_streams", "v:0", "-count_packets", "-show_entries", "stream=nb_read_packets", "-of", "csv=p=0",
                     path])

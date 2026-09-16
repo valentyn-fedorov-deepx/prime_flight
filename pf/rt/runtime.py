@@ -23,7 +23,7 @@ from dataclasses import asdict, dataclass, field
 
 import numpy as np
 
-from pf.rt.cambox import CameraBoxSim, LinkModel
+from pf.rt.cambox import CameraBoxSim, LinkModel, frame_schedule
 from pf.rt.receiver import ChunkReceiver
 
 _END = object()
@@ -81,16 +81,42 @@ def _pct(values, qs=(50, 95, 99, 100)) -> dict:
     return {("max" if q == 100 else f"p{q}"): round(float(np.percentile(arr, q)), 3) for q in qs}
 
 
+class _FrameBox:
+    """Per-frame delivery: every frame leaves the camera as soon as it is encoded, no chunk to wait for."""
+
+    def __init__(self, video: str, sizes: list, link: LinkModel, speed: float, fps: float, encode_ms: float = 0.0):
+        self.video, self.sizes, self.link = video, sizes, link
+        self.speed, self.fps, self.encode_ms = speed, fps, encode_ms
+        self.t0 = time.perf_counter()
+        self.arrivals: list = []
+        self.done = threading.Event()
+        self._stop = threading.Event()
+
+    def start(self) -> None:
+        self.t0 = time.perf_counter()
+        self.arrivals = frame_schedule(self.sizes, self.link, self.t0, self.speed, self.fps, self.encode_ms)
+
+    def capture_time(self, frame_id: int) -> float:
+        return self.t0 + (frame_id - 1) / self.fps / self.speed
+
+    def stop(self) -> None:
+        self._stop.set()
+
+
 class RealtimeRun:
     def __init__(self, chunk_dir: str, manifest: dict, adapter: Adapter, link: LinkModel | None = None,
                  speed: float = 1.0, frame_queue: int = 64, reorder_timeout_s: float = 2.0, out_dir: str | None = None,
-                 sample_s: float = 1.0):
+                 sample_s: float = 1.0, ingest: str = "chunks", video: str | None = None, frame_sizes=None,
+                 encode_ms: float = 0.0):
         # absolute paths: a production-module adapter changes the working directory to the module's folder
         self.chunk_dir, self.manifest, self.adapter = os.path.abspath(chunk_dir), manifest, adapter
         self.link, self.speed = link or LinkModel(), speed
         self.frame_queue, self.reorder_timeout_s, self.sample_s = frame_queue, reorder_timeout_s, sample_s
         self.out_dir = os.path.abspath(out_dir) if out_dir else None
         self.fps = float(manifest["fps"])
+        if ingest not in ("chunks", "frames"):
+            raise ValueError("ingest must be chunks (GOP files) or frames (per-frame transport)")
+        self.ingest, self.video, self.frame_sizes, self.encode_ms = ingest, video, frame_sizes, encode_ms
         self.frames: list = []
         self.outputs: list = []
         self.samples: list = []
@@ -139,13 +165,39 @@ class RealtimeRun:
         finally:
             frames_q.put(_END)
 
+    def _stream(self, box: "_FrameBox", frames_q: queue.Queue) -> None:
+        """Per-frame ingest: wait until the frame has arrived, then decode it and hand it over."""
+        import cv2
+
+        try:
+            cap = cv2.VideoCapture(box.video)
+            for a in box.arrivals:
+                while (remaining := a.due - time.perf_counter()) > 0:
+                    if box._stop.wait(remaining):
+                        return
+                t_start = time.perf_counter()
+                ok, image = cap.read()
+                t_end = time.perf_counter()
+                if not ok:
+                    break
+                a.arrived = t_end
+                capture = box.capture_time(a.frame_id)
+                frames_q.put(Frame(a.frame_id, image, capture, None, capture + box.encode_ms / 1000.0, a.due,
+                                   t_start, t_end))
+            cap.release()
+        except Exception as e:
+            self.error = f"stream: {type(e).__name__}: {e}"
+        finally:
+            box.done.set()
+            frames_q.put(_END)
+
     def _sample(self, receiver: ChunkReceiver, frames_q: queue.Queue, sim: CameraBoxSim, stop: threading.Event) -> None:
         while not stop.wait(self.sample_s):
             now = time.perf_counter()
             last = self.frames[-1] if self.frames else None
             self.samples.append({
                 "t": round(now - sim.t0, 3),
-                "receiver_pending_chunks": receiver.pending(),
+                "receiver_pending_chunks": receiver.pending() if receiver is not None else 0,
                 "frame_queue": frames_q.qsize(),
                 "last_processed_frame": last["frame_id"] if last else None,
                 "lag_s": round(now - last["capture_t"], 3) if last else None,
@@ -155,8 +207,14 @@ class RealtimeRun:
 
     def run(self) -> dict:
         m = self.manifest
-        sim = CameraBoxSim(m, self.link, self.speed, root=self.chunk_dir)
-        receiver = ChunkReceiver(first_frame_id=m["chunks"][0]["first_frame_id"], reorder_timeout_s=self.reorder_timeout_s)
+        per_frame = self.ingest == "frames"
+        if per_frame:
+            sim = _FrameBox(self.video, self.frame_sizes, self.link, self.speed, self.fps, self.encode_ms)
+            receiver = None
+        else:
+            sim = CameraBoxSim(m, self.link, self.speed, root=self.chunk_dir)
+            receiver = ChunkReceiver(first_frame_id=m["chunks"][0]["first_frame_id"],
+                                     reorder_timeout_s=self.reorder_timeout_s)
         frames_q: queue.Queue = queue.Queue(maxsize=self.frame_queue)
         sink = None
         if self.out_dir:
@@ -172,12 +230,17 @@ class RealtimeRun:
             if not a.lost:
                 receiver.put(a)
 
-        sim.start(deliver)
         stop = threading.Event()
-        closer = threading.Thread(target=lambda: (sim.done.wait(), receiver.close(m["n_frames"])), daemon=True)
-        decoder = threading.Thread(target=self._decode, args=(receiver, frames_q, sim), daemon=True, name="decoder")
+        if per_frame:
+            sim.start()
+            arrivals = sim.arrivals
+            workers = [threading.Thread(target=self._stream, args=(sim, frames_q), daemon=True, name="stream")]
+        else:
+            sim.start(deliver)
+            workers = [threading.Thread(target=lambda: (sim.done.wait(), receiver.close(m["n_frames"])), daemon=True),
+                       threading.Thread(target=self._decode, args=(receiver, frames_q, sim), daemon=True, name="decoder")]
         sampler = threading.Thread(target=self._sample, args=(receiver, frames_q, sim, stop), daemon=True, name="sampler")
-        for t in (closer, decoder, sampler):
+        for t in [*workers, sampler]:
             t.start()
 
         def emit(outs, now):
@@ -245,6 +308,7 @@ class RealtimeRun:
         lateness = [a.arrived - a.due for a in arrivals if a.arrived]
         return {
             "adapter": self.adapter.name,
+            "ingest": self.ingest,
             "video": self.manifest.get("video"),
             "chunk_seconds": self.manifest.get("chunk_seconds"),
             "speed": self.speed,
@@ -260,8 +324,8 @@ class RealtimeRun:
             "module_realtime_factor": round((len(real) / self.fps / self.speed) / busy, 2) if busy else None,
             "keeps_up": bool(drift is not None and drift < 0.05 * 60 / self.speed),
             "max_frame_queue": max((s["frame_queue"] for s in self.samples), default=0),
-            "max_receiver_pending_chunks": receiver.stats.max_pending,
-            "receiver": asdict(receiver.stats),
+            "max_receiver_pending_chunks": receiver.stats.max_pending if receiver is not None else None,
+            "receiver": asdict(receiver.stats) if receiver is not None else {},
             "chunk_delivery_lateness_s": _pct(lateness),
             "decode_mismatches": self.decode_mismatches,
             "outputs": len(self.outputs),
