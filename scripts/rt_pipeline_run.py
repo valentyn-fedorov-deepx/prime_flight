@@ -1,8 +1,8 @@
 """Real-time GM + tracker + production modules in the real-time branch, compared with the batch files.
 
 The primary module runs through `pf.rt.simulate --adapter pipeline` with the launch facts of the test set (checkout,
-overlays, device, environment); extra pixel-free modules run in their own processes (`pf.rt.module_host`) on the same
-rows. GM v2 and Tracker v2 run per frame inside the branch (detector heads and tracked classes selectable) and the modules
+overlays, device, environment); extra modules run in their own processes (`pf.rt.module_host`) on the same rows, with
+pixels handed over through a shared-memory frame ring. GM v2 and Tracker v2 run per frame inside the branch (detector heads and tracked classes selectable) and the modules
 are fed the rows they produce. Afterwards, per run:
   * every module's verdict and report against the batch runs on the GM v2 + Tracker v2 files (label v2) and on the
     production files (ctl);
@@ -174,7 +174,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", required=True)
     ap.add_argument("--module", required=True)
-    ap.add_argument("--extra-modules", default="", help="comma list of pixel-free modules hosted in their own processes")
+    ap.add_argument("--extra-modules", default="", help="comma list of modules hosted in their own processes")
     ap.add_argument("--tag", required=True)
     ap.add_argument("--speed", type=float, default=1.0)
     ap.add_argument("--max-seconds", type=float, default=None)
@@ -194,9 +194,11 @@ def main() -> int:
     margs = adapter_args(a.module, a.video, plan, os.path.join("out", "rt", "work", a.tag))
     extras = []
     for m in [x for x in a.extra_modules.split(",") if x]:
-        if not profiles.profile(m).get("pixel_free"):
-            raise SystemExit(f"{m} reads pixels: module hosts serve pixel-free modules only")
-        extras.append({"module": m, "module_args": adapter_args(m, a.video, plan, os.path.join("out", "rt", "work", a.tag, m))})
+        extra_prof = profiles.profile(m)
+        if extra_prof.get("launcher"):
+            raise SystemExit(f"{m} runs in another interpreter ({extra_prof['launcher'][0]}); not supported by a host")
+        extras.append({"module": m, "pixels": not extra_prof.get("pixel_free"),
+                       "module_args": adapter_args(m, a.video, plan, os.path.join("out", "rt", "work", a.tag, m))})
     pargs = {"module": a.module, "module_args": margs, "heads": [h for h in a.heads.split(",") if h],
              "gm_variant": "entity_clip", "gm_provider": a.provider,
              "tracker_classes": [c for c in a.tracker_classes.split(",") if c], "exact_fast": True, "seed": 0,

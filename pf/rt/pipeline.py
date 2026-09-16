@@ -5,7 +5,7 @@
                           Tracker v2 (one per event, scoped classes) ◄────┘  records final after the N_INIT delay (1 s)
                                   │ (frame_id, records), in frame order
                                   ├─► primary production module in this process (pf.rt.prod_module, metadata="live")
-                                  └─► extra pixel-free modules, one process each (pf.rt.module_host), fed without waiting
+                                  └─► extra modules, one process each (pf.rt.module_host), pixels through a shared ring
 
 A real-time GM and tracker are scoped to the modules they serve:
   * `heads` keeps only the detector heads whose rows are read (downstream: the causal second run, the tracker, the modules);
@@ -77,7 +77,10 @@ class RtPipelineAdapter(Adapter):
             for extra in extra_modules:
                 extra_args = dict(extra.get("module_args") or {})
                 extra_args["cone_camera"] = cone_camera
-                self.hosts.append(ModuleHost(extra["module"], extra_args))
+                self.hosts.append(ModuleHost(extra["module"], extra_args, pixels=bool(extra.get("pixels"))))
+        if any(h.pixels for h in self.hosts):
+            self.pixels = True  # the pipeline keeps the frames a hosted module still needs
+        self.ring = None
         self.video_name = None
         self.manifest: dict = {}
         self._rows2: dict = {}
@@ -102,8 +105,14 @@ class RtPipelineAdapter(Adapter):
         if ROOT not in sys.path:
             sys.path.insert(0, ROOT)
         t_hosts = time.perf_counter()
+        frame_spec = None
+        if any(h.pixels for h in self.hosts):
+            from pf.rt.module_host import SharedFrameRing
+
+            self.ring = SharedFrameRing()
+            frame_spec = self.ring.spec
         for host in self.hosts:  # before anything changes the working directory
-            host.start(self.manifest, fps)
+            host.start(self.manifest, fps, frame_spec)
         self.init_s["module_hosts"] = round(time.perf_counter() - t_hosts, 1)
         import torch  # noqa: F401
 
@@ -187,8 +196,9 @@ class RtPipelineAdapter(Adapter):
                 self._write_s += time.perf_counter() - tw
             meta = {"general_model": rows2, "trackers": records}
             th = time.perf_counter()
+            slot = self.ring.write(fno, image, [h for h in self.hosts if h.pixels]) if self.ring is not None else None
             for host in self.hosts:
-                outs.extend(host.push(fno, meta))
+                outs.extend(host.push(fno, meta, slot))
             self._host_send_s += time.perf_counter() - th
             outs.extend(self.module.push(fno, image, meta))
         return outs
@@ -198,6 +208,8 @@ class RtPipelineAdapter(Adapter):
         outs.extend(self.module.close())
         for host in self.hosts:
             outs.extend(host.close())
+        if self.ring is not None:
+            self.ring.close()
         self.tracker.close()
         for fh in (self._gm_fh, self._trk_fh):
             if fh:
@@ -230,7 +242,8 @@ class RtPipelineAdapter(Adapter):
             "frames": frames, "published_frames": self._published, "max_unpublished_frames": self._max_unpublished,
             "ms_per_frame": {k: _ms(v) for k, v in self._times.items()},
             "row_files_ms_per_frame": round(1000 * self._write_s / max(frames, 1), 3),
-            "module_hosts": {h.module: {"per_frame": h.stats, "failed": h.failed} for h in self.hosts},
+            "module_hosts": {h.module: {"per_frame": h.stats, "failed": h.failed, "pixels": h.pixels,
+                                       "ring_waits": h.waits, "ring_wait_s": round(h.wait_s, 2)} for h in self.hosts},
             "host_send_ms_per_frame": round(1000 * self._host_send_s / max(frames, 1), 3),
             "gm_heads": self.detectors.timings(), "tracker": self.tracker.report(), "causal_rows": vars(self.causal.stats),
             "gm_context_final": context,

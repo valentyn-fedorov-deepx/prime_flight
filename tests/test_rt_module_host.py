@@ -2,6 +2,8 @@ import os
 import sys
 import textwrap
 
+import numpy as np
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 FAKE_MAIN = """
@@ -15,6 +17,17 @@ def detect(source, output_path, device, video_worker=None, weights_dir='', write
         if STOP_AT and frame_number >= STOP_AT:
             return 'Fail', [f'{NAME}: stopped at {frame_number}'], []
     return 'Pass', [f'{NAME}: {frames} frames, {rows} rows'], []
+"""
+
+PIXEL_MAIN = """
+def detect(source, output_path, device, video_worker=None, weights_dir='', write_video=False, cone_camera=True,
+           json_logger=None):
+    dataset = video_worker.load_source(source)
+    metadata = video_worker.load_metadata()
+    seen = []
+    for frame_number, _meta in enumerate(metadata, 1):
+        seen.append(int(dataset.get_im0s(frame_number)[0, 0, 0]))
+    return 'Pass', [str(seen)], []
 """
 
 FAKE_FILES = {
@@ -34,14 +47,18 @@ FAKE_FILES = {
 }
 
 
-def fake_module(root, name: str, stop_at: int = 0) -> str:
+def write_module(root, name: str, main_text: str) -> str:
     folder = os.path.join(str(root), name)
-    for rel, text in {"main.py": f"NAME = {name!r}\nSTOP_AT = {stop_at}\n" + FAKE_MAIN, **FAKE_FILES}.items():
+    for rel, text in {"main.py": main_text, **FAKE_FILES}.items():
         path = os.path.join(folder, rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w") as fh:
             fh.write(text)
     return folder
+
+
+def fake_module(root, name: str, stop_at: int = 0) -> str:
+    return write_module(root, name, f"NAME = {name!r}\nSTOP_AT = {stop_at}\n" + FAKE_MAIN)
 
 
 def test_two_modules_in_their_own_processes_get_the_same_frames(tmp_path):
@@ -64,6 +81,26 @@ def test_two_modules_in_their_own_processes_get_the_same_frames(tmp_path):
     assert verdicts["fake_b"]["status"] == "Fail" and verdicts["fake_b"]["decided_after_frame"] == 30
     assert verdicts["fake_b"]["session_closed"] is False  # decided while frames were still being pushed
     assert all(h.failed is None and h.stats["frames"] >= 30 for h in hosts)
+
+
+def test_a_hosted_module_reads_pixels_from_the_shared_ring(tmp_path):
+    from pf.rt.module_host import ModuleHost, SharedFrameRing
+
+    ring = SharedFrameRing(shape=(8, 8, 3), slots=4)  # deliberately smaller than the run: the ring wraps every 4 frames
+    host = ModuleHost("pix", {"module_dir": write_module(tmp_path, "pix", PIXEL_MAIN), "device": "cpu",
+                              "work_dir": str(tmp_path / "work_pix")}, pixels=True)
+    try:
+        host.start({"video": "src.mp4", "n_frames": 10}, 8.0, ring.spec)
+        outs = []
+        for fid in range(1, 11):
+            slot = ring.write(fid, np.full((8, 8, 3), fid, np.uint8), [host])
+            outs += host.push(fid, {"general_model": [], "trackers": []}, slot)
+        outs += host.close()
+    finally:
+        ring.close()
+    verdict = next(o for o in outs if o.kind == "verdict")
+    assert verdict.payload["report"] == [str(list(range(1, 11)))]  # every frame arrived intact despite the wrap
+    assert host.failed is None
 
 
 def test_a_module_that_fails_to_start_is_reported_not_hung(tmp_path):
