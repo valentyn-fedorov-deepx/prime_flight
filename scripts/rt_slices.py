@@ -73,12 +73,58 @@ def module_windows(video: str, modules: list, label: str = "v2") -> list:
     return windows
 
 
-def merge(windows: list, fps: float, pre_s: float, post_s: float, join_s: float, n_frames: int) -> list:
+def tracker_classes(module: str) -> list:
+    """The tracked classes a module reads, without `airplane` (it is present from the first frame of an event)."""
+    path = os.path.join(ROOT, "docs", "analysis", "module_consumption.json")
+    mods = json.load(io.open(path, encoding="utf-8"))["modules"]
+    classes = ((mods.get(module) or {}).get("tracker") or {}).get("classes") or []
+    return [c for c in classes if c != "airplane"]
+
+
+def first_track_frame(trk_path: str, classes: list, limit: int) -> int | None:
+    """The line (= frame) where one of these classes is first published in the batch tracker file."""
+    if not classes or not os.path.exists(trk_path):
+        return None
+    wanted = set(classes)
+    with io.open(trk_path, encoding="utf-8") as fh:
+        for n, line in enumerate(fh, 1):
+            if n > limit:
+                return None
+            if any(cls in line for cls in wanted):  # cheap pre-filter before parsing
+                records = next(iter(json.loads(line).values()), [])
+                if any(r.get("cls_str") in wanted for r in records):
+                    return n
+    return None
+
+
+def history_start(window: dict, trk_path: str, fps: float, pre_s: float, max_pre_s: float,
+                  margin_s: float = 15.0) -> int:
+    """A module that counts what an object did needs history from when that object appeared — but bounded.
+
+    The class alone is a weak proxy: a beltloader or a person is somewhere at the gate almost from frame 1, while what
+    3-stop needs is the beltloader's approach to THIS aircraft. So the first appearance only extends the pre-roll, up to
+    `--max-pre-minutes`; whether the pre-roll is enough is answered by `--run`, not by this rule.
+    """
+    classes = tracker_classes(window["module"])
+    first = first_track_frame(trk_path, classes, limit=window["first"])
+    fixed = int(window["first"] - pre_s * fps)
+    floor = int(window["first"] - max_pre_s * fps)
+    if first is not None and first < fixed:
+        window["history_from"] = {"classes": classes, "first_track_frame": first,
+                                  "capped": first - margin_s * fps < floor}
+        return max(1, floor, int(first - margin_s * fps))
+    return max(1, fixed)
+
+
+def merge(windows: list, fps: float, pre_s: float, post_s: float, join_s: float, n_frames: int,
+          trk_path: str | None = None, max_pre_s: float = 480.0) -> list:
     spans = []
     for w in windows:
         if "first" not in w:
             continue
-        spans.append((max(1, int(w["first"] - pre_s * fps)), min(n_frames, int(w["last"] + post_s * fps)), w["module"]))
+        start = history_start(w, trk_path, fps, pre_s, max_pre_s) if trk_path else max(1, int(w["first"] - pre_s * fps))
+        w["window_start"] = start
+        spans.append((start, min(n_frames, int(w["last"] + post_s * fps)), w["module"]))
     spans.sort()
     slices = []
     for start, end, module in spans:
@@ -117,6 +163,10 @@ def main() -> int:
     ap.add_argument("--video", required=True)
     ap.add_argument("--modules", default=",".join(RT_MODULES))
     ap.add_argument("--pre-seconds", type=float, default=120.0, help="history before the first decided frame")
+    ap.add_argument("--max-pre-minutes", type=float, default=8.0,
+                    help="ceiling for the pre-roll a module gets from the first appearance of what it reads")
+    ap.add_argument("--fixed-pre-roll", action="store_true",
+                    help="use --pre-seconds even for a module that counts what an object did since it appeared")
     ap.add_argument("--post-seconds", type=float, default=20.0)
     ap.add_argument("--join-seconds", type=float, default=90.0, help="windows closer than this become one slice")
     ap.add_argument("--target-minutes", type=float, default=10.0, help="warn when the slices add up to more than this")
@@ -147,15 +197,22 @@ def main() -> int:
         cap.release()
 
     windows = module_windows(a.video, modules)
-    slices = merge(windows, fps, a.pre_seconds, a.post_seconds, a.join_seconds, n_frames)
+    trk_path = None if a.fixed_pre_roll else paths["trk_compat"]
+    slices = merge(windows, fps, a.pre_seconds, a.post_seconds, a.join_seconds, n_frames, trk_path,
+                   a.max_pre_minutes * 60)
     total_s = sum(s["seconds"] for s in slices)
     plan = {"video": a.video, "fps": fps, "event_minutes": round(n_frames / fps / 60, 1),
             "pre_seconds": a.pre_seconds, "post_seconds": a.post_seconds,
             "windows": windows, "slices": slices, "total_minutes": round(total_s / 60, 1),
             "share_of_event": round(total_s * fps / n_frames, 3)}
     for w in windows:
-        when = f"{w['first']}–{w['last']} ({w['first'] / fps / 60:.1f}–{w['last'] / fps / 60:.1f} min)" if "first" in w \
-            else w.get("error")
+        if "first" in w:
+            when = f"{w['first']}–{w['last']} ({w['first'] / fps / 60:.1f}–{w['last'] / fps / 60:.1f} min)"
+            history = w.get("history_from")
+            if history:
+                when += f" · reads {'/'.join(history['classes'])} from frame {history['first_track_frame']}"
+        else:
+            when = w.get("error")
         print(f"{w['module'][:60]:62s} {str(w.get('status'))[:13]:14s} {when}")
     print(f"\n{len(slices)} slice(s), {plan['total_minutes']} min of the {plan['event_minutes']} min event "
           f"({plan['share_of_event'] * 100:.0f} %)")
