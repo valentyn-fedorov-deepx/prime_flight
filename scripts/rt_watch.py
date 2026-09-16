@@ -33,14 +33,30 @@ TESTSET_JOBS = ("gm_v2_run.py", "tracker_v2_run.py", "run_module.py")
 CONTROL = os.path.join(ROOT, "out", "testset", "orchestrator_control.json")
 
 
+def source_video(video: str) -> str:
+    """A whole event under out/testset/videos, or a decision slice under out/rt/slices (scripts/rt_slices.py)."""
+    for folder in (os.path.join(ROOT, "out", "testset", "videos"), os.path.join(ROOT, "out", "rt", "slices")):
+        path = os.path.join(folder, video)
+        if os.path.exists(path):
+            return path
+    raise SystemExit(f"no video {video} under out/testset/videos or out/rt/slices "
+                     f"(fetch an event with scripts/testset/fetch.py, cut a slice with scripts/rt_slices.py)")
+
+
+def parent_event(video: str) -> str | None:
+    """`<event>_<first>_<last>.mp4` is a slice: its camera and aircraft type come from `<event>.mp4`."""
+    parts = os.path.splitext(video)[0].split("_")
+    if len(parts) >= 3 and parts[-1].isdigit() and parts[-2].isdigit():
+        return "_".join(parts[:-2]) + os.path.splitext(video)[1]
+    return None
+
+
 def ensure_chunks(video: str, max_seconds: float | None) -> str:
     stem = os.path.splitext(video)[0]
     chunks = os.path.join(ROOT, "out", "rt", "chunks", f"{stem}_gop1")
     if os.path.exists(os.path.join(chunks, "manifest.json")):
         return chunks
-    source = os.path.join(ROOT, "out", "testset", "videos", video)
-    if not os.path.exists(source):
-        raise SystemExit(f"no video at {source}: fetch it first (scripts/testset/fetch.py)")
+    source = source_video(video)
     print(f"cutting {video} into GOP chunks (once per video)...", flush=True)
     cmd = [sys.executable, "-m", "pf.rt.chunker", "--video", source, "--out", chunks, "--gops-per-chunk", "1"]
     if max_seconds:
@@ -75,7 +91,8 @@ def set_control(update: dict) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--video", default=DEFAULT_VIDEO)
+    ap.add_argument("--video", default=DEFAULT_VIDEO, help="an event from out/testset/videos or a slice from out/rt/slices")
+    ap.add_argument("--plan-video", default=None, help="event a slice was cut from (guessed from the slice name)")
     ap.add_argument("--module", default=DEFAULT_MODULE)
     ap.add_argument("--extra-modules", default="", help="comma list of modules run in their own processes")
     ap.add_argument("--tag", default=None, help="run folder under out/rt/runs (default: watch_<time>)")
@@ -111,6 +128,9 @@ def main() -> int:
            "--speed", str(a.speed), "--heads", a.heads, "--tracker-classes", a.tracker_classes,
            "--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps),
            "--watch-port", str(a.port), "--hold-s", str(a.hold_s)]
+    event = a.plan_video or parent_event(a.video)
+    if event:
+        cmd += ["--plan-video", event]
     if a.extra_modules:
         cmd += ["--extra-modules", a.extra_modules]
     if a.max_seconds:
