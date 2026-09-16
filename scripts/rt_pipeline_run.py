@@ -128,9 +128,10 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
         return rec
     r = json.load(io.open(report_path, encoding="utf-8"))
     outs = [json.loads(line) for line in io.open(os.path.join(run, "outputs.ndjson"), encoding="utf-8")]
-    comparable = not a.max_seconds  # batch verdicts cover the whole video
+    comparable = not a.max_seconds and not a.plan_video  # batch verdicts cover the whole event
     if not comparable:
-        rec["verdict_note"] = "partial run: the batch verdicts cover the whole video, not compared"
+        rec["verdict_note"] = ("slice of %s: the batch verdicts cover the whole event, not compared" % a.plan_video
+                               if a.plan_video else "partial run: the batch verdicts cover the whole video, not compared")
     primary = verdict_parity(outs, a.module, a.video, comparable)
     rec.update({k: v for k, v in primary.items() if k != "module"})
     rec["extra_module_verdicts"] = [verdict_parity(outs, m, a.video, comparable)
@@ -156,7 +157,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
                     "module_hosts": pj.get("module_hosts"), "host_send_ms_per_frame": pj.get("host_send_ms_per_frame")})
     live_gm = os.path.join(run, f"general_model{a.video}.ndjson")
     live_trk = os.path.join(run, f"trackers{a.video}.ndjson")
-    if os.path.exists(live_gm) and os.path.getsize(live_gm):
+    if os.path.exists(live_gm) and os.path.getsize(live_gm) and os.path.exists(p["gm_compat"]):
         n = sum(1 for _ in io.open(live_gm, encoding="utf-8"))
         batch_gm = p["gm_compat"] if not a.max_seconds else head_of_file(p["gm_compat"], os.path.join(run, "batch_gm_head.ndjson"), n)
         classes = module_classes(a.module) + ["airplane"]
@@ -166,7 +167,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
             # the batch file writes obstacle rows with the FINAL layout from frame 1; a causal branch cannot (streaming_v0.md)
             "module_classes_and_airplane_without_obstacles": gm_parity(
                 batch_gm, live_gm, [c for c in classes if c not in ("obstacle", "side_obstacle")])}
-    if os.path.exists(live_trk) and os.path.getsize(live_trk):
+    if os.path.exists(live_trk) and os.path.getsize(live_trk) and os.path.exists(p["trk_compat"]):
         rec["tracker_vs_batch_v2"] = tracker_parity(p["trk_compat"], live_trk)
     return rec
 
@@ -174,6 +175,9 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", required=True)
+    ap.add_argument("--plan-video", default=None,
+                    help="take camera / aircraft type from this event (for a slice cut out of it); disables the batch "
+                         "comparison, because the batch verdicts cover the whole event")
     ap.add_argument("--module", required=True)
     ap.add_argument("--extra-modules", default="", help="comma list of modules hosted in their own processes")
     ap.add_argument("--tag", required=True)
@@ -195,20 +199,21 @@ def main() -> int:
     chunks = a.chunks or os.path.join("out", "rt", "chunks", f"{stem}_gop1")
     out = os.path.join("out", "rt", "runs", a.tag)
     os.makedirs(os.path.join(ROOT, out), exist_ok=True)
-    plan = o.Plan([a.video])
+    event = a.plan_video or a.video  # a slice takes its camera and aircraft type from the event it was cut from
+    plan = o.Plan([event])
     prof = profiles.profile(a.module)
-    margs = adapter_args(a.module, a.video, plan, os.path.join("out", "rt", "work", a.tag))
+    margs = adapter_args(a.module, event, plan, os.path.join("out", "rt", "work", a.tag))
     extras = []
     for m in [x for x in a.extra_modules.split(",") if x]:
         extra_prof = profiles.profile(m)
         if extra_prof.get("launcher"):
             raise SystemExit(f"{m} runs in another interpreter ({extra_prof['launcher'][0]}); not supported by a host")
         extras.append({"module": m, "pixels": not extra_prof.get("pixel_free"),
-                       "module_args": adapter_args(m, a.video, plan, os.path.join("out", "rt", "work", a.tag, m))})
+                       "module_args": adapter_args(m, event, plan, os.path.join("out", "rt", "work", a.tag, m))})
     pargs = {"module": a.module, "module_args": margs, "heads": [h for h in a.heads.split(",") if h],
              "gm_variant": "entity_clip", "gm_provider": a.provider,
              "tracker_classes": [c for c in a.tracker_classes.split(",") if c], "exact_fast": True, "seed": 0,
-             "cone_camera": plan.cone(a.video), "pixels": not prof.get("pixel_free"), "out_dir": out,
+             "cone_camera": plan.cone(event), "pixels": not prof.get("pixel_free"), "out_dir": out,
              "write_rows": not a.no_write_rows, "extra_modules": extras}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]

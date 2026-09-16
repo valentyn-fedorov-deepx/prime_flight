@@ -94,6 +94,9 @@ def main() -> int:
     tag = a.tag or time.strftime("watch_%H%M%S")
     ensure_chunks(a.video, a.max_seconds)
     paused = []
+    if a.pause_testset and a.hold_s > 120:
+        a.hold_s = 120  # the test set stays suspended while the page is held up; do not hold it for long
+        print("holding the page for 120 s only: the test set is suspended until the run exits", flush=True)
     if a.pause_testset:
         set_control({"stop": True})
         for proc in testset_jobs():
