@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 
 from pf.rt.adapters import ADAPTERS, make_adapter
 from pf.rt.cambox import LinkModel
@@ -40,11 +41,22 @@ def main() -> int:
     ap.add_argument("--ingest", default="chunks", choices=["chunks", "frames"],
                     help="chunks: GOP files as the CameraBox writes them; frames: per-frame transport (RTSP-like)")
     ap.add_argument("--encode-ms", type=float, default=0.0, help="per-frame encoding delay in the camera")
+    ap.add_argument("--monitor-port", type=int, default=0, help="serve the live page of the run on this port (0 = off)")
+    ap.add_argument("--monitor-hold-s", type=float, default=0.0, help="keep the page up this long after the run ends")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
     manifest = subset_manifest(load_manifest(a.chunks), a.max_seconds)
     adapter = make_adapter(a.adapter, **json.loads(a.adapter_args))
+    monitor = None
+    if a.monitor_port:
+        from pf.rt.monitor import Monitor
+
+        monitor = Monitor(port=a.monitor_port).start()
+        if hasattr(adapter, "monitor"):  # the pipeline adapter shows the frame the modules were given, with its rows
+            adapter.monitor = monitor
+            adapter.feeds_monitor_frames = True
+        print(f"live view: {monitor.url}", flush=True)
     link = LinkModel(a.bandwidth_mbps, a.rtt_ms, a.jitter_ms, a.loss, a.seed)
     video = frame_sizes = None
     if a.ingest == "frames":
@@ -53,8 +65,13 @@ def main() -> int:
         video = manifest["video"]
         frame_sizes = packet_sizes(video)[:manifest["n_frames"]]
     report = RealtimeRun(a.chunks, manifest, adapter, link, a.speed, a.frame_queue, a.reorder_timeout_s, a.out,
-                         ingest=a.ingest, video=video, frame_sizes=frame_sizes, encode_ms=a.encode_ms).run()
+                         ingest=a.ingest, video=video, frame_sizes=frame_sizes, encode_ms=a.encode_ms,
+                         monitor=monitor).run()
     print(json.dumps({k: report.get(k) for k in BRIEF}, indent=1, default=str))
+    if monitor is not None and a.monitor_hold_s:
+        print(f"the run is over; the page stays up for {a.monitor_hold_s:.0f} s at {monitor.url}", flush=True)
+        time.sleep(a.monitor_hold_s)
+        monitor.stop()
     return 0 if not report.get("error") else 1
 
 

@@ -69,6 +69,12 @@ class TrackerOptions:
     # machines and segmentor; the airplane records are then NOT byte-identical to the full tracker (np.random draws
     # shift and the noise gate sees fewer tracked objects), so a scoped tracker is gated by module verdicts.
     classes: tuple = ("airplane", "beltloader", "gse", "person")
+    # --- publication delay (production = the worker N_INIT, 8 frames = 1 s) ------------------------------
+    # The delay exists for ONE reason: when DeepSORT confirms a person, the track is appended retroactively to the
+    # frames still in the buffer, so a worker is present from its first frame. Everything else in a record is final at
+    # the frame it is produced. `publish_delay=0` answers at the frame and a worker instead appears N_INIT frames late:
+    # exact for modules that read no `person` records, a verdict-gated change (NEAR) for those that do.
+    publish_delay: int | None = None  # None = production
 
 
 @dataclass
@@ -209,7 +215,7 @@ class TrackerStream:
             max_iou_distance=w.MAX_IOU_DISTANCE, max_age=w.MAX_AGE, n_init=w.N_INIT, nn_budget=w.NN_BUDGET,
             use_cuda=use_cuda, metric_type=w.METRIC_TYPE,
         )
-        self.n_init_delay = int(w.N_INIT)
+        self.n_init_delay = int(w.N_INIT) if self.opt.publish_delay is None else max(int(self.opt.publish_delay), 0)
 
         import logging
 
@@ -704,6 +710,7 @@ class TrackerStream:
             "frames": self.frames_seen,
             "exact_fast": self.opt.exact_fast,
             "classes": list(self.opt.classes),
+            "publish_delay_frames": self.n_init_delay,
             "grouped_lk": self.grouped is not None,
             "grouped_lk_stats": dict(self.grouped_stats),
             "timings_ms_per_frame": self.timings.as_ms_per_frame(),

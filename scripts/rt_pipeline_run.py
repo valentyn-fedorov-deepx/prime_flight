@@ -187,6 +187,8 @@ def main() -> int:
     ap.add_argument("--ingest", default="chunks", choices=["chunks", "frames"],
                     help="chunks: 3.75 s GOP files; frames: per-frame transport (RTSP-like)")
     ap.add_argument("--bandwidth-mbps", type=float, default=1000.0)
+    ap.add_argument("--watch-port", type=int, default=0, help="serve a live page of the run on this port (0 = off)")
+    ap.add_argument("--hold-s", type=float, default=0.0, help="keep the live page up this long after the run ends")
     a = ap.parse_args()
 
     stem = os.path.splitext(a.video)[0]
@@ -213,6 +215,9 @@ def main() -> int:
     cmd += ["--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps)]
     if a.max_seconds:
         cmd += ["--max-seconds", str(a.max_seconds)]
+    if a.watch_port:
+        cmd += ["--monitor-port", str(a.watch_port), "--monitor-hold-s", str(a.hold_s)]
+        print(f"live view: http://127.0.0.1:{a.watch_port}/ (the page fills in once the models are loaded)", flush=True)
     t0 = time.time()
     with io.open(os.path.join(ROOT, out + ".log"), "w", encoding="utf-8") as log:
         rc = subprocess.run(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT).returncode

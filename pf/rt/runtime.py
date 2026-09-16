@@ -81,6 +81,14 @@ def _pct(values, qs=(50, 95, 99, 100)) -> dict:
     return {("max" if q == 100 else f"p{q}"): round(float(np.percentile(arr, q)), 3) for q in qs}
 
 
+def _clock(seconds: float | None) -> str | None:
+    """Seconds of recording as mm:ss, the way the operator reads the timeline."""
+    if seconds is None:
+        return None
+    seconds = int(seconds)
+    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
+
 class _FrameBox:
     """Per-frame delivery: every frame leaves the camera as soon as it is encoded, no chunk to wait for."""
 
@@ -107,7 +115,7 @@ class RealtimeRun:
     def __init__(self, chunk_dir: str, manifest: dict, adapter: Adapter, link: LinkModel | None = None,
                  speed: float = 1.0, frame_queue: int = 64, reorder_timeout_s: float = 2.0, out_dir: str | None = None,
                  sample_s: float = 1.0, ingest: str = "chunks", video: str | None = None, frame_sizes=None,
-                 encode_ms: float = 0.0):
+                 encode_ms: float = 0.0, monitor=None):
         # absolute paths: a production-module adapter changes the working directory to the module's folder
         self.chunk_dir, self.manifest, self.adapter = os.path.abspath(chunk_dir), manifest, adapter
         self.link, self.speed = link or LinkModel(), speed
@@ -117,11 +125,16 @@ class RealtimeRun:
         if ingest not in ("chunks", "frames"):
             raise ValueError("ingest must be chunks (GOP files) or frames (per-frame transport)")
         self.ingest, self.video, self.frame_sizes, self.encode_ms = ingest, video, frame_sizes, encode_ms
+        self.monitor = monitor  # pf.rt.monitor.Monitor: the live page, or None
         self.frames: list = []
         self.outputs: list = []
         self.samples: list = []
         self.decode_mismatches: list = []
         self.error: str | None = None
+        self._last_image = None  # newest decoded frame, for adapters that do not feed the live page themselves
+        self._memory_gb = None
+        self._bitrate_mbps = round(8 * sum(s for s, _ in frame_sizes) / (len(frame_sizes) / self.fps) / 1e6, 2) \
+            if frame_sizes else None
 
     # ------------------------------------------------------------------ stages
 
@@ -203,6 +216,99 @@ class RealtimeRun:
                 "lag_s": round(now - last["capture_t"], 3) if last else None,
             })
 
+    # ------------------------------------------------------------------ live view
+
+    def _on_time(self) -> bool:
+        """Is the answer still arriving as fast as it did? Growing latency is what falling behind looks like."""
+        real = [r for r in self.frames[-240:] if not r["missing"]]
+        if len(real) < 120:
+            return True
+        lat = [r["done_t"] - r["capture_t"] for r in real]
+        return sum(lat[-60:]) / 60 <= sum(lat[-120:-60]) / 60 + 0.2
+
+    def _latency_components(self, recent: list) -> dict:
+        """Where the seconds between the camera and the answer are spent, averaged over the recent frames."""
+        if not recent or recent[-1]["arrived_t"] is None or recent[-1]["closed_t"] is None:
+            return {}
+        parts = {
+            "wait_for_chunk": [r["closed_t"] - r["capture_t"] for r in recent],
+            "link": [r["arrived_t"] - r["closed_t"] for r in recent],
+            "queue": [(r["decode_start_t"] - r["arrived_t"]) + (r["proc_start_t"] - r["decoded_t"]) for r in recent],
+            "decode": [r["decoded_t"] - r["decode_start_t"] for r in recent],
+            "pipeline": [r["done_t"] - r["proc_start_t"] for r in recent],
+        }
+        return {k: round(float(np.mean(v)), 3) for k, v in parts.items()}
+
+    def _modules_state(self) -> list:
+        names = getattr(self.adapter, "module_names", lambda: [])() or [self.adapter.name]
+        decided = {o["name"]: o for o in self.outputs if o["kind"] == "verdict"}
+        state = []
+        for name in names:
+            out = decided.get(name)
+            payload = (out or {}).get("payload") or {}
+            report = payload.get("report")
+            state.append({
+                "name": name,
+                "status": payload.get("status") or "running",
+                "report": report if isinstance(report, list) else ([report] if report else []),
+                "decided_at_video_time": _clock(out["frame_id"] / self.fps) if out and out.get("frame_id") else None,
+                "latency_s": (out or {}).get("latency_s"),
+            })
+        return state
+
+    def _monitor_push(self, sim, frames_q: queue.Queue, receiver, arrivals: list, status: str) -> None:
+        """The state behind the page. Called a few times a second, never inside the frame path."""
+        self._pushes = getattr(self, "_pushes", 0) + 1
+        if self._pushes % 8 == 1:  # memory every few seconds, not on every push
+            try:
+                import psutil
+
+                self._memory_gb = round(psutil.Process().memory_info().private / 2**30, 2)
+            except Exception:
+                pass
+        last = self.frames[-1] if self.frames else None
+        recent = [r for r in self.frames[-600:] if not r["missing"]]  # a window, so the cost does not grow with the run
+        lat = [r["done_t"] - r["capture_t"] for r in recent]
+        elapsed = max(time.perf_counter() - sim.t0, 1e-6)
+        received = sum(1 for a in arrivals if getattr(a, "arrived", None) is not None)
+        state = {
+            "status": status,
+            "video": os.path.basename(self.manifest.get("video") or self.video or ""),
+            "fps": self.fps,
+            "speed": self.speed,
+            "budget_ms": round(1000.0 / self.fps / self.speed, 1),
+            "frame_id": last["frame_id"] if last else 0,
+            "frames": self.manifest.get("n_frames"),
+            "video_time": _clock((last["frame_id"] / self.fps) if last else 0),
+            "wall_time": _clock(elapsed),
+            "fps_processed": round(len(self.frames) / elapsed, 2),
+            "latency_s": {"now": round(lat[-1], 3) if lat else None, **_pct(lat, (50, 100))},
+            "components_ms": {"decode": round(1000 * np.mean([r["decoded_t"] - r["decode_start_t"] for r in recent]), 2)
+                              if recent else None},
+            "components_s": self._latency_components(recent),
+            "queues": {"frame_queue": frames_q.qsize(),
+                       "receiver_pending_chunks": receiver.pending() if receiver is not None else 0},
+            "ingest": {"mode": self.ingest, "chunk_seconds": self.manifest.get("chunk_seconds"),
+                       "bandwidth_mbps": self.link.bandwidth_mbps, "bitrate_mbps": self._bitrate_mbps,
+                       "received": received, "lost": sum(1 for a in arrivals if getattr(a, "lost", False))},
+            "counts": {"verdicts": sum(1 for o in self.outputs if o["kind"] == "verdict"),
+                       "alerts": sum(1 for o in self.outputs if o["kind"] == "alert")},
+            "alerts": [{"name": o["name"], "video_time": _clock(o["frame_id"] / self.fps) if o["frame_id"] else None,
+                        "detail": str(o["payload"])[:120]}
+                       for o in self.outputs if o["kind"] in ("alert", "event")][-8:],
+            "modules": self._modules_state(),
+            "memory_gb": self._memory_gb,
+        }
+        live = getattr(self.adapter, "live_state", None)
+        for key, value in ((live() if live else None) or {}).items():
+            if isinstance(value, dict) and isinstance(state.get(key), dict):
+                state[key].update(value)
+            else:
+                state[key] = value
+        self.monitor.update(state)
+        if last is not None and not getattr(self.adapter, "feeds_monitor_frames", False):
+            self.monitor.set_frame(self._last_image, frame_id=last["frame_id"])
+
     # ------------------------------------------------------------------ run
 
     def run(self) -> dict:
@@ -253,6 +359,7 @@ class RealtimeRun:
                     sink.write(json.dumps(rec, default=str) + "\n")
                     sink.flush()
 
+        monitor_every, next_monitor = 0.3, 0.0
         try:
             while True:
                 f = frames_q.get()
@@ -267,6 +374,12 @@ class RealtimeRun:
                     "decoded_t": f.decoded_t, "proc_start_t": t_proc, "done_t": t_done,
                 })
                 emit(outs, t_done)
+                if self.monitor is not None:
+                    if f.image is not None:
+                        self._last_image = f.image
+                    if t_done >= next_monitor:
+                        self._monitor_push(sim, frames_q, receiver, arrivals, "keeping up" if self._on_time() else "behind")
+                        next_monitor = time.perf_counter() + monitor_every
             emit(self.adapter.close(), time.perf_counter())
         except Exception as e:
             self.error = f"module: {type(e).__name__}: {e}"
@@ -277,6 +390,14 @@ class RealtimeRun:
             if sink:
                 sink.close()
         report = self.report(sim, receiver, arrivals)
+        if self.monitor is not None:
+            try:
+                import psutil
+
+                self._memory_gb = round(psutil.Process().memory_info().private / 2**30, 2)
+            except Exception:
+                pass
+            self._monitor_push(sim, frames_q, receiver, arrivals, "finished")
         if self.out_dir:
             with io.open(os.path.join(self.out_dir, "report.json"), "w", encoding="utf-8") as fh:
                 json.dump(report, fh, indent=1, default=str)

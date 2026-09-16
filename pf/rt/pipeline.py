@@ -50,7 +50,8 @@ class RtPipelineAdapter(Adapter):
                  gm_weights_dir: str | None = None, gm_variant: str = "entity_clip", gm_provider: str = "cuda",
                  str2id: str | None = None, tracker_weights_dir: str | None = None, tracker_classes=None,
                  exact_fast: bool = True, seed: int = 0, cone_camera: bool = True, refresh_every: int = 60,
-                 pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None):
+                 pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None,
+                 monitor=None):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -81,10 +82,14 @@ class RtPipelineAdapter(Adapter):
         if any(h.pixels for h in self.hosts):
             self.pixels = True  # the pipeline keeps the frames a hosted module still needs
         self.ring = None
+        self.monitor = monitor  # the live page sees the published frame: the rows and records the modules were given
+        self.feeds_monitor_frames = monitor is not None
         self.video_name = None
         self.manifest: dict = {}
         self._rows2: dict = {}
         self._images: dict = {}
+        self._mon_images: dict = {}
+        self._last_published = (0, 0, 0)  # frame id, rows, records
         self._times = {"gm": [], "second_run_rows": [], "tracker": [], "module": [], "total": []}
         self._write_s = 0.0
         self._host_send_s = 0.0
@@ -140,6 +145,8 @@ class RtPipelineAdapter(Adapter):
         self.gm = GmStream(cm, event_id=self.video_name or "live", fps=int(fps), detectors=self.detectors,
                            variant=self.gm_variant)
         self.causal = CausalSecondRun(self.gm.context, cm, refresh_every=self.refresh_every)
+        if self.monitor is not None:
+            self.monitor.set_class_names(cm.id2str)
         self.tracker = TrackerStream(TrackerOptions(weights_dir=self.tracker_weights_dir, exact_fast=self.exact_fast,
                                                     cone_camera=self.cone_camera, classes=self.tracker_classes))
         self.init_s["gm_and_tracker"] = round(time.perf_counter() - t0, 1)
@@ -171,6 +178,8 @@ class RtPipelineAdapter(Adapter):
         self._rows2[fid] = rows2
         if self.pixels:
             self._images[fid] = image
+        elif self.monitor is not None:
+            self._mon_images[fid] = image  # a reference, freed when the frame is published
         self._max_unpublished = max(self._max_unpublished, len(self._rows2))
         outs = self._publish(published)
         for host in self.hosts:
@@ -201,7 +210,31 @@ class RtPipelineAdapter(Adapter):
                 outs.extend(host.push(fno, meta, slot))
             self._host_send_s += time.perf_counter() - th
             outs.extend(self.module.push(fno, image, meta))
+            if self.monitor is not None:
+                self._last_published = (fno, len(rows2), len(records))
+                view = image if image is not None else self._mon_images.get(fno)
+                for stale in [k for k in self._mon_images if k <= fno]:
+                    del self._mon_images[stale]
+                self.monitor.set_frame(view, rows2, records, fno)
         return outs
+
+    # ------------------------------------------------------------------ live view
+
+    def module_names(self) -> list:
+        return [self.module_name, *[h.module for h in self.hosts]]
+
+    def live_state(self) -> dict:
+        """What the page shows about the branch itself; recent means, not the whole run."""
+        window = 50
+        ms = {k: (round(1000.0 * sum(v[-window:]) / len(v[-window:]), 2) if v else None) for k, v in self._times.items()}
+        fno, rows, records = self._last_published
+        return {
+            "components_ms": ms,
+            "gm": {"heads": list(self.heads), "rows": rows, "variant": self.gm_variant, "provider": self.gm_provider},
+            "tracker": {"classes": list(self.tracker_classes), "records": records,
+                        "publish_lag_frames": len(self._rows2), "published_frame": fno},
+            "queues": {"unpublished": len(self._rows2)},
+        }
 
     def close(self) -> list:
         outs = self._publish(self.tracker.finish())
