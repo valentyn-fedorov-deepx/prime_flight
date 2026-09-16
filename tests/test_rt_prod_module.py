@@ -117,7 +117,7 @@ def test_early_decision_is_emitted_before_the_session_ends_and_total_reads_are_a
     assert verdict["payload"]["decided_after_frame"] == 40
     assert verdict["payload"]["session_closed"] is False  # decided while frames were still arriving
     audit = next(o for o in r.outputs if o["name"] == "real_time_audit")
-    assert audit["payload"]["non_causal_reads"]["dataset.nframes"]["count"] == 1
+    assert audit["payload"]["non_causal_reads"]["dataset.nframes before the end-of-session marker"]["count"] == 1
     assert report["frames"] == 96
 
 

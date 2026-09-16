@@ -8,7 +8,9 @@ metadata row, or returned), so the runtime's per-frame timings measure the modul
 
 What real time does not have is recorded, not hidden:
   * the session's total frame count (`dataset.nframes`, `cap.get(CAP_PROP_FRAME_COUNT)`, `video_worker.number_of_frames`):
-    served from the manifest, every read counted with its first call site;
+    with `session_length="marker"` (the default) the branch does not know it until the recording closes, so reads
+    before the end-of-session marker get `unknown_length` — a value no frame number reaches — and are counted
+    separately; `session_length="manifest"` serves the total from the start (the old behaviour, for comparisons);
   * frames the module asks for after they left the look-back window (`lookback_frames`): an error naming the frame.
 The module never gets the video file: `source` points to a path that does not exist, so a module that opens the file behind
 the branch's back fails visibly. Metadata rows per frame come from GM / tracker ndjson files (`inferences_dir`: GM and
@@ -126,8 +128,8 @@ class LiveFeed:
 class _LiveCap:
     """The `dataset.cap` / `vid_cap` modules query for fps and frame counts."""
 
-    def __init__(self, dataset, fps: float, total: int, usage: NonCausalUsage):
-        self._ds, self._fps, self._total, self._usage = dataset, fps, total, usage
+    def __init__(self, dataset, fps: float, length, usage: NonCausalUsage):
+        self._ds, self._fps, self._length, self._usage = dataset, fps, length, usage
 
     def get(self, prop):
         import cv2
@@ -135,8 +137,7 @@ class _LiveCap:
         if prop == cv2.CAP_PROP_FPS:
             return float(self._fps)
         if prop == cv2.CAP_PROP_FRAME_COUNT:
-            self._usage.hit("cap.get(CAP_PROP_FRAME_COUNT)")
-            return float(self._total)
+            return float(self._length("cap.get(CAP_PROP_FRAME_COUNT)"))
         if prop == cv2.CAP_PROP_POS_FRAMES:
             return float(self._ds.frame)
         self._usage.hit(f"cap.get({prop})")
@@ -153,18 +154,17 @@ class LiveDataset:
     """cv_common.utils.datasets.LoadImages for one video, fed frame by frame: iteration, get_frame / get_im0s (forward only),
     letterbox + CHW RGB conversion as in the original."""
 
-    def __init__(self, feed: LiveFeed, path: str, total: int, fps: float, letterbox, img_size: int, usage: NonCausalUsage,
+    def __init__(self, feed: LiveFeed, path: str, length, fps: float, letterbox, img_size: int, usage: NonCausalUsage,
                  stride: int = 64, auto: bool = True):
         self.feed, self.files, self.nf, self.video_flag, self.mode = feed, [path], 1, [True], "video"
         self.img_size, self.stride, self.auto, self._letterbox = img_size, stride, auto, letterbox
-        self.count, self.frame, self._total, self._usage = 0, 0, total, usage
+        self.count, self.frame, self._length, self._usage = 0, 0, length, usage
         self._loaded_frame, self._loaded_items = None, None
-        self.cap = _LiveCap(self, fps, total, usage)
+        self.cap = _LiveCap(self, fps, length, usage)
 
     @property
     def nframes(self) -> int:
-        self._usage.hit("dataset.nframes")
-        return self._total
+        return self._length("dataset.nframes")
 
     def _items(self, img0):
         img = self._letterbox(img0, self.img_size, stride=self.stride, auto=self.auto)[0]
@@ -203,7 +203,7 @@ class LiveDataset:
         return self.nf
 
 
-def make_live_worker(VideoWorker, feed: LiveFeed, dataset_factory, total: int, fps: float, usage: NonCausalUsage):
+def make_live_worker(VideoWorker, feed: LiveFeed, dataset_factory, length, fps: float, usage: NonCausalUsage):
     """The module's own db_worker VideoWorker with the live dataset and metadata generator."""
 
     class LiveVideoWorker(VideoWorker):
@@ -227,8 +227,7 @@ def make_live_worker(VideoWorker, feed: LiveFeed, dataset_factory, total: int, f
 
         @property
         def number_of_frames(self):
-            usage.hit("video_worker.number_of_frames")
-            return total
+            return length("video_worker.number_of_frames")
 
         @number_of_frames.setter
         def number_of_frames(self, value):
@@ -252,7 +251,10 @@ class ProductionModuleAdapter(Adapter):
                  video_name: str | None = None, total_frames: int | None = None, device: str = "cuda:0",
                  cone_camera: bool = True, airplane_type: str | None = None, weights_dir: str = "weights",
                  numpy1_scalars: bool = False, drop_state_keys: str = "", prepend_path=(), lookback_frames: int = 64,
-                 work_dir: str | None = None, env: dict | None = None, hook: str | None = None):
+                 work_dir: str | None = None, env: dict | None = None, hook: str | None = None,
+                 session_length: str = "marker", unknown_length: int = 1_000_000_000):
+        if session_length not in ("marker", "manifest"):
+            raise ValueError("session_length must be marker (real time) or manifest (known from the start)")
         if metadata not in ("files", "empty", "live"):
             raise ValueError("metadata must be 'files', 'empty' or 'live'")
         self.module, self.name = module, f"prod:{module}"
@@ -271,6 +273,8 @@ class ProductionModuleAdapter(Adapter):
         self._outbox: queue.Queue = queue.Queue()
         self._gm = self._trk = None
         self._blank = None
+        self.session_length, self.unknown_length = session_length, unknown_length
+        self._length_known = session_length == "manifest"
 
     def configure(self, manifest: dict) -> None:
         """Session facts from the chunk manifest (the runner calls this before start)."""
@@ -315,8 +319,8 @@ class ProductionModuleAdapter(Adapter):
 
         self.feed = LiveFeed(self.lookback_frames)
         img_size = ml_worker.cv_config["img_size"] if hasattr(ml_worker, "cv_config") else 1280
-        factory = lambda src: LiveDataset(self.feed, src, self.total_frames, fps, datasets.letterbox, img_size, self.usage)
-        Worker = make_live_worker(ml_worker.VideoWorker, self.feed, factory, self.total_frames, fps, self.usage)
+        factory = lambda src: LiveDataset(self.feed, src, self._length, fps, datasets.letterbox, img_size, self.usage)
+        Worker = make_live_worker(ml_worker.VideoWorker, self.feed, factory, self._length, fps, self.usage)
         source = os.path.join(self.work_dir, "no_video_file", self.video_name)  # never opened: pixels come from the feed
         vw = Worker(model_name="model-name", load_tracks=True, source=source, testing=True, auto_download_inference=False,
                     inferences_dir=os.path.join(self.work_dir, "inferences"))
@@ -374,6 +378,24 @@ class ProductionModuleAdapter(Adapter):
             except queue.Empty:
                 return out
 
+    def _length(self, reader: str) -> int:
+        """The session length the branch can honestly give: only after the end-of-session marker."""
+        if self._length_known:
+            self.usage.hit(reader)
+            return int(self.total_frames)
+        self.usage.hit(reader + " before the end-of-session marker")
+        return int(self.unknown_length)
+
+    def session_end(self, total_frames: int | None = None) -> None:
+        """The recording closed: the session length is known (in production: the last chunk of the session)."""
+        if total_frames:
+            self.total_frames = total_frames
+        self._length_known = True
+
+    def _mark_last_frame(self, frame_id: int) -> None:
+        if not self._length_known and self.total_frames and frame_id >= self.total_frames:
+            self.session_end()
+
     def push(self, frame_id: int, image, meta: dict) -> list:
         """metadata='live': one frame with the rows the branch produced for it, in frame order. `image` None = a module that
         never reads pixels (a shared blank frame is handed over)."""
@@ -381,6 +403,7 @@ class ProductionModuleAdapter(Adapter):
             if self._blank is None:
                 self._blank = np.zeros((1080, 1920, 3), np.uint8)
             image = self._blank
+        self._mark_last_frame(frame_id)
         self.feed.put(frame_id, image, meta)
         if not self.done.is_set():
             self.feed.wait_past(frame_id, self.done)
@@ -390,6 +413,7 @@ class ProductionModuleAdapter(Adapter):
         if self.metadata == "live":
             raise RuntimeError("metadata='live': the branch hands frames over with push()")
         image = frame.image if not frame.missing else np.zeros((1080, 1920, 3), np.uint8)
+        self._mark_last_frame(frame.frame_id)
         self.feed.put(frame.frame_id, image, self._row())
         if not self.done.is_set():
             self.feed.wait_past(frame.frame_id, self.done)
@@ -404,5 +428,6 @@ class ProductionModuleAdapter(Adapter):
         out = self._drain()
         out.append(Output("note", "real_time_audit", None, {
             "non_causal_reads": self.usage.hits, "lookback_misses": self.feed.lookback_misses[:20],
-            "lookback_frames": self.lookback_frames}))
+            "lookback_frames": self.lookback_frames, "session_length": self.session_length,
+            "session_length_known_at_close": self._length_known}))
         return out
