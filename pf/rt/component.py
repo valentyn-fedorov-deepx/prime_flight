@@ -26,7 +26,7 @@ import json
 import os
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONSUMPTION = os.path.join(ROOT, "docs", "analysis", "module_consumption.json")
@@ -119,7 +119,7 @@ class ComponentSpec:
 
     def reads_optical_flow_state(self) -> bool:
         """Does the module read the tracker's own optical-flow state? (`_status` is not `_st`: compare whole names.)"""
-        names = {field.split()[0] for field in self.private_fields if field}
+        names = {declared.split()[0] for declared in self.private_fields if declared}
         return bool(names & {"_p0", "_st"})
 
     def subscription(self, class_id_of=None) -> Subscription:

@@ -1,0 +1,61 @@
+name: gpu gates (self-hosted)
+
+# The gates that cannot run on a hosted runner: they need the RTX machine, the GM / tracker weights (DVC), the private
+# module checkouts in `external/` and real videos. Today the only such machine is the lead's workstation, so this
+# workflow is dispatch-only and does nothing until a runner labelled `gpu` is registered — that is PF-Q1-07 (a
+# self-hosted GPU runner, blocked on Ihor). Nothing here ever queues by itself.
+#
+# To use it once a runner exists:
+#   1. register the runner on the machine that holds external/, out/testset and the weights, with labels: self-hosted, gpu
+#   2. Actions -> "gpu gates (self-hosted)" -> Run workflow, pick what to run
+# The run leaves its reports as artifacts; nothing is pushed anywhere and no credentials are needed — the machine already
+# has its own gcloud / DVC setup, and secrets never enter this repository.
+
+on:
+  workflow_dispatch:
+    inputs:
+      video:
+        description: "event to rehearse on (out/testset/videos or out/rt/slices)"
+        default: "zHxIAF2vUGxJ_6961_12007.mp4"
+      module:
+        description: "module in the pipeline process"
+        default: "3-stop-brake-check"
+      extra_modules:
+        description: "comma list of modules in their own processes"
+        default: "pushback-pathway-confirmed-clear-of-obstacles,pushback-does-not-start-until-wing-walkers-are-in-place-and-ready"
+      subscriptions:
+        description: "give each component only what it declared"
+        type: boolean
+        default: false
+
+jobs:
+  realtime-rehearsal:
+    runs-on: [self-hosted, gpu]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: the branch on a decision slice, at real-time speed
+        shell: bash
+        run: |
+          python scripts/rt_pipeline_run.py \
+            --video "${{ inputs.video }}" \
+            --module "${{ inputs.module }}" \
+            --extra-modules "${{ inputs.extra_modules }}" \
+            --tag "ci_${{ github.run_number }}" \
+            --speed 1 --heads gm,chocks,vehicle --ingest frames --bandwidth-mbps 10 \
+            ${{ inputs.subscriptions && '--subscriptions' || '' }}
+
+      - name: what the run decided and what it cost
+        shell: bash
+        run: python -c "import io,json;s=json.load(io.open('out/rt/runs/ci_${{ github.run_number }}/summary.json',encoding='utf-8'));print(json.dumps({k:s.get(k) for k in ('live_status','live_report','extra_module_verdicts','keeps_up','pipeline_ms_per_frame','frame_latency_s','components_ms_per_frame')},indent=1,default=str))"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rt-run-${{ github.run_number }}
+          path: |
+            out/rt/runs/ci_${{ github.run_number }}/summary.json
+            out/rt/runs/ci_${{ github.run_number }}/pipeline_report.json
+            out/rt/runs/ci_${{ github.run_number }}/component_outputs.ndjson
+          if-no-files-found: warn

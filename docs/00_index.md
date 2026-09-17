@@ -11,6 +11,7 @@
 | `07_team.md` | People, roles, zones, syncs, reviewers | Slack + notes of the meeting of 4.09.2026; edit by hand |
 | `08_repos.md` | GitLab repos, local clones, branches, infrastructure (GCP, buckets, MongoDB), how to run | edit by hand |
 | `09_glossary.md` | Terms | edit by hand |
+| `10_ci.md` | What is tested where: fast gates on GitHub Actions, GPU gates on the machine with the card, the monthly set; why there is no deployment step | edit by hand |
 | `arch_review/` | Architecture review of 2026-09-07: `ESSENTIALS.md`, `REVIEW_DETAILED.md` (417 occurrences), interactive `components.html`/`hierarchy.html`, JSON inventories | from `cv-architecture-interactive.zip` |
 | `streaming_ref/` | Copies of the gat-streaming stand (test bench) documents: architecture/contract/plan/modules/testing + `module_map.json` + png | from `G:\gat-streaming\docs` |
 | `DX_Modules_logic.xlsx` | The original xlsx of the client logic (sheets: Updated logic 2025, Edge-Friendly, Post analytics, Streaming, Merge logic, Tasks by cameras) | source for 05 |

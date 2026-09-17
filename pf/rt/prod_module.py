@@ -23,6 +23,7 @@ while the session runs.
 
 from __future__ import annotations
 
+import contextlib
 import importlib
 import inspect
 import io
@@ -300,7 +301,10 @@ class ProductionModuleAdapter(Adapter):
             sys.path.insert(0, ROOT)
         os.chdir(self.module_dir)
         sys.path.insert(0, self.module_dir)
-        import torch  # noqa: F401  (modules expect it loaded)
+        try:
+            import torch  # noqa: F401  (production modules expect it loaded before their own import)
+        except ImportError:  # the fast gates run fake modules in an environment without torch
+            pass
 
         native_windows_path = None
         if os.name == "nt":
@@ -350,10 +354,14 @@ class ProductionModuleAdapter(Adapter):
         self._thread.start()
 
     def _run(self, detect, kwargs) -> None:
-        import torch
-
         try:
-            with torch.no_grad():
+            import torch
+
+            no_grad = torch.no_grad()
+        except ImportError:  # no torch in the fast gates; a real module would have failed at its own import
+            no_grad = contextlib.nullcontext()
+        try:
+            with no_grad:
                 ret = detect(**kwargs)
             values = list(ret) if isinstance(ret, (tuple, list)) else [ret]
             self._outbox.put(Output("verdict", self.module, self.feed.absolute(self.feed.requested) or None, {

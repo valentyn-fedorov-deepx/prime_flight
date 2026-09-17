@@ -1,0 +1,14 @@
+# Fast gates (GitHub Actions, no GPU, no weights, no videos): the contract, the receiver, GM/tracker mechanics, the
+# real-time runtime on synthetic clips, the component layer. Everything a laptop can run in seconds.
+#
+# Deliberately NOT here: torch, onnxruntime-gpu, ultralytics (weights and a GPU), and the production module checkouts
+# (`external/`, private GitLab). Those gates run on the machine with the RTX card — see .github/workflows/gpu-gates.yml.
+pytest>=8.0
+numpy>=1.26
+opencv-python-headless>=4.9
+psutil>=5.9
+filterpy>=1.4
+scikit-image>=0.22
+PyWavelets>=1.5
+PyYAML>=6.0
+ruff>=0.6
