@@ -31,7 +31,12 @@ jobs:
         run: pip install -r requirements-ci.txt
 
       - name: ffmpeg (the branch pins its decoder on both sides of a comparison, X4)
-        run: ffmpeg -version | head -1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+        run: |
+          # `ffmpeg -version | head -1 || install` does not work: the pipeline exits with head's status.
+          command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null ||
+            (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
 
       - name: defects that would break at runtime
         run: ruff check --select E9,F63,F7,F82,F811 .
