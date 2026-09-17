@@ -345,6 +345,9 @@ class RealtimeRun:
             sim.start(deliver)
             workers = [threading.Thread(target=lambda: (sim.done.wait(), receiver.close(m["n_frames"])), daemon=True),
                        threading.Thread(target=self._decode, args=(receiver, frames_q, sim), daemon=True, name="decoder")]
+        bus = getattr(self.adapter, "bus", None)  # components publish on their own threads; give them the run's clock
+        if bus is not None:
+            bus.t0, bus.capture_time = sim.t0, sim.capture_time  # so a sink record carries the same t and a real latency
         sampler = threading.Thread(target=self._sample, args=(receiver, frames_q, sim, stop), daemon=True, name="sampler")
         for t in [*workers, sampler]:
             t.start()

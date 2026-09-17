@@ -1,6 +1,10 @@
 import os
+import shutil
+import subprocess
 import sys
 import time
+
+import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -147,3 +151,27 @@ def test_without_a_stage_detector_a_gated_component_still_gets_every_frame():
     assert gate.open and gate.opened_at == 1
     assert gate.on_events(100, ["BL_LEAVE"]) is None and gate.open  # the table is reported, not applied
     assert "no stage events yet" in gate.as_dict()["gating"]
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg")
+def test_the_run_gives_the_bus_its_own_clock(tmp_path):
+    """A sink record and the run's own record must describe the same instant, and carry the latency from the frame."""
+    from pf.rt.adapters import make_adapter
+    from pf.rt.cambox import LinkModel
+    from pf.rt.chunker import cut
+    from pf.rt.runtime import RealtimeRun
+
+    src = str(tmp_path / "src.mp4")
+    subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=160x120:rate=8",
+                    "-t", "8", "-c:v", "libx264", "-g", "30", "-keyint_min", "30", "-sc_threshold", "0",
+                    "-pix_fmt", "yuv420p", src], check=True)
+    folder = str(tmp_path / "chunks")
+    manifest = cut(src, folder)
+    adapter = make_adapter("probe", delta=1.0)
+    adapter.bus = OutputBus(sinks=[])
+    run = RealtimeRun(folder, manifest, adapter, LinkModel(rtt_ms=5), speed=20.0, sample_s=0.05)
+    run.run()
+
+    assert abs(adapter.bus.t0 - run.frames[0]["capture_t"]) < 0.5  # the bus was created before the camera clock started
+    record = adapter.bus.publish(Output("alert", "x", 20, {}))
+    assert record["t"] > 0 and record["latency_s"] is not None
