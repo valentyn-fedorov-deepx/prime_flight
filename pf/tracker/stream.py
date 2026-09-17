@@ -69,10 +69,11 @@ class TrackerOptions:
     # machines and segmentor; the airplane records are then NOT byte-identical to the full tracker (np.random draws
     # shift and the noise gate sees fewer tracked objects), so a scoped tracker is gated by module verdicts.
     classes: tuple = ("airplane", "beltloader", "gse", "person")
-    # --- publication delay (production = the worker N_INIT, 8 frames = 1 s) ------------------------------
+    # --- publication delay (production = the WORKER DeepSORT N_INIT, 6 frames = 0.75 s at 8 fps) -----------
     # The delay exists for ONE reason: when DeepSORT confirms a person, the track is appended retroactively to the
     # frames still in the buffer, so a worker is present from its first frame. Everything else in a record is final at
-    # the frame it is produced. `publish_delay=0` answers at the frame and a worker instead appears N_INIT frames late:
+    # the frame it is produced. `publish_delay=0` answers at the frame and a worker instead appears N_INIT frames late
+    # (`DEEPSORT_WORKER.N_INIT: 6`; the transport DeepSORT's 8 does not reach publication):
     # exact for modules that read no `person` records, a verdict-gated change (NEAR) for those that do.
     publish_delay: int | None = None  # None = production
 
