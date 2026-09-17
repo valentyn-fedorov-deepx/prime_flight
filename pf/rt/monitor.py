@@ -210,8 +210,8 @@ const NODES = [
   {id: "gm",       x: 220, y: 98,  w: 180, h: 60, title: "GM v2", sub: s => `${(s.gm?.heads || []).join(" + ") || "—"} heads\n${fmt(s.components_ms?.gm, 1)} ms · ${s.gm?.rows ?? 0} rows`},
   {id: "rows",     x: 220, y: 174, w: 180, h: 46, title: "Causal second run", sub: s => `${fmt(s.components_ms?.second_run_rows, 2)} ms · v1-compat rows`},
   {id: "tracker",  x: 220, y: 236, w: 180, h: 60, title: "Tracker v2", sub: s => `${(s.tracker?.classes || []).join(", ") || "—"}\n${fmt(s.components_ms?.tracker, 1)} ms · publishes +${s.tracker?.publish_lag_frames ?? 0} fr late`},
-  {id: "modules",  x: 220, y: 312, w: 180, h: 60, title: "Modules", sub: s => `${(s.modules || []).length} running, own processes\n${fmt(s.components_ms?.module, 2)} ms in the frame loop`},
-  {id: "outputs",  x: 220, y: 388, w: 180, h: 46, title: "Outputs", sub: s => `${s.counts?.verdicts ?? 0} verdicts · ${s.counts?.alerts ?? 0} alerts`},
+  {id: "modules",  x: 220, y: 312, w: 180, h: 60, title: "Modules", sub: s => `${(s.modules || []).length} components, own processes\n${(s.components || []).filter(c => c.gate?.open_now).length || (s.modules || []).length} open · ${fmt(s.components_ms?.module, 2)} ms in the frame loop`},
+  {id: "outputs",  x: 220, y: 388, w: 180, h: 52, title: "Outputs", sub: s => `${s.counts?.verdicts ?? 0} verdicts · ${s.counts?.alerts ?? 0} alerts\n${s.bus?.outputs ?? 0} on the bus, delivered at once`},
 ];
 const LINKS = [
   ["cambox", "uplink", "encoded frames"], ["uplink", "receiver", "packets"], ["receiver", "decoder", "frames in order"],
@@ -280,13 +280,18 @@ function rows(s) {
 
 function verdicts(s) {
   const el = document.getElementById("verdicts");
+  const components = Object.fromEntries((s.components || []).map(c => [c.module, c]));
   el.innerHTML = (s.modules || []).map(m => {
     const status = m.status || "running";
     const cls = String(status).replace(/\\s/g, "");
     const when = m.decided_at_video_time ? ` · decided at ${m.decided_at_video_time}` : "";
     const rep = (m.report || []).join(" ");
+    const c = components[m.name];
+    const gate = c ? `<div class="report">own process · gate ${c.gate.open_on} → ${c.gate.close_on} ·
+        ${c.gate.open_now ? "open" : (c.gate.closed_at ? "closed" : "waiting")} ·
+        ${c.frames_sent} frames${c.frames_skipped ? `, ${c.frames_skipped} held back` : ""}${c.failed ? " · FAILED" : ""}</div>` : "";
     return `<div class="verdict"><div><span class="name">${m.name}</span> <span class="pill ${cls}">${status}</span>${when}</div>
-            ${rep ? `<div class="report">${rep}</div>` : ""}</div>`;
+            ${rep ? `<div class="report">${rep}</div>` : ""}${gate}</div>`;
   }).join("") || '<div class="report">no module has answered yet</div>';
   document.getElementById("alerts").innerHTML = (s.alerts || []).slice(-8).reverse()
     .map(a => `<div>${a.video_time ?? ""} ${a.name} ${a.detail ?? ""}</div>`).join("") || '<div class="report">—</div>';

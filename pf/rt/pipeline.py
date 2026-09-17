@@ -51,7 +51,7 @@ class RtPipelineAdapter(Adapter):
                  str2id: str | None = None, tracker_weights_dir: str | None = None, tracker_classes=None,
                  exact_fast: bool = True, seed: int = 0, cone_camera: bool = True, refresh_every: int = 60,
                  pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None,
-                 monitor=None):
+                 monitor=None, filter_rows: bool = False, alerts_file: bool = True, gating: bool = False):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -71,15 +71,13 @@ class RtPipelineAdapter(Adapter):
         args.pop("inferences_dir", None)
         args.update(module=module, metadata="live", cone_camera=cone_camera)
         self.module = ProductionModuleAdapter(**args)
+        self.filter_rows = bool(filter_rows)
+        self.gating = bool(gating)  # stage gating needs an event source: PF-Q1-03
+        self.alerts_file = bool(alerts_file)
+        self.bus = None
+        self.extra_modules = list(extra_modules or [])
         self.hosts = []
-        if extra_modules:
-            from pf.rt.module_host import ModuleHost
-
-            for extra in extra_modules:
-                extra_args = dict(extra.get("module_args") or {})
-                extra_args["cone_camera"] = cone_camera
-                self.hosts.append(ModuleHost(extra["module"], extra_args, pixels=bool(extra.get("pixels"))))
-        if any(h.pixels for h in self.hosts):
+        if any(bool(extra.get("pixels")) for extra in self.extra_modules):
             self.pixels = True  # the pipeline keeps the frames a hosted module still needs
         self.ring = None
         self.monitor = monitor  # the live page sees the published frame: the rows and records the modules were given
@@ -104,12 +102,41 @@ class RtPipelineAdapter(Adapter):
         self.video_name = os.path.basename(manifest["video"])
         self.module.configure(manifest)
 
+    def _build_hosts(self, cm) -> None:
+        """One component per extra module: its declared subscription, its gate, outputs on the shared bus."""
+        from pf.rt.component import ComponentSpec
+        from pf.rt.module_host import ModuleHost
+
+        for extra in self.extra_modules:
+            extra_args = dict(extra.get("module_args") or {})
+            extra_args["cone_camera"] = self.cone_camera
+            spec = ComponentSpec.for_module(extra["module"], pixels=bool(extra.get("pixels")))
+            self.hosts.append(ModuleHost(extra["module"], extra_args, pixels=bool(extra.get("pixels")), spec=spec,
+                                         subscription=spec.subscription(lambda name: cm.str2id.get(name)),
+                                         bus=self.bus, filter_rows=self.filter_rows, gating=self.gating))
+
     def start(self, fps: float) -> None:
         super().start(fps)
         os.environ.update({k: str(v) for k, v in (self.module.env or {}).items()})
         if ROOT not in sys.path:
             sys.path.insert(0, ROOT)
+        from pf.gm.onnx_detector import YoloV8Onnx, YoloV8OnnxConfig
+        from pf.gm.rows import ClassMap
+        from pf.pipeline import GmStream
+        from pf.pipeline.causal_rows import CausalSecondRun
+        from pf.pipeline.gm_stream import Detectors
+        from pf.rt.component import ComponentSpec, OutputBus, ndjson_sink
+        from pf.tracker.stream import TrackerOptions, TrackerStream
+        from scripts.gm_v2_run import load_str2id
+
+        cm = ClassMap(load_str2id(self.str2id))  # the class map the components declare their rows in
+        sinks = []
+        if self.alerts_file and self.out_dir:
+            os.makedirs(self.out_dir, exist_ok=True)
+            sinks.append(ndjson_sink(os.path.join(self.out_dir, "component_outputs.ndjson")))
+        self.bus = OutputBus(sinks=sinks)
         t_hosts = time.perf_counter()
+        self._build_hosts(cm)
         frame_spec = None
         if any(h.pixels for h in self.hosts):
             from pf.rt.module_host import SharedFrameRing
@@ -121,16 +148,7 @@ class RtPipelineAdapter(Adapter):
         self.init_s["module_hosts"] = round(time.perf_counter() - t_hosts, 1)
         import torch  # noqa: F401
 
-        from pf.gm.onnx_detector import YoloV8Onnx, YoloV8OnnxConfig
-        from pf.gm.rows import ClassMap
-        from pf.pipeline import GmStream
-        from pf.pipeline.causal_rows import CausalSecondRun
-        from pf.pipeline.gm_stream import Detectors
-        from pf.tracker.stream import TrackerOptions, TrackerStream
-        from scripts.gm_v2_run import load_str2id
-
         t0 = time.perf_counter()
-        cm = ClassMap(load_str2id(self.str2id))
 
         def head(name):
             if name not in self.heads:
@@ -182,8 +200,8 @@ class RtPipelineAdapter(Adapter):
             self._mon_images[fid] = image  # a reference, freed when the frame is published
         self._max_unpublished = max(self._max_unpublished, len(self._rows2))
         outs = self._publish(published)
-        for host in self.hosts:
-            outs.extend(host.poll())
+        if self.bus is not None:  # whatever the components produced since the last frame, already stamped and delivered
+            outs.extend(self.bus.drain())
         t4 = time.perf_counter()
         for key, value in (("gm", t1 - t0), ("second_run_rows", t2 - t1), ("tracker", t3 - t2), ("module", t4 - t3),
                            ("total", t4 - t0)):
@@ -234,6 +252,10 @@ class RtPipelineAdapter(Adapter):
             "tracker": {"classes": list(self.tracker_classes), "records": records,
                         "publish_lag_frames": len(self._rows2), "published_frame": fno},
             "queues": {"unpublished": len(self._rows2)},
+            "components": [{"module": h.module, "gate": h.gate.as_dict(), "frames_sent": h.frames_sent,
+                            "frames_skipped": h.frames_skipped, "pixels": h.pixels,
+                            "rows_dropped": h.rows_dropped, "failed": h.failed} for h in self.hosts],
+            "bus": self.bus.report() if self.bus is not None else {},
         }
 
     def close(self) -> list:
@@ -241,6 +263,11 @@ class RtPipelineAdapter(Adapter):
         outs.extend(self.module.close())
         for host in self.hosts:
             outs.extend(host.close())
+        if self.bus is not None:
+            outs.extend(self.bus.drain())  # a component that answered while it was closing
+            for sink in self.bus.sinks:
+                if hasattr(sink, "close"):
+                    sink.close()
         if self.ring is not None:
             self.ring.close()
         self.tracker.close()
@@ -275,8 +302,8 @@ class RtPipelineAdapter(Adapter):
             "frames": frames, "published_frames": self._published, "max_unpublished_frames": self._max_unpublished,
             "ms_per_frame": {k: _ms(v) for k, v in self._times.items()},
             "row_files_ms_per_frame": round(1000 * self._write_s / max(frames, 1), 3),
-            "module_hosts": {h.module: {"per_frame": h.stats, "failed": h.failed, "pixels": h.pixels,
-                                       "ring_waits": h.waits, "ring_wait_s": round(h.wait_s, 2)} for h in self.hosts},
+            "module_hosts": {h.module: h.report() for h in self.hosts},
+            "output_bus": self.bus.report() if self.bus is not None else {},
             "host_send_ms_per_frame": round(1000 * self._host_send_s / max(frames, 1), 3),
             "gm_heads": self.detectors.timings(), "tracker": self.tracker.report(), "causal_rows": vars(self.causal.stats),
             "gm_context_final": context,

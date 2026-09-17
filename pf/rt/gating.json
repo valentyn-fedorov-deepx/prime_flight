@@ -1,0 +1,58 @@
+{
+ "_meta": {
+  "status": "proposal — not reviewed",
+  "what": "One row per real-time module: when its session opens and closes, and how much history it needs before its own stage.",
+  "source": "docs/analysis/rt_module_selection.md group A ('decides at' and the look-back notes) + the slice experiment in tasks/notes/PF-Q2-02.md",
+  "events": ["T_ARR", "BL_AT_DOOR", "BL_LEAVE", "PUSHBACK_ATTACHED", "PUSHBACK_MOVING", "T_DEP", "T_DEP_PLUS_60"],
+  "rules": [
+   "open_on null = from the first frame of the session; close_on null = until the end-of-session marker.",
+   "The events do not exist yet: the stage detector (PF-Q1-03) owns them. Until it publishes, every gate is open and a run records that.",
+   "Gating must not change a verdict: a gated run is compared with an always-open run on the module sample before this table is used (ADR-004)."
+  ],
+  "owners": "gate proposal — Valentyn; events — Maksym Ch. (PF-Q1-03); review — Oksana, Ihor"
+ },
+ "beltloader-chocks": {
+  "open_on": "BL_AT_DOOR", "close_on": "T_DEP", "lookback_frames": 240,
+  "decides_at": "the aircraft departure (live: the tracker's departure frame)"
+ },
+ "bl_rear_cone": {
+  "open_on": "BL_AT_DOOR", "close_on": "BL_LEAVE", "lookback_frames": 240,
+  "decides_at": "the belt loader in place and its window"
+ },
+ "3-stop-brake-check": {
+  "open_on": "T_ARR", "close_on": "BL_LEAVE", "lookback_frames": 0,
+  "decides_at": "the belt loader stopped at the aircraft; it counts the stops since the belt loader started approaching, so it cannot open at its own decision (measured: a 4-minute pre-roll turns Fail into Not observed)"
+ },
+ "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked": {
+  "open_on": "BL_LEAVE", "close_on": "T_DEP", "lookback_frames": 240,
+  "decides_at": "belt loader leave to T_dep"
+ },
+ "pushback-pathway-confirmed-clear-of-obstacles": {
+  "open_on": "BL_LEAVE", "close_on": "T_DEP_PLUS_60", "lookback_frames": 480,
+  "decides_at": "around T_dep (live: 15 s after the departure frame)"
+ },
+ "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready": {
+  "open_on": "PUSHBACK_ATTACHED", "close_on": "T_DEP_PLUS_60", "lookback_frames": 480,
+  "decides_at": "the pushback moving"
+ },
+ "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed": {
+  "open_on": "T_ARR", "close_on": "T_DEP_PLUS_60", "lookback_frames": 0,
+  "decides_at": "departure confirmed (live: 11 s after); keeps whole-event hose history, so it opens at T_ARR"
+ },
+ "cones-placed-in-proper-positions-and-timely": {
+  "open_on": "T_ARR", "close_on": null, "lookback_frames": 240,
+  "decides_at": "the end of the session"
+ },
+ "chocks-and-cones-available-and-staged-for-arrival": {
+  "open_on": null, "close_on": "T_ARR", "lookback_frames": 0,
+  "decides_at": "T_arr (pre-arrival check: it is open before the aircraft is there)"
+ },
+ "crew-present-10-minutes-prior-to-aircraft-arrival": {
+  "open_on": null, "close_on": "T_ARR", "lookback_frames": 0,
+  "decides_at": "T_arr; it keeps processing 60 s after its verdict is fixed (rt_module_selection.md)"
+ },
+ "all-cargo-bin-doors-opened-and-verified": {
+  "open_on": "T_ARR", "close_on": null, "lookback_frames": 0,
+  "decides_at": "a deadline after T_arr"
+ }
+}

@@ -104,6 +104,7 @@ def main() -> int:
     ap.add_argument("--ingest", default="frames", choices=["chunks", "frames"])
     ap.add_argument("--bandwidth-mbps", type=float, default=10.0)
     ap.add_argument("--hold-s", type=float, default=900.0, help="keep the page up this long after the run ends")
+    ap.add_argument("--subscriptions", action="store_true", help="give each module only what it declared")
     ap.add_argument("--pause-testset", action="store_true", help="suspend running test-set jobs for the run")
     ap.add_argument("--no-open", action="store_true", help="do not open a browser")
     a = ap.parse_args()
@@ -133,6 +134,8 @@ def main() -> int:
         cmd += ["--plan-video", event]
     if a.extra_modules:
         cmd += ["--extra-modules", a.extra_modules]
+    if a.subscriptions:
+        cmd += ["--subscriptions"]
     if a.max_seconds:
         cmd += ["--max-seconds", str(a.max_seconds)]
     url = f"http://127.0.0.1:{a.port}/"

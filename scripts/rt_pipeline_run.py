@@ -119,6 +119,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     run = os.path.join(ROOT, out)
     p = o.paths(a.video)
     rec = {"video": a.video, "module": a.module, "extra_modules": a.extra_modules, "tag": a.tag, "speed": a.speed,
+           "subscriptions": a.subscriptions,
            "ingest": a.ingest, "bandwidth_mbps": a.bandwidth_mbps,
            "max_seconds": a.max_seconds, "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider,
            "exit_code": rc, "wall_s": round(wall_s, 1)}
@@ -191,6 +192,8 @@ def main() -> int:
     ap.add_argument("--ingest", default="chunks", choices=["chunks", "frames"],
                     help="chunks: 3.75 s GOP files; frames: per-frame transport (RTSP-like)")
     ap.add_argument("--bandwidth-mbps", type=float, default=1000.0)
+    ap.add_argument("--subscriptions", action="store_true",
+                    help="hand every hosted module only what it declared (pf/rt/component.py); gated by verdict parity")
     ap.add_argument("--watch-port", type=int, default=0, help="serve a live page of the run on this port (0 = off)")
     ap.add_argument("--hold-s", type=float, default=0.0, help="keep the live page up this long after the run ends")
     a = ap.parse_args()
@@ -214,7 +217,7 @@ def main() -> int:
              "gm_variant": "entity_clip", "gm_provider": a.provider,
              "tracker_classes": [c for c in a.tracker_classes.split(",") if c], "exact_fast": True, "seed": 0,
              "cone_camera": plan.cone(event), "pixels": not prof.get("pixel_free"), "out_dir": out,
-             "write_rows": not a.no_write_rows, "extra_modules": extras}
+             "write_rows": not a.no_write_rows, "extra_modules": extras, "filter_rows": a.subscriptions}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]
     cmd += ["--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps)]

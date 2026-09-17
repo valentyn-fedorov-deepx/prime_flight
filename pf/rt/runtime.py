@@ -351,9 +351,9 @@ class RealtimeRun:
 
         def emit(outs, now):
             for o in outs:
-                o.emitted_t = now
-                rec = {**asdict(o), "t": round(now - sim.t0, 3),
-                       "latency_s": round(now - sim.capture_time(o.frame_id), 3) if o.frame_id else None}
+                o.emitted_t = o.emitted_t or now  # a component stamps the moment the module produced it
+                rec = {**asdict(o), "t": round(o.emitted_t - sim.t0, 3),
+                       "latency_s": round(o.emitted_t - sim.capture_time(o.frame_id), 3) if o.frame_id else None}
                 self.outputs.append(rec)
                 if sink:
                     sink.write(json.dumps(rec, default=str) + "\n")

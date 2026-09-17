@@ -70,12 +70,21 @@ class LiveFeed:
         self._frames: dict = {}
         self._meta: dict = {}
         self.last_id = 0
-        self.requested = 0  # highest frame id the module asked for (pixels or metadata)
+        self.requested = 0  # highest frame id the module asked for (pixels or metadata), in module numbering
         self.closed = False
         self.lookback_misses: list = []
+        # A module enumerates its own session from 1. A gated component opens later than frame 1, so the branch's absolute
+        # frame ids (X2) are shifted into module numbering here and shifted back on every output.
+        self.offset = 0
+
+    def absolute(self, frame_id):
+        return frame_id + self.offset if frame_id else frame_id
 
     def put(self, frame_id: int, image, meta: dict) -> None:
         with self._cv:
+            if not self.last_id and not self.offset:
+                self.offset = frame_id - 1  # the first frame this component was given becomes its frame 1
+            frame_id -= self.offset
             self._frames[frame_id] = image
             self._meta[frame_id] = meta
             self.last_id = frame_id
@@ -347,21 +356,24 @@ class ProductionModuleAdapter(Adapter):
             with torch.no_grad():
                 ret = detect(**kwargs)
             values = list(ret) if isinstance(ret, (tuple, list)) else [ret]
-            self._outbox.put(Output("verdict", self.module, self.feed.requested or None, {
+            self._outbox.put(Output("verdict", self.module, self.feed.absolute(self.feed.requested) or None, {
                 "status": _jsonable(values[0]) if values else None,
                 "report": _jsonable(values[1]) if len(values) > 1 else None,
-                "decided_after_frame": self.feed.requested, "frames_delivered": self.feed.last_id,
+                "decided_after_frame": self.feed.absolute(self.feed.requested), "frames_delivered": self.feed.last_id,
                 "session_closed": self.feed.closed, "module_seconds": round(time.perf_counter() - self._t_start, 1)}))
         except Exception as e:
-            self._outbox.put(Output("note", "module_error", self.feed.requested or None, {
+            self._outbox.put(Output("note", "module_error", self.feed.absolute(self.feed.requested) or None, {
                 "error": f"{type(e).__name__}: {str(e)[:400]}", "traceback": traceback.format_exc()[-3000:]}))
         finally:
             self.done.set()
             self.feed.wake()
 
     def _emit(self, kind: str, name: str, frame_id, payload: dict) -> None:
-        """Called by hooks from the module thread; the output is emitted after the current frame is processed."""
-        self._outbox.put(Output(kind, name, frame_id, payload))
+        """Called by hooks from the module thread; the output is emitted after the current frame is processed.
+
+        A hook reports the frame the module counted; the branch publishes absolute frame ids (X2).
+        """
+        self._outbox.put(Output(kind, name, self.feed.absolute(frame_id), payload))
 
     def _row(self) -> dict:
         if self.metadata == "empty":
@@ -406,7 +418,7 @@ class ProductionModuleAdapter(Adapter):
         self._mark_last_frame(frame_id)
         self.feed.put(frame_id, image, meta)
         if not self.done.is_set():
-            self.feed.wait_past(frame_id, self.done)
+            self.feed.wait_past(frame_id - self.feed.offset, self.done)
         return self._drain()
 
     def on_frame(self, frame: Frame) -> list:
@@ -416,7 +428,7 @@ class ProductionModuleAdapter(Adapter):
         self._mark_last_frame(frame.frame_id)
         self.feed.put(frame.frame_id, image, self._row())
         if not self.done.is_set():
-            self.feed.wait_past(frame.frame_id, self.done)
+            self.feed.wait_past(frame.frame_id - self.feed.offset, self.done)
         return self._drain()
 
     def close(self) -> list:
