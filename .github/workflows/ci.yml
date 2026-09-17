@@ -37,7 +37,7 @@ jobs:
         run: ruff check --select E9,F63,F7,F82,F811 .
 
       - name: unit gates
-        run: pytest -q -rs
+        run: python -m pytest -q -rs
 
       - name: the real-time branch end to end on a synthetic clip
         run: python scripts/ci_rt_smoke.py --seconds 24
