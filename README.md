@@ -1,6 +1,10 @@
 # Prime Flight — the lead's Claude Code workspace
 
+[![fast gates](https://github.com/valentyn-fedorov-deepx/prime_flight/actions/workflows/ci.yml/badge.svg)](https://github.com/valentyn-fedorov-deepx/prime_flight/actions/workflows/ci.yml)
+
 GitHub: https://github.com/valentyn-fedorov-deepx/prime_flight (private). DeepX prod code stays in GitLab `dxgat/*`; here — the workspace, documentation, board and the new `pf/` package.
+
+Every push runs the fast gates: lint for runtime defects, the unit suite, and the real-time branch end to end on a clip ffmpeg generates on the spot. What runs where, and why nothing is deployed: `docs/10_ci.md`.
 
 One workspace for all documentation, role agents and the backlog of the Prime Flight project (DXGAT → real-time).
 Prod code — read-only clones of GitLab `dxgat/*` in `external/` (gitignored) and the gat-streaming stand (test bench) `G:\gat-streaming`; data for measurements — `G:\gat_stages`
