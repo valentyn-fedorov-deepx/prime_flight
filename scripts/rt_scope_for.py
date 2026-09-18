@@ -33,9 +33,12 @@ def scope(modules: list) -> dict:
         entry = mods.get(name)
         if entry is None:
             raise SystemExit(f"{name}: not in module_consumption.json")
-        gm_classes = sorted(set(entry["gm"].get("class_names", [])) | set(entry["gm"].get("class_names_cosmetic", [])))
+        from pf.rt.component import ComponentSpec  # the declaration plus what was found against the running checkout
+
+        spec = ComponentSpec.for_module(name)
+        gm_classes = sorted(spec.gm_classes)
         module_heads = sorted({HEAD_OF_CLASS[c] for c in gm_classes if c in HEAD_OF_CLASS} | {"gm"})
-        classes = sorted(entry["tracker"].get("classes", []))
+        classes = sorted(spec.tracker_classes)
         per_module[name] = {"gm_classes": gm_classes, "heads": module_heads, "tracker_classes": classes,
                             "private_tracker_fields": sorted(entry["tracker"].get("private_fields", [])),
                             "passes": entry.get("passes"), "pixels": not profiles.profile(name).get("pixel_free")}

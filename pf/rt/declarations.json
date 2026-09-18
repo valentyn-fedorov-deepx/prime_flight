@@ -1,0 +1,341 @@
+{
+ "_meta": {
+  "what": "Classes each module reads in the checkout that actually runs, beyond docs/analysis/module_consumption.json.",
+  "how": "scripts/rt_declarations.py: every class name quoted in the module's own code (not in its vendored cv_common / db_worker); a deliberate over-approximation.",
+  "why": "the static analysis covered the default branches; the test set and production run other branches for several modules, and a scoped GM built from the old declaration changed 75 of 680 verdicts."
+ },
+ "3-stop-brake-check": {
+  "checkout": "external/3-stop-brake-check",
+  "gm_classes_extra": [
+   "airplane",
+   "cone"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "aircraft-chocks": {
+  "checkout": "external/aircraft-chocks",
+  "gm_classes_extra": [
+   "airplane",
+   "gse",
+   "person"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "all-cargo-bin-doors-opened-and-verified": {
+  "checkout": "external/_branches/all-cargo-bin-doors-opened-and-verified@bl_approach",
+  "gm_classes_extra": [
+   "airplane",
+   "back_wheel",
+   "beltloader",
+   "cone"
+  ],
+  "tracker_classes_extra": [
+   "beltloader"
+  ],
+  "tracker_classes_evidence": "withholding beltloader records turned 63 of 68 test-set verdicts (Pass 'a beltloader approached the doors' -> Fail 'No beltloaders approached'); branch bl_approach reads them through a helper",
+  "tracker_classes_unverified_candidates": []
+ },
+ "beltloader-chocks": {
+  "checkout": "external/beltloader-chocks",
+  "gm_classes_extra": [
+   "airplane"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "bl_rear_cone": {
+  "checkout": "external/bl_rear_cone",
+  "gm_classes_extra": [
+   "airplane"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "chocks-and-cones-available-and-staged-for-arrival": {
+  "checkout": "external/_branches/chocks-and-cones-available-and-staged-for-arrival@not_observed_logic",
+  "gm_classes_extra": [
+   "air_conditioning",
+   "airplane",
+   "fuel_truck",
+   "ladder",
+   "person",
+   "trailer",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": [
+   "gse",
+   "person"
+  ]
+ },
+ "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed": {
+  "checkout": "external/_branches/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed@new_logic",
+  "gm_classes_extra": [
+   "air_conditioning",
+   "airplane",
+   "airplane_engine",
+   "airplane_wing",
+   "fuel_truck",
+   "obstacle",
+   "side_obstacle",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked": {
+  "checkout": "external/cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+  "gm_classes_extra": [
+   "cone"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "cones-placed-in-proper-positions-and-timely": {
+  "checkout": "external/_branches/cones-placed-in-proper-positions-and-timely@not_observed_logic",
+  "gm_classes_extra": [
+   "air_conditioning",
+   "airplane",
+   "airplane_nose",
+   "cone",
+   "obstacle",
+   "side_obstacle",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "crew-present-10-minutes-prior-to-aircraft-arrival": {
+  "checkout": "external/crew-present-10-minutes-prior-to-aircraft-arrival",
+  "gm_classes_extra": [
+   "airplane",
+   "cone",
+   "obstacle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "fod-walk-completed": {
+  "checkout": "external/_branches/fod-walk-completed@dev",
+  "gm_classes_extra": [
+   "cone",
+   "obstacle",
+   "person",
+   "roi"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "gse-chocks": {
+  "checkout": "external/_branches/gse-chocks@per_component_improvement",
+  "gm_classes_extra": [
+   "airplane",
+   "airplane_engine",
+   "airplane_nose",
+   "airplane_tail",
+   "airplane_wing",
+   "back_door",
+   "back_wheel",
+   "beltloader",
+   "front_door",
+   "front_wheel",
+   "gse",
+   "obstacle",
+   "person",
+   "side_obstacle",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "hand-signals": {
+  "checkout": "external/hand-signals",
+  "gm_classes_extra": [
+   "airplane",
+   "beltloader",
+   "cone"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "handrails-on-gse-being-used": {
+  "checkout": "external/_branches/handrails-on-gse-being-used@per_component_improvement",
+  "gm_classes_extra": [
+   "airplane",
+   "beltloader",
+   "cone",
+   "front_door",
+   "obstacle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "lead-marshaller-and-wing-walkers-in-position": {
+  "checkout": "external/_branches/lead-marshaller-and-wing-walkers-in-position@pre_arrival_departure",
+  "gm_classes_extra": [
+   "air_conditioning",
+   "airplane",
+   "cone",
+   "fuel_truck",
+   "ladder",
+   "person",
+   "side_obstacle",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "pin-verification": {
+  "checkout": "external/pin-verification",
+  "gm_classes_extra": [
+   "airplane",
+   "person"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "post-arrival-aircraft-walk-around-inspection-completed-accurately": {
+  "checkout": "external/_branches/post-arrival-aircraft-walk-around-inspection-completed-accurately@tdv_cone",
+  "gm_classes_extra": [
+   "airplane_nose",
+   "cone",
+   "front_wheel",
+   "obstacle",
+   "pushback",
+   "side_obstacle",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": [
+   "gse"
+  ]
+ },
+ "pre-arrival-safety-huddle": {
+  "checkout": "external/_branches/pre-arrival-safety-huddle@green_cone_median",
+  "gm_classes_extra": [
+   "airplane",
+   "roi"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "pre-departure-walk-around-completed": {
+  "checkout": "external/_branches/pre-departure-walk-around-completed@tdv_cone",
+  "gm_classes_extra": [
+   "airplane_wing",
+   "back_door",
+   "back_wheel",
+   "front_door",
+   "front_wheel",
+   "fuel_truck",
+   "ladder",
+   "obstacle",
+   "side_obstacle",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": [
+   "gse"
+  ]
+ },
+ "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready": {
+  "checkout": "external/_branches/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready@obstruction_plane_track",
+  "gm_classes_extra": [
+   "air_conditioning",
+   "airplane",
+   "airplane_nose",
+   "cone",
+   "fuel_truck",
+   "person",
+   "vehicle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "pushback-pathway-confirmed-clear-of-obstacles": {
+  "checkout": "external/pushback-pathway-confirmed-clear-of-obstacles",
+  "gm_classes_extra": [
+   "airplane"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "safety-handrails-fully-extended": {
+  "checkout": "external/safety-handrails-fully-extended",
+  "gm_classes_extra": [
+   "airplane",
+   "beltloader",
+   "cone",
+   "obstacle"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "safety-vests-secured-to-body": {
+  "checkout": "external/_branches/safety-vests-secured-to-body@tdv_cone",
+  "gm_classes_extra": [
+   "person"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "safety-zone-confirmed-clear": {
+  "checkout": "external/safety-zone-confirmed-clear",
+  "gm_classes_extra": [
+   "airplane"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
+  "checkout": "external/steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+  "gm_classes_extra": [
+   "airplane_nose"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ },
+ "wing-walkers-in-proper-position-and-using-approved-wands": {
+  "checkout": "external/_branches/wing-walkers-in-proper-position-and-using-approved-wands@obstruction_hand_signals",
+  "gm_classes_extra": [
+   "air_conditioning",
+   "airplane",
+   "cone",
+   "fuel_truck",
+   "person",
+   "roi",
+   "side_obstacle",
+   "vehicle",
+   "wand"
+  ],
+  "tracker_classes_extra": [],
+  "tracker_classes_evidence": null,
+  "tracker_classes_unverified_candidates": []
+ }
+}

@@ -31,6 +31,8 @@ from dataclasses import dataclass
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONSUMPTION = os.path.join(ROOT, "docs", "analysis", "module_consumption.json")
 GATING = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gating.json")
+# What the static analysis missed, found against the checkouts that actually run (scripts/rt_declarations.py).
+CORRECTIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "declarations.json")
 ALL_TRACKER_CLASSES = ("airplane", "beltloader", "gse", "person")
 
 
@@ -66,7 +68,15 @@ class Subscription:
             return meta
         out = dict(meta)
         if self.gm_class_ids is not None:
-            out["general_model"] = [row for row in meta.get("general_model") or [] if int(row[5]) in self.gm_class_ids]
+            rows = meta.get("general_model") or []
+            kept = [row for row in rows if int(row[5]) in self.gm_class_ids]
+            if rows and not kept:
+                # Modules guard their whole per-frame block with `if det is not None and len(det):` — including the update
+                # of the aircraft track. A frame that had detections must still look like one, or the module skips it:
+                # chocks-and-cones changed 9 of 68 verdicts on frames that held nothing but `person` rows. One row of a
+                # class the module does not read keeps the guard true and changes nothing else.
+                kept = [rows[0]]
+            out["general_model"] = kept
         records = meta.get("trackers") or []
         if self.tracker_classes is not None:
             records = [r for r in records if r.get("cls_str") in self.tracker_classes]
@@ -103,13 +113,15 @@ class ComponentSpec:
         gm = entry.get("gm") or {}
         tracker = entry.get("tracker") or {}
         gate = (json.load(io.open(GATING, encoding="utf-8")).get(module) or {}) if os.path.exists(GATING) else {}
+        fix = (json.load(io.open(CORRECTIONS, encoding="utf-8")).get(module) or {}) if os.path.exists(CORRECTIONS) else {}
         if pixels is None:
             pixels = bool((entry.get("pixels") or {}).get("reads_frames", True))
         return cls(
             module=module,
             pixels=bool(pixels),
-            gm_classes=tuple(sorted(set(gm.get("class_names") or []) | set(gm.get("class_names_cosmetic") or []))),
-            tracker_classes=tuple(tracker.get("classes") or ()),
+            gm_classes=tuple(sorted(set(gm.get("class_names") or []) | set(gm.get("class_names_cosmetic") or [])
+                                    | set(fix.get("gm_classes_extra") or []))),
+            tracker_classes=tuple(sorted(set(tracker.get("classes") or ()) | set(fix.get("tracker_classes_extra") or []))),
             state_fields=tuple(tracker.get("state_fields") or ()),
             private_fields=tuple(tracker.get("private_fields") or ()),
             open_on=gate.get("open_on"), close_on=gate.get("close_on"),

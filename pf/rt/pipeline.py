@@ -216,10 +216,15 @@ class RtPipelineAdapter(Adapter):
             rows2 = self._rows2.pop(fno, [])
             image = self._images.pop(fno, None)
             self._published += 1
+            # A module in batch reads these records from the tracker file, i.e. after a JSON round trip: lists, never
+            # tuples. Handing over the tracker's own objects crashed three modules that edit a box in place ("'tuple'
+            # object does not support item assignment"), so the live hand-off goes through the same trip.
+            encoded = json.dumps(records)
+            records = json.loads(encoded)
             if self.write_rows:
                 tw = time.perf_counter()
                 self._gm_fh.write(ndjson_line(fno, rows2))
-                self._trk_fh.write(json.dumps({str(self._published): records}) + "\n")
+                self._trk_fh.write('{"%d": %s}\n' % (self._published, encoded))
                 self._write_s += time.perf_counter() - tw
             meta = {"general_model": rows2, "trackers": records}
             th = time.perf_counter()

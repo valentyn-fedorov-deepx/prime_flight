@@ -97,7 +97,7 @@ def make_meta_worker(VideoWorker, fps=8):
 
 
 
-def subscribed_worker(Worker, module: str, config_str2id=None):
+def subscribed_worker(Worker, module: str, parts=("gm", "tracker", "state"), extra_gm=()):
     """The module sees only what it declared: the rows of a GM and the records of a tracker scoped to it alone.
 
     Head scoping is exact (the heads are independent models and neither the tracker nor the causal context reads the
@@ -110,9 +110,18 @@ def subscribed_worker(Worker, module: str, config_str2id=None):
     from scripts.gm_v2_run import load_str2id
 
     cm = ClassMap(load_str2id(os.path.join(ROOT, "external", "cv_common", "global_config.yaml")))
+    import dataclasses
+
+    from pf.rt.component import Subscription
+
     spec = ComponentSpec.for_module(module)
-    sub = spec.subscription(lambda name: cm.str2id.get(name))
-    detail = {"declared": spec.declared, "gm_classes": list(spec.gm_classes), "tracker_classes": list(spec.tracker_classes),
+    if extra_gm:
+        spec = dataclasses.replace(spec, gm_classes=tuple(sorted(set(spec.gm_classes) | set(extra_gm))))
+    full = spec.subscription(lambda name: cm.str2id.get(name))
+    sub = Subscription(gm_class_ids=full.gm_class_ids if "gm" in parts else None,
+                       tracker_classes=full.tracker_classes if "tracker" in parts else None,
+                       pixels=full.pixels, keep_private=full.keep_private if "state" in parts else True)
+    detail = {"declared": spec.declared, "parts": list(parts), "gm_classes": list(spec.gm_classes), "tracker_classes": list(spec.tracker_classes),
               "optical_flow_state_kept": spec.reads_optical_flow_state(), "frames": 0, "rows_given": 0, "rows_withheld": 0}
 
     class SubscribedWorker(Worker):
@@ -244,6 +253,10 @@ def main() -> int:
     ap.add_argument("--write-video", action="store_true")
     ap.add_argument("--prepend-path", action="append", default=[], help="folder put before site-packages (repeatable)")
     ap.add_argument("--drop-state-keys", default="", help="comma list of tracker state keys removed before cv_common TrackedObject.from_state_dict")
+    ap.add_argument("--subscription-parts", default="gm,tracker,state",
+                    help="which parts of the declaration to apply (diagnosis): gm = GM classes, tracker = tracked classes, "
+                         "state = empty the tracker's optical-flow state")
+    ap.add_argument("--subscription-extra-gm", default="", help="comma list of GM class names added to the declaration")
     ap.add_argument("--subscription", action="store_true",
                     help="hand the module only the GM classes, tracked classes and tracker state it declared (pf.rt.component): the inputs a GM and a tracker scoped to this module alone would give it")
     ap.add_argument("--native-pathlib", action="store_true", help="accepted for compatibility; the runner always undoes a "
@@ -308,7 +321,9 @@ def main() -> int:
 
         Worker = make_meta_worker(VideoWorker, a.fps) if a.no_video else VideoWorker
         if a.subscription:
-            Worker, result["subscription_detail"] = subscribed_worker(Worker, a.module, config_str2id=None)
+            Worker, result["subscription_detail"] = subscribed_worker(
+                Worker, a.module, parts=[x for x in a.subscription_parts.split(",") if x],
+                extra_gm=[x for x in a.subscription_extra_gm.split(",") if x])
         config = parse_config()
         vw = Worker(
             model_name="model-name",
