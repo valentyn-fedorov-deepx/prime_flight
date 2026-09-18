@@ -7,6 +7,9 @@ Per video (ledger `out/testset/ledger/<video>.json`), steps:
   tracker      Tracker v2 exact fast paths, seed 0, on the GM v2 rows, L1 vs the production tracker file
   mod:ctl:<m>  module <m> on the production inferences - the control: same machine, code and flags as the v2 run
   mod:v2:<m>   module <m> on the GM v2 + Tracker v2 inferences (`out/testset/v2_inf/<video>/`, hard links)
+  mod:sub:<m>  module <m> on the same v2 inferences, given ONLY what it declared (`run_module.py --subscription`): the
+               inputs of a GM and a tracker scoped to this module alone; compared with mod:v2 it says whether a module
+               needs more than it declared
 Module results: `out/testset/modules/{ctl,v2}/<video>/<module>.json` (input of scripts/testset/compare.py).
 
 Camera of a video: plan.json (routing evidence), overridden by `out/testset/camera_overrides.json` {video: "cone"|"wing"};
@@ -169,7 +172,7 @@ def upstream(step: str) -> list:
         return ["gm"]
     if step.startswith("mod:ctl:"):
         return ["fetch"]
-    if step.startswith("mod:v2:"):
+    if step.startswith("mod:v2:") or step.startswith("mod:sub:"):
         return ["tracker"]
     return []
 
@@ -315,6 +318,8 @@ def build_cmd(step: str, video: str, plan: Plan):
         cmd += ["--drop-state-keys", prof["drop_state_keys"]]
     if prof["module_dir"]:
         cmd += ["--module-dir", prof["module_dir"]]
+    if label == "sub" and not launcher:  # launcher modules run another interpreter without this flag: they stay full
+        cmd.append("--subscription")
     return cmd, dict(os.environ, **profiles.ENV)
 
 
@@ -417,7 +422,7 @@ def video_steps(video: str, plan: Plan, ctl: dict) -> list:
     scope = module_scope(plan, ctl)
     if scope is not None and video not in scope:
         return steps
-    return steps + [f"mod:{lb}:{m}" for lb in ("v2", "ctl") for m in plan.modules(video)
+    return steps + [f"mod:{lb}:{m}" for lb in ("v2", "ctl", "sub") for m in plan.modules(video)
                     if step_enabled(f"mod:{lb}:{m}", ctl)]
 
 

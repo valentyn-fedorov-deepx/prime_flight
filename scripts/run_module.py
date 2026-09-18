@@ -96,6 +96,38 @@ def make_meta_worker(VideoWorker, fps=8):
     return MetaOnlyWorker
 
 
+
+def subscribed_worker(Worker, module: str, config_str2id=None):
+    """The module sees only what it declared: the rows of a GM and the records of a tracker scoped to it alone.
+
+    Head scoping is exact (the heads are independent models and neither the tracker nor the causal context reads the
+    chocks or vehicle rows), so filtering the full files IS what a scoped GM would have produced. The counters say how
+    much was withheld; a module that turns out to need more than it declared shows up as a changed verdict.
+    """
+    sys.path.insert(0, ROOT) if ROOT not in sys.path else None
+    from pf.gm.rows import ClassMap
+    from pf.rt.component import ComponentSpec
+    from scripts.gm_v2_run import load_str2id
+
+    cm = ClassMap(load_str2id(os.path.join(ROOT, "external", "cv_common", "global_config.yaml")))
+    spec = ComponentSpec.for_module(module)
+    sub = spec.subscription(lambda name: cm.str2id.get(name))
+    detail = {"declared": spec.declared, "gm_classes": list(spec.gm_classes), "tracker_classes": list(spec.tracker_classes),
+              "optical_flow_state_kept": spec.reads_optical_flow_state(), "frames": 0, "rows_given": 0, "rows_withheld": 0}
+
+    class SubscribedWorker(Worker):
+        def load_metadata(self, *args, **kwargs):
+            for meta in super().load_metadata(*args, **kwargs):
+                if isinstance(meta, dict) and "general_model" in meta:
+                    before = sub.size(meta)
+                    meta = sub.filter(meta)
+                    detail["frames"] += 1
+                    detail["rows_given"] += sub.size(meta)
+                    detail["rows_withheld"] += before - sub.size(meta)
+                yield meta
+
+    return SubscribedWorker, detail
+
 def numpy1_scalar_types():
     """`float` / `int` replacements with NumPy 1.x conversion of one-element arrays; isinstance/issubclass/dtype unchanged."""
     import numpy as np
@@ -212,6 +244,8 @@ def main() -> int:
     ap.add_argument("--write-video", action="store_true")
     ap.add_argument("--prepend-path", action="append", default=[], help="folder put before site-packages (repeatable)")
     ap.add_argument("--drop-state-keys", default="", help="comma list of tracker state keys removed before cv_common TrackedObject.from_state_dict")
+    ap.add_argument("--subscription", action="store_true",
+                    help="hand the module only the GM classes, tracked classes and tracker state it declared (pf.rt.component): the inputs a GM and a tracker scoped to this module alone would give it")
     ap.add_argument("--native-pathlib", action="store_true", help="accepted for compatibility; the runner always undoes a "
                     "module's import-time `pathlib.WindowsPath = pathlib.PosixPath` alias on Windows")
     ap.add_argument("--keras-torch-shim", action="store_true", help="route tf.keras.models.load_model through the module's "
@@ -247,6 +281,7 @@ def main() -> int:
         "numpy1_scalar_shim": a.numpy1_scalars,
         "prepend_path": prepend,
         "drop_state_keys": [k for k in a.drop_state_keys.split(",") if k],
+        "subscription": bool(a.subscription),
         "native_pathlib": a.native_pathlib,
         "keras_torch_shim": a.keras_torch_shim,
     }
@@ -272,6 +307,8 @@ def main() -> int:
         from db_worker.ML_worker import VideoWorker
 
         Worker = make_meta_worker(VideoWorker, a.fps) if a.no_video else VideoWorker
+        if a.subscription:
+            Worker, result["subscription_detail"] = subscribed_worker(Worker, a.module, config_str2id=None)
         config = parse_config()
         vw = Worker(
             model_name="model-name",
