@@ -200,9 +200,57 @@ def measure(video: str, module: str, a, fps: float, n_frames: int) -> dict:
     return record
 
 
+def parity(video: str, module: str, speed: float) -> dict:
+    """The module live on the WHOLE event behind its own scoped GM and tracker, compared with its batch verdict.
+
+    A slice is good for cost and wrong for verdicts (a module that counts what happened since arrival answers differently on
+    a cut), so this run feeds the whole recording, faster than real time: only the answer matters here. It is the test of
+    "does this module run in real time as it is": causal second-run rows instead of the batch file's retroactive ones, a
+    live tracker on a live GM, the end-of-session marker, the look-back window of the live feed.
+    """
+    record = {"measured": time.strftime("%Y-%m-%d %H:%M"), "speed": speed}
+    prof = profiles.profile(module)
+    if prof.get("launcher"):
+        return {**record, "skipped": f"runs in another interpreter ({prof['launcher'][0]})"}
+    try:
+        sc = scope([module])
+    except SystemExit as e:
+        return {**record, "skipped": f"no declaration: {e}"}
+    tag = f"parity_{module[:40]}"
+    cmd = [sys.executable, "scripts/rt_pipeline_run.py", "--video", video, "--module", module, "--tag", tag,
+           "--speed", str(speed), "--no-write-rows", "--heads", ",".join(sc["heads"]),
+           "--tracker-classes", ",".join(sc["tracker_classes"]), "--ingest", "chunks"]
+    t0 = time.time()
+    rc = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode
+    record.update(exit_code=rc, wall_s=round(time.time() - t0, 1), heads=sc["heads"], tracker_classes=sc["tracker_classes"])
+    summary_path = os.path.join(ROOT, "out", "rt", "runs", tag, "summary.json")
+    if not os.path.exists(summary_path):
+        return {**record, "error": f"no summary (see out/rt/runs/{tag}.log)"}
+    s = json.load(io.open(summary_path, encoding="utf-8"))
+    batch = s.get("batch_v2") or {}
+    record.update({
+        "live_status": s.get("live_status"), "batch_status": batch.get("status"),
+        "status_identical": batch.get("status_identical"), "report_identical": batch.get("report_identical"),
+        "live_report": s.get("live_report"), "decided_after_frame": s.get("decided_after_frame"),
+        "frames": s.get("frames"), "module_error": s.get("module_error"), "runtime_error": s.get("runtime_error"),
+        "non_causal_reads": s.get("non_causal_reads"),
+        "ms_per_frame_at_this_speed": {k: (v or {}).get("mean") for k, v in (s.get("components_ms_per_frame") or {}).items()},
+    })
+    return record
+
+
 def load_records(video: str) -> dict:
     path = os.path.join(ROOT, "out", "rt", "cost", os.path.splitext(video)[0], "modules.json")
     return json.load(io.open(path, encoding="utf-8")) if os.path.exists(path) else {}
+
+
+def load_merge(video: str, module: str, record: dict) -> dict:
+    """Re-read the file and replace only this module's keys: the cost campaign and the parity pass write the same file."""
+    records = load_records(video)
+    current = records.get(module) or {}
+    current.update(record)
+    records[module] = current
+    return records
 
 
 def save_records(video: str, records: dict) -> str:
@@ -287,6 +335,9 @@ def main() -> int:
     ap.add_argument("--post-seconds", type=float, default=20.0)
     ap.add_argument("--cap-minutes", type=float, default=6.0, help="longest stretch measured per module")
     ap.add_argument("--redo", action="store_true", help="measure again what is already measured")
+    ap.add_argument("--parity", action="store_true",
+                    help="instead of cost: each module live on the WHOLE event, verdict against batch")
+    ap.add_argument("--parity-speed", type=float, default=8.0, help="feed speed for --parity (the answer, not the clock)")
     ap.add_argument("--report", action="store_true", help="only build the table from what has been measured")
     ap.add_argument("--predict", default="", help="comma list of modules: what they cost together, from the single runs")
     a = ap.parse_args()
@@ -298,12 +349,26 @@ def main() -> int:
         manifest = json.load(io.open(os.path.join(ROOT, "out", "rt", "chunks", f"{os.path.splitext(a.video)[0]}_gop1",
                                                   "manifest.json"), encoding="utf-8"))
         fps, n_frames = float(manifest["fps"]), int(manifest["n_frames"])
+        if a.parity:
+            for i, module in enumerate(modules, 1):
+                done = (records.get(module) or {}).get("whole_event") or {}
+                if done and not a.redo and not done.get("error"):
+                    continue
+                print(f"[{i}/{len(modules)}] parity {module}", flush=True)
+                w = parity(a.video, module, a.parity_speed)
+                records.setdefault(module, {"module": module, "video": a.video})["whole_event"] = w
+                save_records(a.video, load_merge(a.video, module, {"module": module, "video": a.video, "whole_event": w}))
+                print("   ", w.get("skipped") or w.get("error") or
+                      {k: w.get(k) for k in ("live_status", "batch_status", "status_identical", "report_identical",
+                                             "module_error", "wall_s")}, flush=True)
+            return 0
         for i, module in enumerate(modules, 1):
-            if module in records and not a.redo and not records[module].get("error"):
+            measured = records.get(module) or {}
+            if not a.redo and (measured.get("ms_per_frame") or measured.get("skipped")):
                 continue
             print(f"[{i}/{len(modules)}] {module}", flush=True)
-            records[module] = measure(a.video, module, a, fps, n_frames)
-            save_records(a.video, records)
+            records[module] = {**(records.get(module) or {}), **measure(a.video, module, a, fps, n_frames)}
+            save_records(a.video, load_merge(a.video, module, records[module]))
             r = records[module]
             print("   ", r.get("skipped") or r.get("error") or
                   {k: (r["ms_per_frame"].get(k) or {}).get("mean") for k in ("gm", "tracker", "module", "total")},
