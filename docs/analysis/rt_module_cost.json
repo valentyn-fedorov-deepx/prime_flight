@@ -2850,6 +2850,1469 @@
     "gpu_mem_peak_gb": 10.4,
     "gpu_mem_over_baseline_gb": 7.95
    }
+  },
+  "all_ready_x8": {
+   "video": "zHxIAF2vUGxJ.mp4",
+   "modules": [
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "fod-walk-completed",
+    "pre-arrival-safety-huddle",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "wing-walkers-in-proper-position-and-using-approved-wands",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "all-cargo-bin-doors-opened-and-verified",
+    "safety-handrails-fully-extended",
+    "3-stop-brake-check",
+    "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "safety-vests-secured-to-body",
+    "gse-chocks",
+    "handrails-on-gse-being-used",
+    "cones-placed-in-proper-positions-and-timely",
+    "pushback-pathway-confirmed-clear-of-obstacles"
+   ],
+   "primary": "chocks-and-cones-available-and-staged-for-arrival",
+   "speed": 8.0,
+   "exit_code": 0,
+   "subscriptions": true,
+   "wall_s": 1324.6,
+   "measured": "2026-09-19 03:59",
+   "frames": 17280,
+   "keeps_up": false,
+   "frame_latency_s": {
+    "p50": 486.679,
+    "p95": 855.199,
+    "p99": 894.087,
+    "max": 903.41
+   },
+   "latency_drift_s_per_recording_minute": 26.4695,
+   "ms_per_frame": {
+    "gm": {
+     "mean": 28.32,
+     "p95": 39.16
+    },
+    "second_run_rows": {
+     "mean": 0.16,
+     "p95": 0.16
+    },
+    "tracker": {
+     "mean": 29.06,
+     "p95": 58.6
+    },
+    "module": {
+     "mean": 10.2,
+     "p95": 31.71
+    },
+    "total": {
+     "mean": 67.74,
+     "p95": 116.01
+    }
+   },
+   "tracker_detail_ms": {
+    "deepsort_ms": 9.988,
+    "noise_ms": 2.416,
+    "airplane_ms": 4.198,
+    "beltloaders_ms": 9.947,
+    "gse_ms": 2.474,
+    "publish_ms": 0.005,
+    "total_ms": 29.059
+   },
+   "gm_heads_detail": {
+    "upload_ms": 1.819,
+    "prepare_ms": 0.374,
+    "run_ms_all_heads": 23.284,
+    "parallel": true,
+    "heads": {
+     "gm": {
+      "preprocess_ms": 0.0,
+      "inference_ms": 14.91,
+      "postprocess_ms": 6.058
+     },
+     "chocks": {
+      "preprocess_ms": 0.0,
+      "inference_ms": 15.255,
+      "postprocess_ms": 4.674
+     },
+     "vehicle": {
+      "preprocess_ms": 0.0,
+      "inference_ms": 18.553,
+      "postprocess_ms": 3.616
+     }
+    }
+   },
+   "host_send_ms_per_frame": 8.038,
+   "module_hosts": {
+    "crew-present-10-minutes-prior-to-aircraft-arrival": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 0.808,
+      "p95_ms": 5.162,
+      "max_ms": 525.625
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 128325,
+     "rows_dropped_not_subscribed": 341149,
+     "filter_rows": true,
+     "spec": {
+      "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "cone",
+       "gse",
+       "obstacle",
+       "person",
+       "pushback",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "T_ARR",
+       "lookback_frames": 0,
+       "decides_at": "T_arr; it keeps processing 60 s after its verdict is fixed (rt_module_selection.md)"
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "T_ARR",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 1.57,
+      "p95_ms": 9.067,
+      "max_ms": 162.257
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 118641,
+     "rows_dropped_not_subscribed": 350833,
+     "filter_rows": true,
+     "spec": {
+      "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_nose",
+       "chock",
+       "front_wheel",
+       "person"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "person"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 3.52,
+      "p95_ms": 7.636,
+      "max_ms": 540.894
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 223587,
+     "rows_dropped_not_subscribed": 245887,
+     "filter_rows": true,
+     "spec": {
+      "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "air_conditioning",
+       "airplane",
+       "airplane_engine",
+       "airplane_nose",
+       "airplane_wing",
+       "beltloader",
+       "front_wheel",
+       "fuel_truck",
+       "gse",
+       "obstacle",
+       "pushback",
+       "side_obstacle",
+       "trailer",
+       "vehicle"
+      ],
+      "tracker_classes": [
+       "airplane"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "T_ARR",
+       "close_on": "T_DEP_PLUS_60",
+       "lookback_frames": 0,
+       "decides_at": "departure confirmed (live: 11 s after); keeps whole-event hose history, so it opens at T_ARR"
+      }
+     },
+     "gate": {
+      "open_on": "T_ARR",
+      "close_on": "T_DEP_PLUS_60",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 3.071,
+      "p95_ms": 7.068,
+      "max_ms": 540.311
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 314509,
+     "rows_dropped_not_subscribed": 154965,
+     "filter_rows": true,
+     "spec": {
+      "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "air_conditioning",
+       "airplane",
+       "airplane_nose",
+       "airplane_tail",
+       "airplane_wing",
+       "beltloader",
+       "cone",
+       "front_wheel",
+       "fuel_truck",
+       "gse",
+       "obstacle",
+       "person",
+       "pushback",
+       "side_obstacle",
+       "trailer",
+       "vehicle"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "person"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "PUSHBACK_ATTACHED",
+       "close_on": "T_DEP_PLUS_60",
+       "lookback_frames": 480,
+       "decides_at": "the pushback moving"
+      }
+     },
+     "gate": {
+      "open_on": "PUSHBACK_ATTACHED",
+      "close_on": "T_DEP_PLUS_60",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "fod-walk-completed": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 2.782,
+      "p95_ms": 24.922,
+      "max_ms": 1611.543
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 1,
+     "ring_wait_s": 0.83,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 196046,
+     "rows_dropped_not_subscribed": 273428,
+     "filter_rows": true,
+     "spec": {
+      "module": "fod-walk-completed",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_nose",
+       "airplane_tail",
+       "beltloader",
+       "cone",
+       "front_wheel",
+       "gse",
+       "obstacle",
+       "person",
+       "pushback",
+       "roi"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "person"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "pre-arrival-safety-huddle": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 2.089,
+      "p95_ms": 10.204,
+      "max_ms": 520.841
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 180067,
+     "rows_dropped_not_subscribed": 289407,
+     "filter_rows": true,
+     "spec": {
+      "module": "pre-arrival-safety-huddle",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "beltloader",
+       "cone",
+       "fuel_truck",
+       "gse",
+       "obstacle",
+       "person",
+       "pushback",
+       "roi",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "person"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "lead-marshaller-and-wing-walkers-in-position": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 3.375,
+      "p95_ms": 11.011,
+      "max_ms": 516.717
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 308099,
+     "rows_dropped_not_subscribed": 161375,
+     "filter_rows": true,
+     "spec": {
+      "module": "lead-marshaller-and-wing-walkers-in-position",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "air_conditioning",
+       "airplane",
+       "airplane_tail",
+       "airplane_wing",
+       "beltloader",
+       "cone",
+       "fuel_truck",
+       "gse",
+       "ladder",
+       "obstacle",
+       "person",
+       "pushback",
+       "side_obstacle",
+       "trailer",
+       "vehicle"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "person"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "wing-walkers-in-proper-position-and-using-approved-wands": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 8.741,
+      "p95_ms": 85.238,
+      "max_ms": 645.538
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 335185,
+     "rows_dropped_not_subscribed": 134289,
+     "filter_rows": true,
+     "spec": {
+      "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "air_conditioning",
+       "airplane",
+       "airplane_engine",
+       "airplane_nose",
+       "airplane_tail",
+       "airplane_wing",
+       "beltloader",
+       "cone",
+       "front_wheel (collected, unused)",
+       "fuel_truck",
+       "gse",
+       "obstacle",
+       "person",
+       "pushback",
+       "roi",
+       "side_obstacle",
+       "trailer",
+       "vehicle",
+       "wand"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "person"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "all-cargo-bin-doors-opened-and-verified": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 0.888,
+      "p95_ms": 3.895,
+      "max_ms": 510.854
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 236446,
+     "rows_dropped_not_subscribed": 233028,
+     "filter_rows": true,
+     "spec": {
+      "module": "all-cargo-bin-doors-opened-and-verified",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "back_door",
+       "back_wheel",
+       "beltloader",
+       "cone",
+       "front_door",
+       "fuel_truck",
+       "gse",
+       "obstacle",
+       "pushback",
+       "trailer",
+       "vehicle"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "T_ARR",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": "a deadline after T_arr"
+      }
+     },
+     "gate": {
+      "open_on": "T_ARR",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "safety-handrails-fully-extended": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 4.514,
+      "p95_ms": 11.846,
+      "max_ms": 534.422
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 171005,
+     "rows_dropped_not_subscribed": 298469,
+     "filter_rows": true,
+     "spec": {
+      "module": "safety-handrails-fully-extended",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "back_wheel",
+       "beltloader",
+       "cone",
+       "gse",
+       "obstacle",
+       "person",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "3-stop-brake-check": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 2.304,
+      "p95_ms": 4.244,
+      "max_ms": 534.344
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 140139,
+     "rows_dropped_not_subscribed": 329335,
+     "filter_rows": true,
+     "spec": {
+      "module": "3-stop-brake-check",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "beltloader",
+       "cone",
+       "gse",
+       "obstacle",
+       "pushback",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "T_ARR",
+       "close_on": "BL_LEAVE",
+       "lookback_frames": 0,
+       "decides_at": "the belt loader stopped at the aircraft; it counts the stops since the belt loader started approaching, so it cannot open at its own decision (measured: a 4-minute pre-roll turns Fail into Not observed)"
+      }
+     },
+     "gate": {
+      "open_on": "T_ARR",
+      "close_on": "BL_LEAVE",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 4.052,
+      "p95_ms": 11.245,
+      "max_ms": 534.318
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 248558,
+     "rows_dropped_not_subscribed": 220916,
+     "filter_rows": true,
+     "spec": {
+      "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "back_wheel",
+       "beltloader",
+       "cone",
+       "engine_cone",
+       "front_door",
+       "fuel_truck",
+       "gse",
+       "pushback",
+       "tail_cone",
+       "trailer",
+       "vehicle",
+       "wing_cone"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "BL_LEAVE",
+       "close_on": "T_DEP",
+       "lookback_frames": 240,
+       "decides_at": "belt loader leave to T_dep"
+      }
+     },
+     "gate": {
+      "open_on": "BL_LEAVE",
+      "close_on": "T_DEP",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "beltloader-chocks": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 2.094,
+      "p95_ms": 3.998,
+      "max_ms": 534.804
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 259267,
+     "rows_dropped_not_subscribed": 210207,
+     "filter_rows": true,
+     "spec": {
+      "module": "beltloader-chocks",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_engine",
+       "airplane_wing",
+       "back_door",
+       "back_wheel",
+       "beltloader",
+       "chock",
+       "cone",
+       "fuel_truck",
+       "gse",
+       "ladder",
+       "obstacle",
+       "person",
+       "pushback",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "BL_AT_DOOR",
+       "close_on": "T_DEP",
+       "lookback_frames": 240,
+       "decides_at": "the aircraft departure (live: the tracker's departure frame)"
+      }
+     },
+     "gate": {
+      "open_on": "BL_AT_DOOR",
+      "close_on": "T_DEP",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "bl_rear_cone": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 2.131,
+      "p95_ms": 4.076,
+      "max_ms": 534.607
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 235742,
+     "rows_dropped_not_subscribed": 233732,
+     "filter_rows": true,
+     "spec": {
+      "module": "bl_rear_cone",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_engine",
+       "back_door",
+       "back_wheel",
+       "beltloader",
+       "beltloader_cone",
+       "cone",
+       "engine_cone",
+       "fuel_truck",
+       "gse",
+       "ladder",
+       "obstacle",
+       "person",
+       "pushback",
+       "trailer",
+       "wing_cone"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "BL_AT_DOOR",
+       "close_on": "BL_LEAVE",
+       "lookback_frames": 240,
+       "decides_at": "the belt loader in place and its window"
+      }
+     },
+     "gate": {
+      "open_on": "BL_AT_DOOR",
+      "close_on": "BL_LEAVE",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "safety-vests-secured-to-body": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 35.681,
+      "p95_ms": 79.775,
+      "max_ms": 610.56
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 13,
+     "ring_wait_s": 0.16,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 93292,
+     "rows_dropped_not_subscribed": 376182,
+     "filter_rows": true,
+     "spec": {
+      "module": "safety-vests-secured-to-body",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "person",
+       "safety_vest"
+      ],
+      "tracker_classes": [
+       "person"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "gse-chocks": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 5.747,
+      "p95_ms": 12.841,
+      "max_ms": 595.112
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 407804,
+     "rows_dropped_not_subscribed": 61670,
+     "filter_rows": true,
+     "spec": {
+      "module": "gse-chocks",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_engine",
+       "airplane_nose",
+       "airplane_tail",
+       "airplane_wing",
+       "back_door",
+       "back_wheel",
+       "beltloader",
+       "chock",
+       "cone",
+       "front_door",
+       "front_wheel",
+       "fuel_truck",
+       "gse",
+       "ladder",
+       "obstacle",
+       "person",
+       "pushback",
+       "side_obstacle",
+       "trailer",
+       "vehicle"
+      ],
+      "tracker_classes": [
+       "beltloader",
+       "gse",
+       "person"
+      ],
+      "reads_optical_flow_state": true,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "handrails-on-gse-being-used": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 23.372,
+      "p95_ms": 70.411,
+      "max_ms": 603.814
+     },
+     "failed": null,
+     "pixels": true,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 233764,
+     "rows_dropped_not_subscribed": 235710,
+     "filter_rows": true,
+     "spec": {
+      "module": "handrails-on-gse-being-used",
+      "pixels": true,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_engine",
+       "back_door",
+       "back_wheel",
+       "beltloader",
+       "cone",
+       "front_door",
+       "gse",
+       "obstacle",
+       "person",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane",
+       "beltloader",
+       "person"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "session start",
+       "close_on": "session end",
+       "lookback_frames": 0,
+       "decides_at": null
+      }
+     },
+     "gate": {
+      "open_on": "session start",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "cones-placed-in-proper-positions-and-timely": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 1.915,
+      "p95_ms": 5.398,
+      "max_ms": 526.727
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 332171,
+     "rows_dropped_not_subscribed": 137303,
+     "filter_rows": true,
+     "spec": {
+      "module": "cones-placed-in-proper-positions-and-timely",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "air_conditioning",
+       "airplane",
+       "airplane_engine",
+       "airplane_nose",
+       "airplane_tail",
+       "airplane_wing",
+       "beltloader",
+       "cone",
+       "engine_cone",
+       "fuel_truck",
+       "gse",
+       "ladder",
+       "obstacle",
+       "person",
+       "pushback",
+       "side_obstacle",
+       "tail_cone",
+       "trailer",
+       "vehicle",
+       "wing_cone"
+      ],
+      "tracker_classes": [
+       "airplane"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "T_ARR",
+       "close_on": "session end",
+       "lookback_frames": 240,
+       "decides_at": "the end of the session"
+      }
+     },
+     "gate": {
+      "open_on": "T_ARR",
+      "close_on": "session end",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    },
+    "pushback-pathway-confirmed-clear-of-obstacles": {
+     "per_frame": {
+      "frames": 17280,
+      "mean_ms": 2.16,
+      "p95_ms": 6.195,
+      "max_ms": 799.019
+     },
+     "failed": null,
+     "pixels": false,
+     "ring_waits": 0,
+     "ring_wait_s": 0.0,
+     "frames_sent": 17280,
+     "frames_skipped_gate_closed": 0,
+     "rows_sent": 185990,
+     "rows_dropped_not_subscribed": 283484,
+     "filter_rows": true,
+     "spec": {
+      "module": "pushback-pathway-confirmed-clear-of-obstacles",
+      "pixels": false,
+      "declared": true,
+      "gm_classes": [
+       "airplane",
+       "airplane_nose",
+       "airplane_tail",
+       "back_door",
+       "beltloader",
+       "chock",
+       "cone",
+       "front_door",
+       "fuel_truck",
+       "gse",
+       "ladder",
+       "obstacle",
+       "pushback",
+       "roi",
+       "trailer"
+      ],
+      "tracker_classes": [
+       "airplane"
+      ],
+      "reads_optical_flow_state": false,
+      "gate": {
+       "open_on": "BL_LEAVE",
+       "close_on": "T_DEP_PLUS_60",
+       "lookback_frames": 480,
+       "decides_at": "around T_dep (live: 15 s after the departure frame)"
+      }
+     },
+     "gate": {
+      "open_on": "BL_LEAVE",
+      "close_on": "T_DEP_PLUS_60",
+      "opened_at": 1,
+      "closed_at": null,
+      "open_now": true,
+      "gating": "off \u2014 no stage events yet (PF-Q1-03), the table is only reported"
+     }
+    }
+   },
+   "module_error": null,
+   "runtime_error": null,
+   "verdicts": [
+    {
+     "module": "chocks-and-cones-available-and-staged-for-arrival",
+     "live_status": "Not observed",
+     "decided_after_frame": 2884,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+     "live_status": "Fail",
+     "decided_after_frame": 3392,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": false
+     }
+    },
+    {
+     "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+     "live_status": "Not observed",
+     "decided_after_frame": 4846,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+     "live_status": "Not observed",
+     "decided_after_frame": 11804,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+     "live_status": "Fail",
+     "decided_after_frame": 11836,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "fod-walk-completed",
+     "live_status": "Fail",
+     "decided_after_frame": 2884,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "pre-arrival-safety-huddle",
+     "live_status": "Not observed",
+     "decided_after_frame": 3365,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "lead-marshaller-and-wing-walkers-in-position",
+     "live_status": "Not observed",
+     "decided_after_frame": 2965,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+     "live_status": "Fail",
+     "decided_after_frame": 12076,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "all-cargo-bin-doors-opened-and-verified",
+     "live_status": "Pass",
+     "decided_after_frame": 4195,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "safety-handrails-fully-extended",
+     "live_status": "Pass",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "3-stop-brake-check",
+     "live_status": "Fail",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+     "live_status": "Pass",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "beltloader-chocks",
+     "live_status": "Fail",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "bl_rear_cone",
+     "live_status": "Fail",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "safety-vests-secured-to-body",
+     "live_status": "Fail",
+     "decided_after_frame": 17281,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": false
+     }
+    },
+    {
+     "module": "gse-chocks",
+     "live_status": "Not observed",
+     "decided_after_frame": 17281,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "handrails-on-gse-being-used",
+     "live_status": "Fail",
+     "decided_after_frame": 17281,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": false
+     }
+    },
+    {
+     "module": "cones-placed-in-proper-positions-and-timely",
+     "live_status": "Not observed",
+     "decided_after_frame": 11804,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": false
+     }
+    },
+    {
+     "module": "pushback-pathway-confirmed-clear-of-obstacles",
+     "live_status": "Pass",
+     "decided_after_frame": 11847,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": false
+     }
+    }
+   ],
+   "verdicts_identical_to_batch_v2": 20,
+   "reports_identical_to_batch_v2": 20,
+   "machine": {
+    "window_s": 269.7,
+    "cpu_cores_used": 4.05,
+    "rss_peak_gb": 17.75,
+    "gpu_util_mean": 41.5,
+    "gpu_util_p95": 63.0,
+    "gpu_mem_peak_gb": 10.41,
+    "gpu_mem_over_baseline_gb": 7.98
+   }
   }
  },
  "testset": {
@@ -2895,7 +4358,8 @@
   "as_live_components": 941
  },
  "live_vs_batch_together": {
-  "module_runs": 20,
+  "events": 1,
+  "module_event_pairs": 20,
   "verdict_identical": 20,
   "report_identical": 20
  }

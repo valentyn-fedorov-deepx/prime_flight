@@ -329,10 +329,14 @@ def main() -> int:
         for name, j in joint.items():
             ms, mc = j.get("ms_per_frame") or {}, j.get("machine") or {}
             speed = "real-time speed" if j.get("speed") == 1 else f"GPU kept busy ({j.get('speed'):g}×)"
-            L.append(f"| {speed} | {len(j['modules'])} | {j.get('keeps_up')} | {n((ms.get('gm') or {}).get('mean'))} | "
+            total_ms = (ms.get("total") or {}).get("mean")
+            keeps = str(j.get("keeps_up")) if j.get("speed") == 1 else (
+                f"fed faster than it can go: {BUDGET_MS / total_ms:.2f}× real time" if total_ms else "—")
+            latency = n((j.get("frame_latency_s") or {}).get("p95"), 2) if j.get("speed") == 1 else "—"
+            L.append(f"| {speed} | {len(j['modules'])} | {keeps} | {n((ms.get('gm') or {}).get('mean'))} | "
                      f"{n((ms.get('tracker') or {}).get('mean'))} | {n((ms.get('module') or {}).get('mean'))} | "
                      f"**{n((ms.get('total') or {}).get('mean'))}** · {n((ms.get('total') or {}).get('p95'))} | "
-                     f"{n((j.get('frame_latency_s') or {}).get('p95'), 2)} | {n(mc.get('gpu_util_mean'))} | "
+                     f"{latency} | {n(mc.get('gpu_util_mean'))} | "
                      f"{n(mc.get('gpu_mem_over_baseline_gb'))} | {n(mc.get('cpu_cores_used'), 2)} | {n(mc.get('rss_peak_gb'))} | "
                      f"{j.get('verdicts_identical_to_batch_v2')} / {len(j['modules'])} | {j.get('reports_identical_to_batch_v2')} / {len(j['modules'])} |")
             diff = [v["module"] for v in j.get("verdicts") or [] if not (v.get("batch_v2") or {}).get("report_identical")]
@@ -361,18 +365,21 @@ def main() -> int:
         L += ["", "### Live against batch, modules together, every event still on disk", "",
               "One GM, one tracker, the modules the plan runs on that camera, each in its own process with its declared rows.", "",
               "| event | speed | modules | verdict = batch | report = batch | not identical |", "|---|---|---|---|---|---|"]
-        tv = tr = tn = 0
+        pairs: dict = {}
         for video, runs in more.items():
             for j in sorted(runs, key=lambda x: x.get("speed") or 0):
                 bad = [f"{v['module']} (live {v.get('live_status')}, batch {(v.get('batch_v2') or {}).get('status')})"
                        for v in j["verdicts"] if not (v.get("batch_v2") or {}).get("report_identical")]
-                tv += j.get("verdicts_identical_to_batch_v2") or 0
-                tr += j.get("reports_identical_to_batch_v2") or 0
-                tn += len(j["verdicts"])
+                for v in j["verdicts"]:
+                    b, pair = v.get("batch_v2") or {}, pairs.setdefault((video, v["module"]), [True, True])
+                    pair[0] &= bool(b.get("status_identical"))
+                    pair[1] &= bool(b.get("report_identical"))
                 L.append(f"| `{video}` | {j.get('speed'):g}× | {len(j['verdicts'])} | {j.get('verdicts_identical_to_batch_v2')} | "
                          f"{j.get('reports_identical_to_batch_v2')} | {'; '.join(bad) or '—'} |")
-        L.append(f"| **all** | | **{tn}** | **{tv}** | **{tr}** | |")
-        out["live_vs_batch_together"] = {"module_runs": tn, "verdict_identical": tv, "report_identical": tr}
+        tn, tv, tr = len(pairs), sum(1 for x in pairs.values() if x[0]), sum(1 for x in pairs.values() if x[1])
+        L.append(f"| **module × event pairs** | | **{tn}** | **{tv}** | **{tr}** | |")
+        out["live_vs_batch_together"] = {"events": len(more), "module_event_pairs": tn, "verdict_identical": tv,
+                                         "report_identical": tr}
 
     every = combos["every module that runs as it is"]
     premium = [r["gpu_time_against_packed_post"] for r in rows if r["gpu_time_against_packed_post"] and r["module"] in ready]

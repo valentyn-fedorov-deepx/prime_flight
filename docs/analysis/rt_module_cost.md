@@ -123,6 +123,7 @@ Measured: the same set in one run on the whole event, one GM with every head, on
 | run | modules | keeps up | GM | tracker | hand-off | **frame path ms** (mean · p95) | frame latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | verdict = batch | report = batch |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | real-time speed | 20 | True | 22.4 | 26.6 | 7.3 | **56.4** · 94.7 | 0.21 | 24.5 | 8.0 | 4.23 | 18.2 | 20 / 20 | 20 / 20 |
+| GPU kept busy (8×) | 20 | fed faster than it can go: 1.85× real time | 28.3 | 29.1 | 10.2 | **67.7** · 116.0 | — | 41.5 | 8.0 | 4.05 | 17.8 | 20 / 20 | 20 / 20 |
 
 The prediction puts every module on the frame path, so it is the upper bound. In the branch a module is a process of its own: at real-time speed their work added up to 87 ms of CPU time per frame across 19 processes (54.5 ms when each ran alone: together they contend for the 8 cores), none of it on the frame path. What binds a session with every module is CPU and memory, not the GPU. Own work per frame, alone and together:
 
@@ -155,7 +156,8 @@ One GM, one tracker, the modules the plan runs on that camera, each in its own p
 | event | speed | modules | verdict = batch | report = batch | not identical |
 |---|---|---|---|---|---|
 | `zHxIAF2vUGxJ.mp4` | 1× | 20 | 20 | 20 | — |
-| **all** | | **20** | **20** | **20** | |
+| `zHxIAF2vUGxJ.mp4` | 8× | 20 | 20 | 20 | — |
+| **module × event pairs** | | **20** | **20** | **20** | |
 
 ## 5. Against post-processing
 
