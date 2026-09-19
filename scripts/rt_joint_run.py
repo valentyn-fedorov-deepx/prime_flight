@@ -62,7 +62,7 @@ def main() -> int:
     primary = primary_of(modules)
     extras = [m for m in modules if m != primary]
     stem = os.path.splitext(a.video)[0]
-    tag = f"joint_{a.name}_x{a.speed:g}"
+    tag = f"joint_{stem}_{a.name}_x{a.speed:g}"
     cmd = [sys.executable, "scripts/rt_pipeline_run.py", "--video", a.video, "--module", primary,
            "--extra-modules", ",".join(extras), "--tag", tag, "--speed", str(a.speed), "--no-write-rows",
            "--ingest", "frames" if a.speed == 1 else "chunks", "--bandwidth-mbps", "10" if a.speed == 1 else "1000"]

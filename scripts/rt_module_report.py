@@ -211,6 +211,10 @@ def main() -> int:
     combos = {name: together(records, mods, gm_table, trk_table) for name, mods in sets.items() if mods}
     joint = {os.path.basename(p)[len("joint_"):-len(".json")]: load(p) for p in sorted(glob.glob(os.path.join(cost_dir, "joint_*.json")))}
     joint = {k: v for k, v in joint.items() if not k.startswith("smoke") and v and not v.get("error")}
+    for path in sorted(glob.glob(os.path.join(ROOT, "out", "rt", "cost", "*", "joint_all_ready_x1.json"))):
+        other = load(path)
+        if other and not other.get("error") and other.get("video") != a.video:
+            joint[f"{os.path.splitext(other['video'])[0]}_x1"] = other
     quality = {"scoped_vs_full_inputs": (load(os.path.join(ROOT, "out", "testset", "compare_sub_vs_v2.json")) or {}).get("totals"),
                "rt_inputs_vs_production_inputs": (load(os.path.join(ROOT, "out", "testset", "compare_v2_vs_ctl_final.json")) or {}).get("totals")}
     post_s = sum(r["post_job_module_s"] or 0 for r in rows if r["module"] in ready)
@@ -324,15 +328,16 @@ def main() -> int:
         L += ["", "Measured: the same set in one run on the whole event, one GM with every head, one tracker with every class, every module "
               "a component in its own process with only its declared rows. The modules work in parallel with the frame path, so `hand-off` "
               "is rows, pixels and waiting for a slow reader, not the sum of their work:", "",
-              "| run | modules | keeps up | GM | tracker | hand-off | **frame path ms** (mean · p95) | frame latency p95 s | GPU util % | "
+              "| run | modules | keeps up | GM | tracker | hand-off | **frame path ms** (mean · p95) | frame latency s (p95 · p99 · max) | GPU util % | "
               "GPU mem GB | CPU cores | RAM GB | verdict = batch | report = batch |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for name, j in joint.items():
             ms, mc = j.get("ms_per_frame") or {}, j.get("machine") or {}
-            speed = "real-time speed" if j.get("speed") == 1 else f"GPU kept busy ({j.get('speed'):g}×)"
+            speed = ("real-time speed" if j.get("speed") == 1 else f"GPU kept busy ({j.get('speed'):g}×)") +                 f", `{os.path.splitext(j['video'])[0]}`"
             total_ms = (ms.get("total") or {}).get("mean")
             keeps = str(j.get("keeps_up")) if j.get("speed") == 1 else (
                 f"fed faster than it can go: {BUDGET_MS / total_ms:.2f}× real time" if total_ms else "—")
-            latency = n((j.get("frame_latency_s") or {}).get("p95"), 2) if j.get("speed") == 1 else "—"
+            lat = j.get("frame_latency_s") or {}
+            latency = f"{n(lat.get('p95'), 2)} · {n(lat.get('p99'), 2)} · {n(lat.get('max'), 1)}" if j.get("speed") == 1 else "—"
             L.append(f"| {speed} | {len(j['modules'])} | {keeps} | {n((ms.get('gm') or {}).get('mean'))} | "
                      f"{n((ms.get('tracker') or {}).get('mean'))} | {n((ms.get('module') or {}).get('mean'))} | "
                      f"**{n((ms.get('total') or {}).get('mean'))}** · {n((ms.get('total') or {}).get('p95'))} | "
@@ -342,6 +347,14 @@ def main() -> int:
             diff = [v["module"] for v in j.get("verdicts") or [] if not (v.get("batch_v2") or {}).get("report_identical")]
             if diff:
                 L.append(f"| ↳ not identical | {', '.join(diff)} | | | | | | | | | | | | |")
+        stalled = [j for j in joint.values() if j.get("speed") == 1 and ((j.get("frame_latency_s") or {}).get("max") or 0) > 5]
+        for j in stalled:
+            L += ["", f"On `{os.path.splitext(j['video'])[0]}` the branch kept up over the event, but single frames stalled for up to "
+                  f"{j['frame_latency_s']['max']:.0f} s around the arrival: the process tree peaked at {j['machine'].get('rss_peak_gb')} GB "
+                  "on a 27 GB machine with a desktop session, at the moment the pose modules fill their frame buffers. Nothing is dropped "
+                  "(the hand-off waits) and the verdicts are unaffected, but every output is late by that much during the stall. A host "
+                  "for the full set needs RAM headroom (32 GB and up), and one slow reader must not be able to hold the frame path for "
+                  "the others (PF-Q2-13)."]
         rt_run = next((j for j in joint.values() if j.get("speed") == 1), None)
         if rt_run and rt_run.get("module_hosts"):
             hosts = rt_run["module_hosts"]
@@ -418,9 +431,37 @@ def main() -> int:
               "The gap to the monthly CI output is the module build on this machine (substituted `cv_common` copies, 3-stop above all), "
               "present with the production inputs as well; it is not introduced by the real-time inputs."]
 
-    L += ["", "## 7. What this does not cover", "",
-          "- Live against batch was run on **one event**; the test-set pass checks the inputs (real-time GM + tracker, scoped rows) on all "
-          "events, with the modules run over files, not live.",
+    delay = load(os.path.join(ROOT, "docs", "analysis", "rt_main_aircraft_delay.json"))
+    if delay and delay.get("summary"):
+        now, alt_key = delay["summary"]["longest_so_far"], next(k for k in delay["summary"] if k != "longest_so_far")
+        alt = delay["summary"][alt_key]
+        L += ["", "## 7. The one difference found live: the arriving aircraft can be handed over late", "",
+              "Not a module property: it sits in the causal rows every module reads. The batch second-run file carries the box of the "
+              "main aircraft, which is the longest aircraft track of the **whole** video. The causal rows (`pf/pipeline/causal_rows.py`) "
+              "carry the box of the track that is longest **so far**, so an aircraft that taxied past earlier keeps the title until the "
+              "arriving aircraft has more frames than it, and until then neither the tracker nor the modules get the arriving aircraft.", "",
+              "- **Live**: on `MwCSLbQ7QvXQ` the arriving aircraft reached the tracker 223 frames (28 s) late. T_arr was still identical "
+              "(the hand-over came 20 s before the stop) and every verdict held; lead-marshaller wrote the start of the arrival stage as "
+              "13:44 instead of 13:16, which is the one report of 78 that differs.",
+              f"- **Test set** (`scripts/rt_main_aircraft_delay.py`, first-run rows of the {now['videos']} batch GM v2 runs replayed through "
+              "the aircraft tracker, no GPU; it reproduces the 223 frames exactly): "
+              f"on **{now['arrival_window_fully_the_same']} of {now['videos_with_an_arrival']}** videos the causal rows carry the batch box on "
+              "every frame from 30 s before T_arr to 4 s after it; on "
+              f"**{now['arrival_window_less_than_half_the_same']}** they carry it on less than half of those frames, and on "
+              f"**{now['handed_over_only_after_the_arrival']}** the arriving aircraft is handed over only after the batch T_arr "
+              f"(delay: median {now['median_delay_s']} s, p90 {now['p90_delay_s']} s, max {now['max_delay_s']} s). On those events a live "
+              "T_arr, and every check anchored on it, is at risk; the test-set passes above cannot see this, because they read the batch rows.",
+              f"- **A candidate rule**, replayed the same way (keep the held track while it has boxes, let it go after "
+              f"{alt_key.rsplit('_', 1)[-1]} frames without one): {alt['arrival_window_fully_the_same']} videos fully the same, "
+              f"{alt['arrival_window_less_than_half_the_same']} under half, {alt['handed_over_only_after_the_arrival']} handed over after the "
+              f"arrival, p90 delay {alt['p90_delay_s']} s; the price is more frames of passing aircraft handed to the tracker "
+              f"({alt['frames_with_another_aircraft_handed']} against {now['frames_with_another_aircraft_handed']}). It has to be chosen and "
+              "validated live on the affected events (PF-Q2-02); this report only measures it."]
+        out["main_aircraft_hand_over"] = delay["summary"]
+
+    L += ["", "## 8. What this does not cover", "",
+          f"- Live against batch was run on **{max(len(more), 1)} events** (the videos still on disk); the test-set pass checks the inputs "
+          "(real-time GM + tracker, scoped rows) on all events, with the modules run over files, not live.",
           "- Scoping the GM heads is exact (the same rows a filter would leave). Scoping the **tracker classes is not**: the tracker's "
           "association sees fewer objects, which moved T_dep by up to 42 frames in one case. The session the branch actually runs has one "
           "full tracker, where this does not occur; the single-module numbers are a lower bound on cost, not a deployment proposal.",

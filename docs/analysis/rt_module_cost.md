@@ -120,10 +120,14 @@ Predicted from the single runs:
 
 Measured: the same set in one run on the whole event, one GM with every head, one tracker with every class, every module a component in its own process with only its declared rows. The modules work in parallel with the frame path, so `hand-off` is rows, pixels and waiting for a slow reader, not the sum of their work:
 
-| run | modules | keeps up | GM | tracker | hand-off | **frame path ms** (mean · p95) | frame latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | verdict = batch | report = batch |
+| run | modules | keeps up | GM | tracker | hand-off | **frame path ms** (mean · p95) | frame latency s (p95 · p99 · max) | GPU util % | GPU mem GB | CPU cores | RAM GB | verdict = batch | report = batch |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| real-time speed | 20 | True | 22.4 | 26.6 | 7.3 | **56.4** · 94.7 | 0.21 | 24.5 | 8.0 | 4.23 | 18.2 | 20 / 20 | 20 / 20 |
-| GPU kept busy (8×) | 20 | fed faster than it can go: 1.85× real time | 28.3 | 29.1 | 10.2 | **67.7** · 116.0 | — | 41.5 | 8.0 | 4.05 | 17.8 | 20 / 20 | 20 / 20 |
+| real-time speed, `zHxIAF2vUGxJ` | 20 | True | 22.4 | 26.6 | 7.3 | **56.4** · 94.7 | 0.21 · 0.67 · 2.6 | 24.5 | 8.0 | 4.23 | 18.2 | 20 / 20 | 20 / 20 |
+| GPU kept busy (8×), `zHxIAF2vUGxJ` | 20 | fed faster than it can go: 1.85× real time | 28.3 | 29.1 | 10.2 | **67.7** · 116.0 | — | 41.5 | 8.0 | 4.05 | 17.8 | 20 / 20 | 20 / 20 |
+| real-time speed, `MwCSLbQ7QvXQ` | 20 | True | 23.1 | 25.9 | 9.9 | **59.1** · 95.8 | 0.38 · 8.02 · 15.4 | 21.7 | 8.1 | 3.82 | 23.2 | 20 / 20 | 19 / 20 |
+| ↳ not identical | lead-marshaller-and-wing-walkers-in-position | | | | | | | | | | | | |
+
+On `MwCSLbQ7QvXQ` the branch kept up over the event, but single frames stalled for up to 15 s around the arrival: the process tree peaked at 23.18 GB on a 27 GB machine with a desktop session, at the moment the pose modules fill their frame buffers. Nothing is dropped (the hand-off waits) and the verdicts are unaffected, but every output is late by that much during the stall. A host for the full set needs RAM headroom (32 GB and up), and one slow reader must not be able to hold the frame path for the others (PF-Q2-13).
 
 The prediction puts every module on the frame path, so it is the upper bound. In the branch a module is a process of its own: at real-time speed their work added up to 87 ms of CPU time per frame across 19 processes (54.5 ms when each ran alone: together they contend for the 8 cores), none of it on the frame path. What binds a session with every module is CPU and memory, not the GPU. Own work per frame, alone and together:
 
@@ -155,9 +159,15 @@ One GM, one tracker, the modules the plan runs on that camera, each in its own p
 
 | event | speed | modules | verdict = batch | report = batch | not identical |
 |---|---|---|---|---|---|
+| `1WBBTx2wApOn.mp4` | 8× | 11 | 11 | 11 | — |
+| `B1BtQWGUShsv.mp4` | 8× | 11 | 11 | 11 | — |
+| `ICfrXaND7Jqf.mp4` | 8× | 8 | 8 | 8 | — |
+| `MwCSLbQ7QvXQ.mp4` | 1× | 20 | 20 | 19 | lead-marshaller-and-wing-walkers-in-position (live Fail, batch Fail) |
+| `MwCSLbQ7QvXQ.mp4` | 8× | 20 | 20 | 19 | lead-marshaller-and-wing-walkers-in-position (live Fail, batch Fail) |
+| `iRRy2la05yGf.mp4` | 8× | 8 | 8 | 8 | — |
 | `zHxIAF2vUGxJ.mp4` | 1× | 20 | 20 | 20 | — |
 | `zHxIAF2vUGxJ.mp4` | 8× | 20 | 20 | 20 | — |
-| **module × event pairs** | | **20** | **20** | **20** | |
+| **module × event pairs** | | **78** | **78** | **77** | |
 
 ## 5. Against post-processing
 
@@ -175,9 +185,17 @@ One GM, one tracker, the modules the plan runs on that camera, each in its own p
 
 The gap to the monthly CI output is the module build on this machine (substituted `cv_common` copies, 3-stop above all), present with the production inputs as well; it is not introduced by the real-time inputs.
 
-## 7. What this does not cover
+## 7. The one difference found live: the arriving aircraft can be handed over late
 
-- Live against batch was run on **one event**; the test-set pass checks the inputs (real-time GM + tracker, scoped rows) on all events, with the modules run over files, not live.
+Not a module property: it sits in the causal rows every module reads. The batch second-run file carries the box of the main aircraft, which is the longest aircraft track of the **whole** video. The causal rows (`pf/pipeline/causal_rows.py`) carry the box of the track that is longest **so far**, so an aircraft that taxied past earlier keeps the title until the arriving aircraft has more frames than it, and until then neither the tracker nor the modules get the arriving aircraft.
+
+- **Live**: on `MwCSLbQ7QvXQ` the arriving aircraft reached the tracker 223 frames (28 s) late. T_arr was still identical (the hand-over came 20 s before the stop) and every verdict held; lead-marshaller wrote the start of the arrival stage as 13:44 instead of 13:16, which is the one report of 78 that differs.
+- **Test set** (`scripts/rt_main_aircraft_delay.py`, first-run rows of the 90 batch GM v2 runs replayed through the aircraft tracker, no GPU; it reproduces the 223 frames exactly): on **69 of 90** videos the causal rows carry the batch box on every frame from 30 s before T_arr to 4 s after it; on **16** they carry it on less than half of those frames, and on **13** the arriving aircraft is handed over only after the batch T_arr (delay: median 0.0 s, p90 133.6 s, max 906.5 s). On those events a live T_arr, and every check anchored on it, is at risk; the test-set passes above cannot see this, because they read the batch rows.
+- **A candidate rule**, replayed the same way (keep the held track while it has boxes, let it go after 16 frames without one): 74 videos fully the same, 6 under half, 2 handed over after the arrival, p90 delay 5.2 s; the price is more frames of passing aircraft handed to the tracker (103583 against 47255). It has to be chosen and validated live on the affected events (PF-Q2-02); this report only measures it.
+
+## 8. What this does not cover
+
+- Live against batch was run on **6 events** (the videos still on disk); the test-set pass checks the inputs (real-time GM + tracker, scoped rows) on all events, with the modules run over files, not live.
 - Scoping the GM heads is exact (the same rows a filter would leave). Scoping the **tracker classes is not**: the tracker's association sees fewer objects, which moved T_dep by up to 42 frames in one case. The session the branch actually runs has one full tracker, where this does not occur; the single-module numbers are a lower bound on cost, not a deployment proposal.
 - The two-pass modules fail at the start of their second pass, so their cost here is the first pass only.
 - At real-time speed with one head the GPU clocks down and a frame costs more milliseconds than under load; the per-frame work is the busy-GPU number, the 1× number is what the latency looks like.
