@@ -220,8 +220,7 @@ def main() -> int:
            "gm_by_head_set_ms": gm_table, "tracker_by_tracked_classes_ms": trk_table, "together_predicted": combos,
            "together_measured": joint, "testset": quality,
            "ready_modules_own_seconds_on_this_event": {"as_post_jobs": round(post_s), "as_live_components": round(live_s)}}
-    json.dump(out, io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.json"), "w", encoding="utf-8", newline="\n"),
-              indent=1, default=str)
+    every_own = combos["every module that runs as it is"]["modules_own_ms"]
 
     def n(v, d=1):
         return "—" if v is None else f"{v:.{d}f}"
@@ -253,7 +252,13 @@ def main() -> int:
         if r["why"] and r["runs_in_real_time_as_is"] not in seen and r["runs_in_real_time_as_is"] != "not hosted":
             seen.add(r["runs_in_real_time_as_is"])
             names = ", ".join(x["module"] for x in rows if x["runs_in_real_time_as_is"] == r["runs_in_real_time_as_is"])
-            notes.append(f"- **{r['runs_in_real_time_as_is']}** ({names}): {r['why']}")
+            note = f"- **{r['runs_in_real_time_as_is']}** ({names}): {r['why']}"
+            if r["runs_in_real_time_as_is"] == "yes, report shifts":
+                full = [v for j in joint.values() for v in j.get("verdicts") or []
+                        if v["module"] in names and (v.get("batch_v2") or {}).get("report_identical")]
+                if full:
+                    note += ". Checked: in the joint run with the full tracker (section 4) their reports are identical to batch"
+            notes.append(note)
     hosted_not = [f"{r['module']} ({'runs under WSL' if 'wsl' in str(r['why']).lower() else 'runs in its own Python environment'})"
                   for r in rows if r["runs_in_real_time_as_is"] == "not hosted"]
     if hosted_not:
@@ -333,6 +338,41 @@ def main() -> int:
             diff = [v["module"] for v in j.get("verdicts") or [] if not (v.get("batch_v2") or {}).get("report_identical")]
             if diff:
                 L.append(f"| ↳ not identical | {', '.join(diff)} | | | | | | | | | | | | |")
+        rt_run = next((j for j in joint.values() if j.get("speed") == 1), None)
+        if rt_run and rt_run.get("module_hosts"):
+            hosts = rt_run["module_hosts"]
+            own = sum((h.get("per_frame") or {}).get("mean_ms") or 0.0 for h in hosts.values())
+            L += ["", f"The prediction puts every module on the frame path, so it is the upper bound. In the branch a module is a process "
+                  f"of its own: at real-time speed their work added up to {own:.0f} ms of CPU time per frame across {len(hosts)} processes "
+                  f"({every_own:.1f} ms when each ran alone: together they contend for the 8 cores), none of it on the frame path. "
+                  "What binds a session with every module is CPU and memory, not the GPU. Own work per frame, alone and together:", "",
+                  "| module | alone, ms | together at 1×, ms (mean · p95) | waits for a free frame slot |", "|---|---|---|---|"]
+            by_module = {r["module"]: r for r in rows}
+            for m, h in sorted(hosts.items(), key=lambda kv: -((kv[1].get("per_frame") or {}).get("mean_ms") or 0.0)):
+                pf = h.get("per_frame") or {}
+                L.append(f"| {m} | {n(by_module[m]['whole_event_ms'].get('module'), 2)} | {n(pf.get('mean_ms'), 2)} · {n(pf.get('p95_ms'))} | "
+                         f"{h.get('ring_waits') or 0} |")
+    more = {}
+    for path in sorted(glob.glob(os.path.join(ROOT, "out", "rt", "cost", "*", "joint_all_ready_x*.json"))):
+        j = load(path)
+        if j and not j.get("error") and j.get("verdicts"):
+            more.setdefault(j["video"], []).append(j)
+    if more:
+        L += ["", "### Live against batch, modules together, every event still on disk", "",
+              "One GM, one tracker, the modules the plan runs on that camera, each in its own process with its declared rows.", "",
+              "| event | speed | modules | verdict = batch | report = batch | not identical |", "|---|---|---|---|---|---|"]
+        tv = tr = tn = 0
+        for video, runs in more.items():
+            for j in sorted(runs, key=lambda x: x.get("speed") or 0):
+                bad = [f"{v['module']} (live {v.get('live_status')}, batch {(v.get('batch_v2') or {}).get('status')})"
+                       for v in j["verdicts"] if not (v.get("batch_v2") or {}).get("report_identical")]
+                tv += j.get("verdicts_identical_to_batch_v2") or 0
+                tr += j.get("reports_identical_to_batch_v2") or 0
+                tn += len(j["verdicts"])
+                L.append(f"| `{video}` | {j.get('speed'):g}× | {len(j['verdicts'])} | {j.get('verdicts_identical_to_batch_v2')} | "
+                         f"{j.get('reports_identical_to_batch_v2')} | {'; '.join(bad) or '—'} |")
+        L.append(f"| **all** | | **{tn}** | **{tv}** | **{tr}** | |")
+        out["live_vs_batch_together"] = {"module_runs": tn, "verdict_identical": tv, "report_identical": tr}
 
     every = combos["every module that runs as it is"]
     premium = [r["gpu_time_against_packed_post"] for r in rows if r["gpu_time_against_packed_post"] and r["module"] in ready]
@@ -346,9 +386,12 @@ def main() -> int:
           f"the GM and tracker files and decodes the video again), as live components **{live_s:.0f} s** (decoded once, rows handed over in memory).",
           "- **What real time pays for is the reservation.** A stream holds its share of the GPU for the length of the event, whatever the "
           "scene; post-processing packs the same work back to back. With 20 % headroom that is the `GPU time vs packed post` column: "
-          f"{min(premium):.2f}–{max(premium):.2f}× for one module, and it falls as modules share a session "
-          f"(all {len(ready)} together: {every['together_ms']} ms predicted of 125, one stream per GPU, "
-          f"{BUDGET_MS / every['together_ms']:.2f}× with no headroom left).",
+          f"{min(premium):.2f}–{max(premium):.2f}× for one module, and it falls as modules share a session: "
+          + (f"all {len(rt['modules'])} together measured {rt['ms_per_frame']['total']['mean']:.1f} ms on the frame path (p95 "
+             f"{rt['ms_per_frame']['total']['p95']:.1f}) with the GPU {rt['machine'].get('gpu_util_mean')} % busy, so the card has room "
+             "for a second stream while the 8 cores and the RAM of this machine do not."
+             if rt and rt.get("machine") else
+             f"all {len(ready)} together: {every['together_ms']} ms predicted of 125, one stream per GPU."),
           "- **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot.",
           "- **The GPU class.** Production runs on a Tesla T4 (one GPU, 3.3 vCPU, 8 GiB per job). A T4 is an estimated 3–4× slower than this "
           "card (not measured): single light modules would fit, the full set would not." + machine]
@@ -386,6 +429,8 @@ def main() -> int:
           "python scripts/testset/compare.py --runs-root out/testset/modules/sub --label sub --baseline-root out/testset/modules/v2 \\",
           "    --baseline-label v2 --out out/testset/compare_sub_vs_v2.json",
           "python scripts/rt_module_report.py                                               # this file", "```"]
+    json.dump(out, io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.json"), "w", encoding="utf-8", newline="\n"),
+              indent=1, default=str)
     io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.md"), "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
     print(json.dumps({"counts": count, "together_predicted": {k: v["together_ms"] for k, v in combos.items()},
                       "together_measured": {k: (v.get("ms_per_frame") or {}).get("total") for k, v in joint.items()}}, indent=1))

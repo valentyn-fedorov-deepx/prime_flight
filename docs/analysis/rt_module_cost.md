@@ -40,7 +40,7 @@ Every module was run **alone as a component**: the unchanged production module b
 | pre-departure-walk-around-completed | **not hosted** | — | — | — | — |
 
 - **yes, verdict at session end** (safety-vests-secured-to-body, gse-chocks, handrails-on-gse-being-used): runs and gives the batch verdict, but only when the session closes: to alert during the turn it needs a hook for an interim verdict
-- **yes, report shifts** (cones-placed-in-proper-positions-and-timely, pushback-pathway-confirmed-clear-of-obstacles): same verdict; the window or the count in the report moves slightly because the tracker follows only this module's classes (with the full tracker it does not)
+- **yes, report shifts** (cones-placed-in-proper-positions-and-timely, pushback-pathway-confirmed-clear-of-obstacles): same verdict; the window or the count in the report moves slightly because the tracker follows only this module's classes (with the full tracker it does not). Checked: in the joint run with the full tracker (section 4) their reports are identical to batch
 - **no: two passes** (safety-zone-confirmed-clear, pin-verification, hand-signals, aircraft-chocks): reads the session a second time from frame 1, and in real time that frame is gone; the cost below covers its first pass only. Planned: a stage-detector event instead of the second pass for aircraft-chocks and pin-verification (PF-Q3-04), single-pass hand-signals and safety-zone (PF-Q2-11)
 - **not hosted**: hair-policy (runs under WSL); post-arrival-aircraft-walk-around-inspection-completed-accurately (runs in its own Python environment); pre-departure-walk-around-completed (runs in its own Python environment)
 
@@ -118,12 +118,51 @@ Predicted from the single runs:
 | the pixel-free ones among them | 10 | 19.2 | 20.6 | 5.8 | **50.6** | 307.0 | 256.4 | 40 % |
 | 3-stop + pushback-pathway + pushback-wing-walkers | 3 | 19.2 | 20.6 | 1.5 | **46.2** | 83.8 | 37.6 | 37 % |
 
+Measured: the same set in one run on the whole event, one GM with every head, one tracker with every class, every module a component in its own process with only its declared rows. The modules work in parallel with the frame path, so `hand-off` is rows, pixels and waiting for a slow reader, not the sum of their work:
+
+| run | modules | keeps up | GM | tracker | hand-off | **frame path ms** (mean · p95) | frame latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | verdict = batch | report = batch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| real-time speed | 20 | True | 22.4 | 26.6 | 7.3 | **56.4** · 94.7 | 0.21 | 24.5 | 8.0 | 4.23 | 18.2 | 20 / 20 | 20 / 20 |
+
+The prediction puts every module on the frame path, so it is the upper bound. In the branch a module is a process of its own: at real-time speed their work added up to 87 ms of CPU time per frame across 19 processes (54.5 ms when each ran alone: together they contend for the 8 cores), none of it on the frame path. What binds a session with every module is CPU and memory, not the GPU. Own work per frame, alone and together:
+
+| module | alone, ms | together at 1×, ms (mean · p95) | waits for a free frame slot |
+|---|---|---|---|
+| safety-vests-secured-to-body | 18.75 | 26.75 · 54.6 | 19 |
+| handrails-on-gse-being-used | 12.46 | 17.88 · 50.6 | 0 |
+| wing-walkers-in-proper-position-and-using-approved-wands | 5.14 | 8.29 · 85.3 | 0 |
+| gse-chocks | 3.25 | 4.51 · 10.8 | 0 |
+| safety-handrails-fully-extended | 2.37 | 3.55 · 10.1 | 0 |
+| conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed | 1.26 | 3.19 · 7.0 | 0 |
+| lead-marshaller-and-wing-walkers-in-position | 2.50 | 3.14 · 8.8 | 0 |
+| cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked | 1.54 | 3.09 · 8.7 | 0 |
+| pushback-does-not-start-until-wing-walkers-are-in-place-and-ready | 0.33 | 2.79 · 6.8 | 0 |
+| pre-arrival-safety-huddle | 0.87 | 1.79 · 8.2 | 0 |
+| fod-walk-completed | 1.32 | 1.72 · 12.2 | 0 |
+| pushback-pathway-confirmed-clear-of-obstacles | 0.48 | 1.63 · 3.8 | 0 |
+| 3-stop-brake-check | 0.64 | 1.61 · 3.3 | 0 |
+| cones-placed-in-proper-positions-and-timely | 0.62 | 1.47 · 3.3 | 0 |
+| bl_rear_cone | 0.37 | 1.47 · 3.1 | 0 |
+| beltloader-chocks | 0.34 | 1.43 · 3.0 | 0 |
+| steering-by-pass-pin-installed-or-steering-otherwise-bypassed | 0.73 | 1.32 · 7.5 | 0 |
+| all-cargo-bin-doors-opened-and-verified | 0.87 | 0.78 · 3.4 | 0 |
+| crew-present-10-minutes-prior-to-aircraft-arrival | 0.54 | 0.75 · 4.4 | 0 |
+
+### Live against batch, modules together, every event still on disk
+
+One GM, one tracker, the modules the plan runs on that camera, each in its own process with its declared rows.
+
+| event | speed | modules | verdict = batch | report = batch | not identical |
+|---|---|---|---|---|---|
+| `zHxIAF2vUGxJ.mp4` | 1× | 20 | 20 | 20 | — |
+| **all** | | **20** | **20** | **20** | |
+
 ## 5. Against post-processing
 
 - **Work per frame is not higher.** GM and tracker are the same code in both branches; the causal second-run rows add 0.1 ms. The modules are cheaper live: as post jobs the 20 modules above took **3677 s** on this event (each job parses the GM and tracker files and decodes the video again), as live components **941 s** (decoded once, rows handed over in memory).
-- **What real time pays for is the reservation.** A stream holds its share of the GPU for the length of the event, whatever the scene; post-processing packs the same work back to back. With 20 % headroom that is the `GPU time vs packed post` column: 1.25–1.81× for one module, and it falls as modules share a session (all 20 together: 104.9 ms predicted of 125, one stream per GPU, 1.19× with no headroom left).
+- **What real time pays for is the reservation.** A stream holds its share of the GPU for the length of the event, whatever the scene; post-processing packs the same work back to back. With 20 % headroom that is the `GPU time vs packed post` column: 1.25–1.81× for one module, and it falls as modules share a session: all 20 together measured 56.4 ms on the frame path (p95 94.7) with the GPU 24.5 % busy, so the card has room for a second stream while the 8 cores and the RAM of this machine do not.
 - **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot.
-- **The GPU class.** Production runs on a Tesla T4 (one GPU, 3.3 vCPU, 8 GiB per job). A T4 is an estimated 3–4× slower than this card (not measured): single light modules would fit, the full set would not.
+- **The GPU class.** Production runs on a Tesla T4 (one GPU, 3.3 vCPU, 8 GiB per job). A T4 is an estimated 3–4× slower than this card (not measured): single light modules would fit, the full set would not. Together at real-time speed the 20 modules took 18.2 GB RAM, 7.95 GB GPU memory and 4.23 CPU cores.
 
 ## 6. Quality on the test set (69 events, 90 videos)
 
