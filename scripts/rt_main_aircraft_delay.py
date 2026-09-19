@@ -1,18 +1,25 @@
 """How late the real-time branch hands the arriving aircraft to the tracker, over the test set (no GPU: replays first-run rows).
 
 The batch second-run file carries the box of the main aircraft = the longest aircraft track of the WHOLE video. The causal
-rows (`pf/pipeline/causal_rows.py`) carry the box of the track that is longest AT FRAME t. An aircraft that taxied past
-earlier keeps that title until the arriving aircraft has more frames than it, and until then the tracker and the modules do
-not get the arriving aircraft at all. Found live on MwCSLbQ7QvXQ (223 frames = 28 s; lead-marshaller reported the start of
-the arrival 27 s late, verdict unchanged). This measures the same on every video of the test set from the first-run rows of
-the batch GM v2 runs, and compares the rule with one that lets go of a track that has had no box for a while.
+rows (`pf/pipeline/causal_rows.py`) have to choose at frame t. With `longest_so_far` an aircraft that taxied past earlier
+keeps the title until the arriving aircraft has more frames than it, and until then the tracker and the modules do not get
+the arriving aircraft at all. Found live on MwCSLbQ7QvXQ (223 frames = 28 s; lead-marshaller reported the start of the
+arrival 27 s late, verdict unchanged). This replays the first-run rows of the batch GM v2 runs of every test-set video through
+the aircraft tracker and scores the causal rules against the batch choice:
 
-    python scripts/rt_main_aircraft_delay.py [--videos a.mp4,b.mp4] [--let-go-after 16]
+  * `longest_so_far`   the rule the branch runs by default;
+  * `hold_let_go`      keep the held track while it has boxes, let it go after `--alive-frames` without one;
+  * `largest_alive`    the largest box among the tracks seen within `--alive-frames`, replaced only by a box
+                       `--switch-factor` times larger (`CausalSecondRun(main_rule="largest_alive")`).
+
+    python scripts/rt_main_aircraft_delay.py [--videos a.mp4,b.mp4] [--alive-frames 16] [--switch-factor 1.5] [--redo]
+    python scripts/rt_main_aircraft_delay.py --live-check <run tag>,<run tag>     # anchors of runs made with the rows written
 """
 
 from __future__ import annotations
 
 import argparse
+import bisect
 import io
 import json
 import os
@@ -28,6 +35,7 @@ from scripts.gm_v2_run import load_str2id  # noqa: E402
 from scripts.testset import orchestrate as o  # noqa: E402
 
 FPS = 8.0
+RULES = ("longest_so_far", "hold_let_go", "largest_alive")
 
 
 def arrival_frame(trk_path: str):
@@ -45,53 +53,81 @@ def arrival_frame(trk_path: str):
     return None
 
 
-def replay(first_run_path: str, cm: ClassMap, heavy: bool, let_go_after: int, arrival=None) -> dict:
+def aircraft_tracks(first_run_path: str, cm: ClassMap, heavy: bool) -> tuple:
+    """(frames, {track: {frame: xyxy}}, the track batch calls the main aircraft). Aliased norfair ids count once."""
     trk = NorfairPlaneTracker(drop_tiny=False, stabilize_when_heavy=True)
-    longest_at, alive_at = {}, {}
-    held, held_last_box = None, None  # the alternative rule: keep the held track while it has boxes, let go after a gap
+    n = 0
     with io.open(first_run_path, encoding="utf-8") as fh:
         for n, line in enumerate(fh, 1):
-            rows = next(iter(json.loads(line).values()), [])
-            trk.update(n, rows, cm, heavy=heavy)
-            tid = trk.longest()
-            longest_at[n] = tid
-            with_box = [k for k, p in trk.planes.items() if n in p.frames]
-            if held is not None and held in with_box:
-                held_last_box = n
-            elif with_box and (held is None or n - (held_last_box or 0) > let_go_after):
-                held = max(with_box, key=lambda k: len(trk.planes[k].frames))  # the longest among those visible now
-                held_last_box = n
-            alive_at[n] = held
+            trk.update(n, next(iter(json.loads(line).values()), []), cm, heavy=heavy)
+    tracks, seen = {}, {}
+    for tid, hist in trk.planes.items():
+        if id(hist) not in seen:
+            seen[id(hist)] = tid
+            tracks[tid] = hist.frames
     final = trk.longest()
-    if final is None:
-        return {"frames": len(longest_at), "main_aircraft": None}
-    frames_of_final = sorted(trk.planes[final].frames)
+    return n, tracks, (seen[id(trk.planes[final])] if final is not None else None)
+
+
+def area(box) -> float:
+    return max(0.0, box[2] - box[0]) * max(0.0, box[3] - box[1])
+
+
+def choose(frames: int, tracks: dict, rule: str, alive_frames: int, switch_factor: float) -> dict:
+    """The track each rule holds at every frame, using only what was known at that frame."""
+    keys = {tid: sorted(fr) for tid, fr in tracks.items()}
+    out, held, held_last = {}, None, 0
+    for t in range(1, frames + 1):
+        length = {tid: bisect.bisect_right(k, t) for tid, k in keys.items()}
+        seen = {tid: n for tid, n in length.items() if n}
+        if not seen:
+            out[t] = None
+            continue
+        last = {tid: keys[tid][seen[tid] - 1] for tid in seen}
+        if rule == "longest_so_far":
+            out[t] = max(seen, key=lambda k: seen[k])
+        elif rule == "hold_let_go":
+            now = [tid for tid in seen if last[tid] == t]
+            if held is not None and held in now:
+                held_last = t
+            elif now and (held is None or t - held_last > alive_frames):
+                held, held_last = max(now, key=lambda k: seen[k]), t
+            out[t] = held
+        else:  # largest_alive
+            alive = [tid for tid in seen if t - last[tid] <= alive_frames]
+            if alive:
+                big = max(alive, key=lambda k: area(tracks[k][last[k]]))
+                if held not in alive or (big != held and area(tracks[big][last[big]]) > switch_factor * area(tracks[held][last[held]])):
+                    held = big
+                out[t] = held
+            else:
+                out[t] = None
+    return out
+
+
+def score(tracks: dict, final, choice: dict, arrival) -> dict:
+    frames_of_final = sorted(tracks[final])
     first = frames_of_final[0]
-
-    def summary(choice: dict) -> dict:
-        withheld = [n for n in frames_of_final if choice.get(n) != final]
-        handed = next((n for n in frames_of_final if choice.get(n) == final), None)
-        others = sum(1 for n, t in choice.items() if t is not None and t != final and n in trk.planes[t].frames)
-        rec = {"handed_over_at": handed, "delay_frames": (handed - first) if handed is not None else None,
-               "withheld_frames": len(withheld), "frames_with_another_aircraft_handed": others}
-        if arrival:
-            # the 30 s before T_arr and the 4 s stop rule after it: does the tracker get the aircraft batch gave it?
-            window = [n for n in frames_of_final if arrival - 240 <= n <= arrival + 32]
-            rec["arrival_window_frames_in_batch"] = len(window)
-            rec["arrival_window_same_box"] = sum(1 for n in window if choice.get(n) == final)
-            rec["arrival_window_other_box"] = sum(1 for n in window if choice.get(n) not in (None, final)
-                                                  and n in trk.planes[choice[n]].frames)
-        return rec
-
-    return {"frames": len(longest_at), "aircraft_tracks": len(trk.planes), "main_aircraft_first_frame": first,
-            "main_aircraft_frames": len(frames_of_final), "longest_so_far": summary(longest_at),
-            f"let_go_after_{let_go_after}": summary(alive_at)}
+    handed = next((n for n in frames_of_final if choice.get(n) == final), None)
+    rec = {"handed_over_at": handed, "delay_frames": (handed - first) if handed is not None else None,
+           "withheld_frames": sum(1 for n in frames_of_final if choice.get(n) != final),
+           "frames_with_another_aircraft_handed": sum(1 for n, t in choice.items() if t is not None and t != final and n in tracks[t])}
+    if arrival:
+        # the 30 s before T_arr and the 4 s stop rule after it: does the tracker get the aircraft batch gave it?
+        window = [n for n in frames_of_final if arrival - 240 <= n <= arrival + 32]
+        rec["arrival_window_frames_in_batch"] = len(window)
+        rec["arrival_window_same_box"] = sum(1 for n in window if choice.get(n) == final)
+        if handed is not None:
+            rec["handed_over_before_arrival_s"] = round((arrival - handed) / FPS, 1)
+    return rec
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--videos", default="", help="comma list; default: every video of the plan with a batch GM v2 run")
-    ap.add_argument("--let-go-after", type=int, default=16, help="frames without a box before the held track is let go")
+    ap.add_argument("--alive-frames", type=int, default=16)
+    ap.add_argument("--switch-factor", type=float, default=1.5)
+    ap.add_argument("--redo", action="store_true")
     ap.add_argument("--live-check", default="", help="comma list of run tags under out/rt/runs made WITH the rows written: "
                                                      "record their live and batch anchors next to the replay")
     a = ap.parse_args()
@@ -100,27 +136,26 @@ def main() -> int:
     videos = [v for v in a.videos.split(",") if v] or sorted({v for e in plan.events for v in e["videos"]})
     out_path = os.path.join(ROOT, "docs", "analysis", "rt_main_aircraft_delay.json")
     result = json.load(io.open(out_path, encoding="utf-8")) if os.path.exists(out_path) else {"videos": {}}
-    rule = f"let_go_after_{a.let_go_after}"
+    result["rule_parameters"] = {"alive_frames": a.alive_frames, "switch_factor": a.switch_factor}
     for i, video in enumerate(videos, 1):
         p = o.paths(video)
         first_run = os.path.join(p["gm_dir"], f"general_model{video}.ndjson")
-        if not os.path.exists(first_run) or (video in result["videos"] and rule in result["videos"][video]):
+        if not os.path.exists(first_run) or (not a.redo and all(r in result["videos"].get(video, {}) for r in RULES)):
             continue
         report = json.load(io.open(p["gm_report"], encoding="utf-8")) if os.path.exists(p["gm_report"]) else {}
         heavy = ((report.get("noise") or {}).get("video_type_by_noise") or "CLEAR") != "CLEAR"
         t0 = time.time()
-        arrival = arrival_frame(p["trk_compat"])
-        rec = replay(first_run, cm, heavy, a.let_go_after, arrival)
-        rec["heavy_noise_mode"] = heavy
-        rec["arrival_frame"] = arrival
-        for key in ("longest_so_far", rule):
-            s = rec.get(key) or {}
-            if rec.get("arrival_frame") and s.get("handed_over_at"):
-                s["handed_over_before_arrival_s"] = round((rec["arrival_frame"] - s["handed_over_at"]) / FPS, 1)
+        frames, tracks, final = aircraft_tracks(first_run, cm, heavy)
+        rec = {"frames": frames, "aircraft_tracks": len(tracks), "heavy_noise_mode": heavy,
+               "arrival_frame": arrival_frame(p["trk_compat"])}
+        if final is not None:
+            rec["main_aircraft_first_frame"] = min(tracks[final])
+            rec["main_aircraft_frames"] = len(tracks[final])
+            for rule in RULES:
+                rec[rule] = score(tracks, final, choose(frames, tracks, rule, a.alive_frames, a.switch_factor), rec["arrival_frame"])
         result["videos"][video] = rec
-        print(f"[{i}/{len(videos)}] {video} {time.time() - t0:.0f} s  longest-so-far delay "
-              f"{(rec.get('longest_so_far') or {}).get('delay_frames')}  let-go delay {(rec.get(rule) or {}).get('delay_frames')}  "
-              f"T_arr {rec.get('arrival_frame')}", flush=True)
+        print(f"[{i}/{len(videos)}] {video} {time.time() - t0:.0f} s  delay "
+              + "  ".join(f"{rule} {(rec.get(rule) or {}).get('delay_frames')}" for rule in RULES), flush=True)
         json.dump(result, io.open(out_path, "w", encoding="utf-8", newline="\n"), indent=1)
 
     for tag in [t for t in a.live_check.split(",") if t]:
@@ -136,26 +171,26 @@ def main() -> int:
             "reports_identical": sum(1 for v in verdicts if v.get("report_identical"))}
 
     recs = [r for r in result["videos"].values() if r.get("main_aircraft_first_frame")]
-    for key in ("longest_so_far", rule):
-        delays = sorted((r[key]["delay_frames"] or 0) for r in recs if r.get(key))
-        late = [d for d in delays if d > 16]
-        after_arrival = sum(1 for r in recs if (r.get(key) or {}).get("handed_over_before_arrival_s") is not None
-                            and r[key]["handed_over_before_arrival_s"] < 0)
-        result.setdefault("summary", {})[key] = {
-            "videos": len(delays), "handed_over_more_than_2_s_late": len(late),
+    result["summary"] = {}
+    for rule in RULES:
+        scored = [r[rule] for r in recs if r.get(rule)]
+        delays = sorted((s["delay_frames"] or 0) for s in scored)
+        windows = [s for s in scored if s.get("arrival_window_frames_in_batch")]
+        result["summary"][rule] = {
+            "videos": len(scored), "videos_with_an_arrival": len(windows),
+            "arrival_window_fully_the_same": sum(1 for s in windows if s["arrival_window_same_box"] == s["arrival_window_frames_in_batch"]),
+            "arrival_window_less_than_half_the_same": sum(
+                1 for s in windows if s["arrival_window_same_box"] < 0.5 * s["arrival_window_frames_in_batch"]),
+            "handed_over_only_after_the_arrival": sum(1 for s in scored if (s.get("handed_over_before_arrival_s") or 0) < 0),
+            "handed_over_more_than_2_s_late": sum(1 for d in delays if d > 16),
             "median_delay_s": round(delays[len(delays) // 2] / FPS, 1) if delays else None,
             "p90_delay_s": round(delays[min(len(delays) - 1, round(0.9 * (len(delays) - 1)))] / FPS, 1) if delays else None,
             "max_delay_s": round(max(delays) / FPS, 1) if delays else None,
-            "handed_over_only_after_the_arrival": after_arrival,
-            "arrival_window_fully_the_same": sum(1 for r in recs if (r.get(key) or {}).get("arrival_window_frames_in_batch")
-                                                 and r[key]["arrival_window_same_box"] == r[key]["arrival_window_frames_in_batch"]),
-            "arrival_window_less_than_half_the_same": sum(
-                1 for r in recs if (r.get(key) or {}).get("arrival_window_frames_in_batch")
-                and r[key]["arrival_window_same_box"] < 0.5 * r[key]["arrival_window_frames_in_batch"]),
-            "videos_with_an_arrival": sum(1 for r in recs if (r.get(key) or {}).get("arrival_window_frames_in_batch")),
-            "frames_with_another_aircraft_handed": sum((r.get(key) or {}).get("frames_with_another_aircraft_handed") or 0 for r in recs)}
+            "share_of_batch_rows_kept": round(1 - sum(s["withheld_frames"] for s in scored)
+                                              / max(sum(r["main_aircraft_frames"] for r in recs), 1), 4),
+            "frames_with_another_aircraft_handed": sum(s["frames_with_another_aircraft_handed"] for s in scored)}
     json.dump(result, io.open(out_path, "w", encoding="utf-8", newline="\n"), indent=1)
-    print(json.dumps(result.get("summary"), indent=1))
+    print(json.dumps(result["summary"], indent=1))
     return 0
 
 

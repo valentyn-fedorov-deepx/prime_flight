@@ -3,6 +3,8 @@
   "0wW3jgdtn1d1.mp4": {
    "frames": 41730,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5420,
    "main_aircraft_first_frame": 4900,
    "main_aircraft_frames": 35240,
    "longest_so_far": {
@@ -12,25 +14,32 @@
     "frames_with_another_aircraft_handed": 203,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 37.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4953,
     "delay_frames": 53,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 203,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 58.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5420
+   "largest_alive": {
+    "handed_over_at": 4900,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 180,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 65.0
+   }
   },
   "14W4oeRHdbsq.mp4": {
    "frames": 31200,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2783,
    "main_aircraft_first_frame": 2457,
    "main_aircraft_frames": 27149,
    "longest_so_far": {
@@ -40,25 +49,32 @@
     "frames_with_another_aircraft_handed": 35,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 35.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2494,
     "delay_frames": 37,
     "withheld_frames": 30,
     "frames_with_another_aircraft_handed": 35,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 36.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2783
+   "largest_alive": {
+    "handed_over_at": 2494,
+    "delay_frames": 37,
+    "withheld_frames": 30,
+    "frames_with_another_aircraft_handed": 35,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 36.1
+   }
   },
   "1WBBTx2wApOn.mp4": {
    "frames": 22800,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4751,
    "main_aircraft_first_frame": 4615,
    "main_aircraft_frames": 16006,
    "longest_so_far": {
@@ -68,25 +84,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 169,
     "arrival_window_same_box": 169,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 17.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4615,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 169,
     "arrival_window_same_box": 169,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 17.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4751
+   "largest_alive": {
+    "handed_over_at": 4615,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 169,
+    "arrival_window_same_box": 169,
+    "handed_over_before_arrival_s": 17.0
+   }
   },
   "1b3ayMVYk6RO.mp4": {
    "frames": 33120,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 6079,
    "main_aircraft_first_frame": 5960,
    "main_aircraft_frames": 25316,
    "longest_so_far": {
@@ -96,25 +119,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 151,
     "arrival_window_same_box": 151,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 14.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 5960,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 151,
     "arrival_window_same_box": 151,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 14.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 6079
+   "largest_alive": {
+    "handed_over_at": 5960,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 151,
+    "arrival_window_same_box": 151,
+    "handed_over_before_arrival_s": 14.9
+   }
   },
   "2Z4FucUIOXc6.mp4": {
    "frames": 34770,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4793,
    "main_aircraft_first_frame": 4349,
    "main_aircraft_frames": 28640,
    "longest_so_far": {
@@ -124,25 +154,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 55.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4349,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 55.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4793
+   "largest_alive": {
+    "handed_over_at": 4349,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 55.5
+   }
   },
   "2aRbtVqwxFBI.mp4": {
    "frames": 32220,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5668,
    "main_aircraft_first_frame": 5464,
    "main_aircraft_frames": 25571,
    "longest_so_far": {
@@ -152,25 +189,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 25.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 5464,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 25.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5668
+   "largest_alive": {
+    "handed_over_at": 5464,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 220,
+    "arrival_window_same_box": 220,
+    "handed_over_before_arrival_s": 25.5
+   }
   },
   "3LcvAdAKtgUr.mp4": {
    "frames": 52890,
-   "aircraft_tracks": 7,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 476,
    "main_aircraft_first_frame": 248,
    "main_aircraft_frames": 32180,
    "longest_so_far": {
@@ -180,25 +224,32 @@
     "frames_with_another_aircraft_handed": 155,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 106,
-    "arrival_window_other_box": 23,
     "handed_over_before_arrival_s": 9.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 287,
     "delay_frames": 39,
     "withheld_frames": 79,
     "frames_with_another_aircraft_handed": 18616,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 222,
-    "arrival_window_other_box": 23,
     "handed_over_before_arrival_s": 23.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 476
+   "largest_alive": {
+    "handed_over_at": 287,
+    "delay_frames": 39,
+    "withheld_frames": 178,
+    "frames_with_another_aircraft_handed": 18763,
+    "arrival_window_frames_in_batch": 261,
+    "arrival_window_same_box": 222,
+    "handed_over_before_arrival_s": 23.6
+   }
   },
   "4MUL7UiXXBXg.mp4": {
    "frames": 49050,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3137,
    "main_aircraft_first_frame": 2734,
    "main_aircraft_frames": 45289,
    "longest_so_far": {
@@ -208,25 +259,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2734,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3137
+   "largest_alive": {
+    "handed_over_at": 2734,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 50.4
+   }
   },
   "4T0Khlzhhoj8.mp4": {
    "frames": 29910,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2873,
    "main_aircraft_first_frame": 2519,
    "main_aircraft_frames": 25145,
    "longest_so_far": {
@@ -236,25 +294,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 44.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2519,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 44.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2873
+   "largest_alive": {
+    "handed_over_at": 2519,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 44.2
+   }
   },
   "4YzvEkjm1or6.mp4": {
    "frames": 25740,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3188,
    "main_aircraft_first_frame": 3058,
    "main_aircraft_frames": 19397,
    "longest_so_far": {
@@ -264,25 +329,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 159,
     "arrival_window_same_box": 159,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 16.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3058,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 159,
     "arrival_window_same_box": 159,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 16.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3188
+   "largest_alive": {
+    "handed_over_at": 3058,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 159,
+    "arrival_window_same_box": 159,
+    "handed_over_before_arrival_s": 16.2
+   }
   },
   "4lyUahxqcA1p.mp4": {
    "frames": 48120,
-   "aircraft_tracks": 6,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2602,
    "main_aircraft_first_frame": 1961,
    "main_aircraft_frames": 42588,
    "longest_so_far": {
@@ -292,25 +364,32 @@
     "frames_with_another_aircraft_handed": 2569,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 204,
     "handed_over_before_arrival_s": -288.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2594,
     "delay_frames": 633,
     "withheld_frames": 255,
     "frames_with_another_aircraft_handed": 2569,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 41,
-    "arrival_window_other_box": 204,
     "handed_over_before_arrival_s": 1.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2602
+   "largest_alive": {
+    "handed_over_at": 2504,
+    "delay_frames": 543,
+    "withheld_frames": 198,
+    "frames_with_another_aircraft_handed": 2512,
+    "arrival_window_frames_in_batch": 261,
+    "arrival_window_same_box": 131,
+    "handed_over_before_arrival_s": 12.2
+   }
   },
   "5MrryeoBuGMM.mp4": {
    "frames": 26190,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5540,
    "main_aircraft_first_frame": 4967,
    "main_aircraft_frames": 19883,
    "longest_so_far": {
@@ -320,25 +399,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 71.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4967,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 71.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5540
+   "largest_alive": {
+    "handed_over_at": 4967,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 71.6
+   }
   },
   "63xitGPpUtLy.mp4": {
    "frames": 45960,
-   "aircraft_tracks": 27,
+   "aircraft_tracks": 4,
+   "heavy_noise_mode": true,
+   "arrival_frame": 6383,
    "main_aircraft_first_frame": 5975,
    "main_aircraft_frames": 36852,
    "longest_so_far": {
@@ -348,25 +434,32 @@
     "frames_with_another_aircraft_handed": 5618,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 184,
     "handed_over_before_arrival_s": -652.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 6341,
     "delay_frames": 366,
     "withheld_frames": 366,
     "frames_with_another_aircraft_handed": 6252,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 75,
-    "arrival_window_other_box": 182,
     "handed_over_before_arrival_s": 5.2
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 6383
+   "largest_alive": {
+    "handed_over_at": 6018,
+    "delay_frames": 43,
+    "withheld_frames": 59,
+    "frames_with_another_aircraft_handed": 5769,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 45.6
+   }
   },
   "75cFSaZYmRPe.mp4": {
    "frames": 29550,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 6614,
    "main_aircraft_first_frame": 6322,
    "main_aircraft_frames": 19637,
    "longest_so_far": {
@@ -376,25 +469,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 36.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 6322,
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 214,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 36.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 6614
+   "largest_alive": {
+    "handed_over_at": 6322,
+    "delay_frames": 0,
+    "withheld_frames": 46,
+    "frames_with_another_aircraft_handed": 237,
+    "arrival_window_frames_in_batch": 272,
+    "arrival_window_same_box": 272,
+    "handed_over_before_arrival_s": 36.5
+   }
   },
   "7PytHarRNqmT.mp4": {
    "frames": 52800,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 6052,
    "main_aircraft_first_frame": 5723,
    "main_aircraft_frames": 47053,
    "longest_so_far": {
@@ -404,25 +504,32 @@
     "frames_with_another_aircraft_handed": 302,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 60,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 3.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 5762,
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 302,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 36.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 6052
+   "largest_alive": {
+    "handed_over_at": 5728,
+    "delay_frames": 5,
+    "withheld_frames": 5,
+    "frames_with_another_aircraft_handed": 284,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 40.5
+   }
   },
   "8pSh3SBek2Sw.mp4": {
    "frames": 24960,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2015,
    "main_aircraft_first_frame": 1584,
    "main_aircraft_frames": 23339,
    "longest_so_far": {
@@ -432,25 +539,32 @@
     "frames_with_another_aircraft_handed": 175,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 32.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1624,
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 175,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 48.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2015
+   "largest_alive": {
+    "handed_over_at": 1624,
+    "delay_frames": 40,
+    "withheld_frames": 40,
+    "frames_with_another_aircraft_handed": 175,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 48.9
+   }
   },
   "8tve3pVzl5D8.mp4": {
    "frames": 63390,
    "aircraft_tracks": 3,
+   "heavy_noise_mode": true,
+   "arrival_frame": 4775,
    "main_aircraft_first_frame": 4513,
    "main_aircraft_frames": 57652,
    "longest_so_far": {
@@ -460,25 +574,32 @@
     "frames_with_another_aircraft_handed": 1661,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 91,
     "handed_over_before_arrival_s": -174.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4642,
     "delay_frames": 129,
     "withheld_frames": 129,
     "frames_with_another_aircraft_handed": 1661,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 166,
-    "arrival_window_other_box": 91,
     "handed_over_before_arrival_s": 16.6
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 4775
+   "largest_alive": {
+    "handed_over_at": 4513,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 1548,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.8
+   }
   },
   "B1BtQWGUShsv.mp4": {
    "frames": 21960,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4406,
    "main_aircraft_first_frame": 4167,
    "main_aircraft_frames": 15996,
    "longest_so_far": {
@@ -488,25 +609,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 209,
     "arrival_window_same_box": 209,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 29.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4167,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 209,
     "arrival_window_same_box": 209,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 29.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4406
+   "largest_alive": {
+    "handed_over_at": 4167,
+    "delay_frames": 0,
+    "withheld_frames": 11,
+    "frames_with_another_aircraft_handed": 11,
+    "arrival_window_frames_in_batch": 209,
+    "arrival_window_same_box": 209,
+    "handed_over_before_arrival_s": 29.9
+   }
   },
   "Bdx1iGrXPEfe.mp4": {
    "frames": 25800,
-   "aircraft_tracks": 7,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 5246,
    "main_aircraft_first_frame": 4996,
    "main_aircraft_frames": 20805,
    "longest_so_far": {
@@ -516,25 +644,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 31.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4996,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 31.2
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 5246
+   "largest_alive": {
+    "handed_over_at": 4996,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 31.2
+   }
   },
   "DZEwHETNWRBa.mp4": {
    "frames": 32160,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3709,
    "main_aircraft_first_frame": 3399,
    "main_aircraft_frames": 26969,
    "longest_so_far": {
@@ -544,25 +679,32 @@
     "frames_with_another_aircraft_handed": 1669,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 273,
     "handed_over_before_arrival_s": -169.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3775,
     "delay_frames": 376,
     "withheld_frames": 376,
     "frames_with_another_aircraft_handed": 1669,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 273,
     "handed_over_before_arrival_s": -8.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3709
+   "largest_alive": {
+    "handed_over_at": 3504,
+    "delay_frames": 105,
+    "withheld_frames": 105,
+    "frames_with_another_aircraft_handed": 1414,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 238,
+    "handed_over_before_arrival_s": 25.6
+   }
   },
   "F9jIwLEhmU7E.mp4": {
    "frames": 25950,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4435,
    "main_aircraft_first_frame": 3940,
    "main_aircraft_frames": 20061,
    "longest_so_far": {
@@ -572,25 +714,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 61.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3940,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 61.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4435
+   "largest_alive": {
+    "handed_over_at": 3940,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 61.9
+   }
   },
   "FgBbiiXLPnWv.mp4": {
    "frames": 34080,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3871,
    "main_aircraft_first_frame": 3733,
    "main_aircraft_frames": 28169,
    "longest_so_far": {
@@ -600,25 +749,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 171,
     "arrival_window_same_box": 171,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 17.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3733,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 171,
     "arrival_window_same_box": 171,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 17.2
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3871
+   "largest_alive": {
+    "handed_over_at": 3733,
+    "delay_frames": 0,
+    "withheld_frames": 23,
+    "frames_with_another_aircraft_handed": 27,
+    "arrival_window_frames_in_batch": 171,
+    "arrival_window_same_box": 171,
+    "handed_over_before_arrival_s": 17.2
+   }
   },
   "GOzwvkLY7fpKB3.mp4": {
    "frames": 29700,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3079,
    "main_aircraft_first_frame": 2640,
    "main_aircraft_frames": 24480,
    "longest_so_far": {
@@ -628,25 +784,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 54.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2640,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 54.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3079
+   "largest_alive": {
+    "handed_over_at": 2640,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 54.9
+   }
   },
   "Gcr7jQ2gZlMQ.mp4": {
    "frames": 34740,
-   "aircraft_tracks": 11,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 10288,
    "main_aircraft_first_frame": 9952,
    "main_aircraft_frames": 22585,
    "longest_so_far": {
@@ -656,25 +819,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 42.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 9952,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 42.0
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 10288
+   "largest_alive": {
+    "handed_over_at": 9952,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 42.0
+   }
   },
   "HwGR6Wvf7mE2K3.mp4": {
    "frames": 24660,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1993,
    "main_aircraft_first_frame": 1457,
    "main_aircraft_frames": 20936,
    "longest_so_far": {
@@ -684,25 +854,32 @@
     "frames_with_another_aircraft_handed": 19,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 64.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1479,
     "delay_frames": 22,
     "withheld_frames": 22,
     "frames_with_another_aircraft_handed": 19,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 64.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1993
+   "largest_alive": {
+    "handed_over_at": 1479,
+    "delay_frames": 22,
+    "withheld_frames": 22,
+    "frames_with_another_aircraft_handed": 19,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 64.2
+   }
   },
   "HxVi9t8zcy3U.mp4": {
    "frames": 36180,
-   "aircraft_tracks": 8,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5248,
    "main_aircraft_first_frame": 4660,
    "main_aircraft_frames": 30465,
    "longest_so_far": {
@@ -712,25 +889,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 73.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4660,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 73.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5248
+   "largest_alive": {
+    "handed_over_at": 4660,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 73.5
+   }
   },
   "ICfrXaND7Jqf.mp4": {
    "frames": 21990,
-   "aircraft_tracks": 7,
+   "aircraft_tracks": 4,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4020,
    "main_aircraft_first_frame": 3769,
    "main_aircraft_frames": 16101,
    "longest_so_far": {
@@ -740,25 +924,32 @@
     "frames_with_another_aircraft_handed": 337,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 13,
     "handed_over_before_arrival_s": -10.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3809,
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 337,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 244,
-    "arrival_window_other_box": 13,
     "handed_over_before_arrival_s": 26.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4020
+   "largest_alive": {
+    "handed_over_at": 3769,
+    "delay_frames": 0,
+    "withheld_frames": 3,
+    "frames_with_another_aircraft_handed": 316,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 31.4
+   }
   },
   "JXd64x5TJ1k4.mp4": {
    "frames": 34530,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": true,
+   "arrival_frame": 4201,
    "main_aircraft_first_frame": 4014,
    "main_aircraft_frames": 29637,
    "longest_so_far": {
@@ -768,25 +959,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 23.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4014,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 23.4
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 4201
+   "largest_alive": {
+    "handed_over_at": 4014,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 220,
+    "arrival_window_same_box": 220,
+    "handed_over_before_arrival_s": 23.4
+   }
   },
   "KB04bkqBI7ms.mp4": {
    "frames": 23040,
-   "aircraft_tracks": 11,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2694,
    "main_aircraft_first_frame": 2249,
    "main_aircraft_frames": 18895,
    "longest_so_far": {
@@ -796,25 +994,32 @@
     "frames_with_another_aircraft_handed": 2149,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 104,
     "handed_over_before_arrival_s": -213.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2574,
     "delay_frames": 325,
     "withheld_frames": 325,
     "frames_with_another_aircraft_handed": 4028,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 153,
-    "arrival_window_other_box": 104,
     "handed_over_before_arrival_s": 15.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2694
+   "largest_alive": {
+    "handed_over_at": 2431,
+    "delay_frames": 182,
+    "withheld_frames": 505,
+    "frames_with_another_aircraft_handed": 4176,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.9
+   }
   },
   "KOlRIvK7wCq1.mp4": {
    "frames": 28740,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1896,
    "main_aircraft_first_frame": 221,
    "main_aircraft_frames": 26022,
    "longest_so_far": {
@@ -824,25 +1029,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 209.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 221,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 209.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1896
+   "largest_alive": {
+    "handed_over_at": 221,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 209.4
+   }
   },
   "LFaccZVJAl6G.mp4": {
    "frames": 29280,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 370,
    "main_aircraft_first_frame": 19,
    "main_aircraft_frames": 25715,
    "longest_so_far": {
@@ -852,25 +1064,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 43.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 19,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 43.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 370
+   "largest_alive": {
+    "handed_over_at": 19,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 43.9
+   }
   },
   "LUgKa9ppmIFi.mp4": {
    "frames": 30210,
-   "aircraft_tracks": 5,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5653,
    "main_aircraft_first_frame": 759,
    "main_aircraft_frames": 24054,
    "longest_so_far": {
@@ -880,25 +1099,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 611.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 759,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 611.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5653
+   "largest_alive": {
+    "handed_over_at": 759,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 611.8
+   }
   },
   "MfyA0s5BtCBINp.mp4": {
    "frames": 23520,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5188,
    "main_aircraft_first_frame": 4834,
    "main_aircraft_frames": 15337,
    "longest_so_far": {
@@ -908,25 +1134,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 44.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4834,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 44.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5188
+   "largest_alive": {
+    "handed_over_at": 4834,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 44.2
+   }
   },
   "MwCSLbQ7QvXQ.mp4": {
    "frames": 18450,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 6753,
    "main_aircraft_first_frame": 6372,
    "main_aircraft_frames": 12071,
    "longest_so_far": {
@@ -936,25 +1169,32 @@
     "frames_with_another_aircraft_handed": 223,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 191,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 19.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 6411,
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 223,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 42.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 6753
+   "largest_alive": {
+    "handed_over_at": 6372,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 200,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 47.6
+   }
   },
   "N3JGftb6q7Bs.mp4": {
    "frames": 29610,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4164,
    "main_aircraft_first_frame": 3903,
    "main_aircraft_frames": 22809,
    "longest_so_far": {
@@ -964,25 +1204,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 32.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3903,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 32.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4164
+   "largest_alive": {
+    "handed_over_at": 3903,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.6
+   }
   },
   "N5xLStcC6YTB.mp4": {
    "frames": 51840,
-   "aircraft_tracks": 53,
+   "aircraft_tracks": 4,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4815,
    "main_aircraft_first_frame": 4556,
    "main_aircraft_frames": 33647,
    "longest_so_far": {
@@ -992,25 +1239,32 @@
     "frames_with_another_aircraft_handed": 5871,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 189,
-    "arrival_window_other_box": 5,
     "handed_over_before_arrival_s": 20.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4596,
     "delay_frames": 40,
     "withheld_frames": 1112,
     "frames_with_another_aircraft_handed": 10753,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 248,
-    "arrival_window_other_box": 5,
     "handed_over_before_arrival_s": 27.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4815
+   "largest_alive": {
+    "handed_over_at": 4583,
+    "delay_frames": 27,
+    "withheld_frames": 1124,
+    "frames_with_another_aircraft_handed": 10650,
+    "arrival_window_frames_in_batch": 269,
+    "arrival_window_same_box": 261,
+    "handed_over_before_arrival_s": 29.0
+   }
   },
   "NFmhbQt1rpDx.mp4": {
    "frames": 33930,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 508,
    "main_aircraft_first_frame": 102,
    "main_aircraft_frames": 30659,
    "longest_so_far": {
@@ -1020,25 +1274,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 102,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 508
+   "largest_alive": {
+    "handed_over_at": 102,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 50.8
+   }
   },
   "NS04gpkCLy6T.mp4": {
    "frames": 31350,
-   "aircraft_tracks": 2,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3557,
    "main_aircraft_first_frame": 3289,
    "main_aircraft_frames": 25942,
    "longest_so_far": {
@@ -1048,25 +1309,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 269,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 33.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3289,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 269,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 33.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3557
+   "largest_alive": {
+    "handed_over_at": 3289,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 269,
+    "arrival_window_same_box": 269,
+    "handed_over_before_arrival_s": 33.5
+   }
   },
   "NTWAvMOKK7az.mp4": {
    "frames": 34080,
-   "aircraft_tracks": 11,
+   "aircraft_tracks": 4,
+   "heavy_noise_mode": true,
+   "arrival_frame": 2660,
    "main_aircraft_first_frame": 2243,
    "main_aircraft_frames": 21409,
    "longest_so_far": {
@@ -1076,25 +1344,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 52.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2243,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 7856,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 52.1
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 2660
+   "largest_alive": {
+    "handed_over_at": 2243,
+    "delay_frames": 0,
+    "withheld_frames": 11,
+    "frames_with_another_aircraft_handed": 7883,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 52.1
+   }
   },
   "NVpcFIWuoR1z.mp4": {
    "frames": 38850,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1418,
    "main_aircraft_first_frame": 1033,
    "main_aircraft_frames": 37811,
    "longest_so_far": {
@@ -1104,25 +1379,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 270,
     "arrival_window_same_box": 270,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 48.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1033,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 270,
     "arrival_window_same_box": 270,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 48.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1418
+   "largest_alive": {
+    "handed_over_at": 1033,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 270,
+    "arrival_window_same_box": 270,
+    "handed_over_before_arrival_s": 48.1
+   }
   },
   "OPsMEZUPjBtv.mp4": {
    "frames": 40620,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5822,
    "main_aircraft_first_frame": 5597,
    "main_aircraft_frames": 28573,
    "longest_so_far": {
@@ -1132,25 +1414,32 @@
     "frames_with_another_aircraft_handed": 369,
     "arrival_window_frames_in_batch": 258,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 24,
     "handed_over_before_arrival_s": -18.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 5637,
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 369,
     "arrival_window_frames_in_batch": 258,
     "arrival_window_same_box": 218,
-    "arrival_window_other_box": 24,
     "handed_over_before_arrival_s": 23.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5822
+   "largest_alive": {
+    "handed_over_at": 5637,
+    "delay_frames": 40,
+    "withheld_frames": 40,
+    "frames_with_another_aircraft_handed": 369,
+    "arrival_window_frames_in_batch": 258,
+    "arrival_window_same_box": 218,
+    "handed_over_before_arrival_s": 23.1
+   }
   },
   "OpCmRt5Y0rR9.mp4": {
    "frames": 25860,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3564,
    "main_aircraft_first_frame": 3370,
    "main_aircraft_frames": 19834,
    "longest_so_far": {
@@ -1160,25 +1449,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 24.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3370,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 24.2
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3564
+   "largest_alive": {
+    "handed_over_at": 3370,
+    "delay_frames": 0,
+    "withheld_frames": 6,
+    "frames_with_another_aircraft_handed": 6,
+    "arrival_window_frames_in_batch": 227,
+    "arrival_window_same_box": 227,
+    "handed_over_before_arrival_s": 24.2
+   }
   },
   "Ov7vCjpFwVBf.mp4": {
    "frames": 31170,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2113,
    "main_aircraft_first_frame": 1808,
    "main_aircraft_frames": 29323,
    "longest_so_far": {
@@ -1188,25 +1484,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 38.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1808,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 38.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2113
+   "largest_alive": {
+    "handed_over_at": 1808,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 38.1
+   }
   },
   "QSAQTpVDQIQr.mp4": {
    "frames": 28440,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1399,
    "main_aircraft_first_frame": 1159,
    "main_aircraft_frames": 24645,
    "longest_so_far": {
@@ -1216,25 +1519,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 30.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1159,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 63,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 30.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1399
+   "largest_alive": {
+    "handed_over_at": 1159,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 63,
+    "arrival_window_frames_in_batch": 272,
+    "arrival_window_same_box": 272,
+    "handed_over_before_arrival_s": 30.0
+   }
   },
   "RVCqAvSzV0vX.mp4": {
    "frames": 24750,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3387,
    "main_aircraft_first_frame": 3146,
    "main_aircraft_frames": 20236,
    "longest_so_far": {
@@ -1244,25 +1554,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 30.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3146,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 30.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3387
+   "largest_alive": {
+    "handed_over_at": 3146,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 30.1
+   }
   },
   "Rq1ewlXn9KG5.mp4": {
    "frames": 36480,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4670,
    "main_aircraft_first_frame": 4399,
    "main_aircraft_frames": 24253,
    "longest_so_far": {
@@ -1272,25 +1589,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 33.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4399,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 6413,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 33.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4670
+   "largest_alive": {
+    "handed_over_at": 4399,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 6413,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 33.9
+   }
   },
   "SlCPDwI3xuaG.mp4": {
    "frames": 39000,
-   "aircraft_tracks": 10,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 5740,
    "main_aircraft_first_frame": 5236,
    "main_aircraft_frames": 33586,
    "longest_so_far": {
@@ -1300,25 +1624,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 63.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 5236,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 63.0
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 5740
+   "largest_alive": {
+    "handed_over_at": 5236,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 63.0
+   }
   },
   "T0Pu2LMe9rqk.mp4": {
    "frames": 42330,
    "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4042,
    "main_aircraft_first_frame": 1961,
    "main_aircraft_frames": 37129,
    "longest_so_far": {
@@ -1328,25 +1659,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 260.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1961,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 260.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4042
+   "largest_alive": {
+    "handed_over_at": 1961,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 260.1
+   }
   },
   "Tjli6o2rIV7N.mp4": {
    "frames": 41850,
-   "aircraft_tracks": 2,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3769,
    "main_aircraft_first_frame": 3066,
    "main_aircraft_frames": 38751,
    "longest_so_far": {
@@ -1356,25 +1694,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 87.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3066,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 87.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3769
+   "largest_alive": {
+    "handed_over_at": 3066,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 87.9
+   }
   },
   "TtKESVA7IEIU.mp4": {
    "frames": 21210,
-   "aircraft_tracks": 40,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3230,
    "main_aircraft_first_frame": 2974,
    "main_aircraft_frames": 16383,
    "longest_so_far": {
@@ -1384,25 +1729,32 @@
     "frames_with_another_aircraft_handed": 1123,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 71,
     "handed_over_before_arrival_s": -108.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3024,
     "delay_frames": 50,
     "withheld_frames": 50,
     "frames_with_another_aircraft_handed": 1206,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 239,
-    "arrival_window_other_box": 18,
     "handed_over_before_arrival_s": 25.8
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3230
+   "largest_alive": {
+    "handed_over_at": 2974,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 1172,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.0
+   }
   },
   "VIeEFGCUxgUY.mp4": {
    "frames": 30930,
-   "aircraft_tracks": 5,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3025,
    "main_aircraft_first_frame": 2858,
    "main_aircraft_frames": 26656,
    "longest_so_far": {
@@ -1412,25 +1764,32 @@
     "frames_with_another_aircraft_handed": 635,
     "arrival_window_frames_in_batch": 137,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 87,
     "handed_over_before_arrival_s": -66.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3024,
     "delay_frames": 166,
     "withheld_frames": 103,
     "frames_with_another_aircraft_handed": 1105,
     "arrival_window_frames_in_batch": 137,
     "arrival_window_same_box": 34,
-    "arrival_window_other_box": 87,
     "handed_over_before_arrival_s": 0.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3025
+   "largest_alive": {
+    "handed_over_at": 2942,
+    "delay_frames": 84,
+    "withheld_frames": 45,
+    "frames_with_another_aircraft_handed": 1070,
+    "arrival_window_frames_in_batch": 137,
+    "arrival_window_same_box": 116,
+    "handed_over_before_arrival_s": 10.4
+   }
   },
   "VMs674q6kYwa.mp4": {
    "frames": 23670,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3003,
    "main_aircraft_first_frame": 2776,
    "main_aircraft_frames": 20895,
    "longest_so_far": {
@@ -1440,25 +1799,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 260,
     "arrival_window_same_box": 260,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 28.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2776,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 260,
     "arrival_window_same_box": 260,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 28.4
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3003
+   "largest_alive": {
+    "handed_over_at": 2776,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 260,
+    "arrival_window_same_box": 260,
+    "handed_over_before_arrival_s": 28.4
+   }
   },
   "WpjOp8dgqOKp.mp4": {
    "frames": 34200,
-   "aircraft_tracks": 2,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5146,
    "main_aircraft_first_frame": 4638,
    "main_aircraft_frames": 28953,
    "longest_so_far": {
@@ -1468,25 +1834,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 63.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4638,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 63.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5146
+   "largest_alive": {
+    "handed_over_at": 4638,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 63.5
+   }
   },
   "XYAzWPrI4M5m.mp4": {
    "frames": 38880,
-   "aircraft_tracks": 8,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2371,
    "main_aircraft_first_frame": 2100,
    "main_aircraft_frames": 34096,
    "longest_so_far": {
@@ -1496,25 +1869,32 @@
     "frames_with_another_aircraft_handed": 49,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 255,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 27.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2134,
     "delay_frames": 34,
     "withheld_frames": 34,
     "frames_with_another_aircraft_handed": 49,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 270,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 29.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2371
+   "largest_alive": {
+    "handed_over_at": 2100,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 31,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 33.9
+   }
   },
   "XvGAzVcHMxHY.mp4": {
    "frames": 28800,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1336,
    "main_aircraft_first_frame": 759,
    "main_aircraft_frames": 28034,
    "longest_so_far": {
@@ -1524,25 +1904,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 72.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 759,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 72.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1336
+   "largest_alive": {
+    "handed_over_at": 759,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 72.1
+   }
   },
   "Y2806rd7ODS9.mp4": {
    "frames": 52260,
-   "aircraft_tracks": 2,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": true,
+   "arrival_frame": 5220,
    "main_aircraft_first_frame": 4998,
    "main_aircraft_frames": 46219,
    "longest_so_far": {
@@ -1552,25 +1939,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 255,
     "arrival_window_same_box": 255,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 27.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4998,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 255,
     "arrival_window_same_box": 255,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 27.8
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 5220
+   "largest_alive": {
+    "handed_over_at": 4998,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 255,
+    "arrival_window_same_box": 255,
+    "handed_over_before_arrival_s": 27.8
+   }
   },
   "b8ijKDWsLlQi8W.mp4": {
    "frames": 40020,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5106,
    "main_aircraft_first_frame": 3628,
    "main_aircraft_frames": 33825,
    "longest_so_far": {
@@ -1580,25 +1974,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 184.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3628,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 184.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5106
+   "largest_alive": {
+    "handed_over_at": 3628,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 184.8
+   }
   },
   "bH2llDkvWIg9.mp4": {
    "frames": 28410,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 15069,
    "main_aircraft_first_frame": 15068,
    "main_aircraft_frames": 12857,
    "longest_so_far": {
@@ -1608,25 +2009,32 @@
     "frames_with_another_aircraft_handed": 7243,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 24,
     "handed_over_before_arrival_s": -906.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 15108,
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 11146,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 24,
     "handed_over_before_arrival_s": -4.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 15069
+   "largest_alive": {
+    "handed_over_at": 15068,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 11138,
+    "arrival_window_frames_in_batch": 34,
+    "arrival_window_same_box": 34,
+    "handed_over_before_arrival_s": 0.1
+   }
   },
   "beqQ5Q0FoFWP.mp4": {
    "frames": 35250,
-   "aircraft_tracks": 5,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3859,
    "main_aircraft_first_frame": 2907,
    "main_aircraft_frames": 30425,
    "longest_so_far": {
@@ -1636,25 +2044,32 @@
     "frames_with_another_aircraft_handed": 2666,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": -284.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2947,
     "delay_frames": 40,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 2675,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 114.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3859
+   "largest_alive": {
+    "handed_over_at": 2947,
+    "delay_frames": 40,
+    "withheld_frames": 157,
+    "frames_with_another_aircraft_handed": 2793,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 114.0
+   }
   },
   "bqt0tK3Zurbb.mp4": {
    "frames": 53970,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3934,
    "main_aircraft_first_frame": 2721,
    "main_aircraft_frames": 49293,
    "longest_so_far": {
@@ -1664,25 +2079,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 151.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2721,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 151.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3934
+   "largest_alive": {
+    "handed_over_at": 2721,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 151.6
+   }
   },
   "bs7uphCSzrsn.mp4": {
    "frames": 185280,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2298,
    "main_aircraft_first_frame": 1924,
    "main_aircraft_frames": 175720,
    "longest_so_far": {
@@ -1692,25 +2114,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 46.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1924,
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 34,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 46.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2298
+   "largest_alive": {
+    "handed_over_at": 1924,
+    "delay_frames": 0,
+    "withheld_frames": 39,
+    "frames_with_another_aircraft_handed": 34,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 46.8
+   }
   },
   "cW6CAtSHGsQh.mp4": {
    "frames": 29040,
-   "aircraft_tracks": 5,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 10,
    "main_aircraft_first_frame": 9,
    "main_aircraft_frames": 29014,
    "longest_so_far": {
@@ -1720,25 +2149,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 34,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 0.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 9,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 34,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 0.1
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 10
+   "largest_alive": {
+    "handed_over_at": 9,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 34,
+    "arrival_window_same_box": 34,
+    "handed_over_before_arrival_s": 0.1
+   }
   },
   "cXWY5u4HkFeq.mp4": {
    "frames": 23610,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2565,
    "main_aircraft_first_frame": 2314,
    "main_aircraft_frames": 18511,
    "longest_so_far": {
@@ -1748,25 +2184,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 31.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2314,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 31.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2565
+   "largest_alive": {
+    "handed_over_at": 2314,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 31.4
+   }
   },
   "e0w9l4LmMDI7.mp4": {
    "frames": 31620,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3490,
    "main_aircraft_first_frame": 3209,
    "main_aircraft_frames": 28008,
    "longest_so_far": {
@@ -1776,25 +2219,32 @@
     "frames_with_another_aircraft_handed": 103,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 211,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 22.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3248,
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 103,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 30.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3490
+   "largest_alive": {
+    "handed_over_at": 3209,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 80,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 35.1
+   }
   },
   "eO71136WjSmZ.mp4": {
    "frames": 33810,
-   "aircraft_tracks": 13,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3370,
    "main_aircraft_first_frame": 2944,
    "main_aircraft_frames": 30080,
    "longest_so_far": {
@@ -1804,25 +2254,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 53.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2944,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 53.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3370
+   "largest_alive": {
+    "handed_over_at": 2944,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 53.2
+   }
   },
   "fAkpu3dj2NIj.mp4": {
    "frames": 25470,
-   "aircraft_tracks": 2,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4155,
    "main_aircraft_first_frame": 3939,
    "main_aircraft_frames": 19256,
    "longest_so_far": {
@@ -1832,25 +2289,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 173,
     "arrival_window_same_box": 173,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 27.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3939,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 173,
     "arrival_window_same_box": 173,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 27.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4155
+   "largest_alive": {
+    "handed_over_at": 3939,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 173,
+    "arrival_window_same_box": 173,
+    "handed_over_before_arrival_s": 27.0
+   }
   },
   "fp77ySs5od54.mp4": {
    "frames": 31560,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3016,
    "main_aircraft_first_frame": 2822,
    "main_aircraft_frames": 26585,
    "longest_so_far": {
@@ -1860,25 +2324,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 24.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2822,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 9,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 24.2
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3016
+   "largest_alive": {
+    "handed_over_at": 2822,
+    "delay_frames": 0,
+    "withheld_frames": 23,
+    "frames_with_another_aircraft_handed": 33,
+    "arrival_window_frames_in_batch": 227,
+    "arrival_window_same_box": 227,
+    "handed_over_before_arrival_s": 24.2
+   }
   },
   "gIMaUgPfoRj3.mp4": {
    "frames": 26850,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1927,
    "main_aircraft_first_frame": 1625,
    "main_aircraft_frames": 25217,
    "longest_so_far": {
@@ -1888,25 +2359,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 37.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1625,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 37.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1927
+   "largest_alive": {
+    "handed_over_at": 1625,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 37.8
+   }
   },
   "gLPdq1dI9A6R.mp4": {
    "frames": 31560,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4445,
    "main_aircraft_first_frame": 3849,
    "main_aircraft_frames": 26505,
    "longest_so_far": {
@@ -1916,25 +2394,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 74.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3849,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 1191,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 74.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4445
+   "largest_alive": {
+    "handed_over_at": 3849,
+    "delay_frames": 0,
+    "withheld_frames": 89,
+    "frames_with_another_aircraft_handed": 1296,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 74.5
+   }
   },
   "hBrH3YC2Oeoa.mp4": {
    "frames": 26670,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 6870,
    "main_aircraft_first_frame": 6590,
    "main_aircraft_frames": 18806,
    "longest_so_far": {
@@ -1944,25 +2429,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 35.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 6590,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 35.0
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 6870
+   "largest_alive": {
+    "handed_over_at": 6590,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 35.0
+   }
   },
   "hNbhZ6XeGkk2.mp4": {
    "frames": 41970,
-   "aircraft_tracks": 17,
+   "aircraft_tracks": 4,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3283,
    "main_aircraft_first_frame": 1633,
    "main_aircraft_frames": 38732,
    "longest_so_far": {
@@ -1972,25 +2464,32 @@
     "frames_with_another_aircraft_handed": 1048,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 72.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1675,
     "delay_frames": 42,
     "withheld_frames": 42,
     "frames_with_another_aircraft_handed": 1159,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 201.0
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3283
+   "largest_alive": {
+    "handed_over_at": 1675,
+    "delay_frames": 42,
+    "withheld_frames": 189,
+    "frames_with_another_aircraft_handed": 1205,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 201.0
+   }
   },
   "hmMUVO4MdtU8.mp4": {
    "frames": 45120,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4514,
    "main_aircraft_first_frame": 4254,
    "main_aircraft_frames": 37415,
    "longest_so_far": {
@@ -2000,25 +2499,32 @@
     "frames_with_another_aircraft_handed": 905,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 49,
     "handed_over_before_arrival_s": -80.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4339,
     "delay_frames": 85,
     "withheld_frames": 84,
     "frames_with_another_aircraft_handed": 905,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 208,
-    "arrival_window_other_box": 49,
     "handed_over_before_arrival_s": 21.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4514
+   "largest_alive": {
+    "handed_over_at": 4254,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 837,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.5
+   }
   },
   "iRRy2la05yGf.mp4": {
    "frames": 21720,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3995,
    "main_aircraft_first_frame": 3886,
    "main_aircraft_frames": 15852,
    "longest_so_far": {
@@ -2028,25 +2534,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 13.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3886,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 13.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3995
+   "largest_alive": {
+    "handed_over_at": 3886,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 142,
+    "arrival_window_same_box": 142,
+    "handed_over_before_arrival_s": 13.6
+   }
   },
   "jI6tTM7YdhNE.mp4": {
    "frames": 40050,
-   "aircraft_tracks": 5,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 1776,
    "main_aircraft_first_frame": 1400,
    "main_aircraft_frames": 37293,
    "longest_so_far": {
@@ -2056,25 +2569,32 @@
     "frames_with_another_aircraft_handed": 1271,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": -111.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1439,
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 1280,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 42.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 1776
+   "largest_alive": {
+    "handed_over_at": 1400,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 1257,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 47.0
+   }
   },
   "jfHoKj4vyoaf.mp4": {
    "frames": 25080,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4081,
    "main_aircraft_first_frame": 3853,
    "main_aircraft_frames": 18427,
    "longest_so_far": {
@@ -2084,25 +2604,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 261,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 28.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3853,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 261,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 28.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4081
+   "largest_alive": {
+    "handed_over_at": 3853,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 261,
+    "arrival_window_same_box": 261,
+    "handed_over_before_arrival_s": 28.5
+   }
   },
   "juIFQTpth9Ma.mp4": {
    "frames": 27840,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 5576,
    "main_aircraft_first_frame": 5320,
    "main_aircraft_frames": 19370,
    "longest_so_far": {
@@ -2112,25 +2639,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 32.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 5320,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 4,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 32.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 5576
+   "largest_alive": {
+    "handed_over_at": 5320,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 4,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.0
+   }
   },
   "kfN9tsDAmaxv.mp4": {
    "frames": 31950,
-   "aircraft_tracks": 11,
+   "aircraft_tracks": 6,
+   "heavy_noise_mode": false,
+   "arrival_frame": 587,
    "main_aircraft_first_frame": 538,
    "main_aircraft_frames": 15714,
    "longest_so_far": {
@@ -2140,25 +2674,32 @@
     "frames_with_another_aircraft_handed": 8810,
     "arrival_window_frames_in_batch": 55,
     "arrival_window_same_box": 55,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 6.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 538,
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 14513,
     "arrival_window_frames_in_batch": 55,
     "arrival_window_same_box": 55,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 6.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 587
+   "largest_alive": {
+    "handed_over_at": 538,
+    "delay_frames": 0,
+    "withheld_frames": 47,
+    "frames_with_another_aircraft_handed": 14585,
+    "arrival_window_frames_in_batch": 55,
+    "arrival_window_same_box": 55,
+    "handed_over_before_arrival_s": 6.1
+   }
   },
   "lSlmW7Fu0wAr.mp4": {
    "frames": 24270,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4634,
    "main_aircraft_first_frame": 4451,
    "main_aircraft_frames": 17117,
    "longest_so_far": {
@@ -2168,25 +2709,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 212,
     "arrival_window_same_box": 212,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 22.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 4451,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 212,
     "arrival_window_same_box": 212,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 22.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4634
+   "largest_alive": {
+    "handed_over_at": 4451,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 212,
+    "arrival_window_same_box": 212,
+    "handed_over_before_arrival_s": 22.9
+   }
   },
   "mazLnvqj4KzF.mp4": {
    "frames": 31950,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": true,
+   "arrival_frame": 5690,
    "main_aircraft_first_frame": 195,
    "main_aircraft_frames": 27866,
    "longest_so_far": {
@@ -2196,25 +2744,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 686.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 195,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 686.9
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 5690
+   "largest_alive": {
+    "handed_over_at": 195,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 686.9
+   }
   },
   "mjTrUaxKE8Ua.mp4": {
    "frames": 41430,
    "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 10461,
    "main_aircraft_first_frame": 9925,
    "main_aircraft_frames": 31448,
    "longest_so_far": {
@@ -2224,25 +2779,32 @@
     "frames_with_another_aircraft_handed": 61,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 59.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 9964,
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 61,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 62.1
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 10461
+   "largest_alive": {
+    "handed_over_at": 9964,
+    "delay_frames": 39,
+    "withheld_frames": 39,
+    "frames_with_another_aircraft_handed": 61,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 62.1
+   }
   },
   "n96M7fASlhGn.mp4": {
    "frames": 47790,
-   "aircraft_tracks": 7,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3991,
    "main_aircraft_first_frame": 1443,
    "main_aircraft_frames": 41159,
    "longest_so_far": {
@@ -2252,25 +2814,32 @@
     "frames_with_another_aircraft_handed": 1834,
     "arrival_window_frames_in_batch": 46,
     "arrival_window_same_box": 0,
-    "arrival_window_other_box": 18,
     "handed_over_before_arrival_s": 318.5
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 1443,
     "delay_frames": 0,
     "withheld_frames": 34,
     "frames_with_another_aircraft_handed": 1857,
     "arrival_window_frames_in_batch": 46,
     "arrival_window_same_box": 12,
-    "arrival_window_other_box": 18,
     "handed_over_before_arrival_s": 318.5
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3991
+   "largest_alive": {
+    "handed_over_at": 1443,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 1839,
+    "arrival_window_frames_in_batch": 46,
+    "arrival_window_same_box": 46,
+    "handed_over_before_arrival_s": 318.5
+   }
   },
   "nlwsSAb9Fk4N.mp4": {
    "frames": 22290,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3717,
    "main_aircraft_first_frame": 3394,
    "main_aircraft_frames": 16659,
    "longest_so_far": {
@@ -2280,25 +2849,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 271,
     "arrival_window_same_box": 271,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 40.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3394,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 271,
     "arrival_window_same_box": 271,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 40.4
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3717
+   "largest_alive": {
+    "handed_over_at": 3394,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 271,
+    "arrival_window_same_box": 271,
+    "handed_over_before_arrival_s": 40.4
+   }
   },
   "prD4z9DQim0S.mp4": {
    "frames": 30240,
-   "aircraft_tracks": 3,
+   "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 3193,
    "main_aircraft_first_frame": 3084,
    "main_aircraft_frames": 25399,
    "longest_so_far": {
@@ -2308,25 +2884,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 13.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3084,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 13.6
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 3193
+   "largest_alive": {
+    "handed_over_at": 3084,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 142,
+    "arrival_window_same_box": 142,
+    "handed_over_before_arrival_s": 13.6
+   }
   },
   "sAHYpFpM01Dg.mp4": {
    "frames": 24450,
    "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2986,
    "main_aircraft_first_frame": 2417,
    "main_aircraft_frames": 21816,
    "longest_so_far": {
@@ -2336,25 +2919,32 @@
     "frames_with_another_aircraft_handed": 125,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 55.1
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2456,
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 125,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 66.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2986
+   "largest_alive": {
+    "handed_over_at": 2456,
+    "delay_frames": 39,
+    "withheld_frames": 39,
+    "frames_with_another_aircraft_handed": 125,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 66.2
+   }
   },
   "vqYMdk0HPALO.mp4": {
    "frames": 36030,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 4072,
    "main_aircraft_first_frame": 3872,
    "main_aircraft_frames": 30100,
    "longest_so_far": {
@@ -2364,25 +2954,32 @@
     "frames_with_another_aircraft_handed": 27,
     "arrival_window_frames_in_batch": 233,
     "arrival_window_same_box": 206,
-    "arrival_window_other_box": 10,
     "handed_over_before_arrival_s": 21.6
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 3898,
     "delay_frames": 26,
     "withheld_frames": 26,
     "frames_with_another_aircraft_handed": 27,
     "arrival_window_frames_in_batch": 233,
     "arrival_window_same_box": 207,
-    "arrival_window_other_box": 10,
     "handed_over_before_arrival_s": 21.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 4072
+   "largest_alive": {
+    "handed_over_at": 3898,
+    "delay_frames": 26,
+    "withheld_frames": 26,
+    "frames_with_another_aircraft_handed": 27,
+    "arrival_window_frames_in_batch": 233,
+    "arrival_window_same_box": 207,
+    "handed_over_before_arrival_s": 21.8
+   }
   },
   "wMk1umBGpV8f.mp4": {
    "frames": 23700,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 514,
    "main_aircraft_first_frame": 108,
    "main_aircraft_frames": 19372,
    "longest_so_far": {
@@ -2392,25 +2989,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.8
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 108,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.8
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 514
+   "largest_alive": {
+    "handed_over_at": 108,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 50.8
+   }
   },
   "weuYWsbYvdIQ.mp4": {
    "frames": 28140,
    "aircraft_tracks": 1,
+   "heavy_noise_mode": false,
+   "arrival_frame": 443,
    "main_aircraft_first_frame": 9,
    "main_aircraft_frames": 26633,
    "longest_so_far": {
@@ -2420,25 +3024,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 54.2
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 9,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 54.2
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 443
+   "largest_alive": {
+    "handed_over_at": 9,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 54.2
+   }
   },
   "y0lZAExtmDDV.mp4": {
    "frames": 30210,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 2,
+   "heavy_noise_mode": false,
+   "arrival_frame": 8531,
    "main_aircraft_first_frame": 8131,
    "main_aircraft_frames": 21301,
    "longest_so_far": {
@@ -2448,25 +3059,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.0
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 8131,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 50.0
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 8531
+   "largest_alive": {
+    "handed_over_at": 8131,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 50.0
+   }
   },
   "ytQDROiCyhBh.mp4": {
    "frames": 32370,
    "aircraft_tracks": 3,
+   "heavy_noise_mode": true,
+   "arrival_frame": 3371,
    "main_aircraft_first_frame": 2392,
    "main_aircraft_frames": 29920,
    "longest_so_far": {
@@ -2476,25 +3094,32 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 122.4
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2392,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 122.4
    },
-   "heavy_noise_mode": true,
-   "arrival_frame": 3371
+   "largest_alive": {
+    "handed_over_at": 2392,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 122.4
+   }
   },
   "zHxIAF2vUGxJ.mp4": {
    "frames": 17280,
-   "aircraft_tracks": 4,
+   "aircraft_tracks": 3,
+   "heavy_noise_mode": false,
+   "arrival_frame": 2884,
    "main_aircraft_first_frame": 2405,
    "main_aircraft_frames": 9545,
    "longest_so_far": {
@@ -2504,47 +3129,67 @@
     "frames_with_another_aircraft_handed": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 59.9
    },
-   "let_go_after_16": {
+   "hold_let_go": {
     "handed_over_at": 2405,
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 4377,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
-    "arrival_window_other_box": 0,
     "handed_over_before_arrival_s": 59.9
    },
-   "heavy_noise_mode": false,
-   "arrival_frame": 2884
+   "largest_alive": {
+    "handed_over_at": 2405,
+    "delay_frames": 0,
+    "withheld_frames": 54,
+    "frames_with_another_aircraft_handed": 4447,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 59.9
+   }
   }
  },
  "summary": {
   "longest_so_far": {
    "videos": 90,
+   "videos_with_an_arrival": 90,
+   "arrival_window_fully_the_same": 69,
+   "arrival_window_less_than_half_the_same": 16,
+   "handed_over_only_after_the_arrival": 13,
    "handed_over_more_than_2_s_late": 27,
    "median_delay_s": 0.0,
    "p90_delay_s": 133.6,
    "max_delay_s": 906.5,
-   "handed_over_only_after_the_arrival": 13,
-   "arrival_window_fully_the_same": 69,
-   "arrival_window_less_than_half_the_same": 16,
-   "videos_with_an_arrival": 90,
+   "share_of_batch_rows_kept": 0.9815,
    "frames_with_another_aircraft_handed": 47255
   },
-  "let_go_after_16": {
+  "hold_let_go": {
    "videos": 90,
+   "videos_with_an_arrival": 90,
+   "arrival_window_fully_the_same": 74,
+   "arrival_window_less_than_half_the_same": 6,
+   "handed_over_only_after_the_arrival": 2,
    "handed_over_more_than_2_s_late": 27,
    "median_delay_s": 0.0,
    "p90_delay_s": 5.2,
    "max_delay_s": 79.1,
-   "handed_over_only_after_the_arrival": 2,
-   "arrival_window_fully_the_same": 74,
-   "arrival_window_less_than_half_the_same": 6,
-   "videos_with_an_arrival": 90,
+   "share_of_batch_rows_kept": 0.9986,
    "frames_with_another_aircraft_handed": 103583
+  },
+  "largest_alive": {
+   "videos": 90,
+   "videos_with_an_arrival": 90,
+   "arrival_window_fully_the_same": 83,
+   "arrival_window_less_than_half_the_same": 0,
+   "handed_over_only_after_the_arrival": 0,
+   "handed_over_more_than_2_s_late": 16,
+   "median_delay_s": 0.0,
+   "p90_delay_s": 4.9,
+   "max_delay_s": 67.9,
+   "share_of_batch_rows_kept": 0.9988,
+   "frames_with_another_aircraft_handed": 103084
   }
  },
  "live_checks": {
@@ -2582,5 +3227,9 @@
    "verdicts_identical": 3,
    "reports_identical": 3
   }
+ },
+ "rule_parameters": {
+  "alive_frames": 16,
+  "switch_factor": 1.5
  }
 }

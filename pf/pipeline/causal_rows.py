@@ -12,11 +12,22 @@ with the values as they stand at frame t (ADR-001 §2, "decided at frame X"):
 Streaming rows differ from the batch file wherever a decision was not final yet — before the main track is established, while
 the mode height or the layout still move, and on frames where the track that is longest at t is not the one that is longest at
 the end. `pf.eval.compare_gm_ndjson_tolerant(batch_file, streaming_file)` measures that difference.
+
+`main_rule` chooses the main aircraft at frame t:
+
+  * `longest_so_far` (default, the rule above). An aircraft that taxied past earlier keeps the title until the arriving one has
+    more frames than it; over the test set that hands the arriving aircraft over late or not at all around T_arr on 16 of 90
+    videos and changed 36 module verdicts live (`docs/analysis/rt_module_cost.md`, section 7).
+  * `largest_alive`: among the aircraft tracks that had a box within `alive_frames`, the one with the largest box; the held
+    track is replaced only when it is no longer alive or another alive box is `switch_factor` times larger. Replayed over the
+    test set it matches the batch choice on every frame of the arrival window on 83 of 90 videos, with no video under half.
+    The mode height then comes from the held track, not from the longest one.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from statistics import mode
 
 from pf.gm.compat_writer import CompatContext, second_run_rows
 from pf.gm.rows import ClassMap
@@ -36,14 +47,40 @@ class CausalSecondRun:
     context: object  # VideoContextV2, already updated with frame t before rows(t) is called
     cm: ClassMap
     refresh_every: int = 60
+    main_rule: str = "longest_so_far"  # or "largest_alive"
+    alive_frames: int = 16
+    switch_factor: float = 1.5
     stats: CausalRowStats = field(default_factory=CausalRowStats)
+    _held: object = None  # the PlaneHistory held by `largest_alive`
     _tid: object = None
     _mode: int | None = None
     _layout: tuple = (None, False, False)
     _refreshed_at: int | None = None
 
+    def _largest_alive(self, frame_id: int, planes: dict):
+        def area(hist) -> float:
+            x1, y1, x2, y2 = hist.last_xyxy[:4]
+            return max(0.0, x2 - x1) * max(0.0, y2 - y1)
+
+        alive, seen = [], set()
+        for tid, hist in planes.items():  # several norfair ids may alias one history
+            if id(hist) in seen or hist.last_frame is None or frame_id - hist.last_frame > self.alive_frames:
+                continue
+            seen.add(id(hist))
+            alive.append((tid, hist))
+        if not alive:
+            return None, None
+        big_tid, big = max(alive, key=lambda item: area(item[1]))
+        held_alive = self._held is not None and any(hist is self._held for _, hist in alive)
+        if not held_alive or (big is not self._held and area(big) > self.switch_factor * area(self._held)):
+            self._held = big
+        tid = next(t for t, hist in alive if hist is self._held)
+        return tid, self._held.frames.get(frame_id)
+
     def _current_box(self, frame_id: int):
         aircraft = self.context.aircraft
+        if self.main_rule == "largest_alive" and getattr(aircraft, "planes", None) is not None:
+            return self._largest_alive(frame_id, aircraft.planes)
         tid = aircraft.longest()
         if tid is None:
             return None, None
@@ -53,8 +90,10 @@ class CausalSecondRun:
 
     def _refresh(self, frame_id: int) -> None:
         lay = self.context.layout.snapshot()
-        ac = self.context.aircraft.snapshot()
-        self._mode = ac.get("mode_plane_height")
+        if self.main_rule == "largest_alive" and self._held is not None:
+            self._mode = mode([round(xyxy[3] - xyxy[1], -1) for xyxy in self._held.frames.values()])
+        else:
+            self._mode = self.context.aircraft.snapshot().get("mode_plane_height")
         self._layout = (
             lay.get("main_front_wheel"),
             lay.get("left_side_obstacles_roi", False),

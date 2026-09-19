@@ -76,6 +76,7 @@ class PlaneHistory:
 
     frames: dict = field(default_factory=dict)  # frame_id -> xyxy
     last_xyxy: list | None = None
+    last_frame: int | None = None  # the frame of `last_xyxy` (real time: which tracks are alive now)
 
 
 @dataclass
@@ -129,11 +130,12 @@ class NorfairPlaneTracker:
                 self.first_track_at = frame_id
                 decided.append("first_aircraft_track")
             if not self.planes:
-                self.planes[obj.id] = PlaneHistory({frame_id: xyxy}, xyxy)
+                self.planes[obj.id] = PlaneHistory({frame_id: xyxy}, xyxy, frame_id)
             elif obj.id in self.planes:
                 hist = self.planes[obj.id]
                 hist.frames[frame_id] = xyxy
                 hist.last_xyxy = xyxy
+                hist.last_frame = frame_id
             else:
                 key_to_copy = max(
                     self.planes, key=lambda k: relative_intersection(xyxy, self.planes[k].last_xyxy)
@@ -143,8 +145,9 @@ class NorfairPlaneTracker:
                     hist = self.planes[obj.id]
                     hist.frames[frame_id] = xyxy
                     hist.last_xyxy = xyxy
+                    hist.last_frame = frame_id
                 else:
-                    self.planes[obj.id] = PlaneHistory({frame_id: xyxy}, xyxy)
+                    self.planes[obj.id] = PlaneHistory({frame_id: xyxy}, xyxy, frame_id)
         return decided
 
     # ---------------------------------------------------------------- results

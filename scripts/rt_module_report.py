@@ -237,7 +237,9 @@ def main() -> int:
          f"{anc.get('departure_frame')}. Machine: RTX 5070 Ti 16 GB, 8 CPU cores, 27 GB RAM. Budget: 125 ms per frame at 8 fps.",
          "Every module was run **alone as a component**: the unchanged production module behind a GM with only the heads it reads "
          "and a tracker with only the classes it reads (its pseudo-GM), fed live: causal rows, a live tracker, the session length unknown.",
-         "", "## 1. Does it run in real time as it is, with the batch verdict", "",
+         ""]
+    short_at = len(L)
+    L += ["## 1. Does it run in real time as it is, with the batch verdict", "",
          f"**{count['yes'] + count['yes, verdict at session end'] + count['yes, report shifts']} of {len(rows)} run as they are** "
          f"({count['yes']} with the same verdict and report during the turn, {count['yes, verdict at session end']} only at session end, "
          f"{count['yes, report shifts']} with a small shift in the report), **{count['no: two passes']} cannot** (two passes over the "
@@ -372,27 +374,42 @@ def main() -> int:
     more = {}
     for path in sorted(glob.glob(os.path.join(ROOT, "out", "rt", "cost", "*", "joint_all_ready_x*.json"))):
         j = load(path)
-        if j and not j.get("error") and j.get("verdicts"):
+        if j and not j.get("error") and j.get("verdicts") and not j.get("exit_code") and not j.get("runtime_error"):
             more.setdefault(j["video"], []).append(j)
+    replayed = (load(os.path.join(ROOT, "docs", "analysis", "rt_main_aircraft_delay.json")) or {}).get("videos") or {}
+
+    def group_of(video: str) -> str:
+        s = (replayed.get(video) or {}).get("longest_so_far") or {}
+        if s.get("arrival_window_frames_in_batch") and s["arrival_window_same_box"] < 0.5 * s["arrival_window_frames_in_batch"]:
+            return "aircraft handed over late (section 7)"
+        return "clean"
+
     if more:
-        L += ["", "### Live against batch, modules together, every event still on disk", "",
-              "One GM, one tracker, the modules the plan runs on that camera, each in its own process with its declared rows.", "",
-              "| event | speed | modules | verdict = batch | report = batch | not identical |", "|---|---|---|---|---|---|"]
+        L += ["", "### Live against batch, modules together, every event on disk", "",
+              "One GM, one tracker, the modules the plan runs on that camera, each in its own process with its declared rows. "
+              "`clean`: the causal rows carry the arriving aircraft as batch does; the other group is the subject of section 7.", "",
+              "| event | group | speed | modules | verdict = batch | report = batch | verdicts that differ |", "|---|---|---|---|---|---|---|"]
         pairs: dict = {}
-        for video, runs in more.items():
+        for video, runs in sorted(more.items(), key=lambda kv: (group_of(kv[0]) != "clean", kv[0])):
             for j in sorted(runs, key=lambda x: x.get("speed") or 0):
-                bad = [f"{v['module']} (live {v.get('live_status')}, batch {(v.get('batch_v2') or {}).get('status')})"
-                       for v in j["verdicts"] if not (v.get("batch_v2") or {}).get("report_identical")]
+                bad = [v["module"] for v in j["verdicts"] if not (v.get("batch_v2") or {}).get("status_identical")]
                 for v in j["verdicts"]:
                     b, pair = v.get("batch_v2") or {}, pairs.setdefault((video, v["module"]), [True, True])
                     pair[0] &= bool(b.get("status_identical"))
                     pair[1] &= bool(b.get("report_identical"))
-                L.append(f"| `{video}` | {j.get('speed'):g}× | {len(j['verdicts'])} | {j.get('verdicts_identical_to_batch_v2')} | "
-                         f"{j.get('reports_identical_to_batch_v2')} | {'; '.join(bad) or '—'} |")
-        tn, tv, tr = len(pairs), sum(1 for x in pairs.values() if x[0]), sum(1 for x in pairs.values() if x[1])
-        L.append(f"| **module × event pairs** | | **{tn}** | **{tv}** | **{tr}** | |")
-        out["live_vs_batch_together"] = {"events": len(more), "module_event_pairs": tn, "verdict_identical": tv,
-                                         "report_identical": tr}
+                L.append(f"| `{video}` | {group_of(video)} | {j.get('speed'):g}× | {len(j['verdicts'])} | "
+                         f"{j.get('verdicts_identical_to_batch_v2')} | {j.get('reports_identical_to_batch_v2')} | "
+                         f"{', '.join(m[:24] for m in bad) or '—'} |")
+        totals = {}
+        for (video, _m), (same_verdict, same_report) in pairs.items():
+            t = totals.setdefault(group_of(video), [0, 0, 0])
+            t[0] += 1
+            t[1] += same_verdict
+            t[2] += same_report
+        for group, (tn, tv, tr) in sorted(totals.items()):
+            L.append(f"| **module × event pairs, {group}** | | | **{tn}** | **{tv}** | **{tr}** | |")
+        out["live_vs_batch_together"] = {g: {"module_event_pairs": t[0], "verdict_identical": t[1], "report_identical": t[2]}
+                                         for g, t in totals.items()}
 
     every = combos["every module that runs as it is"]
     premium = [r["gpu_time_against_packed_post"] for r in rows if r["gpu_time_against_packed_post"] and r["module"] in ready]
@@ -432,50 +449,69 @@ def main() -> int:
               "present with the production inputs as well; it is not introduced by the real-time inputs."]
 
     delay = load(os.path.join(ROOT, "docs", "analysis", "rt_main_aircraft_delay.json"))
+    accuracy = load(os.path.join(ROOT, "docs", "analysis", "rt_live_accuracy.json")) or {}
     if delay and delay.get("summary"):
-        now, alt_key = delay["summary"]["longest_so_far"], next(k for k in delay["summary"] if k != "longest_so_far")
-        alt = delay["summary"][alt_key]
-        L += ["", "## 7. The one difference found live: the arriving aircraft can be handed over late", "",
+        rules = delay["summary"]
+        now = rules["longest_so_far"]
+        L += ["", "## 7. Where accuracy does change live: which aircraft the causal rows carry", "",
               "Not a module property: it sits in the causal rows every module reads. The batch second-run file carries the box of the "
               "main aircraft, which is the longest aircraft track of the **whole** video. The causal rows (`pf/pipeline/causal_rows.py`) "
               "carry the box of the track that is longest **so far**, so an aircraft that taxied past earlier keeps the title until the "
-              "arriving aircraft has more frames than it, and until then neither the tracker nor the modules get the arriving aircraft.", "",
-              "- **Live**: on `MwCSLbQ7QvXQ` the arriving aircraft reached the tracker 223 frames (28 s) late. T_arr was still identical "
-              "(the hand-over came 20 s before the stop) and every verdict held; lead-marshaller wrote the start of the arrival stage as "
-              "13:44 instead of 13:16, which is the one report of 78 that differs.",
-              f"- **Test set** (`scripts/rt_main_aircraft_delay.py`, first-run rows of the {now['videos']} batch GM v2 runs replayed through "
-              "the aircraft tracker, no GPU; it reproduces the 223 frames exactly): "
-              f"on **{now['arrival_window_fully_the_same']} of {now['videos_with_an_arrival']}** videos the causal rows carry the batch box on "
-              "every frame from 30 s before T_arr to 4 s after it; on "
-              f"**{now['arrival_window_less_than_half_the_same']}** they carry it on less than half of those frames, and on "
-              f"**{now['handed_over_only_after_the_arrival']}** the arriving aircraft is handed over only after the batch T_arr "
-              f"(delay: median {now['median_delay_s']} s, p90 {now['p90_delay_s']} s, max {now['max_delay_s']} s). On those events a live "
-              "T_arr, and every check anchored on it, is at risk; the test-set passes above cannot see this, because they read the batch rows.",
-              f"- **A candidate rule**, replayed the same way (keep the held track while it has boxes, let it go after "
-              f"{alt_key.rsplit('_', 1)[-1]} frames without one): {alt['arrival_window_fully_the_same']} videos fully the same, "
-              f"{alt['arrival_window_less_than_half_the_same']} under half, {alt['handed_over_only_after_the_arrival']} handed over after the "
-              f"arrival, p90 delay {alt['p90_delay_s']} s; the price is more frames of passing aircraft handed to the tracker "
-              f"({alt['frames_with_another_aircraft_handed']} against {now['frames_with_another_aircraft_handed']}). It has to be chosen and "
-              "validated live on the affected events (PF-Q2-02); this report only measures it."]
+              "arriving aircraft has more frames than it, and until then neither the tracker nor the modules get the arriving aircraft. "
+              "The test-set passes of section 6 read the batch rows and cannot see this.", "",
+              f"**Replay over the test set** (`scripts/rt_main_aircraft_delay.py`: first-run rows of the {now['videos']} batch GM v2 runs "
+              "through the aircraft tracker, no GPU; it reproduces the 223 frames of delay seen live on `MwCSLbQ7QvXQ` exactly). "
+              "The arrival window is the 30 s before the batch T_arr and the 4 s after it:", "",
+              "| rule for the main aircraft at frame t | arrival window identical to batch | under half identical | handed over only "
+              "after T_arr | delay p90 / max, s | batch rows kept | frames with another aircraft handed over |",
+              "|---|---|---|---|---|---|---|"]
+        names = {"longest_so_far": "`longest_so_far` (what the branch runs)", "hold_let_go": "`hold_let_go`: keep the track while it "
+                 "has boxes, let go after 2 s without one", "largest_alive": "`largest_alive`: the largest box among the tracks seen in "
+                 "the last 2 s, replaced only by a box 1.5 times larger"}
+        for rule, r in rules.items():
+            L.append(f"| {names.get(rule, rule)} | **{r['arrival_window_fully_the_same']}** of {r['videos_with_an_arrival']} | "
+                     f"{r['arrival_window_less_than_half_the_same']} | {r['handed_over_only_after_the_arrival']} | "
+                     f"{r['p90_delay_s']} / {r['max_delay_s']} | {100 * r['share_of_batch_rows_kept']:.2f} % | "
+                     f"{r['frames_with_another_aircraft_handed']} |")
+        L += ["", "Batch hands over no other aircraft at all (it knows the end of the video); any causal rule has to let some through "
+              "while the main aircraft is not there."]
+
+        def live_block(name: str, title: str) -> list:
+            res = accuracy.get(name)
+            if not res:
+                return []
+            tv, changed = res["task_verdicts"], res["module_verdicts_changed"]
+            by_video: dict = {}
+            for c in changed:
+                by_video.setdefault(c["video"], []).append(c)
+            shifts = [x for x in res.get("anchors") or [] if x.get("t_arr_shift_s") is not None]
+            moved = [x for x in shifts if abs(x["t_arr_shift_s"]) > 4]
+            block = ["", f"**{title}**: {res['videos_run_live']} events, {res['module_runs_live']} module runs live "
+                     "(the 16 events of the second column above plus the 5 clean ones on disk; the rest of the test set keeps its "
+                     f"batch verdicts). Module verdicts changed: **{len(changed)}** on {len(by_video)} events. Task verdicts "
+                     f"(two-camera merge, as in the monthly comparison): {tv['identical']} of {tv['paired']} identical; accuracy against "
+                     f"the labels **{tv['accuracy_live']} %** live, {tv['accuracy_batch']} % batch (monthly CI output "
+                     f"{tv['accuracy_monthly_ci_output']} %). Live T_arr moved by more than 4 s on {len(moved)} of {len(shifts)} events "
+                     "with anchors recorded"
+                     + (f" (from {min(x['t_arr_shift_s'] for x in moved):+.0f} s to {max(x['t_arr_shift_s'] for x in moved):+.0f} s)." if moved else ".")]
+            if res.get("runs_that_died"):
+                block.append("Left out, the run died: " + "; ".join(f"`{x['video']}` ({x['error'][:60]})" for x in res["runs_that_died"]) + ".")
+            if changed:
+                block += ["", "| event | T_arr live − batch, s | module verdicts changed (batch → live) |", "|---|---|---|"]
+                shift_of = {x["video"]: x["t_arr_shift_s"] for x in shifts}
+                for video, items in sorted(by_video.items(), key=lambda kv: -len(kv[1])):
+                    block.append(f"| `{video}` | {shift_of.get(video, '—')} | "
+                                 + "; ".join(f"{c['module'][:28]}: {c['batch']} → {c['live']}" for c in items) + " |")
+            return block
+
+        L += live_block("all_ready", "Live with the rule the branch runs")
+        L += live_block("largest_alive", "Live with `largest_alive` (`--main-aircraft-rule largest_alive`)")
+        if "largest_alive" not in accuracy:
+            L += ["", "`largest_alive` is implemented as an option of the causal rows (the default is unchanged) and is being run live on "
+                  "the same events; this section is regenerated when those runs finish."]
         checks = delay.get("live_checks") or {}
-        if checks:
-            L += ["", "Live runs with the rows written, anchors of the live tracker against the batch tracker:", "",
-                  "| event | hand-over delay in the replay | T_arr batch | T_arr live | T_dep batch | T_dep live | verdicts = batch |",
-                  "|---|---|---|---|---|---|---|"]
-            for video, c in checks.items():
-                replayed = ((delay["videos"].get(video) or {}).get("longest_so_far") or {}).get("delay_frames")
-                b, lv = c["anchors"].get("batch") or {}, c["anchors"].get("live") or {}
-                shift = ""
-                if isinstance(b.get("arrival_frame"), int) and isinstance(lv.get("arrival_frame"), int) \
-                        and b["arrival_frame"] != lv["arrival_frame"]:
-                    shift = f" (**{(lv['arrival_frame'] - b['arrival_frame']) / FPS:+.0f} s**)"
-                L.append(f"| `{video}` | {replayed} frames | {b.get('arrival_frame', '—')} | {lv.get('arrival_frame', '—')}{shift} | "
-                         f"{b.get('departure_frame', '—')} | {lv.get('departure_frame', '—')} | "
-                         f"{c.get('verdicts_identical')} / {c.get('modules')} |")
-            L += ["", "On the second one the rows first carried an earlier track at the edge of the frame, and the live tracker declared "
-                  "the arrival from it, before the track that batch calls the main aircraft had even begun. The modules the plan runs on "
-                  "that camera do not anchor on T_arr, so their verdicts held; a check that does would have its windows moved by that much."]
-        out["main_aircraft_hand_over"] = {**delay["summary"], "live_checks": checks}
+        out["main_aircraft_hand_over"] = {"replay": rules, "live": {k: {x: v[x] for x in ("videos_run_live", "module_runs_live",
+                                          "task_verdicts")} for k, v in accuracy.items()}, "live_checks": checks}
 
     L += ["", "## 8. What this does not cover", "",
           f"- Live against batch was run on **{max(len(more), 1)} events** (the videos still on disk); the test-set pass checks the inputs "
@@ -495,6 +531,38 @@ def main() -> int:
           "python scripts/testset/compare.py --runs-root out/testset/modules/sub --label sub --baseline-root out/testset/modules/v2 \\",
           "    --baseline-label v2 --out out/testset/compare_sub_vs_v2.json",
           "python scripts/rt_module_report.py                                               # this file", "```"]
+    short = ["## In short", "",
+             f"- **Modules**: {count['yes'] + count['yes, verdict at session end'] + count['yes, report shifts']} of {len(rows)} run in "
+             f"real time unchanged ({count['yes, verdict at session end']} of them answer only when the session closes); "
+             f"{count['no: two passes']} need their second pass removed; {count['not hosted']} are not hosted."]
+    first_rt = next((j for j in joint.values() if j.get("speed") == 1), None)
+    if first_rt:
+        short.append(f"- **Load**: alone a module costs {min(r['whole_event_ms']['total'] for r in rows if r['whole_event_ms'].get('total')):.0f}–"
+                     f"{max(r['whole_event_ms']['total'] for r in rows if r['whole_event_ms'].get('total')):.0f} ms of 125, nearly all of it the shared "
+                     f"GM and tracker. All {len(first_rt['modules'])} together: {first_rt['ms_per_frame']['total']['mean']:.0f} ms on the frame "
+                     f"path, GPU {first_rt['machine'].get('gpu_util_mean')} % busy; the bound is CPU and RAM (about 8 cores, "
+                     f"{max(j['machine'].get('rss_peak_gb') or 0 for j in joint.values() if j.get('machine')):.0f} GB).")
+    live_totals = out.get("live_vs_batch_together") or {}
+    acc = accuracy.get("all_ready") if isinstance(accuracy, dict) else None
+    if live_totals and acc:
+        clean = live_totals.get("clean") or {}
+        late = next((v for k, v in live_totals.items() if k != "clean"), {})
+        tv = acc["task_verdicts"]
+        line = (f"- **Accuracy**: the real-time inputs and the scoped rows leave the test-set verdicts as they are (section 6). Live, on the "
+                f"events where the causal rows carry the arriving aircraft as batch does: {clean.get('verdict_identical')} of "
+                f"{clean.get('module_event_pairs')} verdicts identical. On the events where they hand it over late (about one in six): "
+                f"{late.get('verdict_identical')} of {late.get('module_event_pairs')}, mostly turned into Not observed; over the test set "
+                f"that is **{tv['accuracy_live']} % against {tv['accuracy_batch']} %**. The cause is one rule in the shared causal rows, "
+                "not the modules (section 7)")
+        better = accuracy.get("largest_alive")
+        if better:
+            bt = better["task_verdicts"]
+            line += (f"; with the rule `largest_alive`, live on the same events: {bt['identical']} of {bt['paired']} task verdicts "
+                     f"identical, **{bt['accuracy_live']} %**")
+        short.append(line + ".")
+    short.append("- **Against post-processing**: no more work per frame; real time pays for holding the GPU for the length of the event "
+                 "and needs a faster card than the production T4 (section 5).")
+    L[short_at:short_at] = short + [""]
     json.dump(out, io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.json"), "w", encoding="utf-8", newline="\n"),
               indent=1, default=str)
     io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.md"), "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")

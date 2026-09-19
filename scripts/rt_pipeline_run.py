@@ -119,7 +119,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     run = os.path.join(ROOT, out)
     p = o.paths(a.video)
     rec = {"video": a.video, "module": a.module, "extra_modules": a.extra_modules, "tag": a.tag, "speed": a.speed,
-           "subscriptions": a.subscriptions,
+           "subscriptions": a.subscriptions, "main_aircraft_rule": a.main_aircraft_rule,
            "ingest": a.ingest, "bandwidth_mbps": a.bandwidth_mbps,
            "max_seconds": a.max_seconds, "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider,
            "exit_code": rc, "wall_s": round(wall_s, 1)}
@@ -155,7 +155,8 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
                     "gm_heads": pj.get("gm_heads"), "memory_gb": pj.get("process_memory_gb"), "init_s": pj.get("init_s"),
                     "max_unpublished_frames": pj.get("max_unpublished_frames"),
                     "row_files_ms_per_frame": pj.get("row_files_ms_per_frame"),
-                    "module_hosts": pj.get("module_hosts"), "host_send_ms_per_frame": pj.get("host_send_ms_per_frame")})
+                    "module_hosts": pj.get("module_hosts"), "host_send_ms_per_frame": pj.get("host_send_ms_per_frame"),
+                    "tracker_anchors": pj.get("tracker_anchors"), "causal_rows": pj.get("causal_rows")})
     live_gm = os.path.join(run, f"general_model{a.video}.ndjson")
     live_trk = os.path.join(run, f"trackers{a.video}.ndjson")
     if os.path.exists(live_gm) and os.path.getsize(live_gm) and os.path.exists(p["gm_compat"]):
@@ -194,6 +195,8 @@ def main() -> int:
     ap.add_argument("--bandwidth-mbps", type=float, default=1000.0)
     ap.add_argument("--subscriptions", action="store_true",
                     help="hand every hosted module only what it declared (pf/rt/component.py); gated by verdict parity")
+    ap.add_argument("--main-aircraft-rule", default="longest_so_far", choices=["longest_so_far", "largest_alive"],
+                    help="which aircraft track the causal rows carry (pf/pipeline/causal_rows.py)")
     ap.add_argument("--watch-port", type=int, default=0, help="serve a live page of the run on this port (0 = off)")
     ap.add_argument("--hold-s", type=float, default=0.0, help="keep the live page up this long after the run ends")
     a = ap.parse_args()
@@ -217,7 +220,8 @@ def main() -> int:
              "gm_variant": "entity_clip", "gm_provider": a.provider,
              "tracker_classes": [c for c in a.tracker_classes.split(",") if c], "exact_fast": True, "seed": 0,
              "cone_camera": plan.cone(event), "pixels": not prof.get("pixel_free"), "out_dir": out,
-             "write_rows": not a.no_write_rows, "extra_modules": extras, "filter_rows": a.subscriptions}
+             "write_rows": not a.no_write_rows, "extra_modules": extras, "filter_rows": a.subscriptions,
+             "main_aircraft_rule": a.main_aircraft_rule}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]
     cmd += ["--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps)]

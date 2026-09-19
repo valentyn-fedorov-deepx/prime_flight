@@ -54,10 +54,16 @@ def main() -> int:
     ap.add_argument("--speed", type=float, default=1.0, help="1: real time; 8: the GPU kept busy (work per frame)")
     ap.add_argument("--name", default="all_ready")
     ap.add_argument("--max-seconds", type=float, default=None)
+    ap.add_argument("--main-aircraft-rule", default="longest_so_far", choices=["longest_so_far", "largest_alive"])
+    ap.add_argument("--pixel-free-only", action="store_true", help="leave out the modules that read pixels (RAM)")
     ap.add_argument("--no-subscriptions", action="store_true", help="hand every module the full rows instead of its declared ones")
     a = ap.parse_args()
 
     modules = [m for m in a.modules.split(",") if m] or ready_modules(a.video)
+    if a.pixel_free_only:
+        table = json.load(io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.json"), encoding="utf-8"))
+        with_pixels = {r["module"] for r in table["modules"] if r.get("pixels")}
+        modules = [m for m in modules if m not in with_pixels]
     ensure_chunks(a.video)
     primary = primary_of(modules)
     extras = [m for m in modules if m != primary]
@@ -66,6 +72,7 @@ def main() -> int:
     cmd = [sys.executable, "scripts/rt_pipeline_run.py", "--video", a.video, "--module", primary,
            "--extra-modules", ",".join(extras), "--tag", tag, "--speed", str(a.speed), "--no-write-rows",
            "--ingest", "frames" if a.speed == 1 else "chunks", "--bandwidth-mbps", "10" if a.speed == 1 else "1000"]
+    cmd += ["--main-aircraft-rule", a.main_aircraft_rule]
     if not a.no_subscriptions:
         cmd.append("--subscriptions")
     if a.max_seconds:
@@ -77,6 +84,7 @@ def main() -> int:
     rc = proc.wait()
     sampler.stop()
     record = {"video": a.video, "modules": modules, "primary": primary, "speed": a.speed, "exit_code": rc,
+              "main_aircraft_rule": a.main_aircraft_rule,
               "subscriptions": not a.no_subscriptions, "wall_s": round(time.time() - t0, 1),
               "measured": time.strftime("%Y-%m-%d %H:%M")}
     path = os.path.join(ROOT, "out", "rt", "runs", tag, "summary.json")
@@ -93,6 +101,7 @@ def main() -> int:
             "tracker_detail_ms": s.get("tracker_ms_per_frame"), "gm_heads_detail": s.get("gm_heads"),
             "host_send_ms_per_frame": s.get("host_send_ms_per_frame"), "module_hosts": s.get("module_hosts"),
             "module_error": s.get("module_error"), "runtime_error": s.get("runtime_error"), "verdicts": verdicts,
+            "tracker_anchors": s.get("tracker_anchors"), "causal_rows": s.get("causal_rows"),
             "verdicts_identical_to_batch_v2": sum(1 for v in verdicts if (v.get("batch_v2") or {}).get("status_identical")),
             "reports_identical_to_batch_v2": sum(1 for v in verdicts if (v.get("batch_v2") or {}).get("report_identical")),
             "machine": sampler.summary(steady_s=max(60.0, (s.get("frames") or 0) / 8.0 / a.speed)),

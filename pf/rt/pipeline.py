@@ -51,7 +51,8 @@ class RtPipelineAdapter(Adapter):
                  str2id: str | None = None, tracker_weights_dir: str | None = None, tracker_classes=None,
                  exact_fast: bool = True, seed: int = 0, cone_camera: bool = True, refresh_every: int = 60,
                  pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None,
-                 monitor=None, filter_rows: bool = False, alerts_file: bool = True, gating: bool = False):
+                 monitor=None, filter_rows: bool = False, alerts_file: bool = True, gating: bool = False,
+                 main_aircraft_rule: str = "longest_so_far"):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -64,6 +65,7 @@ class RtPipelineAdapter(Adapter):
             tracker_weights_dir or os.path.join(ROOT, "external", "cv_trackers_prod", "weights"))
         self.tracker_classes = tuple(tracker_classes or ALL_TRACKER_CLASSES)
         self.exact_fast, self.seed, self.cone_camera, self.refresh_every = exact_fast, seed, cone_camera, refresh_every
+        self.main_aircraft_rule = main_aircraft_rule  # pf/pipeline/causal_rows.py: which aircraft track the rows carry
         self.pixels = pixels
         self.out_dir = os.path.abspath(out_dir) if out_dir else None
         self.write_rows = bool(write_rows and self.out_dir)
@@ -92,6 +94,7 @@ class RtPipelineAdapter(Adapter):
         self._write_s = 0.0
         self._host_send_s = 0.0
         self._published = 0
+        self._anchors: dict = {}  # T_arr / T_dep as the live tracker first published them
         self._max_unpublished = 0
         self._blank = None
         self._gm_fh = self._trk_fh = None
@@ -162,7 +165,7 @@ class RtPipelineAdapter(Adapter):
         self.detectors = Detectors(gm=head("gm"), chocks=head("chocks"), vehicle=head("vehicle"), parallel=True)
         self.gm = GmStream(cm, event_id=self.video_name or "live", fps=int(fps), detectors=self.detectors,
                            variant=self.gm_variant)
-        self.causal = CausalSecondRun(self.gm.context, cm, refresh_every=self.refresh_every)
+        self.causal = CausalSecondRun(self.gm.context, cm, refresh_every=self.refresh_every, main_rule=self.main_aircraft_rule)
         if self.monitor is not None:
             self.monitor.set_class_names(cm.id2str)
         self.tracker = TrackerStream(TrackerOptions(weights_dir=self.tracker_weights_dir, exact_fast=self.exact_fast,
@@ -221,6 +224,13 @@ class RtPipelineAdapter(Adapter):
             # object does not support item assignment"), so the live hand-off goes through the same trip.
             encoded = json.dumps(records)
             records = json.loads(encoded)
+            if len(self._anchors) < 2:
+                for rec in records:
+                    if rec.get("cls_str") == "airplane":
+                        state = rec.get("state_dict") or {}
+                        for key in ("arrival_frame", "departure_frame"):
+                            if key not in self._anchors and isinstance(state.get(key), int):
+                                self._anchors[key] = {"value": state[key], "first_published_frame": fno}
             if self.write_rows:
                 tw = time.perf_counter()
                 self._gm_fh.write(ndjson_line(fno, rows2))
@@ -311,6 +321,7 @@ class RtPipelineAdapter(Adapter):
             "output_bus": self.bus.report() if self.bus is not None else {},
             "host_send_ms_per_frame": round(1000 * self._host_send_s / max(frames, 1), 3),
             "gm_heads": self.detectors.timings(), "tracker": self.tracker.report(), "causal_rows": vars(self.causal.stats),
+            "tracker_anchors": self._anchors, "main_aircraft_rule": self.main_aircraft_rule,
             "gm_context_final": context,
             "process_memory_gb": {"private": round(getattr(mem, "private", 0) / 2**30, 2),
                                   "peak_working_set": round(getattr(mem, "peak_wset", 0) / 2**30, 2)},
