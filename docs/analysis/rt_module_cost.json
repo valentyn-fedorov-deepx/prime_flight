@@ -1,0 +1,1433 @@
+{
+ "video": "zHxIAF2vUGxJ.mp4",
+ "frames": 17280,
+ "anchors": {
+  "arrival_frame": 2884,
+  "departure_frame": 11727
+ },
+ "budget_ms": 125.0,
+ "modules": [
+  {
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane"
+   ],
+   "whole_event_ms": {
+    "gm": 13.92,
+    "tracker": 4.88,
+    "module": 0.54,
+    "total": 19.47
+   },
+   "of_budget": 0.16,
+   "streams_per_gpu": 5,
+   "gpu_time_against_packed_post": 1.28,
+   "decisive_minutes": {
+    "total_ms": 17.64,
+    "module_ms": 0.38,
+    "module_p95_ms": 1.07,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.127,
+    "gpu_util_mean": 2.9,
+    "gpu_mem_gb": 1.57,
+    "cpu_cores": 0.29,
+    "ram_gb": 2.67
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 3392,
+    "frames": 17280
+   },
+   "verdict_arrives": "7:04 (T_arr + 64 s)",
+   "testset_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   },
+   "post_job_module_ms": 1.79,
+   "post_job_module_s": 30.9
+  },
+  {
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "chocks"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 11.47,
+    "tracker": 7.33,
+    "module": 0.73,
+    "total": 19.61
+   },
+   "of_budget": 0.16,
+   "streams_per_gpu": 5,
+   "gpu_time_against_packed_post": 1.27,
+   "decisive_minutes": {
+    "total_ms": 29.04,
+    "module_ms": 3.35,
+    "module_p95_ms": 5.57,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.14,
+    "gpu_util_mean": 9.6,
+    "gpu_mem_gb": 1.99,
+    "cpu_cores": 0.36,
+    "ram_gb": 5.02
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 4846,
+    "frames": 17280
+   },
+   "verdict_arrives": "10:05 (T_arr + 245 s)",
+   "testset_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   },
+   "post_job_module_ms": 1.48,
+   "post_job_module_s": 25.5
+  },
+  {
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane"
+   ],
+   "whole_event_ms": {
+    "gm": 13.94,
+    "tracker": 4.64,
+    "module": 1.26,
+    "total": 19.95
+   },
+   "of_budget": 0.16,
+   "streams_per_gpu": 5,
+   "gpu_time_against_packed_post": 1.25,
+   "decisive_minutes": {
+    "total_ms": 25.89,
+    "module_ms": 2.39,
+    "module_p95_ms": 13.92,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.133,
+    "gpu_util_mean": 9.9,
+    "gpu_mem_gb": 1.77,
+    "cpu_cores": 0.37,
+    "ram_gb": 3.36
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11804,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:35 (T_dep + 10 s)",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 1.78,
+   "post_job_module_s": 30.7
+  },
+  {
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.16,
+    "tracker": 7.8,
+    "module": 0.33,
+    "total": 22.42
+   },
+   "of_budget": 0.18,
+   "streams_per_gpu": 4,
+   "gpu_time_against_packed_post": 1.39,
+   "decisive_minutes": {
+    "total_ms": 29.18,
+    "module_ms": 0.51,
+    "module_p95_ms": 0.78,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.134,
+    "gpu_util_mean": 8.3,
+    "gpu_mem_gb": 1.79,
+    "cpu_cores": 0.38,
+    "ram_gb": 2.99
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11836,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:39 (T_dep + 14 s)",
+   "testset_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   },
+   "post_job_module_ms": 2.89,
+   "post_job_module_s": 50.0
+  },
+  {
+   "module": "fod-walk-completed",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.04,
+    "tracker": 7.33,
+    "module": 1.32,
+    "total": 22.81
+   },
+   "of_budget": 0.18,
+   "streams_per_gpu": 4,
+   "gpu_time_against_packed_post": 1.37,
+   "decisive_minutes": {
+    "total_ms": 23.63,
+    "module_ms": 4.09,
+    "module_p95_ms": 9.3,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.135,
+    "gpu_util_mean": 5.7,
+    "gpu_mem_gb": 1.99,
+    "cpu_cores": 0.34,
+    "ram_gb": 3.74
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 2884,
+    "frames": 17280
+   },
+   "verdict_arrives": "6:00 (T_arr + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 7.35,
+   "post_job_module_s": 127.0
+  },
+  {
+   "module": "pre-arrival-safety-huddle",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.28,
+    "tracker": 7.65,
+    "module": 0.87,
+    "total": 22.94
+   },
+   "of_budget": 0.18,
+   "streams_per_gpu": 4,
+   "gpu_time_against_packed_post": 1.36,
+   "decisive_minutes": {
+    "total_ms": 29.31,
+    "module_ms": 0.89,
+    "module_p95_ms": 4.07,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.141,
+    "gpu_util_mean": 5.7,
+    "gpu_mem_gb": 1.75,
+    "cpu_cores": 0.38,
+    "ram_gb": 3.45
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 3365,
+    "frames": 17280
+   },
+   "verdict_arrives": "7:00 (T_arr + 60 s)",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 2.95,
+   "post_job_module_s": 51.0
+  },
+  {
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.95,
+    "tracker": 8.23,
+    "module": 2.5,
+    "total": 25.84
+   },
+   "of_budget": 0.21,
+   "streams_per_gpu": 3,
+   "gpu_time_against_packed_post": 1.61,
+   "decisive_minutes": {
+    "total_ms": 34.11,
+    "module_ms": 13.37,
+    "module_p95_ms": 69.62,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.181,
+    "gpu_util_mean": 11.7,
+    "gpu_mem_gb": 2.06,
+    "cpu_cores": 1.27,
+    "ram_gb": 4.43
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 2965,
+    "frames": 17280
+   },
+   "verdict_arrives": "6:10 (T_arr + 10 s)",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 8.99,
+   "post_job_module_s": 155.3
+  },
+  {
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.09,
+    "tracker": 7.28,
+    "module": 5.14,
+    "total": 26.62
+   },
+   "of_budget": 0.21,
+   "streams_per_gpu": 3,
+   "gpu_time_against_packed_post": 1.57,
+   "decisive_minutes": {
+    "total_ms": 56.31,
+    "module_ms": 26.26,
+    "module_p95_ms": 85.39,
+    "keeps_up": true,
+    "frame_latency_p95_s": 1.416,
+    "gpu_util_mean": 22.1,
+    "gpu_mem_gb": 2.05,
+    "cpu_cores": 2.01,
+    "ram_gb": 3.88
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 12076,
+    "frames": 17280
+   },
+   "verdict_arrives": "25:09 (T_dep + 44 s)",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 7.72,
+   "post_job_module_s": 133.4
+  },
+  {
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane"
+   ],
+   "whole_event_ms": {
+    "gm": 24.7,
+    "tracker": 6.37,
+    "module": 0.09,
+    "total": 31.35
+   },
+   "of_budget": 0.25,
+   "streams_per_gpu": 3,
+   "gpu_time_against_packed_post": 1.33,
+   "decisive_minutes": {
+    "total_ms": 32.77,
+    "module_ms": 0.04,
+    "module_p95_ms": 0.07,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.148,
+    "gpu_util_mean": 19.0,
+    "gpu_mem_gb": 2.58,
+    "cpu_cores": 0.48,
+    "ram_gb": 2.99
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 2884,
+    "frames": 17280
+   },
+   "verdict_arrives": "6:00 (T_arr + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   },
+   "post_job_module_ms": 2.4,
+   "post_job_module_s": 41.5
+  },
+  {
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader"
+   ],
+   "whole_event_ms": {
+    "gm": 13.99,
+    "tracker": 17.94,
+    "module": 0.87,
+    "total": 32.93
+   },
+   "of_budget": 0.26,
+   "streams_per_gpu": 3,
+   "gpu_time_against_packed_post": 1.27,
+   "decisive_minutes": {
+    "total_ms": 40.3,
+    "module_ms": 1.37,
+    "module_p95_ms": 1.71,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.152,
+    "gpu_util_mean": 5.7,
+    "gpu_mem_gb": 1.85,
+    "cpu_cores": 0.48,
+    "ram_gb": 3.25
+   },
+   "live_vs_batch": {
+    "live_status": "Pass",
+    "batch_status": "Pass",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 4195,
+    "frames": 17280
+   },
+   "verdict_arrives": "8:44 (T_arr + 164 s)",
+   "testset_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   },
+   "post_job_module_ms": 1.41,
+   "post_job_module_s": 24.4
+  },
+  {
+   "module": "safety-handrails-fully-extended",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader"
+   ],
+   "whole_event_ms": {
+    "gm": 14.31,
+    "tracker": 17.8,
+    "module": 2.37,
+    "total": 34.6
+   },
+   "of_budget": 0.28,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.81,
+   "decisive_minutes": {
+    "total_ms": 39.34,
+    "module_ms": 4.96,
+    "module_p95_ms": 10.29,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.152,
+    "gpu_util_mean": 9.8,
+    "gpu_mem_gb": 1.89,
+    "cpu_cores": 1.36,
+    "ram_gb": 3.7
+   },
+   "live_vs_batch": {
+    "live_status": "Pass",
+    "batch_status": "Pass",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11726,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   },
+   "post_job_module_ms": 20.91,
+   "post_job_module_s": 361.3
+  },
+  {
+   "module": "3-stop-brake-check",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader"
+   ],
+   "whole_event_ms": {
+    "gm": 15.92,
+    "tracker": 21.61,
+    "module": 0.64,
+    "total": 38.31
+   },
+   "of_budget": 0.31,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.63,
+   "decisive_minutes": {
+    "total_ms": 38.9,
+    "module_ms": 0.83,
+    "module_p95_ms": 1.43,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.155,
+    "gpu_util_mean": 12.7,
+    "gpu_mem_gb": 1.88,
+    "cpu_cores": 0.46,
+    "ram_gb": 3.28
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11726,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   },
+   "post_job_module_ms": 3.21,
+   "post_job_module_s": 55.4
+  },
+  {
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader"
+   ],
+   "whole_event_ms": {
+    "gm": 15.55,
+    "tracker": 21.21,
+    "module": 1.54,
+    "total": 38.43
+   },
+   "of_budget": 0.31,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.63,
+   "decisive_minutes": {
+    "total_ms": 46.3,
+    "module_ms": 0.69,
+    "module_p95_ms": 1.2,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.171,
+    "gpu_util_mean": 17.2,
+    "gpu_mem_gb": 1.88,
+    "cpu_cores": 0.5,
+    "ram_gb": 3.3
+   },
+   "live_vs_batch": {
+    "live_status": "Pass",
+    "batch_status": "Pass",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11726,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 67,
+    "status_same": 67,
+    "report_same": 67
+   },
+   "post_job_module_ms": 6.53,
+   "post_job_module_s": 112.9
+  },
+  {
+   "module": "beltloader-chocks",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader"
+   ],
+   "whole_event_ms": {
+    "gm": 19.19,
+    "tracker": 20.18,
+    "module": 0.34,
+    "total": 39.85
+   },
+   "of_budget": 0.32,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.57,
+   "decisive_minutes": {
+    "total_ms": 41.83,
+    "module_ms": 0.59,
+    "module_p95_ms": 0.84,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.154,
+    "gpu_util_mean": 9.9,
+    "gpu_mem_gb": 2.85,
+    "cpu_cores": 0.58,
+    "ram_gb": 3.39
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11726,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   },
+   "post_job_module_ms": 2.38,
+   "post_job_module_s": 41.1
+  },
+  {
+   "module": "bl_rear_cone",
+   "runs_in_real_time_as_is": "yes",
+   "why": "",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader"
+   ],
+   "whole_event_ms": {
+    "gm": 17.91,
+    "tracker": 23.22,
+    "module": 0.37,
+    "total": 41.64
+   },
+   "of_budget": 0.33,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.5,
+   "decisive_minutes": {
+    "total_ms": 37.93,
+    "module_ms": 0.61,
+    "module_p95_ms": 0.88,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.151,
+    "gpu_util_mean": 9.5,
+    "gpu_mem_gb": 1.88,
+    "cpu_cores": 0.46,
+    "ram_gb": 3.24
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 11726,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "testset_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   },
+   "post_job_module_ms": 5.6,
+   "post_job_module_s": 96.7
+  },
+  {
+   "module": "safety-vests-secured-to-body",
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "why": "runs and gives the batch verdict, but only when the session closes: to alert during the turn it needs a hook for an interim verdict",
+   "pixels": true,
+   "heads": [
+    "gm"
+   ],
+   "tracked": [
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 8.5,
+    "tracker": 7.69,
+    "module": 18.75,
+    "total": 35.02
+   },
+   "of_budget": 0.28,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.78,
+   "decisive_minutes": {
+    "total_ms": 45.02,
+    "module_ms": 24.41,
+    "module_p95_ms": 36.83,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.162,
+    "gpu_util_mean": 9.7,
+    "gpu_mem_gb": 1.27,
+    "cpu_cores": 5.53,
+    "ram_gb": 3.3
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 17281,
+    "frames": 17280
+   },
+   "verdict_arrives": "session end",
+   "testset_scoped_inputs": {
+    "runs": 6,
+    "status_same": 6,
+    "report_same": 6
+   },
+   "post_job_module_ms": 25.96,
+   "post_job_module_s": 448.6
+  },
+  {
+   "module": "gse-chocks",
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "why": "runs and gives the batch verdict, but only when the session closes: to alert during the turn it needs a hook for an interim verdict",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "tracked": [
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 17.39,
+    "tracker": 22.81,
+    "module": 3.25,
+    "total": 43.56
+   },
+   "of_budget": 0.35,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.43,
+   "decisive_minutes": {
+    "total_ms": 48.21,
+    "module_ms": 4.42,
+    "module_p95_ms": 6.03,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.18,
+    "gpu_util_mean": 7.3,
+    "gpu_mem_gb": 3.38,
+    "cpu_cores": 0.67,
+    "ram_gb": 4.07
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 17281,
+    "frames": 17280
+   },
+   "verdict_arrives": "session end",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 13.32,
+   "post_job_module_s": 230.1
+  },
+  {
+   "module": "handrails-on-gse-being-used",
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "why": "runs and gives the batch verdict, but only when the session closes: to alert during the turn it needs a hook for an interim verdict",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.65,
+    "tracker": 19.82,
+    "module": 12.46,
+    "total": 47.05
+   },
+   "of_budget": 0.38,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.33,
+   "decisive_minutes": {
+    "total_ms": 60.2,
+    "module_ms": 19.1,
+    "module_p95_ms": 41.88,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.201,
+    "gpu_util_mean": 13.8,
+    "gpu_mem_gb": 2.34,
+    "cpu_cores": 3.72,
+    "ram_gb": 4.36
+   },
+   "live_vs_batch": {
+    "live_status": "Fail",
+    "batch_status": "Fail",
+    "status_identical": true,
+    "report_identical": true,
+    "decided_after_frame": 17281,
+    "frames": 17280
+   },
+   "verdict_arrives": "session end",
+   "testset_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   },
+   "post_job_module_ms": 88.27,
+   "post_job_module_s": 1525.3
+  },
+  {
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "runs_in_real_time_as_is": "yes, report shifts",
+   "why": "same verdict; the window or the count in the report moves slightly because the tracker follows only this module's classes (with the full tracker it does not)",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane"
+   ],
+   "whole_event_ms": {
+    "gm": 13.9,
+    "tracker": 4.88,
+    "module": 0.62,
+    "total": 19.51
+   },
+   "of_budget": 0.16,
+   "streams_per_gpu": 5,
+   "gpu_time_against_packed_post": 1.28,
+   "decisive_minutes": {
+    "total_ms": 24.9,
+    "module_ms": 1.18,
+    "module_p95_ms": 1.17,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.132,
+    "gpu_util_mean": 8.2,
+    "gpu_mem_gb": 1.58,
+    "cpu_cores": 0.35,
+    "ram_gb": 2.97
+   },
+   "live_vs_batch": {
+    "live_status": "Not observed",
+    "batch_status": "Not observed",
+    "status_identical": true,
+    "report_identical": false,
+    "decided_after_frame": 11804,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:35 (T_dep + 10 s)",
+   "testset_scoped_inputs": {
+    "runs": 90,
+    "status_same": 90,
+    "report_same": 90
+   },
+   "post_job_module_ms": 2.26,
+   "post_job_module_s": 39.1
+  },
+  {
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "runs_in_real_time_as_is": "yes, report shifts",
+   "why": "same verdict; the window or the count in the report moves slightly because the tracker follows only this module's classes (with the full tracker it does not)",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane"
+   ],
+   "whole_event_ms": {
+    "gm": 17.47,
+    "tracker": 5.03,
+    "module": 0.48,
+    "total": 23.1
+   },
+   "of_budget": 0.18,
+   "streams_per_gpu": 4,
+   "gpu_time_against_packed_post": 1.35,
+   "decisive_minutes": {
+    "total_ms": 30.83,
+    "module_ms": 0.89,
+    "module_p95_ms": 1.34,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.136,
+    "gpu_util_mean": 10.8,
+    "gpu_mem_gb": 2.57,
+    "cpu_cores": 0.46,
+    "ram_gb": 3.02
+   },
+   "live_vs_batch": {
+    "live_status": "Pass",
+    "batch_status": "Pass",
+    "status_identical": true,
+    "report_identical": false,
+    "decided_after_frame": 11889,
+    "frames": 17280
+   },
+   "verdict_arrives": "24:46 (T_dep + 20 s)",
+   "testset_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   },
+   "post_job_module_ms": 5.6,
+   "post_job_module_s": 96.7
+  },
+  {
+   "module": "safety-zone-confirmed-clear",
+   "runs_in_real_time_as_is": "no: two passes",
+   "why": "reads the session a second time from frame 1, and in real time that frame is gone; the cost below covers its first pass only. Planned: a stage-detector event instead of the second pass for aircraft-chocks and pin-verification (PF-Q3-04), single-pass hand-signals and safety-zone (PF-Q2-11)",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane"
+   ],
+   "whole_event_ms": {
+    "gm": 14.0,
+    "tracker": 4.79,
+    "module": 0.25,
+    "total": 19.17
+   },
+   "of_budget": 0.15,
+   "streams_per_gpu": 5,
+   "gpu_time_against_packed_post": 1.3,
+   "decisive_minutes": {
+    "total_ms": 18.49,
+    "module_ms": 0.43,
+    "module_p95_ms": 0.65,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.127,
+    "gpu_util_mean": 3.3,
+    "gpu_mem_gb": 1.64,
+    "cpu_cores": 0.29,
+    "ram_gb": 3.67
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": "Pass",
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": 17280
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 18.3,
+   "post_job_module_s": 316.2
+  },
+  {
+   "module": "pin-verification",
+   "runs_in_real_time_as_is": "no: two passes",
+   "why": "reads the session a second time from frame 1, and in real time that frame is gone; the cost below covers its first pass only. Planned: a stage-detector event instead of the second pass for aircraft-chocks and pin-verification (PF-Q3-04), single-pass hand-signals and safety-zone (PF-Q2-11)",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.48,
+    "tracker": 7.69,
+    "module": 0.44,
+    "total": 22.73
+   },
+   "of_budget": 0.18,
+   "streams_per_gpu": 4,
+   "gpu_time_against_packed_post": 1.37,
+   "decisive_minutes": {
+    "total_ms": 28.55,
+    "module_ms": 0.6,
+    "module_p95_ms": 0.74,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.139,
+    "gpu_util_mean": 7.6,
+    "gpu_mem_gb": 1.95,
+    "cpu_cores": 0.37,
+    "ram_gb": 3.66
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": "Not observed",
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": 17280
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   },
+   "post_job_module_ms": 9.53,
+   "post_job_module_s": 164.7
+  },
+  {
+   "module": "hand-signals",
+   "runs_in_real_time_as_is": "no: two passes",
+   "why": "reads the session a second time from frame 1, and in real time that frame is gone; the cost below covers its first pass only. Planned: a stage-detector event instead of the second pass for aircraft-chocks and pin-verification (PF-Q3-04), single-pass hand-signals and safety-zone (PF-Q2-11)",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 14.87,
+    "tracker": 21.29,
+    "module": 0.28,
+    "total": 36.57
+   },
+   "of_budget": 0.29,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.71,
+   "decisive_minutes": {
+    "total_ms": 39.55,
+    "module_ms": 0.28,
+    "module_p95_ms": 0.5,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.152,
+    "gpu_util_mean": 13.9,
+    "gpu_mem_gb": 2.15,
+    "cpu_cores": 0.48,
+    "ram_gb": 4.05
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": "Fail",
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": 17280
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 26.83,
+   "post_job_module_s": 463.6
+  },
+  {
+   "module": "aircraft-chocks",
+   "runs_in_real_time_as_is": "no: two passes",
+   "why": "reads the session a second time from frame 1, and in real time that frame is gone; the cost below covers its first pass only. Planned: a stage-detector event instead of the second pass for aircraft-chocks and pin-verification (PF-Q3-04), single-pass hand-signals and safety-zone (PF-Q2-11)",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "tracked": [
+    "airplane",
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "whole_event_ms": {
+    "gm": 19.24,
+    "tracker": 26.23,
+    "module": 0.48,
+    "total": 46.09
+   },
+   "of_budget": 0.37,
+   "streams_per_gpu": 2,
+   "gpu_time_against_packed_post": 1.36,
+   "decisive_minutes": {
+    "total_ms": 44.85,
+    "module_ms": 0.49,
+    "module_p95_ms": 0.69,
+    "keeps_up": true,
+    "frame_latency_p95_s": 0.162,
+    "gpu_util_mean": 16.9,
+    "gpu_mem_gb": 2.97,
+    "cpu_cores": 0.59,
+    "ram_gb": 3.84
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": [
+     "Not observed",
+     "Not observed",
+     "Not observed"
+    ],
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": 17280
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   },
+   "post_job_module_ms": 10.21,
+   "post_job_module_s": 176.5
+  },
+  {
+   "module": "hair-policy",
+   "runs_in_real_time_as_is": "not hosted",
+   "why": "runs in another interpreter (wsl)",
+   "pixels": null,
+   "heads": null,
+   "tracked": null,
+   "whole_event_ms": {
+    "gm": null,
+    "tracker": null,
+    "module": null,
+    "total": null
+   },
+   "of_budget": null,
+   "streams_per_gpu": null,
+   "gpu_time_against_packed_post": null,
+   "decisive_minutes": {
+    "total_ms": null,
+    "module_ms": null,
+    "module_p95_ms": null,
+    "keeps_up": null,
+    "frame_latency_p95_s": null,
+    "gpu_util_mean": null,
+    "gpu_mem_gb": null,
+    "cpu_cores": null,
+    "ram_gb": null
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": null,
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": null
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {},
+   "post_job_module_ms": null,
+   "post_job_module_s": null
+  },
+  {
+   "module": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "runs_in_real_time_as_is": "not hosted",
+   "why": "runs in another interpreter (G:\\prime_flight\\out\\envs\\np1_walkaround\\Scripts\\python.exe)",
+   "pixels": null,
+   "heads": null,
+   "tracked": null,
+   "whole_event_ms": {
+    "gm": null,
+    "tracker": null,
+    "module": null,
+    "total": null
+   },
+   "of_budget": null,
+   "streams_per_gpu": null,
+   "gpu_time_against_packed_post": null,
+   "decisive_minutes": {
+    "total_ms": null,
+    "module_ms": null,
+    "module_p95_ms": null,
+    "keeps_up": null,
+    "frame_latency_p95_s": null,
+    "gpu_util_mean": null,
+    "gpu_mem_gb": null,
+    "cpu_cores": null,
+    "ram_gb": null
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": null,
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": null
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {},
+   "post_job_module_ms": null,
+   "post_job_module_s": null
+  },
+  {
+   "module": "pre-departure-walk-around-completed",
+   "runs_in_real_time_as_is": "not hosted",
+   "why": "runs in another interpreter (G:\\prime_flight\\out\\envs\\np1_walkaround\\Scripts\\python.exe)",
+   "pixels": null,
+   "heads": null,
+   "tracked": null,
+   "whole_event_ms": {
+    "gm": null,
+    "tracker": null,
+    "module": null,
+    "total": null
+   },
+   "of_budget": null,
+   "streams_per_gpu": null,
+   "gpu_time_against_packed_post": null,
+   "decisive_minutes": {
+    "total_ms": null,
+    "module_ms": null,
+    "module_p95_ms": null,
+    "keeps_up": null,
+    "frame_latency_p95_s": null,
+    "gpu_util_mean": null,
+    "gpu_mem_gb": null,
+    "cpu_cores": null,
+    "ram_gb": null
+   },
+   "live_vs_batch": {
+    "live_status": null,
+    "batch_status": null,
+    "status_identical": null,
+    "report_identical": null,
+    "decided_after_frame": null,
+    "frames": null
+   },
+   "verdict_arrives": "\u2014",
+   "testset_scoped_inputs": {},
+   "post_job_module_ms": null,
+   "post_job_module_s": null
+  }
+ ],
+ "gm_by_head_set_ms": {
+  "gm": 8.5,
+  "gm+chocks": 11.5,
+  "gm+vehicle": 14.3,
+  "gm+chocks+vehicle": 19.2
+ },
+ "tracker_by_tracked_classes_ms": {
+  "airplane": 4.9,
+  "airplane+person": 7.7,
+  "person": 7.7,
+  "airplane+beltloader+person": 20.6,
+  "airplane+beltloader": 20.7,
+  "beltloader+gse+person": 22.8,
+  "airplane+beltloader+gse+person": 26.2
+ },
+ "together_predicted": {
+  "every module that runs as it is": {
+   "modules": 20,
+   "heads": "gm+chocks+vehicle",
+   "gm_ms": 19.2,
+   "tracked": "airplane+beltloader+gse+person",
+   "tracker_ms": 26.2,
+   "modules_own_ms": 54.5,
+   "together_ms": 104.9,
+   "sum_of_single_runs_ms": 605.0,
+   "saved_by_sharing_ms": 500.1,
+   "of_budget": 0.84
+  },
+  "the pixel-free ones among them": {
+   "modules": 10,
+   "heads": "gm+chocks+vehicle",
+   "gm_ms": 19.2,
+   "tracked": "airplane+beltloader+person",
+   "tracker_ms": 20.6,
+   "modules_own_ms": 5.8,
+   "together_ms": 50.6,
+   "sum_of_single_runs_ms": 307.0,
+   "saved_by_sharing_ms": 256.4,
+   "of_budget": 0.4
+  },
+  "3-stop + pushback-pathway + pushback-wing-walkers": {
+   "modules": 3,
+   "heads": "gm+chocks+vehicle",
+   "gm_ms": 19.2,
+   "tracked": "airplane+beltloader+person",
+   "tracker_ms": 20.6,
+   "modules_own_ms": 1.5,
+   "together_ms": 46.2,
+   "sum_of_single_runs_ms": 83.8,
+   "saved_by_sharing_ms": 37.6,
+   "of_budget": 0.37
+  }
+ },
+ "together_measured": {},
+ "testset": {
+  "scoped_vs_full_inputs": {
+   "expected": 1966,
+   "missing": 1226,
+   "paired": 740,
+   "paired_equal": 740,
+   "paired_baseline_equal_new": 708,
+   "paired_ours_equal_new": 708,
+   "paired_with_truth": 740,
+   "paired_ours_correct": 640,
+   "paired_baseline_correct": 640,
+   "paired_new_correct": 652,
+   "comparable": 740,
+   "equal_new": 708,
+   "equal_previous": 695,
+   "with_truth": 740,
+   "ours_correct": 640,
+   "new_correct": 652
+  },
+  "rt_inputs_vs_production_inputs": {
+   "expected": 1966,
+   "paired": 858,
+   "paired_equal": 851,
+   "paired_baseline_equal_new": 829,
+   "paired_ours_equal_new": 822,
+   "paired_with_truth": 858,
+   "paired_ours_correct": 744,
+   "paired_baseline_correct": 743,
+   "paired_new_correct": 756,
+   "comparable": 858,
+   "equal_new": 822,
+   "equal_previous": 807,
+   "with_truth": 858,
+   "ours_correct": 744,
+   "new_correct": 756,
+   "missing": 1108
+  }
+ },
+ "ready_modules_own_seconds_on_this_event": {
+  "as_post_jobs": 3677,
+  "as_live_components": 941
+ }
+}
