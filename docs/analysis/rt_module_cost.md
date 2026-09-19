@@ -193,6 +193,15 @@ Not a module property: it sits in the causal rows every module reads. The batch 
 - **Test set** (`scripts/rt_main_aircraft_delay.py`, first-run rows of the 90 batch GM v2 runs replayed through the aircraft tracker, no GPU; it reproduces the 223 frames exactly): on **69 of 90** videos the causal rows carry the batch box on every frame from 30 s before T_arr to 4 s after it; on **16** they carry it on less than half of those frames, and on **13** the arriving aircraft is handed over only after the batch T_arr (delay: median 0.0 s, p90 133.6 s, max 906.5 s). On those events a live T_arr, and every check anchored on it, is at risk; the test-set passes above cannot see this, because they read the batch rows.
 - **A candidate rule**, replayed the same way (keep the held track while it has boxes, let it go after 16 frames without one): 74 videos fully the same, 6 under half, 2 handed over after the arrival, p90 delay 5.2 s; the price is more frames of passing aircraft handed to the tracker (103583 against 47255). It has to be chosen and validated live on the affected events (PF-Q2-02); this report only measures it.
 
+Live runs with the rows written, anchors of the live tracker against the batch tracker:
+
+| event | hand-over delay in the replay | T_arr batch | T_arr live | T_dep batch | T_dep live | verdicts = batch |
+|---|---|---|---|---|---|---|
+| `MwCSLbQ7QvXQ.mp4` | 223 frames | 6753 | 6753 | — | — | 2 / 2 |
+| `ICfrXaND7Jqf.mp4` | 337 frames | 4020 | 3764 (**-32 s**) | 19636 | 19636 | 3 / 3 |
+
+On the second one the rows first carried an earlier track at the edge of the frame, and the live tracker declared the arrival from it, before the track that batch calls the main aircraft had even begun. The modules the plan runs on that camera do not anchor on T_arr, so their verdicts held; a check that does would have its windows moved by that much.
+
 ## 8. What this does not cover
 
 - Live against batch was run on **6 events** (the videos still on disk); the test-set pass checks the inputs (real-time GM + tracker, scoped rows) on all events, with the modules run over files, not live.

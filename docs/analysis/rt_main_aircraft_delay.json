@@ -2546,5 +2546,41 @@
    "videos_with_an_arrival": 90,
    "frames_with_another_aircraft_handed": 103583
   }
+ },
+ "live_checks": {
+  "MwCSLbQ7QvXQ.mp4": {
+   "tag": "diag_lead_MwCS",
+   "anchors": {
+    "batch": {
+     "arrival_frame": 6753
+    },
+    "live": {
+     "arrival_frame": 6753
+    }
+   },
+   "airplane_frames_with_records": 12271,
+   "airplane_frames_same_boxes": 11848,
+   "modules": 2,
+   "verdicts_identical": 2,
+   "reports_identical": 1
+  },
+  "ICfrXaND7Jqf.mp4": {
+   "tag": "diag_handover_ICfr",
+   "anchors": {
+    "batch": {
+     "arrival_frame": 4020,
+     "departure_frame": 19636
+    },
+    "live": {
+     "arrival_frame": 3764,
+     "departure_frame": 19636
+    }
+   },
+   "airplane_frames_with_records": 16414,
+   "airplane_frames_same_boxes": 15764,
+   "modules": 3,
+   "verdicts_identical": 3,
+   "reports_identical": 3
+  }
  }
 }

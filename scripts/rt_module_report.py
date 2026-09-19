@@ -457,7 +457,25 @@ def main() -> int:
               f"arrival, p90 delay {alt['p90_delay_s']} s; the price is more frames of passing aircraft handed to the tracker "
               f"({alt['frames_with_another_aircraft_handed']} against {now['frames_with_another_aircraft_handed']}). It has to be chosen and "
               "validated live on the affected events (PF-Q2-02); this report only measures it."]
-        out["main_aircraft_hand_over"] = delay["summary"]
+        checks = delay.get("live_checks") or {}
+        if checks:
+            L += ["", "Live runs with the rows written, anchors of the live tracker against the batch tracker:", "",
+                  "| event | hand-over delay in the replay | T_arr batch | T_arr live | T_dep batch | T_dep live | verdicts = batch |",
+                  "|---|---|---|---|---|---|---|"]
+            for video, c in checks.items():
+                replayed = ((delay["videos"].get(video) or {}).get("longest_so_far") or {}).get("delay_frames")
+                b, lv = c["anchors"].get("batch") or {}, c["anchors"].get("live") or {}
+                shift = ""
+                if isinstance(b.get("arrival_frame"), int) and isinstance(lv.get("arrival_frame"), int) \
+                        and b["arrival_frame"] != lv["arrival_frame"]:
+                    shift = f" (**{(lv['arrival_frame'] - b['arrival_frame']) / FPS:+.0f} s**)"
+                L.append(f"| `{video}` | {replayed} frames | {b.get('arrival_frame', '—')} | {lv.get('arrival_frame', '—')}{shift} | "
+                         f"{b.get('departure_frame', '—')} | {lv.get('departure_frame', '—')} | "
+                         f"{c.get('verdicts_identical')} / {c.get('modules')} |")
+            L += ["", "On the second one the rows first carried an earlier track at the edge of the frame, and the live tracker declared "
+                  "the arrival from it, before the track that batch calls the main aircraft had even begun. The modules the plan runs on "
+                  "that camera do not anchor on T_arr, so their verdicts held; a check that does would have its windows moved by that much."]
+        out["main_aircraft_hand_over"] = {**delay["summary"], "live_checks": checks}
 
     L += ["", "## 8. What this does not cover", "",
           f"- Live against batch was run on **{max(len(more), 1)} events** (the videos still on disk); the test-set pass checks the inputs "

@@ -92,6 +92,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--videos", default="", help="comma list; default: every video of the plan with a batch GM v2 run")
     ap.add_argument("--let-go-after", type=int, default=16, help="frames without a box before the held track is let go")
+    ap.add_argument("--live-check", default="", help="comma list of run tags under out/rt/runs made WITH the rows written: "
+                                                     "record their live and batch anchors next to the replay")
     a = ap.parse_args()
     cm = ClassMap(load_str2id(os.path.join(ROOT, "external", "cv_common", "global_config.yaml")))
     plan = o.Plan()
@@ -120,6 +122,18 @@ def main() -> int:
               f"{(rec.get('longest_so_far') or {}).get('delay_frames')}  let-go delay {(rec.get(rule) or {}).get('delay_frames')}  "
               f"T_arr {rec.get('arrival_frame')}", flush=True)
         json.dump(result, io.open(out_path, "w", encoding="utf-8", newline="\n"), indent=1)
+
+    for tag in [t for t in a.live_check.split(",") if t]:
+        summary = json.load(io.open(os.path.join(ROOT, "out", "rt", "runs", tag, "summary.json"), encoding="utf-8"))
+        parity = summary.get("tracker_vs_batch_v2") or {}
+        anchors = {side: {k: v.get("value") for k, v in (parity.get("anchors") or {}).get(side, {}).items()} for side in ("batch", "live")}
+        verdicts = [{"module": summary.get("module"), **(summary.get("batch_v2") or {})}]
+        verdicts += [{"module": v["module"], **(v.get("batch_v2") or {})} for v in summary.get("extra_module_verdicts") or []]
+        result.setdefault("live_checks", {})[summary["video"]] = {
+            "tag": tag, "anchors": anchors, "airplane_frames_with_records": parity.get("frames_with_records"),
+            "airplane_frames_same_boxes": parity.get("same_boxes"),
+            "modules": len(verdicts), "verdicts_identical": sum(1 for v in verdicts if v.get("status_identical")),
+            "reports_identical": sum(1 for v in verdicts if v.get("report_identical"))}
 
     recs = [r for r in result["videos"].values() if r.get("main_aircraft_first_frame")]
     for key in ("longest_so_far", rule):
