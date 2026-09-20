@@ -1,14 +1,8 @@
 {
  "all_ready": {
-  "videos_run_live": 20,
-  "module_runs_live": 208,
-  "runs_that_died": [
-   {
-    "video": "TtKESVA7IEIU.mp4",
-    "speed": 8.0,
-    "error": "module: MemoryError: Unable to allocate 7.92 MiB for an array with shape (1920, 541) and data type float64"
-   }
-  ],
+  "videos_run_live": 21,
+  "module_runs_live": 218,
+  "runs_that_died": [],
   "modules_without_a_live_verdict": [],
   "module_verdicts_changed": [
    {
@@ -341,6 +335,19 @@
     "t_dep_shift_s": 0.0
    },
    {
+    "video": "TtKESVA7IEIU.mp4",
+    "batch": {
+     "arrival_frame": 3230,
+     "departure_frame": 17542
+    },
+    "live": {
+     "arrival_frame": 4098,
+     "departure_frame": 17542
+    },
+    "t_arr_shift_s": 108.5,
+    "t_dep_shift_s": 0.0
+   },
+   {
     "video": "VIeEFGCUxgUY.mp4",
     "batch": {
      "arrival_frame": 3025,
@@ -421,25 +428,9 @@
   ]
  },
  "largest_alive": {
-  "videos_run_live": 18,
-  "module_runs_live": 168,
-  "runs_that_died": [
-   {
-    "video": "KB04bkqBI7ms.mp4",
-    "speed": 8.0,
-    "error": "module: MemoryError: Unable to allocate 7.92 MiB for an array with shape (1920, 541) and data type float64"
-   },
-   {
-    "video": "TtKESVA7IEIU.mp4",
-    "speed": 8.0,
-    "error": "module: MemoryError: Unable to allocate 3.87 MiB for an array with shape (507270,) and data type float64"
-   },
-   {
-    "video": "zHxIAF2vUGxJ.mp4",
-    "speed": 8.0,
-    "error": "module: MemoryError: Unable to allocate 3.84 MiB for an array with shape (502804,) and data type float64"
-   }
-  ],
+  "videos_run_live": 21,
+  "module_runs_live": 198,
+  "runs_that_died": [],
   "modules_without_a_live_verdict": [],
   "module_verdicts_changed": [
    {
@@ -675,12 +666,48 @@
     "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
     "batch": "Fail",
     "live": "Not observed"
+   },
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "module": "3-stop-brake-check",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Pass",
+    "live": "Fail"
+   },
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "module": "cones-placed-in-proper-positions-and-timely",
+    "batch": "Not observed",
+    "live": "Pass"
+   },
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "batch": "Pass",
+    "live": "Not observed"
    }
   ],
   "task_verdicts": {
    "paired": 858,
-   "identical": 826,
-   "accuracy_live": 83.45,
+   "identical": 820,
+   "accuracy_live": 82.87,
    "accuracy_batch": 86.71,
    "accuracy_monthly_ci_output": 88.11
   },
@@ -790,6 +817,19 @@
     "t_dep_shift_s": 0.0
    },
    {
+    "video": "KB04bkqBI7ms.mp4",
+    "batch": {
+     "arrival_frame": 2694,
+     "departure_frame": 19920
+    },
+    "live": {
+     "arrival_frame": 442,
+     "departure_frame": 2526
+    },
+    "t_arr_shift_s": -281.5,
+    "t_dep_shift_s": -2174.2
+   },
+   {
     "video": "MwCSLbQ7QvXQ.mp4",
     "batch": {
      "arrival_frame": 6753
@@ -809,6 +849,19 @@
     "live": {
      "arrival_frame": 5822,
      "departure_frame": 31763
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "TtKESVA7IEIU.mp4",
+    "batch": {
+     "arrival_frame": 3230,
+     "departure_frame": 17542
+    },
+    "live": {
+     "arrival_frame": 3230,
+     "departure_frame": 17542
     },
     "t_arr_shift_s": 0.0,
     "t_dep_shift_s": 0.0
@@ -902,6 +955,19 @@
      "departure_frame": 44403
     },
     "t_arr_shift_s": -222.5,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "zHxIAF2vUGxJ.mp4",
+    "batch": {
+     "arrival_frame": 2884,
+     "departure_frame": 11727
+    },
+    "live": {
+     "arrival_frame": 2884,
+     "departure_frame": 11727
+    },
+    "t_arr_shift_s": 0.0,
     "t_dep_shift_s": 0.0
    }
   ]
