@@ -575,13 +575,13 @@ def main() -> int:
                 f"events where the causal rows carry the arriving aircraft as batch does: {clean.get('verdict_identical')} of "
                 f"{clean.get('module_event_pairs')} verdicts identical. On the events where they hand it over late (about one in six): "
                 f"{late.get('verdict_identical')} of {late.get('module_event_pairs')}, mostly turned into Not observed; over the test set "
-                f"that is **{tv['accuracy_live']} % against {tv['accuracy_batch']} %**. The cause is one rule in the shared causal rows, "
-                "not the modules (section 7)")
+                f"that is **{tv['accuracy_live']} % against {tv['accuracy_batch']} %**. The cause is how the shared causal rows decide "
+                "which aircraft belongs to the turnaround, not the modules (section 7)")
         better = accuracy.get("largest_alive")
         if better:
             bt = better["task_verdicts"]
-            line += (f"; with the rule `largest_alive`, live on the same events: {bt['identical']} of {bt['paired']} task verdicts "
-                     f"identical, **{bt['accuracy_live']} %**")
+            line += (f"; a better box rule does not fix it: `largest_alive`, live on the same events, gives {bt['identical']} of "
+                     f"{bt['paired']} task verdicts identical, {bt['accuracy_live']} %")
         short.append(line + ".")
     short.append("- **Against post-processing**: no more work per frame; real time pays for holding the GPU for the length of the event "
                  "and needs a faster card than the production T4 (section 5).")
