@@ -12,6 +12,7 @@
     "delay_frames": 217,
     "withheld_frames": 203,
     "frames_with_another_aircraft_handed": 203,
+    "longest_run_of_another_aircraft_before_the_main_one": 84,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 37.9
@@ -21,6 +22,7 @@
     "delay_frames": 53,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 203,
+    "longest_run_of_another_aircraft_before_the_main_one": 84,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 58.4
@@ -30,9 +32,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 180,
+    "longest_run_of_another_aircraft_before_the_main_one": 84,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 65.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5174,
+    "delay_frames": 274,
+    "withheld_frames": 260,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 30.8
    }
   },
   "14W4oeRHdbsq.mp4": {
@@ -47,6 +60,7 @@
     "delay_frames": 42,
     "withheld_frames": 35,
     "frames_with_another_aircraft_handed": 35,
+    "longest_run_of_another_aircraft_before_the_main_one": 9,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 35.5
@@ -56,6 +70,7 @@
     "delay_frames": 37,
     "withheld_frames": 30,
     "frames_with_another_aircraft_handed": 35,
+    "longest_run_of_another_aircraft_before_the_main_one": 9,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 36.1
@@ -65,6 +80,17 @@
     "delay_frames": 37,
     "withheld_frames": 30,
     "frames_with_another_aircraft_handed": 35,
+    "longest_run_of_another_aircraft_before_the_main_one": 9,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 36.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2494,
+    "delay_frames": 37,
+    "withheld_frames": 30,
+    "frames_with_another_aircraft_handed": 35,
+    "longest_run_of_another_aircraft_before_the_main_one": 9,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 36.1
@@ -82,6 +108,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 169,
     "arrival_window_same_box": 169,
     "handed_over_before_arrival_s": 17.0
@@ -91,6 +118,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 169,
     "arrival_window_same_box": 169,
     "handed_over_before_arrival_s": 17.0
@@ -100,9 +128,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 169,
     "arrival_window_same_box": 169,
     "handed_over_before_arrival_s": 17.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4736,
+    "delay_frames": 121,
+    "withheld_frames": 121,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 169,
+    "arrival_window_same_box": 48,
+    "handed_over_before_arrival_s": 1.9
    }
   },
   "1b3ayMVYk6RO.mp4": {
@@ -117,6 +156,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 151,
     "arrival_window_same_box": 151,
     "handed_over_before_arrival_s": 14.9
@@ -126,6 +166,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 151,
     "arrival_window_same_box": 151,
     "handed_over_before_arrival_s": 14.9
@@ -135,6 +176,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 151,
+    "arrival_window_same_box": 151,
+    "handed_over_before_arrival_s": 14.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5960,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 151,
     "arrival_window_same_box": 151,
     "handed_over_before_arrival_s": 14.9
@@ -152,6 +204,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 55.5
@@ -161,6 +214,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 55.5
@@ -170,9 +224,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 55.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4595,
+    "delay_frames": 246,
+    "withheld_frames": 245,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 231,
+    "handed_over_before_arrival_s": 24.8
    }
   },
   "2aRbtVqwxFBI.mp4": {
@@ -187,6 +252,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
     "handed_over_before_arrival_s": 25.5
@@ -196,6 +262,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
     "handed_over_before_arrival_s": 25.5
@@ -205,9 +272,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
     "handed_over_before_arrival_s": 25.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5561,
+    "delay_frames": 97,
+    "withheld_frames": 80,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 220,
+    "arrival_window_same_box": 140,
+    "handed_over_before_arrival_s": 13.4
    }
   },
   "3LcvAdAKtgUr.mp4": {
@@ -222,6 +300,7 @@
     "delay_frames": 155,
     "withheld_frames": 155,
     "frames_with_another_aircraft_handed": 155,
+    "longest_run_of_another_aircraft_before_the_main_one": 64,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 106,
     "handed_over_before_arrival_s": 9.1
@@ -231,6 +310,7 @@
     "delay_frames": 39,
     "withheld_frames": 79,
     "frames_with_another_aircraft_handed": 18616,
+    "longest_run_of_another_aircraft_before_the_main_one": 64,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 222,
     "handed_over_before_arrival_s": 23.6
@@ -240,6 +320,17 @@
     "delay_frames": 39,
     "withheld_frames": 178,
     "frames_with_another_aircraft_handed": 18763,
+    "longest_run_of_another_aircraft_before_the_main_one": 64,
+    "arrival_window_frames_in_batch": 261,
+    "arrival_window_same_box": 222,
+    "handed_over_before_arrival_s": 23.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 287,
+    "delay_frames": 39,
+    "withheld_frames": 178,
+    "frames_with_another_aircraft_handed": 18763,
+    "longest_run_of_another_aircraft_before_the_main_one": 64,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 222,
     "handed_over_before_arrival_s": 23.6
@@ -257,6 +348,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.4
@@ -266,6 +358,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.4
@@ -275,9 +368,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2935,
+    "delay_frames": 201,
+    "withheld_frames": 201,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 235,
+    "handed_over_before_arrival_s": 25.2
    }
   },
   "4T0Khlzhhoj8.mp4": {
@@ -292,6 +396,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 44.2
@@ -301,6 +406,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 44.2
@@ -310,9 +416,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 44.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2671,
+    "delay_frames": 152,
+    "withheld_frames": 152,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 235,
+    "handed_over_before_arrival_s": 25.2
    }
   },
   "4YzvEkjm1or6.mp4": {
@@ -327,6 +444,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 159,
     "arrival_window_same_box": 159,
     "handed_over_before_arrival_s": 16.2
@@ -336,6 +454,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 159,
     "arrival_window_same_box": 159,
     "handed_over_before_arrival_s": 16.2
@@ -345,6 +464,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 159,
+    "arrival_window_same_box": 159,
+    "handed_over_before_arrival_s": 16.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3058,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 159,
     "arrival_window_same_box": 159,
     "handed_over_before_arrival_s": 16.2
@@ -362,6 +492,7 @@
     "delay_frames": 2947,
     "withheld_frames": 2569,
     "frames_with_another_aircraft_handed": 2569,
+    "longest_run_of_another_aircraft_before_the_main_one": 1952,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -288.2
@@ -371,6 +502,7 @@
     "delay_frames": 633,
     "withheld_frames": 255,
     "frames_with_another_aircraft_handed": 2569,
+    "longest_run_of_another_aircraft_before_the_main_one": 1952,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 41,
     "handed_over_before_arrival_s": 1.0
@@ -380,9 +512,20 @@
     "delay_frames": 543,
     "withheld_frames": 198,
     "frames_with_another_aircraft_handed": 2512,
+    "longest_run_of_another_aircraft_before_the_main_one": 1952,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 131,
     "handed_over_before_arrival_s": 12.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2370,
+    "delay_frames": 409,
+    "withheld_frames": 68,
+    "frames_with_another_aircraft_handed": 17,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 261,
+    "arrival_window_same_box": 261,
+    "handed_over_before_arrival_s": 29.0
    }
   },
   "5MrryeoBuGMM.mp4": {
@@ -397,6 +540,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 71.6
@@ -406,6 +550,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 71.6
@@ -415,9 +560,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 71.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5303,
+    "delay_frames": 336,
+    "withheld_frames": 50,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 270,
+    "handed_over_before_arrival_s": 29.6
    }
   },
   "63xitGPpUtLy.mp4": {
@@ -432,6 +588,7 @@
     "delay_frames": 5629,
     "withheld_frames": 5618,
     "frames_with_another_aircraft_handed": 5618,
+    "longest_run_of_another_aircraft_before_the_main_one": 1396,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -652.6
@@ -441,6 +598,7 @@
     "delay_frames": 366,
     "withheld_frames": 366,
     "frames_with_another_aircraft_handed": 6252,
+    "longest_run_of_another_aircraft_before_the_main_one": 1699,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 75,
     "handed_over_before_arrival_s": 5.2
@@ -450,9 +608,20 @@
     "delay_frames": 43,
     "withheld_frames": 59,
     "frames_with_another_aircraft_handed": 5769,
+    "longest_run_of_another_aircraft_before_the_main_one": 1552,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 45.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 6155,
+    "delay_frames": 180,
+    "withheld_frames": 196,
+    "frames_with_another_aircraft_handed": 6066,
+    "longest_run_of_another_aircraft_before_the_main_one": 1552,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 261,
+    "handed_over_before_arrival_s": 28.5
    }
   },
   "75cFSaZYmRPe.mp4": {
@@ -467,6 +636,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
     "handed_over_before_arrival_s": 36.5
@@ -476,6 +646,7 @@
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 214,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
     "handed_over_before_arrival_s": 36.5
@@ -485,9 +656,20 @@
     "delay_frames": 0,
     "withheld_frames": 46,
     "frames_with_another_aircraft_handed": 237,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
     "handed_over_before_arrival_s": 36.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 6485,
+    "delay_frames": 163,
+    "withheld_frames": 162,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 272,
+    "arrival_window_same_box": 162,
+    "handed_over_before_arrival_s": 16.1
    }
   },
   "7PytHarRNqmT.mp4": {
@@ -502,6 +684,7 @@
     "delay_frames": 302,
     "withheld_frames": 302,
     "frames_with_another_aircraft_handed": 302,
+    "longest_run_of_another_aircraft_before_the_main_one": 152,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 60,
     "handed_over_before_arrival_s": 3.4
@@ -511,6 +694,7 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 302,
+    "longest_run_of_another_aircraft_before_the_main_one": 152,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 36.2
@@ -520,9 +704,20 @@
     "delay_frames": 5,
     "withheld_frames": 5,
     "frames_with_another_aircraft_handed": 284,
+    "longest_run_of_another_aircraft_before_the_main_one": 152,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 40.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5888,
+    "delay_frames": 165,
+    "withheld_frames": 165,
+    "frames_with_another_aircraft_handed": 302,
+    "longest_run_of_another_aircraft_before_the_main_one": 152,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 197,
+    "handed_over_before_arrival_s": 20.5
    }
   },
   "8pSh3SBek2Sw.mp4": {
@@ -537,6 +732,7 @@
     "delay_frames": 175,
     "withheld_frames": 175,
     "frames_with_another_aircraft_handed": 175,
+    "longest_run_of_another_aircraft_before_the_main_one": 141,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.0
@@ -546,6 +742,7 @@
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 175,
+    "longest_run_of_another_aircraft_before_the_main_one": 141,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 48.9
@@ -555,9 +752,20 @@
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 175,
+    "longest_run_of_another_aircraft_before_the_main_one": 141,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 48.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1834,
+    "delay_frames": 250,
+    "withheld_frames": 250,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 214,
+    "handed_over_before_arrival_s": 22.6
    }
   },
   "8tve3pVzl5D8.mp4": {
@@ -572,6 +780,7 @@
     "delay_frames": 1661,
     "withheld_frames": 1661,
     "frames_with_another_aircraft_handed": 1661,
+    "longest_run_of_another_aircraft_before_the_main_one": 57,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -174.9
@@ -581,6 +790,7 @@
     "delay_frames": 129,
     "withheld_frames": 129,
     "frames_with_another_aircraft_handed": 1661,
+    "longest_run_of_another_aircraft_before_the_main_one": 57,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 166,
     "handed_over_before_arrival_s": 16.6
@@ -590,9 +800,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 1548,
+    "longest_run_of_another_aircraft_before_the_main_one": 57,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4612,
+    "delay_frames": 99,
+    "withheld_frames": 99,
+    "frames_with_another_aircraft_handed": 1647,
+    "longest_run_of_another_aircraft_before_the_main_one": 57,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 196,
+    "handed_over_before_arrival_s": 20.4
    }
   },
   "B1BtQWGUShsv.mp4": {
@@ -607,6 +828,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 209,
     "arrival_window_same_box": 209,
     "handed_over_before_arrival_s": 29.9
@@ -616,6 +838,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 209,
     "arrival_window_same_box": 209,
     "handed_over_before_arrival_s": 29.9
@@ -625,9 +848,20 @@
     "delay_frames": 0,
     "withheld_frames": 11,
     "frames_with_another_aircraft_handed": 11,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 209,
     "arrival_window_same_box": 209,
     "handed_over_before_arrival_s": 29.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4746,
+    "delay_frames": 579,
+    "withheld_frames": 527,
+    "frames_with_another_aircraft_handed": 11,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 209,
+    "arrival_window_same_box": 0,
+    "handed_over_before_arrival_s": -42.5
    }
   },
   "Bdx1iGrXPEfe.mp4": {
@@ -642,6 +876,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.2
@@ -651,6 +886,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.2
@@ -660,9 +896,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5145,
+    "delay_frames": 149,
+    "withheld_frames": 149,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 134,
+    "handed_over_before_arrival_s": 12.6
    }
   },
   "DZEwHETNWRBa.mp4": {
@@ -677,6 +924,7 @@
     "delay_frames": 1669,
     "withheld_frames": 1669,
     "frames_with_another_aircraft_handed": 1669,
+    "longest_run_of_another_aircraft_before_the_main_one": 1088,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -169.9
@@ -686,6 +934,7 @@
     "delay_frames": 376,
     "withheld_frames": 376,
     "frames_with_another_aircraft_handed": 1669,
+    "longest_run_of_another_aircraft_before_the_main_one": 1088,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -8.2
@@ -695,9 +944,20 @@
     "delay_frames": 105,
     "withheld_frames": 105,
     "frames_with_another_aircraft_handed": 1414,
+    "longest_run_of_another_aircraft_before_the_main_one": 1088,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 238,
     "handed_over_before_arrival_s": 25.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3584,
+    "delay_frames": 185,
+    "withheld_frames": 185,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 158,
+    "handed_over_before_arrival_s": 15.6
    }
   },
   "F9jIwLEhmU7E.mp4": {
@@ -712,6 +972,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 61.9
@@ -721,6 +982,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 61.9
@@ -730,9 +992,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 61.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4400,
+    "delay_frames": 460,
+    "withheld_frames": 376,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 68,
+    "handed_over_before_arrival_s": 4.4
    }
   },
   "FgBbiiXLPnWv.mp4": {
@@ -747,6 +1020,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 171,
     "arrival_window_same_box": 171,
     "handed_over_before_arrival_s": 17.2
@@ -756,6 +1030,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 171,
     "arrival_window_same_box": 171,
     "handed_over_before_arrival_s": 17.2
@@ -765,9 +1040,20 @@
     "delay_frames": 0,
     "withheld_frames": 23,
     "frames_with_another_aircraft_handed": 27,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 171,
     "arrival_window_same_box": 171,
     "handed_over_before_arrival_s": 17.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3735,
+    "delay_frames": 2,
+    "withheld_frames": 25,
+    "frames_with_another_aircraft_handed": 27,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 171,
+    "arrival_window_same_box": 169,
+    "handed_over_before_arrival_s": 17.0
    }
   },
   "GOzwvkLY7fpKB3.mp4": {
@@ -782,6 +1068,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 54.9
@@ -791,6 +1078,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 54.9
@@ -800,9 +1088,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 54.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2932,
+    "delay_frames": 292,
+    "withheld_frames": 292,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 180,
+    "handed_over_before_arrival_s": 18.4
    }
   },
   "Gcr7jQ2gZlMQ.mp4": {
@@ -817,6 +1116,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 42.0
@@ -826,6 +1126,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 42.0
@@ -835,9 +1136,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 42.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 10153,
+    "delay_frames": 201,
+    "withheld_frames": 193,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 168,
+    "handed_over_before_arrival_s": 16.9
    }
   },
   "HwGR6Wvf7mE2K3.mp4": {
@@ -852,6 +1164,7 @@
     "delay_frames": 19,
     "withheld_frames": 19,
     "frames_with_another_aircraft_handed": 19,
+    "longest_run_of_another_aircraft_before_the_main_one": 5,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 64.6
@@ -861,6 +1174,7 @@
     "delay_frames": 22,
     "withheld_frames": 22,
     "frames_with_another_aircraft_handed": 19,
+    "longest_run_of_another_aircraft_before_the_main_one": 5,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 64.2
@@ -870,9 +1184,20 @@
     "delay_frames": 22,
     "withheld_frames": 22,
     "frames_with_another_aircraft_handed": 19,
+    "longest_run_of_another_aircraft_before_the_main_one": 5,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 64.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1779,
+    "delay_frames": 322,
+    "withheld_frames": 322,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 247,
+    "handed_over_before_arrival_s": 26.8
    }
   },
   "HxVi9t8zcy3U.mp4": {
@@ -887,6 +1212,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 73.5
@@ -896,6 +1222,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 73.5
@@ -905,9 +1232,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 73.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4974,
+    "delay_frames": 314,
+    "withheld_frames": 311,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 34.2
    }
   },
   "ICfrXaND7Jqf.mp4": {
@@ -922,6 +1260,7 @@
     "delay_frames": 337,
     "withheld_frames": 337,
     "frames_with_another_aircraft_handed": 337,
+    "longest_run_of_another_aircraft_before_the_main_one": 240,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -10.8
@@ -931,6 +1270,7 @@
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 337,
+    "longest_run_of_another_aircraft_before_the_main_one": 240,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 244,
     "handed_over_before_arrival_s": 26.4
@@ -940,9 +1280,20 @@
     "delay_frames": 0,
     "withheld_frames": 3,
     "frames_with_another_aircraft_handed": 316,
+    "longest_run_of_another_aircraft_before_the_main_one": 240,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3884,
+    "delay_frames": 115,
+    "withheld_frames": 118,
+    "frames_with_another_aircraft_handed": 3,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 169,
+    "handed_over_before_arrival_s": 17.0
    }
   },
   "JXd64x5TJ1k4.mp4": {
@@ -957,6 +1308,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
     "handed_over_before_arrival_s": 23.4
@@ -966,6 +1318,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
     "handed_over_before_arrival_s": 23.4
@@ -975,9 +1328,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 220,
     "arrival_window_same_box": 220,
     "handed_over_before_arrival_s": 23.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4121,
+    "delay_frames": 107,
+    "withheld_frames": 107,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 220,
+    "arrival_window_same_box": 113,
+    "handed_over_before_arrival_s": 10.0
    }
   },
   "KB04bkqBI7ms.mp4": {
@@ -992,6 +1356,7 @@
     "delay_frames": 2149,
     "withheld_frames": 2149,
     "frames_with_another_aircraft_handed": 2149,
+    "longest_run_of_another_aircraft_before_the_main_one": 722,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -213.0
@@ -1001,6 +1366,7 @@
     "delay_frames": 325,
     "withheld_frames": 325,
     "frames_with_another_aircraft_handed": 4028,
+    "longest_run_of_another_aircraft_before_the_main_one": 722,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 153,
     "handed_over_before_arrival_s": 15.0
@@ -1010,9 +1376,20 @@
     "delay_frames": 182,
     "withheld_frames": 505,
     "frames_with_another_aircraft_handed": 4176,
+    "longest_run_of_another_aircraft_before_the_main_one": 722,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2461,
+    "delay_frames": 212,
+    "withheld_frames": 450,
+    "frames_with_another_aircraft_handed": 2541,
+    "longest_run_of_another_aircraft_before_the_main_one": 722,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 266,
+    "handed_over_before_arrival_s": 29.1
    }
   },
   "KOlRIvK7wCq1.mp4": {
@@ -1027,6 +1404,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 209.4
@@ -1036,6 +1414,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 209.4
@@ -1045,9 +1424,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 209.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 712,
+    "delay_frames": 491,
+    "withheld_frames": 66,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 148.0
    }
   },
   "LFaccZVJAl6G.mp4": {
@@ -1062,6 +1452,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 43.9
@@ -1071,6 +1462,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 43.9
@@ -1080,9 +1472,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 43.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 171,
+    "delay_frames": 152,
+    "withheld_frames": 152,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 232,
+    "handed_over_before_arrival_s": 24.9
    }
   },
   "LUgKa9ppmIFi.mp4": {
@@ -1097,6 +1500,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 611.8
@@ -1106,6 +1510,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 611.8
@@ -1115,6 +1520,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 611.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 759,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 611.8
@@ -1132,6 +1548,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 44.2
@@ -1141,6 +1558,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 44.2
@@ -1150,9 +1568,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 44.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5042,
+    "delay_frames": 208,
+    "withheld_frames": 208,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 179,
+    "handed_over_before_arrival_s": 18.2
    }
   },
   "MwCSLbQ7QvXQ.mp4": {
@@ -1167,6 +1596,7 @@
     "delay_frames": 223,
     "withheld_frames": 223,
     "frames_with_another_aircraft_handed": 223,
+    "longest_run_of_another_aircraft_before_the_main_one": 191,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 191,
     "handed_over_before_arrival_s": 19.8
@@ -1176,6 +1606,7 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 223,
+    "longest_run_of_another_aircraft_before_the_main_one": 191,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 42.8
@@ -1185,9 +1616,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 200,
+    "longest_run_of_another_aircraft_before_the_main_one": 191,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 47.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 6611,
+    "delay_frames": 239,
+    "withheld_frames": 239,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 175,
+    "handed_over_before_arrival_s": 17.8
    }
   },
   "N3JGftb6q7Bs.mp4": {
@@ -1202,6 +1644,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.6
@@ -1211,6 +1654,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.6
@@ -1220,9 +1664,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4135,
+    "delay_frames": 232,
+    "withheld_frames": 232,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 62,
+    "handed_over_before_arrival_s": 3.6
    }
   },
   "N5xLStcC6YTB.mp4": {
@@ -1237,6 +1692,7 @@
     "delay_frames": 99,
     "withheld_frames": 5870,
     "frames_with_another_aircraft_handed": 5871,
+    "longest_run_of_another_aircraft_before_the_main_one": 27,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 189,
     "handed_over_before_arrival_s": 20.0
@@ -1246,6 +1702,7 @@
     "delay_frames": 40,
     "withheld_frames": 1112,
     "frames_with_another_aircraft_handed": 10753,
+    "longest_run_of_another_aircraft_before_the_main_one": 27,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 248,
     "handed_over_before_arrival_s": 27.4
@@ -1255,9 +1712,20 @@
     "delay_frames": 27,
     "withheld_frames": 1124,
     "frames_with_another_aircraft_handed": 10650,
+    "longest_run_of_another_aircraft_before_the_main_one": 27,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 261,
     "handed_over_before_arrival_s": 29.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4556,
+    "delay_frames": 0,
+    "withheld_frames": 1097,
+    "frames_with_another_aircraft_handed": 10551,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 269,
+    "arrival_window_same_box": 269,
+    "handed_over_before_arrival_s": 32.4
    }
   },
   "NFmhbQt1rpDx.mp4": {
@@ -1272,6 +1740,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.8
@@ -1281,6 +1750,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.8
@@ -1290,9 +1760,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 285,
+    "delay_frames": 183,
+    "withheld_frames": 176,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 256,
+    "handed_over_before_arrival_s": 27.9
    }
   },
   "NS04gpkCLy6T.mp4": {
@@ -1307,6 +1788,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 269,
     "handed_over_before_arrival_s": 33.5
@@ -1316,6 +1798,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 269,
     "handed_over_before_arrival_s": 33.5
@@ -1325,6 +1808,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 269,
+    "arrival_window_same_box": 269,
+    "handed_over_before_arrival_s": 33.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3289,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 269,
     "arrival_window_same_box": 269,
     "handed_over_before_arrival_s": 33.5
@@ -1342,6 +1836,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 52.1
@@ -1351,6 +1846,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 7856,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 52.1
@@ -1360,9 +1856,20 @@
     "delay_frames": 0,
     "withheld_frames": 11,
     "frames_with_another_aircraft_handed": 7883,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 52.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2350,
+    "delay_frames": 107,
+    "withheld_frames": 118,
+    "frames_with_another_aircraft_handed": 7035,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 38.8
    }
   },
   "NVpcFIWuoR1z.mp4": {
@@ -1377,6 +1884,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 270,
     "arrival_window_same_box": 270,
     "handed_over_before_arrival_s": 48.1
@@ -1386,6 +1894,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 270,
     "arrival_window_same_box": 270,
     "handed_over_before_arrival_s": 48.1
@@ -1395,9 +1904,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 270,
     "arrival_window_same_box": 270,
     "handed_over_before_arrival_s": 48.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1200,
+    "delay_frames": 167,
+    "withheld_frames": 167,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 270,
+    "arrival_window_same_box": 248,
+    "handed_over_before_arrival_s": 27.2
    }
   },
   "OPsMEZUPjBtv.mp4": {
@@ -1412,6 +1932,7 @@
     "delay_frames": 369,
     "withheld_frames": 369,
     "frames_with_another_aircraft_handed": 369,
+    "longest_run_of_another_aircraft_before_the_main_one": 329,
     "arrival_window_frames_in_batch": 258,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -18.0
@@ -1421,6 +1942,7 @@
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 369,
+    "longest_run_of_another_aircraft_before_the_main_one": 329,
     "arrival_window_frames_in_batch": 258,
     "arrival_window_same_box": 218,
     "handed_over_before_arrival_s": 23.1
@@ -1430,9 +1952,20 @@
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 369,
+    "longest_run_of_another_aircraft_before_the_main_one": 329,
     "arrival_window_frames_in_batch": 258,
     "arrival_window_same_box": 218,
     "handed_over_before_arrival_s": 23.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5716,
+    "delay_frames": 119,
+    "withheld_frames": 119,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 258,
+    "arrival_window_same_box": 139,
+    "handed_over_before_arrival_s": 13.2
    }
   },
   "OpCmRt5Y0rR9.mp4": {
@@ -1447,6 +1980,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
     "handed_over_before_arrival_s": 24.2
@@ -1456,6 +1990,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
     "handed_over_before_arrival_s": 24.2
@@ -1465,6 +2000,17 @@
     "delay_frames": 0,
     "withheld_frames": 6,
     "frames_with_another_aircraft_handed": 6,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 227,
+    "arrival_window_same_box": 227,
+    "handed_over_before_arrival_s": 24.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3370,
+    "delay_frames": 0,
+    "withheld_frames": 6,
+    "frames_with_another_aircraft_handed": 6,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
     "handed_over_before_arrival_s": 24.2
@@ -1482,6 +2028,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 38.1
@@ -1491,6 +2038,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 38.1
@@ -1500,9 +2048,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 38.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1936,
+    "delay_frames": 128,
+    "withheld_frames": 128,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 210,
+    "handed_over_before_arrival_s": 22.1
    }
   },
   "QSAQTpVDQIQr.mp4": {
@@ -1517,6 +2076,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
     "handed_over_before_arrival_s": 30.0
@@ -1526,6 +2086,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 63,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
     "handed_over_before_arrival_s": 30.0
@@ -1535,9 +2096,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 63,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 272,
     "arrival_window_same_box": 272,
     "handed_over_before_arrival_s": 30.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1307,
+    "delay_frames": 148,
+    "withheld_frames": 147,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 272,
+    "arrival_window_same_box": 125,
+    "handed_over_before_arrival_s": 11.5
    }
   },
   "RVCqAvSzV0vX.mp4": {
@@ -1552,6 +2124,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 30.1
@@ -1561,6 +2134,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 30.1
@@ -1570,9 +2144,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 30.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3147,
+    "delay_frames": 1,
+    "withheld_frames": 1,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 30.0
    }
   },
   "Rq1ewlXn9KG5.mp4": {
@@ -1587,6 +2172,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 33.9
@@ -1596,6 +2182,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 6413,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 33.9
@@ -1605,9 +2192,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 6413,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 33.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4571,
+    "delay_frames": 172,
+    "withheld_frames": 172,
+    "frames_with_another_aircraft_handed": 6413,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 132,
+    "handed_over_before_arrival_s": 12.4
    }
   },
   "SlCPDwI3xuaG.mp4": {
@@ -1622,6 +2220,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 63.0
@@ -1631,6 +2230,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 63.0
@@ -1640,9 +2240,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 63.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5519,
+    "delay_frames": 283,
+    "withheld_frames": 283,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 254,
+    "handed_over_before_arrival_s": 27.6
    }
   },
   "T0Pu2LMe9rqk.mp4": {
@@ -1657,6 +2268,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 260.1
@@ -1666,6 +2278,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 260.1
@@ -1675,9 +2288,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 260.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3927,
+    "delay_frames": 1966,
+    "withheld_frames": 953,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 148,
+    "handed_over_before_arrival_s": 14.4
    }
   },
   "Tjli6o2rIV7N.mp4": {
@@ -1692,6 +2316,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 87.9
@@ -1701,6 +2326,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 87.9
@@ -1710,9 +2336,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 87.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3447,
+    "delay_frames": 381,
+    "withheld_frames": 381,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 40.2
    }
   },
   "TtKESVA7IEIU.mp4": {
@@ -1727,6 +2364,7 @@
     "delay_frames": 1123,
     "withheld_frames": 1123,
     "frames_with_another_aircraft_handed": 1123,
+    "longest_run_of_another_aircraft_before_the_main_one": 46,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -108.4
@@ -1736,6 +2374,7 @@
     "delay_frames": 50,
     "withheld_frames": 50,
     "frames_with_another_aircraft_handed": 1206,
+    "longest_run_of_another_aircraft_before_the_main_one": 46,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 239,
     "handed_over_before_arrival_s": 25.8
@@ -1745,9 +2384,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 1172,
+    "longest_run_of_another_aircraft_before_the_main_one": 46,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3053,
+    "delay_frames": 79,
+    "withheld_frames": 79,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 210,
+    "handed_over_before_arrival_s": 22.1
    }
   },
   "VIeEFGCUxgUY.mp4": {
@@ -1762,6 +2412,7 @@
     "delay_frames": 698,
     "withheld_frames": 635,
     "frames_with_another_aircraft_handed": 635,
+    "longest_run_of_another_aircraft_before_the_main_one": 485,
     "arrival_window_frames_in_batch": 137,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -66.4
@@ -1771,6 +2422,7 @@
     "delay_frames": 166,
     "withheld_frames": 103,
     "frames_with_another_aircraft_handed": 1105,
+    "longest_run_of_another_aircraft_before_the_main_one": 485,
     "arrival_window_frames_in_batch": 137,
     "arrival_window_same_box": 34,
     "handed_over_before_arrival_s": 0.1
@@ -1780,6 +2432,17 @@
     "delay_frames": 84,
     "withheld_frames": 45,
     "frames_with_another_aircraft_handed": 1070,
+    "longest_run_of_another_aircraft_before_the_main_one": 485,
+    "arrival_window_frames_in_batch": 137,
+    "arrival_window_same_box": 116,
+    "handed_over_before_arrival_s": 10.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2942,
+    "delay_frames": 84,
+    "withheld_frames": 21,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 137,
     "arrival_window_same_box": 116,
     "handed_over_before_arrival_s": 10.4
@@ -1797,6 +2460,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 260,
     "arrival_window_same_box": 260,
     "handed_over_before_arrival_s": 28.4
@@ -1806,6 +2470,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 260,
     "arrival_window_same_box": 260,
     "handed_over_before_arrival_s": 28.4
@@ -1815,9 +2480,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 260,
     "arrival_window_same_box": 260,
     "handed_over_before_arrival_s": 28.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2895,
+    "delay_frames": 119,
+    "withheld_frames": 119,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 260,
+    "arrival_window_same_box": 141,
+    "handed_over_before_arrival_s": 13.5
    }
   },
   "WpjOp8dgqOKp.mp4": {
@@ -1832,6 +2508,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 63.5
@@ -1841,6 +2518,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 63.5
@@ -1850,9 +2528,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 63.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4884,
+    "delay_frames": 246,
+    "withheld_frames": 246,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 32.8
    }
   },
   "XYAzWPrI4M5m.mp4": {
@@ -1867,6 +2556,7 @@
     "delay_frames": 49,
     "withheld_frames": 49,
     "frames_with_another_aircraft_handed": 49,
+    "longest_run_of_another_aircraft_before_the_main_one": 20,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 255,
     "handed_over_before_arrival_s": 27.8
@@ -1876,6 +2566,7 @@
     "delay_frames": 34,
     "withheld_frames": 34,
     "frames_with_another_aircraft_handed": 49,
+    "longest_run_of_another_aircraft_before_the_main_one": 20,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 270,
     "handed_over_before_arrival_s": 29.6
@@ -1885,9 +2576,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 31,
+    "longest_run_of_another_aircraft_before_the_main_one": 20,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 33.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2202,
+    "delay_frames": 102,
+    "withheld_frames": 102,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 202,
+    "handed_over_before_arrival_s": 21.1
    }
   },
   "XvGAzVcHMxHY.mp4": {
@@ -1902,6 +2604,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 72.1
@@ -1911,6 +2614,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 72.1
@@ -1920,9 +2624,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 72.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1109,
+    "delay_frames": 350,
+    "withheld_frames": 350,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 260,
+    "handed_over_before_arrival_s": 28.4
    }
   },
   "Y2806rd7ODS9.mp4": {
@@ -1937,6 +2652,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 255,
     "arrival_window_same_box": 255,
     "handed_over_before_arrival_s": 27.8
@@ -1946,6 +2662,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 255,
     "arrival_window_same_box": 255,
     "handed_over_before_arrival_s": 27.8
@@ -1955,9 +2672,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 255,
     "arrival_window_same_box": 255,
     "handed_over_before_arrival_s": 27.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5089,
+    "delay_frames": 91,
+    "withheld_frames": 91,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 255,
+    "arrival_window_same_box": 164,
+    "handed_over_before_arrival_s": 16.4
    }
   },
   "b8ijKDWsLlQi8W.mp4": {
@@ -1972,6 +2700,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 184.8
@@ -1981,6 +2710,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 184.8
@@ -1990,9 +2720,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 184.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4852,
+    "delay_frames": 1224,
+    "withheld_frames": 381,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 31.8
    }
   },
   "bH2llDkvWIg9.mp4": {
@@ -2007,6 +2748,7 @@
     "delay_frames": 7252,
     "withheld_frames": 7243,
     "frames_with_another_aircraft_handed": 7243,
+    "longest_run_of_another_aircraft_before_the_main_one": 3049,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -906.4
@@ -2016,6 +2758,7 @@
     "delay_frames": 40,
     "withheld_frames": 40,
     "frames_with_another_aircraft_handed": 11146,
+    "longest_run_of_another_aircraft_before_the_main_one": 4937,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -4.9
@@ -2025,6 +2768,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 11138,
+    "longest_run_of_another_aircraft_before_the_main_one": 4937,
+    "arrival_window_frames_in_batch": 34,
+    "arrival_window_same_box": 34,
+    "handed_over_before_arrival_s": 0.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 15068,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 11134,
+    "longest_run_of_another_aircraft_before_the_main_one": 4937,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 34,
     "handed_over_before_arrival_s": 0.1
@@ -2042,6 +2796,7 @@
     "delay_frames": 3229,
     "withheld_frames": 2666,
     "frames_with_another_aircraft_handed": 2666,
+    "longest_run_of_another_aircraft_before_the_main_one": 499,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -284.6
@@ -2051,6 +2806,7 @@
     "delay_frames": 40,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 2675,
+    "longest_run_of_another_aircraft_before_the_main_one": 499,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 114.0
@@ -2060,9 +2816,20 @@
     "delay_frames": 40,
     "withheld_frames": 157,
     "frames_with_another_aircraft_handed": 2793,
+    "longest_run_of_another_aircraft_before_the_main_one": 499,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 114.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3684,
+    "delay_frames": 777,
+    "withheld_frames": 216,
+    "frames_with_another_aircraft_handed": 194,
+    "longest_run_of_another_aircraft_before_the_main_one": 145,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 208,
+    "handed_over_before_arrival_s": 21.9
    }
   },
   "bqt0tK3Zurbb.mp4": {
@@ -2077,6 +2844,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 151.6
@@ -2086,6 +2854,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 151.6
@@ -2095,9 +2864,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 151.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3213,
+    "delay_frames": 492,
+    "withheld_frames": 491,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 90.1
    }
   },
   "bs7uphCSzrsn.mp4": {
@@ -2112,6 +2892,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 46.8
@@ -2121,6 +2902,7 @@
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 34,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 46.8
@@ -2130,9 +2912,20 @@
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 34,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 46.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2113,
+    "delay_frames": 189,
+    "withheld_frames": 228,
+    "frames_with_another_aircraft_handed": 34,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 218,
+    "handed_over_before_arrival_s": 23.1
    }
   },
   "cW6CAtSHGsQh.mp4": {
@@ -2147,6 +2940,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 34,
     "handed_over_before_arrival_s": 0.1
@@ -2156,6 +2950,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 34,
     "handed_over_before_arrival_s": 0.1
@@ -2165,6 +2960,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 34,
+    "arrival_window_same_box": 34,
+    "handed_over_before_arrival_s": 0.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 9,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 34,
     "arrival_window_same_box": 34,
     "handed_over_before_arrival_s": 0.1
@@ -2182,6 +2988,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.4
@@ -2191,6 +2998,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.4
@@ -2200,9 +3008,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 31.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2560,
+    "delay_frames": 246,
+    "withheld_frames": 246,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 38,
+    "handed_over_before_arrival_s": 0.6
    }
   },
   "e0w9l4LmMDI7.mp4": {
@@ -2217,6 +3036,7 @@
     "delay_frames": 103,
     "withheld_frames": 103,
     "frames_with_another_aircraft_handed": 103,
+    "longest_run_of_another_aircraft_before_the_main_one": 68,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 211,
     "handed_over_before_arrival_s": 22.2
@@ -2226,6 +3046,7 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 103,
+    "longest_run_of_another_aircraft_before_the_main_one": 68,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 30.2
@@ -2235,9 +3056,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 80,
+    "longest_run_of_another_aircraft_before_the_main_one": 68,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 35.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3346,
+    "delay_frames": 137,
+    "withheld_frames": 137,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 177,
+    "handed_over_before_arrival_s": 18.0
    }
   },
   "eO71136WjSmZ.mp4": {
@@ -2252,6 +3084,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 53.2
@@ -2261,6 +3094,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 53.2
@@ -2270,9 +3104,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 53.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3214,
+    "delay_frames": 270,
+    "withheld_frames": 270,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 189,
+    "handed_over_before_arrival_s": 19.5
    }
   },
   "fAkpu3dj2NIj.mp4": {
@@ -2287,6 +3132,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 173,
     "arrival_window_same_box": 173,
     "handed_over_before_arrival_s": 27.0
@@ -2296,6 +3142,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 173,
     "arrival_window_same_box": 173,
     "handed_over_before_arrival_s": 27.0
@@ -2305,9 +3152,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 173,
     "arrival_window_same_box": 173,
     "handed_over_before_arrival_s": 27.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5092,
+    "delay_frames": 1153,
+    "withheld_frames": 1077,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 173,
+    "arrival_window_same_box": 0,
+    "handed_over_before_arrival_s": -117.1
    }
   },
   "fp77ySs5od54.mp4": {
@@ -2322,6 +3180,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
     "handed_over_before_arrival_s": 24.2
@@ -2331,6 +3190,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 9,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
     "handed_over_before_arrival_s": 24.2
@@ -2340,9 +3200,20 @@
     "delay_frames": 0,
     "withheld_frames": 23,
     "frames_with_another_aircraft_handed": 33,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 227,
     "arrival_window_same_box": 227,
     "handed_over_before_arrival_s": 24.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2961,
+    "delay_frames": 139,
+    "withheld_frames": 162,
+    "frames_with_another_aircraft_handed": 33,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 227,
+    "arrival_window_same_box": 88,
+    "handed_over_before_arrival_s": 6.9
    }
   },
   "gIMaUgPfoRj3.mp4": {
@@ -2357,6 +3228,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 37.8
@@ -2366,6 +3238,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 37.8
@@ -2375,9 +3248,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 37.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1814,
+    "delay_frames": 189,
+    "withheld_frames": 189,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 146,
+    "handed_over_before_arrival_s": 14.1
    }
   },
   "gLPdq1dI9A6R.mp4": {
@@ -2392,6 +3276,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 74.5
@@ -2401,6 +3286,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 1191,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 74.5
@@ -2410,9 +3296,20 @@
     "delay_frames": 0,
     "withheld_frames": 89,
     "frames_with_another_aircraft_handed": 1296,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 74.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4136,
+    "delay_frames": 287,
+    "withheld_frames": 376,
+    "frames_with_another_aircraft_handed": 1296,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 38.6
    }
   },
   "hBrH3YC2Oeoa.mp4": {
@@ -2427,6 +3324,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 35.0
@@ -2436,6 +3334,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 35.0
@@ -2445,9 +3344,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 35.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 6791,
+    "delay_frames": 201,
+    "withheld_frames": 201,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 112,
+    "handed_over_before_arrival_s": 9.9
    }
   },
   "hNbhZ6XeGkk2.mp4": {
@@ -2462,6 +3372,7 @@
     "delay_frames": 1069,
     "withheld_frames": 1048,
     "frames_with_another_aircraft_handed": 1048,
+    "longest_run_of_another_aircraft_before_the_main_one": 857,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 72.6
@@ -2471,6 +3382,7 @@
     "delay_frames": 42,
     "withheld_frames": 42,
     "frames_with_another_aircraft_handed": 1159,
+    "longest_run_of_another_aircraft_before_the_main_one": 857,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 201.0
@@ -2480,9 +3392,20 @@
     "delay_frames": 42,
     "withheld_frames": 189,
     "frames_with_another_aircraft_handed": 1205,
+    "longest_run_of_another_aircraft_before_the_main_one": 537,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 201.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3068,
+    "delay_frames": 1435,
+    "withheld_frames": 1393,
+    "frames_with_another_aircraft_handed": 461,
+    "longest_run_of_another_aircraft_before_the_main_one": 63,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 248,
+    "handed_over_before_arrival_s": 26.9
    }
   },
   "hmMUVO4MdtU8.mp4": {
@@ -2497,6 +3420,7 @@
     "delay_frames": 906,
     "withheld_frames": 905,
     "frames_with_another_aircraft_handed": 905,
+    "longest_run_of_another_aircraft_before_the_main_one": 23,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -80.8
@@ -2506,6 +3430,7 @@
     "delay_frames": 85,
     "withheld_frames": 84,
     "frames_with_another_aircraft_handed": 905,
+    "longest_run_of_another_aircraft_before_the_main_one": 23,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 208,
     "handed_over_before_arrival_s": 21.9
@@ -2515,9 +3440,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 837,
+    "longest_run_of_another_aircraft_before_the_main_one": 23,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4358,
+    "delay_frames": 104,
+    "withheld_frames": 103,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 189,
+    "handed_over_before_arrival_s": 19.5
    }
   },
   "iRRy2la05yGf.mp4": {
@@ -2532,6 +3468,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
     "handed_over_before_arrival_s": 13.6
@@ -2541,6 +3478,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
     "handed_over_before_arrival_s": 13.6
@@ -2550,9 +3488,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
     "handed_over_before_arrival_s": 13.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3890,
+    "delay_frames": 4,
+    "withheld_frames": 4,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 142,
+    "arrival_window_same_box": 138,
+    "handed_over_before_arrival_s": 13.1
    }
   },
   "jI6tTM7YdhNE.mp4": {
@@ -2567,6 +3516,7 @@
     "delay_frames": 1271,
     "withheld_frames": 1271,
     "frames_with_another_aircraft_handed": 1271,
+    "longest_run_of_another_aircraft_before_the_main_one": 1240,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": -111.9
@@ -2576,6 +3526,7 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 1280,
+    "longest_run_of_another_aircraft_before_the_main_one": 1240,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 42.1
@@ -2585,9 +3536,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 1257,
+    "longest_run_of_another_aircraft_before_the_main_one": 1240,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 47.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 1573,
+    "delay_frames": 173,
+    "withheld_frames": 173,
+    "frames_with_another_aircraft_handed": 9,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 236,
+    "handed_over_before_arrival_s": 25.4
    }
   },
   "jfHoKj4vyoaf.mp4": {
@@ -2602,6 +3564,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 261,
     "handed_over_before_arrival_s": 28.5
@@ -2611,6 +3574,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 261,
     "handed_over_before_arrival_s": 28.5
@@ -2620,9 +3584,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 261,
     "arrival_window_same_box": 261,
     "handed_over_before_arrival_s": 28.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3862,
+    "delay_frames": 9,
+    "withheld_frames": 9,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 261,
+    "arrival_window_same_box": 252,
+    "handed_over_before_arrival_s": 27.4
    }
   },
   "juIFQTpth9Ma.mp4": {
@@ -2637,6 +3612,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.0
@@ -2646,6 +3622,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 4,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.0
@@ -2655,9 +3632,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 4,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 32.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 5456,
+    "delay_frames": 136,
+    "withheld_frames": 136,
+    "frames_with_another_aircraft_handed": 4,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 153,
+    "handed_over_before_arrival_s": 15.0
    }
   },
   "kfN9tsDAmaxv.mp4": {
@@ -2672,6 +3660,7 @@
     "delay_frames": 0,
     "withheld_frames": 8809,
     "frames_with_another_aircraft_handed": 8810,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 55,
     "arrival_window_same_box": 55,
     "handed_over_before_arrival_s": 6.1
@@ -2681,6 +3670,7 @@
     "delay_frames": 0,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 14513,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 55,
     "arrival_window_same_box": 55,
     "handed_over_before_arrival_s": 6.1
@@ -2690,9 +3680,20 @@
     "delay_frames": 0,
     "withheld_frames": 47,
     "frames_with_another_aircraft_handed": 14585,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 55,
     "arrival_window_same_box": 55,
     "handed_over_before_arrival_s": 6.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 11869,
+    "delay_frames": 11331,
+    "withheld_frames": 110,
+    "frames_with_another_aircraft_handed": 14432,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 55,
+    "arrival_window_same_box": 0,
+    "handed_over_before_arrival_s": -1410.2
    }
   },
   "lSlmW7Fu0wAr.mp4": {
@@ -2707,6 +3708,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 212,
     "arrival_window_same_box": 212,
     "handed_over_before_arrival_s": 22.9
@@ -2716,6 +3718,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 212,
     "arrival_window_same_box": 212,
     "handed_over_before_arrival_s": 22.9
@@ -2725,6 +3728,17 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 212,
+    "arrival_window_same_box": 212,
+    "handed_over_before_arrival_s": 22.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4451,
+    "delay_frames": 0,
+    "withheld_frames": 0,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 212,
     "arrival_window_same_box": 212,
     "handed_over_before_arrival_s": 22.9
@@ -2742,6 +3756,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 686.9
@@ -2751,6 +3766,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 686.9
@@ -2760,9 +3776,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 686.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4985,
+    "delay_frames": 4790,
+    "withheld_frames": 970,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 273,
+    "handed_over_before_arrival_s": 88.1
    }
   },
   "mjTrUaxKE8Ua.mp4": {
@@ -2777,6 +3804,7 @@
     "delay_frames": 61,
     "withheld_frames": 61,
     "frames_with_another_aircraft_handed": 61,
+    "longest_run_of_another_aircraft_before_the_main_one": 29,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 59.4
@@ -2786,6 +3814,7 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 61,
+    "longest_run_of_another_aircraft_before_the_main_one": 29,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 62.1
@@ -2795,9 +3824,20 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 61,
+    "longest_run_of_another_aircraft_before_the_main_one": 29,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 62.1
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 10257,
+    "delay_frames": 332,
+    "withheld_frames": 330,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 237,
+    "handed_over_before_arrival_s": 25.5
    }
   },
   "n96M7fASlhGn.mp4": {
@@ -2812,6 +3852,7 @@
     "delay_frames": 0,
     "withheld_frames": 1833,
     "frames_with_another_aircraft_handed": 1834,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 46,
     "arrival_window_same_box": 0,
     "handed_over_before_arrival_s": 318.5
@@ -2821,6 +3862,7 @@
     "delay_frames": 0,
     "withheld_frames": 34,
     "frames_with_another_aircraft_handed": 1857,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 46,
     "arrival_window_same_box": 12,
     "handed_over_before_arrival_s": 318.5
@@ -2830,9 +3872,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 1839,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 46,
     "arrival_window_same_box": 46,
     "handed_over_before_arrival_s": 318.5
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3978,
+    "delay_frames": 2535,
+    "withheld_frames": 59,
+    "frames_with_another_aircraft_handed": 1825,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 46,
+    "arrival_window_same_box": 46,
+    "handed_over_before_arrival_s": 1.6
    }
   },
   "nlwsSAb9Fk4N.mp4": {
@@ -2847,6 +3900,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 271,
     "arrival_window_same_box": 271,
     "handed_over_before_arrival_s": 40.4
@@ -2856,6 +3910,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 271,
     "arrival_window_same_box": 271,
     "handed_over_before_arrival_s": 40.4
@@ -2865,9 +3920,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 271,
     "arrival_window_same_box": 271,
     "handed_over_before_arrival_s": 40.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3629,
+    "delay_frames": 235,
+    "withheld_frames": 233,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 271,
+    "arrival_window_same_box": 121,
+    "handed_over_before_arrival_s": 11.0
    }
   },
   "prD4z9DQim0S.mp4": {
@@ -2882,6 +3948,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
     "handed_over_before_arrival_s": 13.6
@@ -2891,6 +3958,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
     "handed_over_before_arrival_s": 13.6
@@ -2900,9 +3968,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 142,
     "arrival_window_same_box": 142,
     "handed_over_before_arrival_s": 13.6
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3191,
+    "delay_frames": 107,
+    "withheld_frames": 107,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 142,
+    "arrival_window_same_box": 35,
+    "handed_over_before_arrival_s": 0.2
    }
   },
   "sAHYpFpM01Dg.mp4": {
@@ -2917,6 +3996,7 @@
     "delay_frames": 128,
     "withheld_frames": 125,
     "frames_with_another_aircraft_handed": 125,
+    "longest_run_of_another_aircraft_before_the_main_one": 87,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 55.1
@@ -2926,6 +4006,7 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 125,
+    "longest_run_of_another_aircraft_before_the_main_one": 87,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 66.2
@@ -2935,9 +4016,20 @@
     "delay_frames": 39,
     "withheld_frames": 39,
     "frames_with_another_aircraft_handed": 125,
+    "longest_run_of_another_aircraft_before_the_main_one": 87,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 66.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2822,
+    "delay_frames": 405,
+    "withheld_frames": 402,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 197,
+    "handed_over_before_arrival_s": 20.5
    }
   },
   "vqYMdk0HPALO.mp4": {
@@ -2952,6 +4044,7 @@
     "delay_frames": 27,
     "withheld_frames": 27,
     "frames_with_another_aircraft_handed": 27,
+    "longest_run_of_another_aircraft_before_the_main_one": 8,
     "arrival_window_frames_in_batch": 233,
     "arrival_window_same_box": 206,
     "handed_over_before_arrival_s": 21.6
@@ -2961,6 +4054,7 @@
     "delay_frames": 26,
     "withheld_frames": 26,
     "frames_with_another_aircraft_handed": 27,
+    "longest_run_of_another_aircraft_before_the_main_one": 8,
     "arrival_window_frames_in_batch": 233,
     "arrival_window_same_box": 207,
     "handed_over_before_arrival_s": 21.8
@@ -2970,9 +4064,20 @@
     "delay_frames": 26,
     "withheld_frames": 26,
     "frames_with_another_aircraft_handed": 27,
+    "longest_run_of_another_aircraft_before_the_main_one": 8,
     "arrival_window_frames_in_batch": 233,
     "arrival_window_same_box": 207,
     "handed_over_before_arrival_s": 21.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 4004,
+    "delay_frames": 132,
+    "withheld_frames": 132,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 233,
+    "arrival_window_same_box": 101,
+    "handed_over_before_arrival_s": 8.5
    }
   },
   "wMk1umBGpV8f.mp4": {
@@ -2987,6 +4092,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.8
@@ -2996,6 +4102,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.8
@@ -3005,9 +4112,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.8
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 310,
+    "delay_frames": 202,
+    "withheld_frames": 202,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 237,
+    "handed_over_before_arrival_s": 25.5
    }
   },
   "weuYWsbYvdIQ.mp4": {
@@ -3022,6 +4140,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 54.2
@@ -3031,6 +4150,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 54.2
@@ -3040,9 +4160,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 54.2
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 299,
+    "delay_frames": 290,
+    "withheld_frames": 290,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 177,
+    "handed_over_before_arrival_s": 18.0
    }
   },
   "y0lZAExtmDDV.mp4": {
@@ -3057,6 +4188,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.0
@@ -3066,6 +4198,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.0
@@ -3075,9 +4208,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 50.0
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 8398,
+    "delay_frames": 267,
+    "withheld_frames": 267,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 166,
+    "handed_over_before_arrival_s": 16.6
    }
   },
   "ytQDROiCyhBh.mp4": {
@@ -3092,6 +4236,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 122.4
@@ -3101,6 +4246,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 122.4
@@ -3110,9 +4256,20 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 122.4
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 3189,
+    "delay_frames": 797,
+    "withheld_frames": 793,
+    "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 215,
+    "handed_over_before_arrival_s": 22.8
    }
   },
   "zHxIAF2vUGxJ.mp4": {
@@ -3127,6 +4284,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 0,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 59.9
@@ -3136,6 +4294,7 @@
     "delay_frames": 0,
     "withheld_frames": 0,
     "frames_with_another_aircraft_handed": 4377,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 59.9
@@ -3145,9 +4304,20 @@
     "delay_frames": 0,
     "withheld_frames": 54,
     "frames_with_another_aircraft_handed": 4447,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
     "arrival_window_frames_in_batch": 273,
     "arrival_window_same_box": 273,
     "handed_over_before_arrival_s": 59.9
+   },
+   "largest_alive_gated": {
+    "handed_over_at": 2750,
+    "delay_frames": 345,
+    "withheld_frames": 330,
+    "frames_with_another_aircraft_handed": 2038,
+    "longest_run_of_another_aircraft_before_the_main_one": 0,
+    "arrival_window_frames_in_batch": 273,
+    "arrival_window_same_box": 167,
+    "handed_over_before_arrival_s": 16.8
    }
   }
  },
@@ -3158,6 +4328,7 @@
    "arrival_window_fully_the_same": 69,
    "arrival_window_less_than_half_the_same": 16,
    "handed_over_only_after_the_arrival": 13,
+   "another_aircraft_for_4_s_before_the_main_one": 20,
    "handed_over_more_than_2_s_late": 27,
    "median_delay_s": 0.0,
    "p90_delay_s": 133.6,
@@ -3171,6 +4342,7 @@
    "arrival_window_fully_the_same": 74,
    "arrival_window_less_than_half_the_same": 6,
    "handed_over_only_after_the_arrival": 2,
+   "another_aircraft_for_4_s_before_the_main_one": 20,
    "handed_over_more_than_2_s_late": 27,
    "median_delay_s": 0.0,
    "p90_delay_s": 5.2,
@@ -3184,12 +4356,27 @@
    "arrival_window_fully_the_same": 83,
    "arrival_window_less_than_half_the_same": 0,
    "handed_over_only_after_the_arrival": 0,
+   "another_aircraft_for_4_s_before_the_main_one": 20,
    "handed_over_more_than_2_s_late": 16,
    "median_delay_s": 0.0,
    "p90_delay_s": 4.9,
    "max_delay_s": 67.9,
    "share_of_batch_rows_kept": 0.9988,
    "frames_with_another_aircraft_handed": 103084
+  },
+  "largest_alive_gated": {
+   "videos": 90,
+   "videos_with_an_arrival": 90,
+   "arrival_window_fully_the_same": 23,
+   "arrival_window_less_than_half_the_same": 15,
+   "handed_over_only_after_the_arrival": 3,
+   "another_aircraft_for_4_s_before_the_main_one": 8,
+   "handed_over_more_than_2_s_late": 77,
+   "median_delay_s": 23.1,
+   "p90_delay_s": 72.4,
+   "max_delay_s": 1416.4,
+   "share_of_batch_rows_kept": 0.9918,
+   "frames_with_another_aircraft_handed": 84877
   }
  },
  "live_checks": {
@@ -3230,6 +4417,7 @@
  },
  "rule_parameters": {
   "alive_frames": 16,
-  "switch_factor": 1.5
+  "switch_factor": 1.5,
+  "gate_height": 300
  }
 }

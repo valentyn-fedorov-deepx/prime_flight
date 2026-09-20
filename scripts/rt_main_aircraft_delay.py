@@ -10,7 +10,9 @@ the aircraft tracker and scores the causal rules against the batch choice:
   * `longest_so_far`   the rule the branch runs by default;
   * `hold_let_go`      keep the held track while it has boxes, let it go after `--alive-frames` without one;
   * `largest_alive`    the largest box among the tracks seen within `--alive-frames`, replaced only by a box
-                       `--switch-factor` times larger (`CausalSecondRun(main_rule="largest_alive")`).
+                       `--switch-factor` times larger (`CausalSecondRun(main_rule="largest_alive")`);
+  * `largest_alive_gated`  the same, but a track counts only once its box has been `--gate-height` px tall (does a size
+                       gate tell the aircraft at this stand from neighbours and traffic? it does not).
 
     python scripts/rt_main_aircraft_delay.py [--videos a.mp4,b.mp4] [--alive-frames 16] [--switch-factor 1.5] [--redo]
     python scripts/rt_main_aircraft_delay.py --live-check <run tag>,<run tag>     # anchors of runs made with the rows written
@@ -35,7 +37,7 @@ from scripts.gm_v2_run import load_str2id  # noqa: E402
 from scripts.testset import orchestrate as o  # noqa: E402
 
 FPS = 8.0
-RULES = ("longest_so_far", "hold_let_go", "largest_alive")
+RULES = ("longest_so_far", "hold_let_go", "largest_alive", "largest_alive_gated")
 
 
 def arrival_frame(trk_path: str):
@@ -73,9 +75,11 @@ def area(box) -> float:
     return max(0.0, box[2] - box[0]) * max(0.0, box[3] - box[1])
 
 
-def choose(frames: int, tracks: dict, rule: str, alive_frames: int, switch_factor: float) -> dict:
+def choose(frames: int, tracks: dict, rule: str, alive_frames: int, switch_factor: float, gate_height: int = 0) -> dict:
     """The track each rule holds at every frame, using only what was known at that frame."""
     keys = {tid: sorted(fr) for tid, fr in tracks.items()}
+    gate = gate_height if rule == "largest_alive_gated" else 0
+    reached = {tid: next((f for f in keys[tid] if fr[f][3] - fr[f][1] >= gate), None) for tid, fr in tracks.items()}
     out, held, held_last = {}, None, 0
     for t in range(1, frames + 1):
         length = {tid: bisect.bisect_right(k, t) for tid, k in keys.items()}
@@ -93,8 +97,8 @@ def choose(frames: int, tracks: dict, rule: str, alive_frames: int, switch_facto
             elif now and (held is None or t - held_last > alive_frames):
                 held, held_last = max(now, key=lambda k: seen[k]), t
             out[t] = held
-        else:  # largest_alive
-            alive = [tid for tid in seen if t - last[tid] <= alive_frames]
+        else:  # largest_alive, with or without the size gate
+            alive = [tid for tid in seen if t - last[tid] <= alive_frames and reached[tid] is not None and reached[tid] <= t]
             if alive:
                 big = max(alive, key=lambda k: area(tracks[k][last[k]]))
                 if held not in alive or (big != held and area(tracks[big][last[big]]) > switch_factor * area(tracks[held][last[held]])):
@@ -105,13 +109,26 @@ def choose(frames: int, tracks: dict, rule: str, alive_frames: int, switch_facto
     return out
 
 
+def longest_run(frames: list) -> int:
+    best = cur = 0
+    prev = None
+    for f in frames:
+        cur = cur + 1 if prev is not None and f == prev + 1 else 1
+        best, prev = max(best, cur), f
+    return best
+
+
 def score(tracks: dict, final, choice: dict, arrival) -> dict:
     frames_of_final = sorted(tracks[final])
     first = frames_of_final[0]
+    # another aircraft in the rows before the main one appears: 4 s of it standing still is enough for the tracker to call
+    # an arrival, and the anchors of the event are then spent before the real aircraft comes
+    other_before = [n for n in range(1, first) if choice.get(n) is not None and n in tracks[choice[n]]]
     handed = next((n for n in frames_of_final if choice.get(n) == final), None)
     rec = {"handed_over_at": handed, "delay_frames": (handed - first) if handed is not None else None,
            "withheld_frames": sum(1 for n in frames_of_final if choice.get(n) != final),
-           "frames_with_another_aircraft_handed": sum(1 for n, t in choice.items() if t is not None and t != final and n in tracks[t])}
+           "frames_with_another_aircraft_handed": sum(1 for n, t in choice.items() if t is not None and t != final and n in tracks[t]),
+           "longest_run_of_another_aircraft_before_the_main_one": longest_run(other_before)}
     if arrival:
         # the 30 s before T_arr and the 4 s stop rule after it: does the tracker get the aircraft batch gave it?
         window = [n for n in frames_of_final if arrival - 240 <= n <= arrival + 32]
@@ -127,6 +144,7 @@ def main() -> int:
     ap.add_argument("--videos", default="", help="comma list; default: every video of the plan with a batch GM v2 run")
     ap.add_argument("--alive-frames", type=int, default=16)
     ap.add_argument("--switch-factor", type=float, default=1.5)
+    ap.add_argument("--gate-height", type=int, default=300)
     ap.add_argument("--redo", action="store_true")
     ap.add_argument("--live-check", default="", help="comma list of run tags under out/rt/runs made WITH the rows written: "
                                                      "record their live and batch anchors next to the replay")
@@ -136,7 +154,7 @@ def main() -> int:
     videos = [v for v in a.videos.split(",") if v] or sorted({v for e in plan.events for v in e["videos"]})
     out_path = os.path.join(ROOT, "docs", "analysis", "rt_main_aircraft_delay.json")
     result = json.load(io.open(out_path, encoding="utf-8")) if os.path.exists(out_path) else {"videos": {}}
-    result["rule_parameters"] = {"alive_frames": a.alive_frames, "switch_factor": a.switch_factor}
+    result["rule_parameters"] = {"alive_frames": a.alive_frames, "switch_factor": a.switch_factor, "gate_height": a.gate_height}
     for i, video in enumerate(videos, 1):
         p = o.paths(video)
         first_run = os.path.join(p["gm_dir"], f"general_model{video}.ndjson")
@@ -152,7 +170,8 @@ def main() -> int:
             rec["main_aircraft_first_frame"] = min(tracks[final])
             rec["main_aircraft_frames"] = len(tracks[final])
             for rule in RULES:
-                rec[rule] = score(tracks, final, choose(frames, tracks, rule, a.alive_frames, a.switch_factor), rec["arrival_frame"])
+                rec[rule] = score(tracks, final, choose(frames, tracks, rule, a.alive_frames, a.switch_factor, a.gate_height),
+                                  rec["arrival_frame"])
         result["videos"][video] = rec
         print(f"[{i}/{len(videos)}] {video} {time.time() - t0:.0f} s  delay "
               + "  ".join(f"{rule} {(rec.get(rule) or {}).get('delay_frames')}" for rule in RULES), flush=True)
@@ -182,6 +201,8 @@ def main() -> int:
             "arrival_window_less_than_half_the_same": sum(
                 1 for s in windows if s["arrival_window_same_box"] < 0.5 * s["arrival_window_frames_in_batch"]),
             "handed_over_only_after_the_arrival": sum(1 for s in scored if (s.get("handed_over_before_arrival_s") or 0) < 0),
+            "another_aircraft_for_4_s_before_the_main_one": sum(
+                1 for s in scored if s.get("longest_run_of_another_aircraft_before_the_main_one", 0) >= 32),
             "handed_over_more_than_2_s_late": sum(1 for d in delays if d > 16),
             "median_delay_s": round(delays[len(delays) // 2] / FPS, 1) if delays else None,
             "p90_delay_s": round(delays[min(len(delays) - 1, round(0.9 * (len(delays) - 1)))] / FPS, 1) if delays else None,

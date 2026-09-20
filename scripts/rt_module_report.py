@@ -463,18 +463,24 @@ def main() -> int:
               "through the aircraft tracker, no GPU; it reproduces the 223 frames of delay seen live on `MwCSLbQ7QvXQ` exactly). "
               "The arrival window is the 30 s before the batch T_arr and the 4 s after it:", "",
               "| rule for the main aircraft at frame t | arrival window identical to batch | under half identical | handed over only "
-              "after T_arr | delay p90 / max, s | batch rows kept | frames with another aircraft handed over |",
+              "after T_arr | delay p90 / max, s | batch rows kept | videos where another aircraft is handed over for 4 s or more "
+              "before the main one appears |",
               "|---|---|---|---|---|---|---|"]
+        gate_px = (delay.get("rule_parameters") or {}).get("gate_height")
         names = {"longest_so_far": "`longest_so_far` (what the branch runs)", "hold_let_go": "`hold_let_go`: keep the track while it "
                  "has boxes, let go after 2 s without one", "largest_alive": "`largest_alive`: the largest box among the tracks seen in "
-                 "the last 2 s, replaced only by a box 1.5 times larger"}
+                 "the last 2 s, replaced only by a box 1.5 times larger",
+                 "largest_alive_gated": f"`largest_alive` with a size gate: a track counts once its box has been {gate_px} px tall"}
         for rule, r in rules.items():
             L.append(f"| {names.get(rule, rule)} | **{r['arrival_window_fully_the_same']}** of {r['videos_with_an_arrival']} | "
                      f"{r['arrival_window_less_than_half_the_same']} | {r['handed_over_only_after_the_arrival']} | "
                      f"{r['p90_delay_s']} / {r['max_delay_s']} | {100 * r['share_of_batch_rows_kept']:.2f} % | "
-                     f"{r['frames_with_another_aircraft_handed']} |")
-        L += ["", "Batch hands over no other aircraft at all (it knows the end of the video); any causal rule has to let some through "
-              "while the main aircraft is not there."]
+                     f"{r.get('another_aircraft_for_4_s_before_the_main_one')} |")
+        L += ["", "The last column is the same for every rule, and it is the part no box rule can fix: batch never hands over another "
+              "aircraft (it knows the end of the video), while a causal rule sees a neighbour, a parked or a passing aircraft first. "
+              "Four seconds of it standing still are enough for the tracker to set T_arr, and when it moves, T_dep: the anchors of "
+              "the event are spent before the real aircraft comes. A size gate on the box does not separate them either (last row): "
+              "it keeps some neighbours out and hands the arriving aircraft over too late."]
 
         def live_block(name: str, title: str) -> list:
             res = accuracy.get(name)
@@ -509,6 +515,23 @@ def main() -> int:
         if "largest_alive" not in accuracy:
             L += ["", "`largest_alive` is implemented as an option of the causal rows (the default is unchanged) and is being run live on "
                   "the same events; this section is regenerated when those runs finish."]
+        else:
+            cur_a = {x["video"]: x for x in accuracy["all_ready"].get("anchors") or []}
+            new_a = {x["video"]: x for x in accuracy["largest_alive"].get("anchors") or []}
+            fixed = [v for v in new_a if abs(new_a[v].get("t_arr_shift_s") or 0) <= 4 and v in cur_a and abs(cur_a[v].get("t_arr_shift_s") or 0) > 4]
+            still = [v for v in new_a if abs(new_a[v].get("t_arr_shift_s") or 0) > 4]
+            L += ["", f"**What the live runs of `largest_alive` say**: it puts T_arr back on the batch frame on {len(fixed)} events where "
+                  f"a passing aircraft or a sliver at the edge of the frame held the title ({', '.join('`' + os.path.splitext(v)[0] + '`' for v in sorted(fixed))}), "
+                  f"and it does nothing for the {len(still)} events where another aircraft stands in view from the first frames of the video: "
+                  "there the live tracker sets T_arr within the first seconds under either rule, and with `largest_alive` it also follows "
+                  "that aircraft out and sets T_dep, which costs two events more verdicts than it saves elsewhere. So the rule is not the "
+                  "fix; it stays an option, off by default.", "",
+                  "**What would fix it** is a decision about which aircraft belongs to this turnaround, which is a stage-detector matter "
+                  "(PF-Q1-03) rather than a box rule: anchors that can be set again when a new aircraft arrives after a departure (one "
+                  "session per turnaround on a continuous stream, which real time needs anyway: the test-set videos are cut per event "
+                  "by the merge classifier and start with whatever stood there before), and the stand geometry to tell the aircraft at "
+                  "this stand from its neighbours. The harness to test any proposal is here: the replay (4 min for the 90 videos), the "
+                  "21 events on disk live (one night), `scripts/rt_live_accuracy.py`."]
         checks = delay.get("live_checks") or {}
         out["main_aircraft_hand_over"] = {"replay": rules, "live": {k: {x: v[x] for x in ("videos_run_live", "module_runs_live",
                                           "task_verdicts")} for k, v in accuracy.items()}, "live_checks": checks}

@@ -419,5 +419,491 @@
     "t_dep_shift_s": -0.2
    }
   ]
+ },
+ "largest_alive": {
+  "videos_run_live": 18,
+  "module_runs_live": 168,
+  "runs_that_died": [
+   {
+    "video": "KB04bkqBI7ms.mp4",
+    "speed": 8.0,
+    "error": "module: MemoryError: Unable to allocate 7.92 MiB for an array with shape (1920, 541) and data type float64"
+   },
+   {
+    "video": "TtKESVA7IEIU.mp4",
+    "speed": 8.0,
+    "error": "module: MemoryError: Unable to allocate 3.87 MiB for an array with shape (507270,) and data type float64"
+   },
+   {
+    "video": "zHxIAF2vUGxJ.mp4",
+    "speed": 8.0,
+    "error": "module: MemoryError: Unable to allocate 3.84 MiB for an array with shape (502804,) and data type float64"
+   }
+  ],
+  "modules_without_a_live_verdict": [],
+  "module_verdicts_changed": [
+   {
+    "video": "3LcvAdAKtgUr.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "3-stop-brake-check",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "chocks-and-cones-available-and-staged-for-arrival",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "module": "pushback-pathway-confirmed-clear-of-obstacles",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "3-stop-brake-check",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Pass",
+    "live": "Fail"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "7PytHarRNqmT.mp4",
+    "module": "pushback-pathway-confirmed-clear-of-obstacles",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "3-stop-brake-check",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "module": "pushback-pathway-confirmed-clear-of-obstacles",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "bH2llDkvWIg9.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Not observed",
+    "live": "Pass"
+   },
+   {
+    "video": "bH2llDkvWIg9.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Not observed",
+    "live": "Pass"
+   },
+   {
+    "video": "bH2llDkvWIg9.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Not observed",
+    "live": "Pass"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "3-stop-brake-check",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "chocks-and-cones-available-and-staged-for-arrival",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "module": "3-stop-brake-check",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "module": "beltloader-chocks",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "module": "bl_rear_cone",
+    "batch": "Pass",
+    "live": "Not observed"
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "module": "chocks-and-cones-available-and-staged-for-arrival",
+    "batch": "Fail",
+    "live": "Not observed"
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "batch": "Fail",
+    "live": "Not observed"
+   }
+  ],
+  "task_verdicts": {
+   "paired": 858,
+   "identical": 826,
+   "accuracy_live": 83.45,
+   "accuracy_batch": 86.71,
+   "accuracy_monthly_ci_output": 88.11
+  },
+  "anchors": [
+   {
+    "video": "1WBBTx2wApOn.mp4",
+    "batch": {
+     "arrival_frame": 4751,
+     "departure_frame": 20161
+    },
+    "live": {
+     "arrival_frame": 4751,
+     "departure_frame": 20161
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "3LcvAdAKtgUr.mp4",
+    "batch": {
+     "arrival_frame": 476,
+     "departure_frame": 47939
+    },
+    "live": {
+     "arrival_frame": 25,
+     "departure_frame": 389
+    },
+    "t_arr_shift_s": -56.4,
+    "t_dep_shift_s": -5943.8
+   },
+   {
+    "video": "4lyUahxqcA1p.mp4",
+    "batch": {
+     "arrival_frame": 2602,
+     "departure_frame": 44780
+    },
+    "live": {
+     "arrival_frame": 10,
+     "departure_frame": 44779
+    },
+    "t_arr_shift_s": -324.0,
+    "t_dep_shift_s": -0.1
+   },
+   {
+    "video": "63xitGPpUtLy.mp4",
+    "batch": {
+     "arrival_frame": 6383,
+     "departure_frame": 42104
+    },
+    "live": {
+     "arrival_frame": 10,
+     "departure_frame": 6116
+    },
+    "t_arr_shift_s": -796.6,
+    "t_dep_shift_s": -4498.5
+   },
+   {
+    "video": "8tve3pVzl5D8.mp4",
+    "batch": {
+     "arrival_frame": 4775,
+     "departure_frame": 61565
+    },
+    "live": {
+     "arrival_frame": 4775,
+     "departure_frame": 61562
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": -0.4
+   },
+   {
+    "video": "B1BtQWGUShsv.mp4",
+    "batch": {
+     "arrival_frame": 4406,
+     "departure_frame": 20035
+    },
+    "live": {
+     "arrival_frame": 4406,
+     "departure_frame": 20035
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "DZEwHETNWRBa.mp4",
+    "batch": {
+     "arrival_frame": 3709,
+     "departure_frame": 28408
+    },
+    "live": {
+     "arrival_frame": 3709,
+     "departure_frame": 28407
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": -0.1
+   },
+   {
+    "video": "ICfrXaND7Jqf.mp4",
+    "batch": {
+     "arrival_frame": 4020,
+     "departure_frame": 19636
+    },
+    "live": {
+     "arrival_frame": 4020,
+     "departure_frame": 19636
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "MwCSLbQ7QvXQ.mp4",
+    "batch": {
+     "arrival_frame": 6753
+    },
+    "live": {
+     "arrival_frame": 6753
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": null
+   },
+   {
+    "video": "OPsMEZUPjBtv.mp4",
+    "batch": {
+     "arrival_frame": 5822,
+     "departure_frame": 31763
+    },
+    "live": {
+     "arrival_frame": 5822,
+     "departure_frame": 31763
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "VIeEFGCUxgUY.mp4",
+    "batch": {
+     "arrival_frame": 3025,
+     "departure_frame": 29321
+    },
+    "live": {
+     "arrival_frame": 2774,
+     "departure_frame": 29321
+    },
+    "t_arr_shift_s": -31.4,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "bH2llDkvWIg9.mp4",
+    "batch": {
+     "arrival_frame": 15069,
+     "departure_frame": 27702
+    },
+    "live": {
+     "arrival_frame": 4074,
+     "departure_frame": 27702
+    },
+    "t_arr_shift_s": -1374.4,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "beqQ5Q0FoFWP.mp4",
+    "batch": {
+     "arrival_frame": 3859,
+     "departure_frame": 32245
+    },
+    "live": {
+     "arrival_frame": 33,
+     "departure_frame": 2723
+    },
+    "t_arr_shift_s": -478.2,
+    "t_dep_shift_s": -3690.2
+   },
+   {
+    "video": "hmMUVO4MdtU8.mp4",
+    "batch": {
+     "arrival_frame": 4514,
+     "departure_frame": 41048
+    },
+    "live": {
+     "arrival_frame": 10,
+     "departure_frame": 4363
+    },
+    "t_arr_shift_s": -563.0,
+    "t_dep_shift_s": -4585.6
+   },
+   {
+    "video": "iRRy2la05yGf.mp4",
+    "batch": {
+     "arrival_frame": 3995,
+     "departure_frame": 19384
+    },
+    "live": {
+     "arrival_frame": 3995,
+     "departure_frame": 19384
+    },
+    "t_arr_shift_s": 0.0,
+    "t_dep_shift_s": 0.0
+   },
+   {
+    "video": "jI6tTM7YdhNE.mp4",
+    "batch": {
+     "arrival_frame": 1776,
+     "departure_frame": 37219
+    },
+    "live": {
+     "arrival_frame": 10,
+     "departure_frame": 1392
+    },
+    "t_arr_shift_s": -220.8,
+    "t_dep_shift_s": -4478.4
+   },
+   {
+    "video": "n96M7fASlhGn.mp4",
+    "batch": {
+     "arrival_frame": 3991,
+     "departure_frame": 44403
+    },
+    "live": {
+     "arrival_frame": 2211,
+     "departure_frame": 44403
+    },
+    "t_arr_shift_s": -222.5,
+    "t_dep_shift_s": 0.0
+   }
+  ]
  }
 }

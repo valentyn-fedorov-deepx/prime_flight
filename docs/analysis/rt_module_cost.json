@@ -4314,6 +4314,369 @@
     "gpu_mem_over_baseline_gb": 7.98
    }
   },
+  "largest_alive_x8": {
+   "video": "zHxIAF2vUGxJ.mp4",
+   "modules": [
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "fod-walk-completed",
+    "pre-arrival-safety-huddle",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "wing-walkers-in-proper-position-and-using-approved-wands",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "all-cargo-bin-doors-opened-and-verified",
+    "safety-handrails-fully-extended",
+    "3-stop-brake-check",
+    "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "safety-vests-secured-to-body",
+    "gse-chocks",
+    "handrails-on-gse-being-used",
+    "cones-placed-in-proper-positions-and-timely",
+    "pushback-pathway-confirmed-clear-of-obstacles"
+   ],
+   "primary": "chocks-and-cones-available-and-staged-for-arrival",
+   "speed": 8.0,
+   "exit_code": 1,
+   "main_aircraft_rule": "largest_alive",
+   "subscriptions": true,
+   "wall_s": 1569.8,
+   "measured": "2026-09-20 04:09",
+   "frames": 15872,
+   "keeps_up": false,
+   "frame_latency_s": {
+    "p50": 578.997,
+    "p95": 1106.706,
+    "p99": 1158.337,
+    "max": 1171.57
+   },
+   "latency_drift_s_per_recording_minute": 37.9703,
+   "ms_per_frame": {},
+   "tracker_detail_ms": null,
+   "gm_heads_detail": null,
+   "host_send_ms_per_frame": null,
+   "module_hosts": null,
+   "module_error": null,
+   "runtime_error": "module: MemoryError: Unable to allocate 3.84 MiB for an array with shape (502804,) and data type float64",
+   "verdicts": [
+    {
+     "module": "chocks-and-cones-available-and-staged-for-arrival",
+     "live_status": "Not observed",
+     "decided_after_frame": 2884,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+     "live_status": "Fail",
+     "decided_after_frame": 3392,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": false
+     }
+    },
+    {
+     "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+     "live_status": "Not observed",
+     "decided_after_frame": 4846,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+     "live_status": "Not observed",
+     "decided_after_frame": 11804,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+     "live_status": "Fail",
+     "decided_after_frame": 11836,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "fod-walk-completed",
+     "live_status": "Fail",
+     "decided_after_frame": 2884,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "pre-arrival-safety-huddle",
+     "live_status": "Not observed",
+     "decided_after_frame": 3365,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "lead-marshaller-and-wing-walkers-in-position",
+     "live_status": "Not observed",
+     "decided_after_frame": 2965,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+     "live_status": "Fail",
+     "decided_after_frame": 12076,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "all-cargo-bin-doors-opened-and-verified",
+     "live_status": "Pass",
+     "decided_after_frame": 4195,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "safety-handrails-fully-extended",
+     "live_status": "Pass",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "3-stop-brake-check",
+     "live_status": "Fail",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+     "live_status": "Pass",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "beltloader-chocks",
+     "live_status": "Fail",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "bl_rear_cone",
+     "live_status": "Fail",
+     "decided_after_frame": 11727,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": true,
+      "report_identical": true
+     }
+    },
+    {
+     "module": "safety-vests-secured-to-body",
+     "live_status": null,
+     "decided_after_frame": null,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": null,
+      "report_identical": null
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": null,
+      "report_identical": null
+     }
+    },
+    {
+     "module": "gse-chocks",
+     "live_status": null,
+     "decided_after_frame": null,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": null,
+      "report_identical": null
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": null,
+      "report_identical": null
+     }
+    },
+    {
+     "module": "handrails-on-gse-being-used",
+     "live_status": null,
+     "decided_after_frame": null,
+     "batch_v2": {
+      "status": "Fail",
+      "status_identical": null,
+      "report_identical": null
+     },
+     "batch_ctl": {
+      "status": "Fail",
+      "status_identical": null,
+      "report_identical": null
+     }
+    },
+    {
+     "module": "cones-placed-in-proper-positions-and-timely",
+     "live_status": "Not observed",
+     "decided_after_frame": 11804,
+     "batch_v2": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Not observed",
+      "status_identical": true,
+      "report_identical": false
+     }
+    },
+    {
+     "module": "pushback-pathway-confirmed-clear-of-obstacles",
+     "live_status": "Pass",
+     "decided_after_frame": 11847,
+     "batch_v2": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": true
+     },
+     "batch_ctl": {
+      "status": "Pass",
+      "status_identical": true,
+      "report_identical": false
+     }
+    }
+   ],
+   "tracker_anchors": null,
+   "causal_rows": null,
+   "verdicts_identical_to_batch_v2": 17,
+   "reports_identical_to_batch_v2": 17,
+   "machine": {
+    "window_s": 246.7,
+    "cpu_cores_used": 3.05,
+    "rss_peak_gb": 16.71,
+    "gpu_util_mean": 30.6,
+    "gpu_util_p95": 47.0,
+    "gpu_mem_peak_gb": 10.33,
+    "gpu_mem_over_baseline_gb": 7.92
+   }
+  },
   "MwCSLbQ7QvXQ_x1": {
    "video": "MwCSLbQ7QvXQ.mp4",
    "modules": [
@@ -5840,6 +6203,7 @@
     "arrival_window_fully_the_same": 69,
     "arrival_window_less_than_half_the_same": 16,
     "handed_over_only_after_the_arrival": 13,
+    "another_aircraft_for_4_s_before_the_main_one": 20,
     "handed_over_more_than_2_s_late": 27,
     "median_delay_s": 0.0,
     "p90_delay_s": 133.6,
@@ -5853,6 +6217,7 @@
     "arrival_window_fully_the_same": 74,
     "arrival_window_less_than_half_the_same": 6,
     "handed_over_only_after_the_arrival": 2,
+    "another_aircraft_for_4_s_before_the_main_one": 20,
     "handed_over_more_than_2_s_late": 27,
     "median_delay_s": 0.0,
     "p90_delay_s": 5.2,
@@ -5866,12 +6231,27 @@
     "arrival_window_fully_the_same": 83,
     "arrival_window_less_than_half_the_same": 0,
     "handed_over_only_after_the_arrival": 0,
+    "another_aircraft_for_4_s_before_the_main_one": 20,
     "handed_over_more_than_2_s_late": 16,
     "median_delay_s": 0.0,
     "p90_delay_s": 4.9,
     "max_delay_s": 67.9,
     "share_of_batch_rows_kept": 0.9988,
     "frames_with_another_aircraft_handed": 103084
+   },
+   "largest_alive_gated": {
+    "videos": 90,
+    "videos_with_an_arrival": 90,
+    "arrival_window_fully_the_same": 23,
+    "arrival_window_less_than_half_the_same": 15,
+    "handed_over_only_after_the_arrival": 3,
+    "another_aircraft_for_4_s_before_the_main_one": 8,
+    "handed_over_more_than_2_s_late": 77,
+    "median_delay_s": 23.1,
+    "p90_delay_s": 72.4,
+    "max_delay_s": 1416.4,
+    "share_of_batch_rows_kept": 0.9918,
+    "frames_with_another_aircraft_handed": 84877
    }
   },
   "live": {
@@ -5882,6 +6262,17 @@
      "paired": 858,
      "identical": 829,
      "accuracy_live": 83.8,
+     "accuracy_batch": 86.71,
+     "accuracy_monthly_ci_output": 88.11
+    }
+   },
+   "largest_alive": {
+    "videos_run_live": 18,
+    "module_runs_live": 168,
+    "task_verdicts": {
+     "paired": 858,
+     "identical": 826,
+     "accuracy_live": 83.45,
      "accuracy_batch": 86.71,
      "accuracy_monthly_ci_output": 88.11
     }

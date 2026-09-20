@@ -9,7 +9,7 @@ Every module was run **alone as a component**: the unchanged production module b
 
 - **Modules**: 20 of 27 run in real time unchanged (3 of them answer only when the session closes); 4 need their second pass removed; 3 are not hosted.
 - **Load**: alone a module costs 19–47 ms of 125, nearly all of it the shared GM and tracker. All 20 together: 56 ms on the frame path, GPU 24.5 % busy; the bound is CPU and RAM (about 8 cores, 23 GB).
-- **Accuracy**: the real-time inputs and the scoped rows leave the test-set verdicts as they are (section 6). Live, on the events where the causal rows carry the arriving aircraft as batch does: 70 of 70 verdicts identical. On the events where they hand it over late (about one in six): 102 of 138, mostly turned into Not observed; over the test set that is **83.8 % against 86.71 %**. The cause is one rule in the shared causal rows, not the modules (section 7).
+- **Accuracy**: the real-time inputs and the scoped rows leave the test-set verdicts as they are (section 6). Live, on the events where the causal rows carry the arriving aircraft as batch does: 70 of 70 verdicts identical. On the events where they hand it over late (about one in six): 102 of 138, mostly turned into Not observed; over the test set that is **83.8 % against 86.71 %**. The cause is one rule in the shared causal rows, not the modules (section 7); with the rule `largest_alive`, live on the same events: 826 of 858 task verdicts identical, **83.45 %**.
 - **Against post-processing**: no more work per frame; real time pays for holding the GPU for the length of the event and needs a faster card than the production T4 (section 5).
 
 ## 1. Does it run in real time as it is, with the batch verdict
@@ -131,6 +131,8 @@ Measured: the same set in one run on the whole event, one GM with every head, on
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | real-time speed, `zHxIAF2vUGxJ` | 20 | True | 22.4 | 26.6 | 7.3 | **56.4** · 94.7 | 0.21 · 0.67 · 2.6 | 24.5 | 8.0 | 4.23 | 18.2 | 20 / 20 | 20 / 20 |
 | GPU kept busy (8×), `zHxIAF2vUGxJ` | 20 | fed faster than it can go: 1.85× real time | 28.3 | 29.1 | 10.2 | **67.7** · 116.0 | — | 41.5 | 8.0 | 4.05 | 17.8 | 20 / 20 | 20 / 20 |
+| GPU kept busy (8×), `zHxIAF2vUGxJ` | 20 | — | — | — | — | **—** · — | — | 30.6 | 7.9 | 3.05 | 16.7 | 17 / 20 | 17 / 20 |
+| ↳ not identical | safety-vests-secured-to-body, gse-chocks, handrails-on-gse-being-used | | | | | | | | | | | | |
 | real-time speed, `MwCSLbQ7QvXQ` | 20 | True | 23.1 | 25.9 | 9.9 | **59.1** · 95.8 | 0.38 · 8.02 · 15.4 | 21.7 | 8.1 | 3.82 | 23.2 | 20 / 20 | 19 / 20 |
 | ↳ not identical | lead-marshaller-and-wing-walkers-in-position | | | | | | | | | | | | |
 
@@ -213,13 +215,14 @@ Not a module property: it sits in the causal rows every module reads. The batch 
 
 **Replay over the test set** (`scripts/rt_main_aircraft_delay.py`: first-run rows of the 90 batch GM v2 runs through the aircraft tracker, no GPU; it reproduces the 223 frames of delay seen live on `MwCSLbQ7QvXQ` exactly). The arrival window is the 30 s before the batch T_arr and the 4 s after it:
 
-| rule for the main aircraft at frame t | arrival window identical to batch | under half identical | handed over only after T_arr | delay p90 / max, s | batch rows kept | frames with another aircraft handed over |
+| rule for the main aircraft at frame t | arrival window identical to batch | under half identical | handed over only after T_arr | delay p90 / max, s | batch rows kept | videos where another aircraft is handed over for 4 s or more before the main one appears |
 |---|---|---|---|---|---|---|
-| `longest_so_far` (what the branch runs) | **69** of 90 | 16 | 13 | 133.6 / 906.5 | 98.15 % | 47255 |
-| `hold_let_go`: keep the track while it has boxes, let go after 2 s without one | **74** of 90 | 6 | 2 | 5.2 / 79.1 | 99.86 % | 103583 |
-| `largest_alive`: the largest box among the tracks seen in the last 2 s, replaced only by a box 1.5 times larger | **83** of 90 | 0 | 0 | 4.9 / 67.9 | 99.88 % | 103084 |
+| `longest_so_far` (what the branch runs) | **69** of 90 | 16 | 13 | 133.6 / 906.5 | 98.15 % | 20 |
+| `hold_let_go`: keep the track while it has boxes, let go after 2 s without one | **74** of 90 | 6 | 2 | 5.2 / 79.1 | 99.86 % | 20 |
+| `largest_alive`: the largest box among the tracks seen in the last 2 s, replaced only by a box 1.5 times larger | **83** of 90 | 0 | 0 | 4.9 / 67.9 | 99.88 % | 20 |
+| `largest_alive` with a size gate: a track counts once its box has been 300 px tall | **23** of 90 | 15 | 3 | 72.4 / 1416.4 | 99.18 % | 8 |
 
-Batch hands over no other aircraft at all (it knows the end of the video); any causal rule has to let some through while the main aircraft is not there.
+The last column is the same for every rule, and it is the part no box rule can fix: batch never hands over another aircraft (it knows the end of the video), while a causal rule sees a neighbour, a parked or a passing aircraft first. Four seconds of it standing still are enough for the tracker to set T_arr, and when it moves, T_dep: the anchors of the event are spent before the real aircraft comes. A size gate on the box does not separate them either (last row): it keeps some neighbours out and hands the arriving aircraft over too late.
 
 **Live with the rule the branch runs**: 20 events, 208 module runs live (the 16 events of the second column above plus the 5 clean ones on disk; the rest of the test set keeps its batch verdicts). Module verdicts changed: **36** on 10 events. Task verdicts (two-camera merge, as in the monthly comparison): 829 of 858 identical; accuracy against the labels **83.8 %** live, 86.71 % batch (monthly CI output 88.11 %). Live T_arr moved by more than 4 s on 13 of 14 events with anchors recorded (from -1374 s to +175 s).
 Left out, the run died: `TtKESVA7IEIU.mp4` (module: MemoryError: Unable to allocate 7.92 MiB for an arra).
@@ -237,7 +240,22 @@ Left out, the run died: `TtKESVA7IEIU.mp4` (module: MemoryError: Unable to alloc
 | `3LcvAdAKtgUr.mp4` | -56.4 | all-cargo-bin-doors-opened-a: Fail → Not observed |
 | `8tve3pVzl5D8.mp4` | 175.0 | chocks-and-cones-available-a: Fail → Not observed |
 
-`largest_alive` is implemented as an option of the causal rows (the default is unchanged) and is being run live on the same events; this section is regenerated when those runs finish.
+**Live with `largest_alive` (`--main-aircraft-rule largest_alive`)**: 18 events, 168 module runs live (the 16 events of the second column above plus the 5 clean ones on disk; the rest of the test set keeps its batch verdicts). Module verdicts changed: **39** on 7 events. Task verdicts (two-camera merge, as in the monthly comparison): 826 of 858 identical; accuracy against the labels **83.45 %** live, 86.71 % batch (monthly CI output 88.11 %). Live T_arr moved by more than 4 s on 9 of 17 events with anchors recorded (from -1374 s to -31 s).
+Left out, the run died: `KB04bkqBI7ms.mp4` (module: MemoryError: Unable to allocate 7.92 MiB for an arra); `TtKESVA7IEIU.mp4` (module: MemoryError: Unable to allocate 3.87 MiB for an arra); `zHxIAF2vUGxJ.mp4` (module: MemoryError: Unable to allocate 3.84 MiB for an arra).
+
+| event | T_arr live − batch, s | module verdicts changed (batch → live) |
+|---|---|---|
+| `63xitGPpUtLy.mp4` | -796.6 | 3-stop-brake-check: Fail → Not observed; all-cargo-bin-doors-opened-a: Pass → Not observed; beltloader-chocks: Pass → Not observed; bl_rear_cone: Pass → Not observed; chocks-and-cones-available-a: Fail → Not observed; cones-are-removed-only-after: Pass → Not observed; crew-present-10-minutes-prio: Pass → Not observed; pushback-pathway-confirmed-c: Pass → Not observed |
+| `7PytHarRNqmT.mp4` | — | 3-stop-brake-check: Fail → Not observed; all-cargo-bin-doors-opened-a: Pass → Fail; beltloader-chocks: Fail → Not observed; bl_rear_cone: Pass → Not observed; cones-are-removed-only-after: Fail → Not observed; crew-present-10-minutes-prio: Fail → Not observed; pushback-pathway-confirmed-c: Pass → Not observed |
+| `beqQ5Q0FoFWP.mp4` | -478.2 | 3-stop-brake-check: Fail → Not observed; all-cargo-bin-doors-opened-a: Pass → Not observed; beltloader-chocks: Fail → Not observed; bl_rear_cone: Fail → Not observed; cones-are-removed-only-after: Pass → Not observed; crew-present-10-minutes-prio: Fail → Not observed; pushback-pathway-confirmed-c: Pass → Not observed |
+| `hmMUVO4MdtU8.mp4` | -563.0 | 3-stop-brake-check: Fail → Not observed; all-cargo-bin-doors-opened-a: Pass → Not observed; beltloader-chocks: Fail → Not observed; bl_rear_cone: Pass → Not observed; chocks-and-cones-available-a: Fail → Not observed; cones-are-removed-only-after: Pass → Not observed; crew-present-10-minutes-prio: Pass → Not observed |
+| `jI6tTM7YdhNE.mp4` | -220.8 | 3-stop-brake-check: Fail → Not observed; all-cargo-bin-doors-opened-a: Pass → Not observed; beltloader-chocks: Pass → Not observed; bl_rear_cone: Pass → Not observed; chocks-and-cones-available-a: Fail → Not observed; cones-are-removed-only-after: Fail → Not observed |
+| `bH2llDkvWIg9.mp4` | -1374.4 | all-cargo-bin-doors-opened-a: Not observed → Pass; beltloader-chocks: Not observed → Pass; bl_rear_cone: Not observed → Pass |
+| `3LcvAdAKtgUr.mp4` | -56.4 | all-cargo-bin-doors-opened-a: Fail → Not observed |
+
+**What the live runs of `largest_alive` say**: it puts T_arr back on the batch frame on 3 events where a passing aircraft or a sliver at the edge of the frame held the title (`8tve3pVzl5D8`, `ICfrXaND7Jqf`, `OPsMEZUPjBtv`), and it does nothing for the 9 events where another aircraft stands in view from the first frames of the video: there the live tracker sets T_arr within the first seconds under either rule, and with `largest_alive` it also follows that aircraft out and sets T_dep, which costs two events more verdicts than it saves elsewhere. So the rule is not the fix; it stays an option, off by default.
+
+**What would fix it** is a decision about which aircraft belongs to this turnaround, which is a stage-detector matter (PF-Q1-03) rather than a box rule: anchors that can be set again when a new aircraft arrives after a departure (one session per turnaround on a continuous stream, which real time needs anyway: the test-set videos are cut per event by the merge classifier and start with whatever stood there before), and the stand geometry to tell the aircraft at this stand from its neighbours. The harness to test any proposal is here: the replay (4 min for the 90 videos), the 21 events on disk live (one night), `scripts/rt_live_accuracy.py`.
 
 ## 8. What this does not cover
 
