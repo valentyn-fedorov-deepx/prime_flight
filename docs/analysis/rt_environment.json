@@ -1,0 +1,786 @@
+{
+ "price_list": [
+  {
+   "module": "handrails-on-gse-being-used",
+   "runs_as_is": "yes, verdict at session end",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.7,
+   "own_ms_alone": 12.46,
+   "own_ms_together": 17.88,
+   "own_p95_ms_together": 50.603,
+   "own_max_ms_together": 2341.997,
+   "cpu_cores_mean": 0.56,
+   "cpu_cores_burst": 4.9,
+   "ram_gb": 2.75,
+   "measured_in_real_time": false,
+   "post_job_s": 249.4,
+   "post_cpu_s": 1218.6,
+   "verdict_arrives": "session end"
+  },
+  {
+   "module": "gse-chocks",
+   "runs_as_is": "yes, verdict at session end",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "drags_in_gm_ms": 10.7,
+   "drags_in_tracker_ms": 21.3,
+   "own_ms_alone": 3.25,
+   "own_ms_together": 4.51,
+   "own_p95_ms_together": 10.787,
+   "own_max_ms_together": 776.363,
+   "cpu_cores_mean": 0.07,
+   "cpu_cores_burst": 2.0,
+   "ram_gb": 2.41,
+   "measured_in_real_time": false,
+   "post_job_s": 75.7,
+   "post_cpu_s": 150.3,
+   "verdict_arrives": "session end"
+  },
+  {
+   "module": "aircraft-chocks",
+   "runs_as_is": "no: two passes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "drags_in_gm_ms": 10.7,
+   "drags_in_tracker_ms": 21.3,
+   "own_ms_alone": 0.48,
+   "own_ms_together": null,
+   "own_p95_ms_together": null,
+   "own_max_ms_together": null,
+   "cpu_cores_mean": 0.04,
+   "cpu_cores_burst": 2.2,
+   "ram_gb": 1.87,
+   "measured_in_real_time": false,
+   "post_job_s": 38.4,
+   "post_cpu_s": 84.0,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "module": "safety-vests-secured-to-body",
+   "runs_as_is": "yes, verdict at session end",
+   "pixels": true,
+   "heads": [
+    "gm"
+   ],
+   "classes": [
+    "person"
+   ],
+   "drags_in_gm_ms": 0.0,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 18.75,
+   "own_ms_together": 26.746,
+   "own_p95_ms_together": 54.559,
+   "own_max_ms_together": 2348.681,
+   "cpu_cores_mean": 0.9,
+   "cpu_cores_burst": 5.2,
+   "ram_gb": 1.66,
+   "measured_in_real_time": false,
+   "post_job_s": 369.8,
+   "post_cpu_s": 1937.5,
+   "verdict_arrives": "session end"
+  },
+  {
+   "module": "beltloader-chocks",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "drags_in_gm_ms": 10.7,
+   "drags_in_tracker_ms": 15.8,
+   "own_ms_alone": 0.34,
+   "own_ms_together": 1.429,
+   "own_p95_ms_together": 2.97,
+   "own_max_ms_together": 573.629,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.8,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 11.8,
+   "post_cpu_s": 9.9,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "module": "safety-handrails-fully-extended",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.8,
+   "own_ms_alone": 2.37,
+   "own_ms_together": 3.553,
+   "own_p95_ms_together": 10.124,
+   "own_max_ms_together": 560.181,
+   "cpu_cores_mean": 0.1,
+   "cpu_cores_burst": 4.6,
+   "ram_gb": 1.34,
+   "measured_in_real_time": false,
+   "post_job_s": 46.4,
+   "post_cpu_s": 214.9,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.8,
+   "own_ms_alone": 1.54,
+   "own_ms_together": 3.093,
+   "own_p95_ms_together": 8.718,
+   "own_max_ms_together": 573.131,
+   "cpu_cores_mean": 0.01,
+   "cpu_cores_burst": 0.9,
+   "ram_gb": 0.76,
+   "measured_in_real_time": false,
+   "post_job_s": 20.2,
+   "post_cpu_s": 18.2,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "module": "3-stop-brake-check",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.8,
+   "own_ms_alone": 0.64,
+   "own_ms_together": 1.611,
+   "own_p95_ms_together": 3.333,
+   "own_max_ms_together": 569.746,
+   "cpu_cores_mean": 0.01,
+   "cpu_cores_burst": 0.9,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 16.1,
+   "post_cpu_s": 14.4,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "module": "bl_rear_cone",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.8,
+   "own_ms_alone": 0.37,
+   "own_ms_together": 1.469,
+   "own_p95_ms_together": 3.094,
+   "own_max_ms_together": 573.594,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.9,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 11.7,
+   "post_cpu_s": 10.1,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.8,
+   "own_ms_alone": 0.87,
+   "own_ms_together": 0.778,
+   "own_p95_ms_together": 3.383,
+   "own_max_ms_together": 580.801,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.8,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 7.7,
+   "post_cpu_s": 5.9,
+   "verdict_arrives": "8:44 (T_arr + 164 s)"
+  },
+  {
+   "module": "hand-signals",
+   "runs_as_is": "no: two passes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 15.7,
+   "own_ms_alone": 0.28,
+   "own_ms_together": null,
+   "own_p95_ms_together": null,
+   "own_max_ms_together": null,
+   "cpu_cores_mean": 0.12,
+   "cpu_cores_burst": 2.8,
+   "ram_gb": 3.13,
+   "measured_in_real_time": false,
+   "post_job_s": 90.6,
+   "post_cpu_s": 257.0,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 5.14,
+   "own_ms_together": 8.288,
+   "own_p95_ms_together": 85.312,
+   "own_max_ms_together": 1253.214,
+   "cpu_cores_mean": 0.26,
+   "cpu_cores_burst": 5.0,
+   "ram_gb": 1.87,
+   "measured_in_real_time": false,
+   "post_job_s": 111.3,
+   "post_cpu_s": 558.7,
+   "verdict_arrives": "25:09 (T_dep + 44 s)"
+  },
+  {
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "runs_as_is": "yes, report shifts",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane"
+   ],
+   "drags_in_gm_ms": 10.7,
+   "drags_in_tracker_ms": 0.0,
+   "own_ms_alone": 0.48,
+   "own_ms_together": 1.633,
+   "own_p95_ms_together": 3.75,
+   "own_max_ms_together": 562.454,
+   "cpu_cores_mean": 0.01,
+   "cpu_cores_burst": 0.8,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 15.7,
+   "post_cpu_s": 12.9,
+   "verdict_arrives": "24:46 (T_dep + 20 s)"
+  },
+  {
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 2.5,
+   "own_ms_together": 3.143,
+   "own_p95_ms_together": 8.785,
+   "own_max_ms_together": 409.276,
+   "cpu_cores_mean": 0.09,
+   "cpu_cores_burst": 3.4,
+   "ram_gb": 2.42,
+   "measured_in_real_time": false,
+   "post_job_s": 58.7,
+   "post_cpu_s": 201.6,
+   "verdict_arrives": "6:10 (T_arr + 10 s)"
+  },
+  {
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 0.33,
+   "own_ms_together": 2.79,
+   "own_p95_ms_together": 6.817,
+   "own_max_ms_together": 580.906,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.8,
+   "ram_gb": 0.77,
+   "measured_in_real_time": false,
+   "post_job_s": 12.6,
+   "post_cpu_s": 10.1,
+   "verdict_arrives": "24:39 (T_dep + 14 s)"
+  },
+  {
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane"
+   ],
+   "drags_in_gm_ms": 10.7,
+   "drags_in_tracker_ms": 0.0,
+   "own_ms_alone": 0.09,
+   "own_ms_together": null,
+   "own_p95_ms_together": null,
+   "own_max_ms_together": null,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.7,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 7.0,
+   "post_cpu_s": 4.9,
+   "verdict_arrives": "6:00 (T_arr + 0 s)"
+  },
+  {
+   "module": "pre-arrival-safety-huddle",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 0.87,
+   "own_ms_together": 1.786,
+   "own_p95_ms_together": 8.239,
+   "own_max_ms_together": 571.088,
+   "cpu_cores_mean": 0.02,
+   "cpu_cores_burst": 1.6,
+   "ram_gb": 0.83,
+   "measured_in_real_time": false,
+   "post_job_s": 22.5,
+   "post_cpu_s": 35.3,
+   "verdict_arrives": "7:00 (T_arr + 60 s)"
+  },
+  {
+   "module": "fod-walk-completed",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 1.32,
+   "own_ms_together": 1.723,
+   "own_p95_ms_together": 12.169,
+   "own_max_ms_together": 1544.388,
+   "cpu_cores_mean": 0.01,
+   "cpu_cores_burst": 1.5,
+   "ram_gb": 1.77,
+   "measured_in_real_time": false,
+   "post_job_s": 20.6,
+   "post_cpu_s": 30.2,
+   "verdict_arrives": "6:00 (T_arr + 0 s)"
+  },
+  {
+   "module": "pin-verification",
+   "runs_as_is": "no: two passes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 0.44,
+   "own_ms_together": null,
+   "own_p95_ms_together": null,
+   "own_max_ms_together": null,
+   "cpu_cores_mean": 0.02,
+   "cpu_cores_burst": 1.9,
+   "ram_gb": 1.62,
+   "measured_in_real_time": false,
+   "post_job_s": 27.2,
+   "post_cpu_s": 50.7,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 0.0,
+   "own_ms_alone": 1.26,
+   "own_ms_together": 3.193,
+   "own_p95_ms_together": 7.031,
+   "own_max_ms_together": 571.404,
+   "cpu_cores_mean": 0.03,
+   "cpu_cores_burst": 2.4,
+   "ram_gb": 1.73,
+   "measured_in_real_time": false,
+   "post_job_s": 27.2,
+   "post_cpu_s": 65.5,
+   "verdict_arrives": "24:35 (T_dep + 10 s)"
+  },
+  {
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "runs_as_is": "yes, report shifts",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 0.0,
+   "own_ms_alone": 0.62,
+   "own_ms_together": 1.47,
+   "own_p95_ms_together": 3.34,
+   "own_max_ms_together": 562.521,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.8,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 12.6,
+   "post_cpu_s": 10.1,
+   "verdict_arrives": "24:35 (T_dep + 10 s)"
+  },
+  {
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "runs_as_is": "yes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "chocks"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "drags_in_gm_ms": 3.0,
+   "drags_in_tracker_ms": 2.8,
+   "own_ms_alone": 0.73,
+   "own_ms_together": 1.32,
+   "own_p95_ms_together": 7.536,
+   "own_max_ms_together": 63.103,
+   "cpu_cores_mean": 0.02,
+   "cpu_cores_burst": 1.7,
+   "ram_gb": 2.71,
+   "measured_in_real_time": false,
+   "post_job_s": 25.5,
+   "post_cpu_s": 42.8,
+   "verdict_arrives": "10:05 (T_arr + 245 s)"
+  },
+  {
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "runs_as_is": "yes",
+   "pixels": false,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 0.0,
+   "own_ms_alone": 0.54,
+   "own_ms_together": 0.75,
+   "own_p95_ms_together": 4.367,
+   "own_max_ms_together": 584.66,
+   "cpu_cores_mean": 0.0,
+   "cpu_cores_burst": 0.6,
+   "ram_gb": 0.75,
+   "measured_in_real_time": false,
+   "post_job_s": 11.9,
+   "post_cpu_s": 6.8,
+   "verdict_arrives": "7:04 (T_arr + 64 s)"
+  },
+  {
+   "module": "safety-zone-confirmed-clear",
+   "runs_as_is": "no: two passes",
+   "pixels": true,
+   "heads": [
+    "gm",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane"
+   ],
+   "drags_in_gm_ms": 5.8,
+   "drags_in_tracker_ms": 0.0,
+   "own_ms_alone": 0.25,
+   "own_ms_together": null,
+   "own_p95_ms_together": null,
+   "own_max_ms_together": null,
+   "cpu_cores_mean": 0.04,
+   "cpu_cores_burst": 1.1,
+   "ram_gb": 1.76,
+   "measured_in_real_time": false,
+   "post_job_s": 83.2,
+   "post_cpu_s": 93.7,
+   "verdict_arrives": "\u2014"
+  }
+ ],
+ "sets": {
+  "pushback and belt loader, no pixels": {
+   "modules": [
+    "3-stop-brake-check",
+    "pushback-pathway-confirmed-clear-of-obstacles",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "beltloader-chocks",
+    "bl_rear_cone",
+    "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked"
+   ],
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "gm_ms": 19.2,
+   "tracker_ms": 20.6,
+   "hand_off_ms": 5.7,
+   "frame_path_ms": 45.5,
+   "of_budget": 0.36,
+   "frame_path_if_modules_were_inline_ms": 49.2,
+   "streams_per_gpu_by_frame_time": 2,
+   "cpu_cores_mean_per_stream": 0.4,
+   "cpu_cores_burst_of_the_heaviest_module": 0.9,
+   "ram_gb_per_stream": 8.0,
+   "post_processing_s_per_event": 876,
+   "event_s": 2160.0,
+   "real_time_over_post_one_stream_per_gpu": 2.47,
+   "real_time_over_post_gpu_shared": 1.23,
+   "not_ready": []
+  },
+  "arrival": {
+   "modules": [
+    "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "cones-placed-in-proper-positions-and-timely",
+    "fod-walk-completed",
+    "pre-arrival-safety-huddle",
+    "lead-marshaller-and-wing-walkers-in-position"
+   ],
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "person"
+   ],
+   "gm_ms": 19.2,
+   "tracker_ms": 7.7,
+   "hand_off_ms": 5.7,
+   "frame_path_ms": 32.6,
+   "of_budget": 0.26,
+   "frame_path_if_modules_were_inline_ms": 38.6,
+   "streams_per_gpu_by_frame_time": 3,
+   "cpu_cores_mean_per_stream": 0.5,
+   "cpu_cores_burst_of_the_heaviest_module": 3.4,
+   "ram_gb_per_stream": 10.8,
+   "post_processing_s_per_event": 698,
+   "event_s": 2160.0,
+   "real_time_over_post_one_stream_per_gpu": 3.09,
+   "real_time_over_post_gpu_shared": 1.03,
+   "not_ready": []
+  },
+  "pushback trio + the three heavy pixel modules": {
+   "modules": [
+    "3-stop-brake-check",
+    "pushback-pathway-confirmed-clear-of-obstacles",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "safety-vests-secured-to-body",
+    "safety-handrails-fully-extended",
+    "handrails-on-gse-being-used"
+   ],
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "gm_ms": 19.2,
+   "tracker_ms": 20.6,
+   "hand_off_ms": 5.7,
+   "frame_path_ms": 45.5,
+   "of_budget": 0.36,
+   "frame_path_if_modules_were_inline_ms": 80.5,
+   "streams_per_gpu_by_frame_time": 2,
+   "cpu_cores_mean_per_stream": 2.0,
+   "cpu_cores_burst_of_the_heaviest_module": 5.2,
+   "ram_gb_per_stream": 11.5,
+   "post_processing_s_per_event": 1498,
+   "event_s": 2160.0,
+   "real_time_over_post_one_stream_per_gpu": 1.44,
+   "real_time_over_post_gpu_shared": 0.72,
+   "not_ready": []
+  },
+  "every module that runs as it is": {
+   "modules": [
+    "handrails-on-gse-being-used",
+    "gse-chocks",
+    "safety-vests-secured-to-body",
+    "beltloader-chocks",
+    "safety-handrails-fully-extended",
+    "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "3-stop-brake-check",
+    "bl_rear_cone",
+    "all-cargo-bin-doors-opened-and-verified",
+    "wing-walkers-in-proper-position-and-using-approved-wands",
+    "pushback-pathway-confirmed-clear-of-obstacles",
+    "lead-marshaller-and-wing-walkers-in-position",
+    "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "chocks-and-cones-available-and-staged-for-arrival",
+    "pre-arrival-safety-huddle",
+    "fod-walk-completed",
+    "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+    "cones-placed-in-proper-positions-and-timely",
+    "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "crew-present-10-minutes-prior-to-aircraft-arrival"
+   ],
+   "heads": [
+    "gm",
+    "chocks",
+    "vehicle"
+   ],
+   "classes": [
+    "airplane",
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "gm_ms": 19.2,
+   "tracker_ms": 26.2,
+   "hand_off_ms": 7.4,
+   "frame_path_ms": 52.8,
+   "of_budget": 0.42,
+   "frame_path_if_modules_were_inline_ms": 107.3,
+   "streams_per_gpu_by_frame_time": 1,
+   "cpu_cores_mean_per_stream": 2.5,
+   "cpu_cores_burst_of_the_heaviest_module": 5.2,
+   "ram_gb_per_stream": 30.5,
+   "post_processing_s_per_event": 2019,
+   "event_s": 2160.0,
+   "real_time_over_post_one_stream_per_gpu": 1.07,
+   "real_time_over_post_gpu_shared": 1.07,
+   "not_ready": []
+  }
+ }
+}

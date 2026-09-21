@@ -20,6 +20,7 @@ of the prod output on real data, (d) how to measure that module accuracy has not
 | `rt_module_selection.md` | which modules run in real time (groups A / B / C / not in real time) and what that fixes for GM, the tracker, the stage detector and the event context | Valentyn (module-porter) | **done 15.09** — PF-Q2-07, ADR-004 |
 | `alert_label_queue.json` | wave-1 fails of the monthly report to be labelled with violation moments | Valentyn (qa-parity) | **done 15.09** — input for PF-Q2-09 |
 | `rt_module_cost.md` + `.json` | `scripts/rt_module_cost.py` (every module alone behind its pseudo-GM: decisive minutes at 1x, whole event live vs batch), `scripts/rt_shared_cost.py`, `scripts/rt_joint_run.py` (the ready modules together), the `mod:sub` pass of the test set; assembled by `scripts/rt_module_report.py` | Valentyn (qa-parity) | **done 19.09**: 20 of 27 modules run in real time as they are with the batch verdict; load per module, shared GM / tracker cost, cost of sets, comparison with post-processing (PF-Q2-15) |
+| `rt_environment.md` + `.json` | `scripts/rt_environment.py` on the measurements of `rt_module_cost` (`scripts/rt_post_cost.py`, `scripts/rt_joint_run.py`, `scripts/rt_resource_fit.py`) | Valentyn (qa-parity) | **done 21.09**: what each module adds to one real-time environment (heads and tracked classes it drags in, own work, CPU, RAM), sizing of example sets of 5-6 modules (frame path, streams per GPU, real time against post-processing); `--modules a,b,c` sizes any set |
 
 ## Data for measurements available locally
 
