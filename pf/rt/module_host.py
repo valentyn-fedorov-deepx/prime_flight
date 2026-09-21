@@ -43,13 +43,29 @@ from pf.rt.runtime import Output
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def _stats(times: list) -> dict:
+def _own_resources(cpu_s_at_ready: float | None = None) -> dict:
+    """What this host process itself used: CPU seconds of all its threads and its peak memory."""
+    try:
+        import psutil
+
+        me = psutil.Process()
+        cpu = sum(me.cpu_times()[:2])
+        mem = me.memory_info()
+        rec = {"cpu_s": round(cpu, 1), "rss_peak_gb": round(getattr(mem, "peak_wset", mem.rss) / 2**30, 2)}
+        if cpu_s_at_ready is not None:
+            rec["cpu_s_after_ready"] = round(cpu - cpu_s_at_ready, 1)
+        return rec
+    except Exception:  # accounting must never fail a module
+        return {}
+
+
+def _stats(times: list, resources: dict | None = None) -> dict:
     if not times:
-        return {"frames": 0}
+        return {"frames": 0, **(resources or {})}
     ordered = sorted(times)
     pick = lambda q: ordered[min(len(ordered) - 1, int(q * len(ordered)))]
     return {"frames": len(times), "mean_ms": round(1000 * sum(times) / len(times), 3), "p95_ms": round(1000 * pick(0.95), 3),
-            "max_ms": round(1000 * ordered[-1], 3)}
+            "max_ms": round(1000 * ordered[-1], 3), "busy_s": round(sum(times), 1), **(resources or {})}
 
 
 class SharedFrameRing:
@@ -105,6 +121,7 @@ def _host_main(frames_conn, outs_conn, kwargs: dict, manifest: dict, fps: float,
         adapter = ProductionModuleAdapter(**kwargs)
         adapter.configure(manifest)
         adapter.start(fps)
+        cpu_ready = _own_resources().get("cpu_s")
         outs_conn.send(("ready",))
         while True:
             msg = frames_conn.recv()
@@ -121,10 +138,11 @@ def _host_main(frames_conn, outs_conn, kwargs: dict, manifest: dict, fps: float,
                     outs_conn.send(("outs", [asdict(o) for o in outs]))
             elif msg[0] == "close":
                 outs = adapter.close()
-                outs_conn.send(("closed", [asdict(o) for o in outs], _stats(times)))
+                outs_conn.send(("closed", [asdict(o) for o in outs], _stats(times, _own_resources(cpu_ready))))
                 return
     except Exception as e:  # report instead of dying silently: the parent turns it into an output
-        outs_conn.send(("failed", f"{type(e).__name__}: {str(e)[:400]}", traceback.format_exc()[-3000:], _stats(times)))
+        outs_conn.send(("failed", f"{type(e).__name__}: {str(e)[:400]}", traceback.format_exc()[-3000:],
+                        _stats(times, _own_resources())))
     finally:
         if shm is not None:
             shm.close()

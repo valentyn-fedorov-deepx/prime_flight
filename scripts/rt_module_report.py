@@ -172,6 +172,7 @@ def main() -> int:
     gm_table, trk_table, spread = shared_tables(records)
     frames = max((r.get("whole_event") or {}).get("frames") or 0 for r in records.values())
 
+    clean_post = load(os.path.join(cost_dir, "post_jobs.json")) or {}  # scripts/rt_post_cost.py: one job at a time, quiet machine
     rows = []
     for module, rec in records.items():
         verdict, why = classify(rec)
@@ -197,8 +198,7 @@ def main() -> int:
                                                     "decided_after_frame", "frames")},
             "verdict_arrives": when(w.get("decided_after_frame"), w.get("frames"), anc),
             "testset_scoped_inputs": identity.get(module) or {},
-            "post_job_module_ms": (rec.get("batch") or {}).get("module_ms_per_frame"),
-            "post_job_module_s": (rec.get("batch") or {}).get("module_seconds"),
+            "post_job_s": ((clean_post.get(module) or {}).get("as_production") or {}).get("wall_s"),
         })
     rows.sort(key=lambda r: (ORDER.get(r["runs_in_real_time_as_is"], 9), r["whole_event_ms"].get("total") or 1e9))
 
@@ -217,13 +217,10 @@ def main() -> int:
             joint[f"{os.path.splitext(other['video'])[0]}_x1"] = other
     quality = {"scoped_vs_full_inputs": (load(os.path.join(ROOT, "out", "testset", "compare_sub_vs_v2.json")) or {}).get("totals"),
                "rt_inputs_vs_production_inputs": (load(os.path.join(ROOT, "out", "testset", "compare_v2_vs_ctl_final.json")) or {}).get("totals")}
-    post_s = sum(r["post_job_module_s"] or 0 for r in rows if r["module"] in ready)
-    live_s = sum((r["whole_event_ms"].get("module") or 0) * frames / 1000.0 for r in rows if r["module"] in ready)
 
     out = {"video": a.video, "frames": frames, "anchors": anc, "budget_ms": BUDGET_MS, "modules": rows,
            "gm_by_head_set_ms": gm_table, "tracker_by_tracked_classes_ms": trk_table, "together_predicted": combos,
-           "together_measured": joint, "testset": quality,
-           "ready_modules_own_seconds_on_this_event": {"as_post_jobs": round(post_s), "as_live_components": round(live_s)}}
+           "together_measured": joint, "testset": quality}
     every_own = combos["every module that runs as it is"]["modules_own_ms"]
 
     def n(v, d=1):
@@ -279,7 +276,7 @@ def main() -> int:
           "played at 1×: what one stream looks like on the machine. `streams per GPU` = 80 % of 125 ms / total. "
           "`GPU time vs packed post` = GPU time this stream holds (125 ms / streams) against the same work done back to back.", "",
           "| module | heads | tracked | GM | tracker | module | **total ms** | of budget | streams per GPU | GPU time vs packed post | "
-          "1×: total ms | 1×: latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | same module as a post job, ms/frame |",
+          "1×: total ms | 1×: latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | same module as a post job, s per event |",
           "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in sorted(rows, key=lambda r: r["whole_event_ms"].get("total") or 1e9):
         ms, dm = r["whole_event_ms"], r["decisive_minutes"]
@@ -290,7 +287,7 @@ def main() -> int:
                  f"{n(ms.get('tracker'))} | {n(ms.get('module'), 2)} | **{n(ms.get('total'))}** | {round(100 * r['of_budget'])} % | "
                  f"{r['streams_per_gpu']} | {n(r['gpu_time_against_packed_post'], 2)}× | {n(dm.get('total_ms'))} | "
                  f"{n(dm.get('frame_latency_p95_s'), 2)} | {n(dm.get('gpu_util_mean'))} | {n(dm.get('gpu_mem_gb'))} | "
-                 f"{n(dm.get('cpu_cores'), 2)} | {n(dm.get('ram_gb'))} | {n(r['post_job_module_ms'], 2)} |")
+                 f"{n(dm.get('cpu_cores'), 2)} | {n(dm.get('ram_gb'))} | {n(r['post_job_s'], 0)} |")
 
     L += ["", "## 3. What is shared", "",
           "Heads and tracked classes are paid once for all the modules of a session (median over the single-module runs, GPU kept busy):", "",
@@ -412,26 +409,85 @@ def main() -> int:
                                          for g, t in totals.items()}
 
     every = combos["every module that runs as it is"]
-    premium = [r["gpu_time_against_packed_post"] for r in rows if r["gpu_time_against_packed_post"] and r["module"] in ready]
-    rt = next((j for j in joint.values() if j.get("speed") == 1), None)
-    machine = (f" Together at real-time speed the {len(rt['modules'])} modules took {rt['machine'].get('rss_peak_gb')} GB RAM, "
-               f"{rt['machine'].get('gpu_mem_over_baseline_gb')} GB GPU memory and {rt['machine'].get('cpu_cores_used')} CPU cores."
-               if rt and rt.get("machine") else "")
-    L += ["", "## 5. Against post-processing", "",
-          "- **Work per frame is not higher.** GM and tracker are the same code in both branches; the causal second-run rows add 0.1 ms. "
-          f"The modules are cheaper live: as post jobs the {len(ready)} modules above took **{post_s:.0f} s** on this event (each job parses "
-          f"the GM and tracker files and decodes the video again), as live components **{live_s:.0f} s** (decoded once, rows handed over in memory).",
-          "- **What real time pays for is the reservation.** A stream holds its share of the GPU for the length of the event, whatever the "
-          "scene; post-processing packs the same work back to back. With 20 % headroom that is the `GPU time vs packed post` column: "
-          f"{min(premium):.2f}–{max(premium):.2f}× for one module, and it falls as modules share a session: "
-          + (f"all {len(rt['modules'])} together measured {rt['ms_per_frame']['total']['mean']:.1f} ms on the frame path (p95 "
-             f"{rt['ms_per_frame']['total']['p95']:.1f}) with the GPU {rt['machine'].get('gpu_util_mean')} % busy, so the card has room "
-             "for a second stream while the 8 cores and the RAM of this machine do not."
-             if rt and rt.get("machine") else
-             f"all {len(ready)} together: {every['together_ms']} ms predicted of 125, one stream per GPU."),
-          "- **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot.",
-          "- **The GPU class.** Production runs on a Tesla T4 (one GPU, 3.3 vCPU, 8 GiB per job). A T4 is an estimated 3–4× slower than this "
-          "card (not measured): single light modules would fit, the full set would not." + machine]
+    rt = next((j for j in joint.values() if j.get("speed") == 1 and j.get("video") == a.video), None)
+    post_jobs = load(os.path.join(cost_dir, "post_jobs.json")) or {}
+    event_s = frames / FPS
+    decode_ms = 2.9  # docs/02_target_architecture.md, frame budget; a post GM job and a post tracker job each decode the video
+    L += ["", "## 5. Against post-processing, module by module", "",
+          f"Same machine, same event ({event_s:.0f} s of video). **Post job**: the command the test set runs for the module "
+          "(`scripts/rt_post_cost.py`: the module on the GM + tracker files, one job at a time on a quiet machine; the timings the "
+          "campaign kept earlier were taken with six jobs sharing the machine and are 3–5 times higher). **Real time, own work**: the "
+          "time the module itself is busy over the event, alone and with the other modules around it. GM and tracker are the same "
+          "code in both branches, so their work per frame is the same; what differs is that a stream **holds** its share of the GPU "
+          f"for the {event_s:.0f} s of the event, while post-processing does the same work back to back.", "",
+          "| module | post job: wall s | CPU s | peak RAM GB | real time, own work s: alone · together | own work, real time ÷ post | "
+          "alone with its pseudo-GM, post: busy s | real time: busy s | real time: held s, card shared | **shared ÷ post** | "
+          "**one stream per card ÷ post** |",
+          "|---|---|---|---|---|---|---|---|---|---|---|"]
+    cost_rows = []
+    together_busy = {m: (h.get("per_frame") or {}) for m, h in ((rt or {}).get("module_hosts") or {}).items()}
+    for r in rows:
+        job = (post_jobs.get(r["module"]) or {}).get("as_production") or {}
+        ms = r["whole_event_ms"]
+        if not job or job.get("error") or ms.get("total") is None:
+            continue
+        two_pass = r["runs_in_real_time_as_is"] == "no: two passes"
+        own_alone = None if two_pass else (ms.get("module") or 0.0) * frames / 1000.0
+        pf = together_busy.get(r["module"]) or {}
+        own_together = pf.get("busy_s") or ((pf.get("mean_ms") or 0.0) * (pf.get("frames") or 0) / 1000.0 or None)
+        post_alone = ((ms.get("gm") or 0.0) + (ms.get("tracker") or 0.0) + 2 * decode_ms) * frames / 1000.0 + job["wall_s"]
+        rt_busy = None if two_pass else ((ms.get("total") or 0.0) + decode_ms) * frames / 1000.0
+        held = None if two_pass or not r["streams_per_gpu"] else event_s / r["streams_per_gpu"]
+        cost_rows.append({"module": r["module"], "two_pass": two_pass, "post_wall_s": job["wall_s"], "post_cpu_s": job.get("cpu_seconds"),
+                          "post_rss_gb": (job.get("machine") or {}).get("rss_peak_gb"), "own_alone_s": own_alone,
+                          "own_together_s": own_together, "own_ratio": (own_alone / job["wall_s"]) if own_alone is not None else None,
+                          "post_alone_s": post_alone, "rt_busy_s": rt_busy, "rt_held_s": held,
+                          "held_ratio": (held / post_alone) if held else None,
+                          "dedicated_ratio": None if two_pass else event_s / post_alone, "ready": r["module"] in ready})
+    for c in sorted(cost_rows, key=lambda c: (c["held_ratio"] is None, c["held_ratio"] or 0)):
+        star = " (two passes: no real-time number)" if c["two_pass"] else ""
+        own = "—" if c["own_alone_s"] is None else f"{c['own_alone_s']:.0f} · {n(c['own_together_s'], 0)}"
+        L.append(f"| {c['module']}{star} | {c['post_wall_s']:.0f} | {n(c['post_cpu_s'], 0)} | {n(c['post_rss_gb'])} | {own} | "
+                 f"{'—' if c['own_ratio'] is None else format(c['own_ratio'], '.2f') + '×'} | {c['post_alone_s']:.0f} | "
+                 f"{n(c['rt_busy_s'], 0)} | {n(c['rt_held_s'], 0)} | "
+                 f"{'—' if c['held_ratio'] is None else '**' + format(c['held_ratio'], '.2f') + '×**'} | "
+                 f"{'—' if c['dedicated_ratio'] is None else '**' + format(c['dedicated_ratio'], '.1f') + '×**'} |")
+    done = [c for c in cost_rows if c["ready"] and c["own_alone_s"] is not None]
+    if done:
+        post_jobs_s = sum(c["post_wall_s"] for c in done)
+        own_alone_s = sum(c["own_alone_s"] for c in done)
+        own_together_s = sum(c["own_together_s"] or 0.0 for c in done)
+        shared_s = (every["gm_ms"] + every["tracker_ms"] + 2 * decode_ms) * frames / 1000.0
+        post_set = shared_s + post_jobs_s
+        ratios = [c["held_ratio"] for c in done if c["held_ratio"]]
+        dedicated = [c["dedicated_ratio"] for c in done if c["dedicated_ratio"]]
+        L += ["", "Reading it:", "",
+              f"- **The module itself costs about the same in both branches, and little**: the {len(done)} modules that run as they are "
+              f"take {post_jobs_s:.0f} s as post jobs and {own_alone_s:.0f} s of their own work live ({own_together_s:.0f} s when they all "
+              f"run together and contend for the 8 cores). The shared part is the bill: GM and tracker over this event are {shared_s:.0f} s "
+              "of work in either branch.",
+              f"- **One module alone with its pseudo-GM: real time holds {min(ratios):.2f}–{max(ratios):.2f}× the GPU time of "
+              "post-processing when streams share the card**, and "
+              f"**{min(dedicated):.1f}–{max(dedicated):.1f}× when a card serves one stream only**. The work is the same; a stream holds a "
+              "slot sized for its busy minutes (20 % headroom, a whole number of streams per card) for the whole event, and a card "
+              "that serves a single light stream idles most of the time: sharing the card between streams is what makes real time "
+              "affordable, not making a module lighter.",
+              f"- **All {len(done)} together**: post-processing is {post_set:.0f} s of work for this event (GM + tracker + the module jobs). "
+              + (f"Live, the frame path took {rt['ms_per_frame']['total']['mean']:.1f} ms of 125 with the GPU "
+                 f"{rt['machine'].get('gpu_util_mean')} % busy: one stream holds a host for the {event_s:.0f} s of the event, so "
+                 f"**{event_s / post_set:.2f}× the post-processing time if a host runs one stream**, {event_s / 2 / post_set:.2f}× if the "
+                 "card is shared by two streams (it has the room; this machine's 8 cores and 27 GB do not)." if rt and rt.get("machine") else ""),
+              "- **As production runs post-processing today** every job (GM, tracker, each module) holds a GPU node of its own for its "
+              f"duration, so the node time of this event is the sum of the jobs, about {post_set:.0f} s on this machine, against "
+              f"{event_s:.0f} s of one bigger node for the live stream. On a T4 the jobs are slower (an estimated 3–4×, not measured), the "
+              "live stream does not fit at all.",
+              "- **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot, "
+              "and the host must be sized for the busiest minutes (about 8 cores, 32 GB RAM, 8 GB GPU memory for the full set)."]
+        out["against_post_processing"] = {"event_s": event_s, "modules": cost_rows, "ready_set": {
+            "post_module_jobs_s": round(post_jobs_s), "rt_own_work_alone_s": round(own_alone_s),
+            "rt_own_work_together_s": round(own_together_s), "gm_tracker_work_s": round(shared_s), "post_total_s": round(post_set)}}
+    else:
+        L += ["", "(no clean post-job timings yet: `python scripts/rt_post_cost.py`)"]
 
     q1, q2 = quality["scoped_vs_full_inputs"], quality["rt_inputs_vs_production_inputs"]
     if q1 and q2:
@@ -583,8 +639,18 @@ def main() -> int:
             line += (f"; a better box rule does not fix it: `largest_alive`, live on the same events, gives {bt['identical']} of "
                      f"{bt['paired']} task verdicts identical, {bt['accuracy_live']} %")
         short.append(line + ".")
-    short.append("- **Against post-processing**: no more work per frame; real time pays for holding the GPU for the length of the event "
-                 "and needs a faster card than the production T4 (section 5).")
+    against = out.get("against_post_processing") or {}
+    if against:
+        held = [c["held_ratio"] for c in against["modules"] if c.get("held_ratio")]
+        alone = [c["dedicated_ratio"] for c in against["modules"] if c.get("dedicated_ratio")]
+        short.append(f"- **Against post-processing**: the work is the same, and the module itself is the small part of it. One module "
+                     f"alone with its pseudo-GM holds {min(held):.1f}–{max(held):.1f}× the GPU time of post-processing when streams share "
+                     f"a card, {min(alone):.1f}–{max(alone):.1f}× when a card serves one stream; the whole set in one session is about "
+                     f"{against['event_s'] / against['ready_set']['post_total_s']:.1f}× with one stream per host. It cannot wait for a free "
+                     "GPU or use spot capacity, and it needs a faster card than the production T4 (section 5).")
+    else:
+        short.append("- **Against post-processing**: no more work per frame; real time pays for holding the GPU for the length of the "
+                     "event and needs a faster card than the production T4 (section 5).")
     L[short_at:short_at] = short + [""]
     json.dump(out, io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.json"), "w", encoding="utf-8", newline="\n"),
               indent=1, default=str)

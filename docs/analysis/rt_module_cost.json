@@ -53,8 +53,7 @@
     "status_same": 68,
     "report_same": 68
    },
-   "post_job_module_ms": 1.79,
-   "post_job_module_s": 30.9
+   "post_job_s": 11.9
   },
   {
    "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
@@ -103,8 +102,7 @@
     "status_same": 2,
     "report_same": 2
    },
-   "post_job_module_ms": 1.48,
-   "post_job_module_s": 25.5
+   "post_job_s": 25.5
   },
   {
    "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
@@ -152,8 +150,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 1.78,
-   "post_job_module_s": 30.7
+   "post_job_s": 27.2
   },
   {
    "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
@@ -202,8 +199,7 @@
     "status_same": 68,
     "report_same": 68
    },
-   "post_job_module_ms": 2.89,
-   "post_job_module_s": 50.0
+   "post_job_s": 12.6
   },
   {
    "module": "fod-walk-completed",
@@ -252,8 +248,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 7.35,
-   "post_job_module_s": 127.0
+   "post_job_s": 20.6
   },
   {
    "module": "pre-arrival-safety-huddle",
@@ -302,8 +297,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 2.95,
-   "post_job_module_s": 51.0
+   "post_job_s": 22.5
   },
   {
    "module": "lead-marshaller-and-wing-walkers-in-position",
@@ -352,8 +346,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 8.99,
-   "post_job_module_s": 155.3
+   "post_job_s": 58.7
   },
   {
    "module": "wing-walkers-in-proper-position-and-using-approved-wands",
@@ -402,8 +395,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 7.72,
-   "post_job_module_s": 133.4
+   "post_job_s": 111.3
   },
   {
    "module": "chocks-and-cones-available-and-staged-for-arrival",
@@ -452,8 +444,7 @@
     "status_same": 68,
     "report_same": 68
    },
-   "post_job_module_ms": 2.4,
-   "post_job_module_s": 41.5
+   "post_job_s": 7.0
   },
   {
    "module": "all-cargo-bin-doors-opened-and-verified",
@@ -502,8 +493,7 @@
     "status_same": 77,
     "report_same": 77
    },
-   "post_job_module_ms": 1.41,
-   "post_job_module_s": 24.4
+   "post_job_s": 7.7
   },
   {
    "module": "safety-handrails-fully-extended",
@@ -552,8 +542,7 @@
     "status_same": 2,
     "report_same": 2
    },
-   "post_job_module_ms": 20.91,
-   "post_job_module_s": 361.3
+   "post_job_s": 46.4
   },
   {
    "module": "3-stop-brake-check",
@@ -602,8 +591,7 @@
     "status_same": 77,
     "report_same": 77
    },
-   "post_job_module_ms": 3.21,
-   "post_job_module_s": 55.4
+   "post_job_s": 16.1
   },
   {
    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
@@ -652,8 +640,7 @@
     "status_same": 67,
     "report_same": 67
    },
-   "post_job_module_ms": 6.53,
-   "post_job_module_s": 112.9
+   "post_job_s": 20.2
   },
   {
    "module": "beltloader-chocks",
@@ -703,8 +690,7 @@
     "status_same": 77,
     "report_same": 77
    },
-   "post_job_module_ms": 2.38,
-   "post_job_module_s": 41.1
+   "post_job_s": 11.8
   },
   {
    "module": "bl_rear_cone",
@@ -753,8 +739,7 @@
     "status_same": 77,
     "report_same": 77
    },
-   "post_job_module_ms": 5.6,
-   "post_job_module_s": 96.7
+   "post_job_s": 11.7
   },
   {
    "module": "safety-vests-secured-to-body",
@@ -801,8 +786,7 @@
     "status_same": 6,
     "report_same": 6
    },
-   "post_job_module_ms": 25.96,
-   "post_job_module_s": 448.6
+   "post_job_s": 369.8
   },
   {
    "module": "gse-chocks",
@@ -853,8 +837,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 13.32,
-   "post_job_module_s": 230.1
+   "post_job_s": 75.7
   },
   {
    "module": "handrails-on-gse-being-used",
@@ -904,8 +887,7 @@
     "status_same": 2,
     "report_same": 2
    },
-   "post_job_module_ms": 88.27,
-   "post_job_module_s": 1525.3
+   "post_job_s": 249.4
   },
   {
    "module": "cones-placed-in-proper-positions-and-timely",
@@ -953,8 +935,7 @@
     "status_same": 90,
     "report_same": 90
    },
-   "post_job_module_ms": 2.26,
-   "post_job_module_s": 39.1
+   "post_job_s": 12.6
   },
   {
    "module": "pushback-pathway-confirmed-clear-of-obstacles",
@@ -1003,8 +984,7 @@
     "status_same": 68,
     "report_same": 68
    },
-   "post_job_module_ms": 5.6,
-   "post_job_module_s": 96.7
+   "post_job_s": 15.7
   },
   {
    "module": "safety-zone-confirmed-clear",
@@ -1052,8 +1032,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 18.3,
-   "post_job_module_s": 316.2
+   "post_job_s": 83.2
   },
   {
    "module": "pin-verification",
@@ -1102,8 +1081,7 @@
     "status_same": 2,
     "report_same": 2
    },
-   "post_job_module_ms": 9.53,
-   "post_job_module_s": 164.7
+   "post_job_s": 27.2
   },
   {
    "module": "hand-signals",
@@ -1153,8 +1131,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 26.83,
-   "post_job_module_s": 463.6
+   "post_job_s": 90.6
   },
   {
    "module": "aircraft-chocks",
@@ -1210,8 +1187,7 @@
     "status_same": 4,
     "report_same": 4
    },
-   "post_job_module_ms": 10.21,
-   "post_job_module_s": 176.5
+   "post_job_s": 38.4
   },
   {
    "module": "hair-policy",
@@ -1250,8 +1226,7 @@
    },
    "verdict_arrives": "\u2014",
    "testset_scoped_inputs": {},
-   "post_job_module_ms": null,
-   "post_job_module_s": null
+   "post_job_s": null
   },
   {
    "module": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
@@ -1290,8 +1265,7 @@
    },
    "verdict_arrives": "\u2014",
    "testset_scoped_inputs": {},
-   "post_job_module_ms": null,
-   "post_job_module_s": null
+   "post_job_s": null
   },
   {
    "module": "pre-departure-walk-around-completed",
@@ -1330,8 +1304,7 @@
    },
    "verdict_arrives": "\u2014",
    "testset_scoped_inputs": {},
-   "post_job_module_ms": null,
-   "post_job_module_s": null
+   "post_job_s": null
   }
  ],
  "gm_by_head_set_ms": {
@@ -6591,10 +6564,6 @@
    "missing": 1108
   }
  },
- "ready_modules_own_seconds_on_this_event": {
-  "as_post_jobs": 3677,
-  "as_live_components": 941
- },
  "live_vs_batch_together": {
   "clean": {
    "module_event_pairs": 70,
@@ -6605,6 +6574,402 @@
    "module_event_pairs": 148,
    "verdict_identical": 112,
    "report_identical": 69
+  }
+ },
+ "against_post_processing": {
+  "event_s": 2160.0,
+  "modules": [
+   {
+    "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+    "two_pass": false,
+    "post_wall_s": 11.9,
+    "post_cpu_s": 6.8,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 9.3312,
+    "own_together_s": 12.96,
+    "own_ratio": 0.7841344537815127,
+    "post_alone_s": 436.988,
+    "rt_busy_s": 386.55359999999996,
+    "rt_held_s": 432.0,
+    "held_ratio": 0.988585498915302,
+    "dedicated_ratio": 4.9429274945765105,
+    "ready": true
+   },
+   {
+    "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "two_pass": false,
+    "post_wall_s": 25.5,
+    "post_cpu_s": 42.8,
+    "post_rss_gb": 2.71,
+    "own_alone_s": 12.6144,
+    "own_together_s": 22.809600000000003,
+    "own_ratio": 0.49468235294117646,
+    "post_alone_s": 450.588,
+    "rt_busy_s": 388.9728,
+    "rt_held_s": 432.0,
+    "held_ratio": 0.9587472369437268,
+    "dedicated_ratio": 4.793736184718634,
+    "ready": true
+   },
+   {
+    "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+    "two_pass": false,
+    "post_wall_s": 27.2,
+    "post_cpu_s": 65.5,
+    "post_rss_gb": 1.73,
+    "own_alone_s": 21.7728,
+    "own_together_s": 55.17504,
+    "own_ratio": 0.8004705882352942,
+    "post_alone_s": 448.48639999999995,
+    "rt_busy_s": 394.84799999999996,
+    "rt_held_s": 432.0,
+    "held_ratio": 0.9632399109538217,
+    "dedicated_ratio": 4.816199554769108,
+    "ready": true
+   },
+   {
+    "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+    "two_pass": false,
+    "post_wall_s": 12.6,
+    "post_cpu_s": 10.1,
+    "post_rss_gb": 0.77,
+    "own_alone_s": 5.702400000000001,
+    "own_together_s": 48.2112,
+    "own_ratio": 0.4525714285714286,
+    "post_alone_s": 492.29280000000006,
+    "rt_busy_s": 437.52959999999996,
+    "rt_held_s": 540.0,
+    "held_ratio": 1.0969081814724895,
+    "dedicated_ratio": 4.387632725889958,
+    "ready": true
+   },
+   {
+    "module": "fod-walk-completed",
+    "two_pass": false,
+    "post_wall_s": 20.6,
+    "post_cpu_s": 30.2,
+    "post_rss_gb": 1.77,
+    "own_alone_s": 22.809600000000003,
+    "own_together_s": 29.77344,
+    "own_ratio": 1.1072621359223302,
+    "post_alone_s": 490.0976,
+    "rt_busy_s": 444.26879999999994,
+    "rt_held_s": 540.0,
+    "held_ratio": 1.1018213515022315,
+    "dedicated_ratio": 4.407285406008926,
+    "ready": true
+   },
+   {
+    "module": "pre-arrival-safety-huddle",
+    "two_pass": false,
+    "post_wall_s": 22.5,
+    "post_cpu_s": 35.3,
+    "post_rss_gb": 0.83,
+    "own_alone_s": 15.0336,
+    "own_together_s": 30.862080000000002,
+    "own_ratio": 0.66816,
+    "post_alone_s": 501.67440000000005,
+    "rt_busy_s": 446.5152,
+    "rt_held_s": 540.0,
+    "held_ratio": 1.0763953671943396,
+    "dedicated_ratio": 4.305581468777358,
+    "ready": true
+   },
+   {
+    "module": "lead-marshaller-and-wing-walkers-in-position",
+    "two_pass": false,
+    "post_wall_s": 58.7,
+    "post_cpu_s": 201.6,
+    "post_rss_gb": 2.42,
+    "own_alone_s": 43.2,
+    "own_together_s": 54.31103999999999,
+    "own_ratio": 0.7359454855195912,
+    "post_alone_s": 559.4744000000001,
+    "rt_busy_s": 496.62719999999996,
+    "rt_held_s": 720.0,
+    "held_ratio": 1.2869221540788995,
+    "dedicated_ratio": 3.860766462236699,
+    "ready": true
+   },
+   {
+    "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+    "two_pass": false,
+    "post_wall_s": 111.3,
+    "post_cpu_s": 558.7,
+    "post_rss_gb": 1.87,
+    "own_alone_s": 88.8192,
+    "own_together_s": 143.21664,
+    "own_ratio": 0.7980161725067385,
+    "post_alone_s": 580.7976,
+    "rt_busy_s": 510.1056,
+    "rt_held_s": 720.0,
+    "held_ratio": 1.2396745441096864,
+    "dedicated_ratio": 3.7190236323290593,
+    "ready": true
+   },
+   {
+    "module": "chocks-and-cones-available-and-staged-for-arrival",
+    "two_pass": false,
+    "post_wall_s": 7.0,
+    "post_cpu_s": 4.9,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 1.5552000000000001,
+    "own_together_s": null,
+    "own_ratio": 0.2221714285714286,
+    "post_alone_s": 644.1136,
+    "rt_busy_s": 591.84,
+    "rt_held_s": 720.0,
+    "held_ratio": 1.1178152425286472,
+    "dedicated_ratio": 3.353445727585941,
+    "ready": true
+   },
+   {
+    "module": "all-cargo-bin-doors-opened-and-verified",
+    "two_pass": false,
+    "post_wall_s": 7.7,
+    "post_cpu_s": 5.9,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 15.0336,
+    "own_together_s": 13.44384,
+    "own_ratio": 1.9524155844155844,
+    "post_alone_s": 659.6744,
+    "rt_busy_s": 619.1424000000001,
+    "rt_held_s": 720.0,
+    "held_ratio": 1.0914475383613491,
+    "dedicated_ratio": 3.2743426150840476,
+    "ready": true
+   },
+   {
+    "module": "safety-handrails-fully-extended",
+    "two_pass": false,
+    "post_wall_s": 46.4,
+    "post_cpu_s": 214.9,
+    "post_rss_gb": 1.34,
+    "own_alone_s": 40.9536,
+    "own_together_s": 61.39584,
+    "own_ratio": 0.8826206896551725,
+    "post_alone_s": 701.4848,
+    "rt_busy_s": 648.0,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.5395914494512213,
+    "dedicated_ratio": 3.0791828989024426,
+    "ready": true
+   },
+   {
+    "module": "3-stop-brake-check",
+    "two_pass": false,
+    "post_wall_s": 16.1,
+    "post_cpu_s": 14.4,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 11.0592,
+    "own_together_s": 27.838079999999998,
+    "own_ratio": 0.6869068322981366,
+    "post_alone_s": 764.8424,
+    "rt_busy_s": 712.1088000000001,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.4120556077958022,
+    "dedicated_ratio": 2.8241112155916044,
+    "ready": true
+   },
+   {
+    "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "two_pass": false,
+    "post_wall_s": 20.2,
+    "post_cpu_s": 18.2,
+    "post_rss_gb": 0.76,
+    "own_alone_s": 26.6112,
+    "own_together_s": 53.44704,
+    "own_ratio": 1.3173861386138614,
+    "post_alone_s": 755.6368000000001,
+    "rt_busy_s": 714.1824,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.4292580774255566,
+    "dedicated_ratio": 2.858516154851113,
+    "ready": true
+   },
+   {
+    "module": "beltloader-chocks",
+    "two_pass": false,
+    "post_wall_s": 11.8,
+    "post_cpu_s": 9.9,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 5.8752,
+    "own_together_s": 24.693120000000004,
+    "own_ratio": 0.49789830508474575,
+    "post_alone_s": 792.3376,
+    "rt_busy_s": 738.72,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.3630553440856525,
+    "dedicated_ratio": 2.726110688171305,
+    "ready": true
+   },
+   {
+    "module": "bl_rear_cone",
+    "two_pass": false,
+    "post_wall_s": 11.7,
+    "post_cpu_s": 10.1,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 6.3936,
+    "own_together_s": 25.38432,
+    "own_ratio": 0.5464615384615386,
+    "post_alone_s": 822.6504,
+    "rt_busy_s": 769.6511999999999,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.3128298484994354,
+    "dedicated_ratio": 2.625659696998871,
+    "ready": true
+   },
+   {
+    "module": "safety-vests-secured-to-body",
+    "two_pass": false,
+    "post_wall_s": 369.8,
+    "post_cpu_s": 1937.5,
+    "post_rss_gb": 1.66,
+    "own_alone_s": 324.0,
+    "own_together_s": 462.17088,
+    "own_ratio": 0.8761492698756084,
+    "post_alone_s": 749.7872,
+    "rt_busy_s": 655.2576,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.440408691959532,
+    "dedicated_ratio": 2.880817383919064,
+    "ready": true
+   },
+   {
+    "module": "gse-chocks",
+    "two_pass": false,
+    "post_wall_s": 75.7,
+    "post_cpu_s": 150.3,
+    "post_rss_gb": 2.41,
+    "own_alone_s": 56.16,
+    "own_together_s": 77.9328,
+    "own_ratio": 0.7418758256274768,
+    "post_alone_s": 870.58,
+    "rt_busy_s": 802.8288,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.2405522754944978,
+    "dedicated_ratio": 2.4811045509889955,
+    "ready": true
+   },
+   {
+    "module": "handrails-on-gse-being-used",
+    "two_pass": false,
+    "post_wall_s": 249.4,
+    "post_cpu_s": 1218.6,
+    "post_rss_gb": 2.75,
+    "own_alone_s": 215.30880000000002,
+    "own_together_s": 308.96639999999996,
+    "own_ratio": 0.8633071371291099,
+    "post_alone_s": 945.2656,
+    "rt_busy_s": 863.1359999999999,
+    "rt_held_s": 1080.0,
+    "held_ratio": 1.142536023737667,
+    "dedicated_ratio": 2.285072047475334,
+    "ready": true
+   },
+   {
+    "module": "cones-placed-in-proper-positions-and-timely",
+    "two_pass": false,
+    "post_wall_s": 12.6,
+    "post_cpu_s": 10.1,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 10.7136,
+    "own_together_s": 25.4016,
+    "own_ratio": 0.8502857142857143,
+    "post_alone_s": 437.34240000000005,
+    "rt_busy_s": 387.2448,
+    "rt_held_s": 432.0,
+    "held_ratio": 0.9877843995917157,
+    "dedicated_ratio": 4.938921997958579,
+    "ready": true
+   },
+   {
+    "module": "pushback-pathway-confirmed-clear-of-obstacles",
+    "two_pass": false,
+    "post_wall_s": 15.7,
+    "post_cpu_s": 12.9,
+    "post_rss_gb": 0.75,
+    "own_alone_s": 8.2944,
+    "own_together_s": 28.21824,
+    "own_ratio": 0.5283057324840764,
+    "post_alone_s": 504.724,
+    "rt_busy_s": 449.28,
+    "rt_held_s": 540.0,
+    "held_ratio": 1.06989166356266,
+    "dedicated_ratio": 4.27956665425064,
+    "ready": true
+   },
+   {
+    "module": "safety-zone-confirmed-clear",
+    "two_pass": true,
+    "post_wall_s": 83.2,
+    "post_cpu_s": 93.7,
+    "post_rss_gb": 1.76,
+    "own_alone_s": null,
+    "own_together_s": null,
+    "own_ratio": null,
+    "post_alone_s": 508.1152,
+    "rt_busy_s": null,
+    "rt_held_s": null,
+    "held_ratio": null,
+    "dedicated_ratio": null,
+    "ready": false
+   },
+   {
+    "module": "pin-verification",
+    "two_pass": true,
+    "post_wall_s": 27.2,
+    "post_cpu_s": 50.7,
+    "post_rss_gb": 1.62,
+    "own_alone_s": null,
+    "own_together_s": null,
+    "own_ratio": null,
+    "post_alone_s": 510.52160000000003,
+    "rt_busy_s": null,
+    "rt_held_s": null,
+    "held_ratio": null,
+    "dedicated_ratio": null,
+    "ready": false
+   },
+   {
+    "module": "hand-signals",
+    "two_pass": true,
+    "post_wall_s": 90.6,
+    "post_cpu_s": 257.0,
+    "post_rss_gb": 3.13,
+    "own_alone_s": null,
+    "own_together_s": null,
+    "own_ratio": null,
+    "post_alone_s": 815.6687999999999,
+    "rt_busy_s": null,
+    "rt_held_s": null,
+    "held_ratio": null,
+    "dedicated_ratio": null,
+    "ready": false
+   },
+   {
+    "module": "aircraft-chocks",
+    "two_pass": true,
+    "post_wall_s": 38.4,
+    "post_cpu_s": 84.0,
+    "post_rss_gb": 1.87,
+    "own_alone_s": null,
+    "own_together_s": null,
+    "own_ratio": null,
+    "post_alone_s": 924.3456,
+    "rt_busy_s": null,
+    "rt_held_s": null,
+    "held_ratio": null,
+    "dedicated_ratio": null,
+    "ready": false
+   }
+  ],
+  "ready_set": {
+   "post_module_jobs_s": 1134,
+   "rt_own_work_alone_s": 941,
+   "rt_own_work_together_s": 1506,
+   "gm_tracker_work_s": 885,
+   "post_total_s": 2019
   }
  },
  "main_aircraft_hand_over": {

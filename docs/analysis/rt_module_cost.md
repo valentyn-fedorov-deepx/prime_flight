@@ -10,7 +10,7 @@ Every module was run **alone as a component**: the unchanged production module b
 - **Modules**: 20 of 27 run in real time unchanged (3 of them answer only when the session closes); 4 need their second pass removed; 3 are not hosted.
 - **Load**: alone a module costs 19–47 ms of 125, nearly all of it the shared GM and tracker. All 20 together: 56 ms on the frame path, GPU 24.5 % busy; the bound is CPU and RAM (about 8 cores, 23 GB).
 - **Accuracy**: the real-time inputs and the scoped rows leave the test-set verdicts as they are (section 6). Live, on the events where the causal rows carry the arriving aircraft as batch does: 70 of 70 verdicts identical. On the events where they hand it over late (about one in six): 112 of 148, mostly turned into Not observed; over the test set that is **83.8 % against 86.71 %**. The cause is how the shared causal rows decide which aircraft belongs to the turnaround, not the modules (section 7); a better box rule does not fix it: `largest_alive`, live on the same events, gives 820 of 858 task verdicts identical, 82.87 %.
-- **Against post-processing**: no more work per frame; real time pays for holding the GPU for the length of the event and needs a faster card than the production T4 (section 5).
+- **Against post-processing**: the work is the same, and the module itself is the small part of it. One module alone with its pseudo-GM holds 1.0–1.5× the GPU time of post-processing when streams share a card, 2.3–4.9× when a card serves one stream; the whole set in one session is about 1.1× with one stream per host. It cannot wait for a free GPU or use spot capacity, and it needs a faster card than the production T4 (section 5).
 
 ## 1. Does it run in real time as it is, with the batch verdict
 
@@ -57,32 +57,32 @@ The last column: the module over the whole test set (video runs) with only the r
 
 *Whole event, GPU kept busy* is the work per frame (the GPU does not clock down): this is what adds up and what a second stream on the same GPU competes for. *Decisive minutes at real-time speed* is the stretch where the module decides (up to 6 min), played at 1×: what one stream looks like on the machine. `streams per GPU` = 80 % of 125 ms / total. `GPU time vs packed post` = GPU time this stream holds (125 ms / streams) against the same work done back to back.
 
-| module | heads | tracked | GM | tracker | module | **total ms** | of budget | streams per GPU | GPU time vs packed post | 1×: total ms | 1×: latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | same module as a post job, ms/frame |
+| module | heads | tracked | GM | tracker | module | **total ms** | of budget | streams per GPU | GPU time vs packed post | 1×: total ms | 1×: latency p95 s | GPU util % | GPU mem GB | CPU cores | RAM GB | same module as a post job, s per event |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| safety-zone-confirmed-clear (first pass only) | gm+vehicle | airplane | 14.0 | 4.8 | 0.25 | **19.2** | 15 % | 5 | 1.30× | 18.5 | 0.13 | 3.3 | 1.6 | 0.29 | 3.7 | 18.30 |
-| crew-present-10-minutes-prior-to-aircraft-arrival | gm+vehicle | airplane | 13.9 | 4.9 | 0.54 | **19.5** | 16 % | 5 | 1.28× | 17.6 | 0.13 | 2.9 | 1.6 | 0.29 | 2.7 | 1.79 |
-| cones-placed-in-proper-positions-and-timely | gm+vehicle | airplane | 13.9 | 4.9 | 0.62 | **19.5** | 16 % | 5 | 1.28× | 24.9 | 0.13 | 8.2 | 1.6 | 0.35 | 3.0 | 2.26 |
-| steering-by-pass-pin-installed-or-steering-otherwise-bypassed | gm+chocks | airplane+person | 11.5 | 7.3 | 0.73 | **19.6** | 16 % | 5 | 1.27× | 29.0 | 0.14 | 9.6 | 2.0 | 0.36 | 5.0 | 1.48 |
-| conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed | gm+vehicle | airplane | 13.9 | 4.6 | 1.26 | **19.9** | 16 % | 5 | 1.25× | 25.9 | 0.13 | 9.9 | 1.8 | 0.37 | 3.4 | 1.78 |
-| pushback-does-not-start-until-wing-walkers-are-in-place-and-ready | gm+vehicle | airplane+person | 14.2 | 7.8 | 0.33 | **22.4** | 18 % | 4 | 1.39× | 29.2 | 0.13 | 8.3 | 1.8 | 0.38 | 3.0 | 2.89 |
-| pin-verification (first pass only) | gm+vehicle | airplane+person | 14.5 | 7.7 | 0.44 | **22.7** | 18 % | 4 | 1.37× | 28.6 | 0.14 | 7.6 | 1.9 | 0.37 | 3.7 | 9.53 |
-| fod-walk-completed | gm+vehicle | airplane+person | 14.0 | 7.3 | 1.32 | **22.8** | 18 % | 4 | 1.37× | 23.6 | 0.14 | 5.7 | 2.0 | 0.34 | 3.7 | 7.35 |
-| pre-arrival-safety-huddle | gm+vehicle | airplane+person | 14.3 | 7.7 | 0.87 | **22.9** | 18 % | 4 | 1.36× | 29.3 | 0.14 | 5.7 | 1.8 | 0.38 | 3.5 | 2.95 |
-| pushback-pathway-confirmed-clear-of-obstacles | gm+chocks+vehicle | airplane | 17.5 | 5.0 | 0.48 | **23.1** | 18 % | 4 | 1.35× | 30.8 | 0.14 | 10.8 | 2.6 | 0.46 | 3.0 | 5.60 |
-| lead-marshaller-and-wing-walkers-in-position | gm+vehicle | airplane+person | 14.9 | 8.2 | 2.50 | **25.8** | 21 % | 3 | 1.61× | 34.1 | 0.18 | 11.7 | 2.1 | 1.27 | 4.4 | 8.99 |
-| wing-walkers-in-proper-position-and-using-approved-wands | gm+vehicle | airplane+person | 14.1 | 7.3 | 5.14 | **26.6** | 21 % | 3 | 1.57× | 56.3 | 1.42 | 22.1 | 2.0 | 2.01 | 3.9 | 7.72 |
-| chocks-and-cones-available-and-staged-for-arrival | gm+chocks+vehicle | airplane | 24.7 | 6.4 | 0.09 | **31.4** | 25 % | 3 | 1.33× | 32.8 | 0.15 | 19.0 | 2.6 | 0.48 | 3.0 | 2.40 |
-| all-cargo-bin-doors-opened-and-verified | gm+vehicle | airplane+beltloader | 14.0 | 17.9 | 0.87 | **32.9** | 26 % | 3 | 1.27× | 40.3 | 0.15 | 5.7 | 1.9 | 0.48 | 3.2 | 1.41 |
-| safety-handrails-fully-extended | gm+vehicle | airplane+beltloader | 14.3 | 17.8 | 2.37 | **34.6** | 28 % | 2 | 1.81× | 39.3 | 0.15 | 9.8 | 1.9 | 1.36 | 3.7 | 20.91 |
-| safety-vests-secured-to-body | gm | person | 8.5 | 7.7 | 18.75 | **35.0** | 28 % | 2 | 1.78× | 45.0 | 0.16 | 9.7 | 1.3 | 5.53 | 3.3 | 25.96 |
-| hand-signals (first pass only) | gm+vehicle | airplane+beltloader+person | 14.9 | 21.3 | 0.28 | **36.6** | 29 % | 2 | 1.71× | 39.5 | 0.15 | 13.9 | 2.1 | 0.48 | 4.0 | 26.83 |
-| 3-stop-brake-check | gm+vehicle | airplane+beltloader | 15.9 | 21.6 | 0.64 | **38.3** | 31 % | 2 | 1.63× | 38.9 | 0.15 | 12.7 | 1.9 | 0.46 | 3.3 | 3.21 |
-| cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked | gm+vehicle | airplane+beltloader | 15.6 | 21.2 | 1.54 | **38.4** | 31 % | 2 | 1.63× | 46.3 | 0.17 | 17.2 | 1.9 | 0.50 | 3.3 | 6.53 |
-| beltloader-chocks | gm+chocks+vehicle | airplane+beltloader | 19.2 | 20.2 | 0.34 | **39.9** | 32 % | 2 | 1.57× | 41.8 | 0.15 | 9.9 | 2.9 | 0.58 | 3.4 | 2.38 |
-| bl_rear_cone | gm+vehicle | airplane+beltloader | 17.9 | 23.2 | 0.37 | **41.6** | 33 % | 2 | 1.50× | 37.9 | 0.15 | 9.5 | 1.9 | 0.46 | 3.2 | 5.60 |
-| gse-chocks | gm+chocks+vehicle | beltloader+gse+person | 17.4 | 22.8 | 3.25 | **43.6** | 35 % | 2 | 1.43× | 48.2 | 0.18 | 7.3 | 3.4 | 0.67 | 4.1 | 13.32 |
-| aircraft-chocks (first pass only) | gm+chocks+vehicle | airplane+beltloader+gse+person | 19.2 | 26.2 | 0.48 | **46.1** | 37 % | 2 | 1.36× | 44.9 | 0.16 | 16.9 | 3.0 | 0.59 | 3.8 | 10.21 |
-| handrails-on-gse-being-used | gm+vehicle | airplane+beltloader+person | 14.7 | 19.8 | 12.46 | **47.0** | 38 % | 2 | 1.33× | 60.2 | 0.20 | 13.8 | 2.3 | 3.72 | 4.4 | 88.27 |
+| safety-zone-confirmed-clear (first pass only) | gm+vehicle | airplane | 14.0 | 4.8 | 0.25 | **19.2** | 15 % | 5 | 1.30× | 18.5 | 0.13 | 3.3 | 1.6 | 0.29 | 3.7 | 83 |
+| crew-present-10-minutes-prior-to-aircraft-arrival | gm+vehicle | airplane | 13.9 | 4.9 | 0.54 | **19.5** | 16 % | 5 | 1.28× | 17.6 | 0.13 | 2.9 | 1.6 | 0.29 | 2.7 | 12 |
+| cones-placed-in-proper-positions-and-timely | gm+vehicle | airplane | 13.9 | 4.9 | 0.62 | **19.5** | 16 % | 5 | 1.28× | 24.9 | 0.13 | 8.2 | 1.6 | 0.35 | 3.0 | 13 |
+| steering-by-pass-pin-installed-or-steering-otherwise-bypassed | gm+chocks | airplane+person | 11.5 | 7.3 | 0.73 | **19.6** | 16 % | 5 | 1.27× | 29.0 | 0.14 | 9.6 | 2.0 | 0.36 | 5.0 | 26 |
+| conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed | gm+vehicle | airplane | 13.9 | 4.6 | 1.26 | **19.9** | 16 % | 5 | 1.25× | 25.9 | 0.13 | 9.9 | 1.8 | 0.37 | 3.4 | 27 |
+| pushback-does-not-start-until-wing-walkers-are-in-place-and-ready | gm+vehicle | airplane+person | 14.2 | 7.8 | 0.33 | **22.4** | 18 % | 4 | 1.39× | 29.2 | 0.13 | 8.3 | 1.8 | 0.38 | 3.0 | 13 |
+| pin-verification (first pass only) | gm+vehicle | airplane+person | 14.5 | 7.7 | 0.44 | **22.7** | 18 % | 4 | 1.37× | 28.6 | 0.14 | 7.6 | 1.9 | 0.37 | 3.7 | 27 |
+| fod-walk-completed | gm+vehicle | airplane+person | 14.0 | 7.3 | 1.32 | **22.8** | 18 % | 4 | 1.37× | 23.6 | 0.14 | 5.7 | 2.0 | 0.34 | 3.7 | 21 |
+| pre-arrival-safety-huddle | gm+vehicle | airplane+person | 14.3 | 7.7 | 0.87 | **22.9** | 18 % | 4 | 1.36× | 29.3 | 0.14 | 5.7 | 1.8 | 0.38 | 3.5 | 22 |
+| pushback-pathway-confirmed-clear-of-obstacles | gm+chocks+vehicle | airplane | 17.5 | 5.0 | 0.48 | **23.1** | 18 % | 4 | 1.35× | 30.8 | 0.14 | 10.8 | 2.6 | 0.46 | 3.0 | 16 |
+| lead-marshaller-and-wing-walkers-in-position | gm+vehicle | airplane+person | 14.9 | 8.2 | 2.50 | **25.8** | 21 % | 3 | 1.61× | 34.1 | 0.18 | 11.7 | 2.1 | 1.27 | 4.4 | 59 |
+| wing-walkers-in-proper-position-and-using-approved-wands | gm+vehicle | airplane+person | 14.1 | 7.3 | 5.14 | **26.6** | 21 % | 3 | 1.57× | 56.3 | 1.42 | 22.1 | 2.0 | 2.01 | 3.9 | 111 |
+| chocks-and-cones-available-and-staged-for-arrival | gm+chocks+vehicle | airplane | 24.7 | 6.4 | 0.09 | **31.4** | 25 % | 3 | 1.33× | 32.8 | 0.15 | 19.0 | 2.6 | 0.48 | 3.0 | 7 |
+| all-cargo-bin-doors-opened-and-verified | gm+vehicle | airplane+beltloader | 14.0 | 17.9 | 0.87 | **32.9** | 26 % | 3 | 1.27× | 40.3 | 0.15 | 5.7 | 1.9 | 0.48 | 3.2 | 8 |
+| safety-handrails-fully-extended | gm+vehicle | airplane+beltloader | 14.3 | 17.8 | 2.37 | **34.6** | 28 % | 2 | 1.81× | 39.3 | 0.15 | 9.8 | 1.9 | 1.36 | 3.7 | 46 |
+| safety-vests-secured-to-body | gm | person | 8.5 | 7.7 | 18.75 | **35.0** | 28 % | 2 | 1.78× | 45.0 | 0.16 | 9.7 | 1.3 | 5.53 | 3.3 | 370 |
+| hand-signals (first pass only) | gm+vehicle | airplane+beltloader+person | 14.9 | 21.3 | 0.28 | **36.6** | 29 % | 2 | 1.71× | 39.5 | 0.15 | 13.9 | 2.1 | 0.48 | 4.0 | 91 |
+| 3-stop-brake-check | gm+vehicle | airplane+beltloader | 15.9 | 21.6 | 0.64 | **38.3** | 31 % | 2 | 1.63× | 38.9 | 0.15 | 12.7 | 1.9 | 0.46 | 3.3 | 16 |
+| cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked | gm+vehicle | airplane+beltloader | 15.6 | 21.2 | 1.54 | **38.4** | 31 % | 2 | 1.63× | 46.3 | 0.17 | 17.2 | 1.9 | 0.50 | 3.3 | 20 |
+| beltloader-chocks | gm+chocks+vehicle | airplane+beltloader | 19.2 | 20.2 | 0.34 | **39.9** | 32 % | 2 | 1.57× | 41.8 | 0.15 | 9.9 | 2.9 | 0.58 | 3.4 | 12 |
+| bl_rear_cone | gm+vehicle | airplane+beltloader | 17.9 | 23.2 | 0.37 | **41.6** | 33 % | 2 | 1.50× | 37.9 | 0.15 | 9.5 | 1.9 | 0.46 | 3.2 | 12 |
+| gse-chocks | gm+chocks+vehicle | beltloader+gse+person | 17.4 | 22.8 | 3.25 | **43.6** | 35 % | 2 | 1.43× | 48.2 | 0.18 | 7.3 | 3.4 | 0.67 | 4.1 | 76 |
+| aircraft-chocks (first pass only) | gm+chocks+vehicle | airplane+beltloader+gse+person | 19.2 | 26.2 | 0.48 | **46.1** | 37 % | 2 | 1.36× | 44.9 | 0.16 | 16.9 | 3.0 | 0.59 | 3.8 | 38 |
+| handrails-on-gse-being-used | gm+vehicle | airplane+beltloader+person | 14.7 | 19.8 | 12.46 | **47.0** | 38 % | 2 | 1.33× | 60.2 | 0.20 | 13.8 | 2.3 | 3.72 | 4.4 | 249 |
 
 ## 3. What is shared
 
@@ -193,12 +193,44 @@ One GM, one tracker, the modules the plan runs on that camera, each in its own p
 | **module × event pairs, aircraft handed over late (section 7)** | | | **148** | **112** | **69** | |
 | **module × event pairs, clean** | | | **70** | **70** | **69** | |
 
-## 5. Against post-processing
+## 5. Against post-processing, module by module
 
-- **Work per frame is not higher.** GM and tracker are the same code in both branches; the causal second-run rows add 0.1 ms. The modules are cheaper live: as post jobs the 20 modules above took **3677 s** on this event (each job parses the GM and tracker files and decodes the video again), as live components **941 s** (decoded once, rows handed over in memory).
-- **What real time pays for is the reservation.** A stream holds its share of the GPU for the length of the event, whatever the scene; post-processing packs the same work back to back. With 20 % headroom that is the `GPU time vs packed post` column: 1.25–1.81× for one module, and it falls as modules share a session: all 20 together measured 56.4 ms on the frame path (p95 94.7) with the GPU 24.5 % busy, so the card has room for a second stream while the 8 cores and the RAM of this machine do not.
-- **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot.
-- **The GPU class.** Production runs on a Tesla T4 (one GPU, 3.3 vCPU, 8 GiB per job). A T4 is an estimated 3–4× slower than this card (not measured): single light modules would fit, the full set would not. Together at real-time speed the 20 modules took 18.2 GB RAM, 7.95 GB GPU memory and 4.23 CPU cores.
+Same machine, same event (2160 s of video). **Post job**: the command the test set runs for the module (`scripts/rt_post_cost.py`: the module on the GM + tracker files, one job at a time on a quiet machine; the timings the campaign kept earlier were taken with six jobs sharing the machine and are 3–5 times higher). **Real time, own work**: the time the module itself is busy over the event, alone and with the other modules around it. GM and tracker are the same code in both branches, so their work per frame is the same; what differs is that a stream **holds** its share of the GPU for the 2160 s of the event, while post-processing does the same work back to back.
+
+| module | post job: wall s | CPU s | peak RAM GB | real time, own work s: alone · together | own work, real time ÷ post | alone with its pseudo-GM, post: busy s | real time: busy s | real time: held s, card shared | **shared ÷ post** | **one stream per card ÷ post** |
+|---|---|---|---|---|---|---|---|---|---|---|
+| steering-by-pass-pin-installed-or-steering-otherwise-bypassed | 26 | 43 | 2.7 | 13 · 23 | 0.49× | 451 | 389 | 432 | **0.96×** | **4.8×** |
+| conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed | 27 | 66 | 1.7 | 22 · 55 | 0.80× | 448 | 395 | 432 | **0.96×** | **4.8×** |
+| cones-placed-in-proper-positions-and-timely | 13 | 10 | 0.8 | 11 · 25 | 0.85× | 437 | 387 | 432 | **0.99×** | **4.9×** |
+| crew-present-10-minutes-prior-to-aircraft-arrival | 12 | 7 | 0.8 | 9 · 13 | 0.78× | 437 | 387 | 432 | **0.99×** | **4.9×** |
+| pushback-pathway-confirmed-clear-of-obstacles | 16 | 13 | 0.8 | 8 · 28 | 0.53× | 505 | 449 | 540 | **1.07×** | **4.3×** |
+| pre-arrival-safety-huddle | 22 | 35 | 0.8 | 15 · 31 | 0.67× | 502 | 447 | 540 | **1.08×** | **4.3×** |
+| all-cargo-bin-doors-opened-and-verified | 8 | 6 | 0.8 | 15 · 13 | 1.95× | 660 | 619 | 720 | **1.09×** | **3.3×** |
+| pushback-does-not-start-until-wing-walkers-are-in-place-and-ready | 13 | 10 | 0.8 | 6 · 48 | 0.45× | 492 | 438 | 540 | **1.10×** | **4.4×** |
+| fod-walk-completed | 21 | 30 | 1.8 | 23 · 30 | 1.11× | 490 | 444 | 540 | **1.10×** | **4.4×** |
+| chocks-and-cones-available-and-staged-for-arrival | 7 | 5 | 0.8 | 2 · — | 0.22× | 644 | 592 | 720 | **1.12×** | **3.4×** |
+| handrails-on-gse-being-used | 249 | 1219 | 2.8 | 215 · 309 | 0.86× | 945 | 863 | 1080 | **1.14×** | **2.3×** |
+| wing-walkers-in-proper-position-and-using-approved-wands | 111 | 559 | 1.9 | 89 · 143 | 0.80× | 581 | 510 | 720 | **1.24×** | **3.7×** |
+| gse-chocks | 76 | 150 | 2.4 | 56 · 78 | 0.74× | 871 | 803 | 1080 | **1.24×** | **2.5×** |
+| lead-marshaller-and-wing-walkers-in-position | 59 | 202 | 2.4 | 43 · 54 | 0.74× | 559 | 497 | 720 | **1.29×** | **3.9×** |
+| bl_rear_cone | 12 | 10 | 0.8 | 6 · 25 | 0.55× | 823 | 770 | 1080 | **1.31×** | **2.6×** |
+| beltloader-chocks | 12 | 10 | 0.8 | 6 · 25 | 0.50× | 792 | 739 | 1080 | **1.36×** | **2.7×** |
+| 3-stop-brake-check | 16 | 14 | 0.8 | 11 · 28 | 0.69× | 765 | 712 | 1080 | **1.41×** | **2.8×** |
+| cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked | 20 | 18 | 0.8 | 27 · 53 | 1.32× | 756 | 714 | 1080 | **1.43×** | **2.9×** |
+| safety-vests-secured-to-body | 370 | 1938 | 1.7 | 324 · 462 | 0.88× | 750 | 655 | 1080 | **1.44×** | **2.9×** |
+| safety-handrails-fully-extended | 46 | 215 | 1.3 | 41 · 61 | 0.88× | 701 | 648 | 1080 | **1.54×** | **3.1×** |
+| safety-zone-confirmed-clear (two passes: no real-time number) | 83 | 94 | 1.8 | — | — | 508 | — | — | — | — |
+| pin-verification (two passes: no real-time number) | 27 | 51 | 1.6 | — | — | 511 | — | — | — | — |
+| hand-signals (two passes: no real-time number) | 91 | 257 | 3.1 | — | — | 816 | — | — | — | — |
+| aircraft-chocks (two passes: no real-time number) | 38 | 84 | 1.9 | — | — | 924 | — | — | — | — |
+
+Reading it:
+
+- **The module itself costs about the same in both branches, and little**: the 20 modules that run as they are take 1134 s as post jobs and 941 s of their own work live (1506 s when they all run together and contend for the 8 cores). The shared part is the bill: GM and tracker over this event are 885 s of work in either branch.
+- **One module alone with its pseudo-GM: real time holds 0.96–1.54× the GPU time of post-processing when streams share the card**, and **2.3–4.9× when a card serves one stream only**. The work is the same; a stream holds a slot sized for its busy minutes (20 % headroom, a whole number of streams per card) for the whole event, and a card that serves a single light stream idles most of the time: sharing the card between streams is what makes real time affordable, not making a module lighter.
+- **All 20 together**: post-processing is 2019 s of work for this event (GM + tracker + the module jobs). Live, the frame path took 56.4 ms of 125 with the GPU 24.5 % busy: one stream holds a host for the 2160 s of the event, so **1.07× the post-processing time if a host runs one stream**, 0.53× if the card is shared by two streams (it has the room; this machine's 8 cores and 27 GB do not).
+- **As production runs post-processing today** every job (GM, tracker, each module) holds a GPU node of its own for its duration, so the node time of this event is the sum of the jobs, about 2019 s on this machine, against 2160 s of one bigger node for the live stream. On a T4 the jobs are slower (an estimated 3–4×, not measured), the live stream does not fit at all.
+- **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot, and the host must be sized for the busiest minutes (about 8 cores, 32 GB RAM, 8 GB GPU memory for the full set).
 
 ## 6. Quality on the test set (69 events, 90 videos)
 
