@@ -488,6 +488,49 @@ def main() -> int:
             "rt_own_work_together_s": round(own_together_s), "gm_tracker_work_s": round(shared_s), "post_total_s": round(post_set)}}
     else:
         L += ["", "(no clean post-job timings yet: `python scripts/rt_post_cost.py`)"]
+    fits = {os.path.basename(p)[len("resource_fit_"):-len(".json")]: load(p)
+            for p in sorted(glob.glob(os.path.join(cost_dir, "resource_fit_*.json")))}
+    if fits:
+        L += ["", "### How small an allocation keeps 8 fps, and what the same allocation makes of post-processing", "",
+              "`scripts/rt_resource_fit.py`. Post-processing takes whatever it gets and finishes sooner or later; real time has to keep up "
+              "with the camera, so the question is the smallest allocation that does. **CPU**: the whole run pinned to N cores of this "
+              "machine (4.7 GHz; one of them is worth roughly the 3.3 vCPU a production job gets). **GPU**: the detector heads run as if "
+              "the card were k times slower (the run waits (k − 1) × the busy-card time of a frame); `+ tracker` slows the whole tracker "
+              "down by the same factor, the pessimistic bound (its segmentors and re-id networks are on the card, the rest is CPU). "
+              "A production T4 is an estimated 3–4× slower than this card on these heads; that ratio is **not measured**, so read the "
+              "rows as \"fits if the T4 is no more than k times slower\". **RAM**: not limited, the peak is shown against the 8 GiB of "
+              "a production job. `post` = the same allocation fed as fast as it goes, scaled to the whole event. One artefact of the "
+              "emulation: at real-time speed the waits leave this card idle, it clocks down and the heads themselves get slower "
+              "(`+ tracker`, 4×: 101 ms of GM at 8 fps against 68 ms when fed faster), so those rows overstate; the `post` column of "
+              "the same row is the per-frame work without that effect.", ""]
+        for name, fit in fits.items():
+            if not fit or not fit.get("runs"):
+                continue
+            label = ", ".join(m[:40] for m in fit["modules"][:3]) + (f" … ({len(fit['modules'])} modules)" if len(fit["modules"]) > 3 else "")
+            L += [f"**{label}** (heads {'+'.join(fit['heads'])}; tracked {'+'.join(fit['tracker_classes'])}; {fit['seconds']:.0f} s of "
+                  f"`{fit['slice']}`):", "",
+                  "| CPU cores | GPU slower by | real time keeps up | frame path ms, mean · p95 (of 125) | frame latency p95 s | CPU used, cores | "
+                  "peak RAM GB | post: ms per frame | post: this event in | real time holds the node ÷ post |", "|---|---|---|---|---|---|---|---|---|---|"]
+            configs = {}
+            for key, r in fit["runs"].items():
+                if r.get("error"):
+                    continue
+                configs.setdefault((r["cpu_cores"], r["gpu_slowdown"], bool(r.get("tracker_slowed_too"))), {})[r["speed"]] = r
+            for (cores, k, trk), by_speed in sorted(configs.items(), key=lambda kv: (kv[0][2], kv[0][1], -kv[0][0])):
+                live, post = by_speed.get(1.0), by_speed.get(8.0)
+                if not live:
+                    continue
+                ms, mc = live.get("ms_per_frame") or {}, live.get("machine") or {}
+                post_ms = ((post or {}).get("ms_per_frame") or {}).get("total", {}).get("mean")
+                post_event = (post_ms + 2 * decode_ms) * frames / 1000.0 if post_ms else None
+                L.append(f"| {cores} | {k:g}×{' + tracker' if trk else ''} | **{'yes' if live.get('keeps_up') else 'no'}** | "
+                         f"{n((ms.get('total') or {}).get('mean'))} · {n((ms.get('total') or {}).get('p95'))} | "
+                         f"{n((live.get('frame_latency_s') or {}).get('p95'), 2)} | {n(mc.get('cpu_cores_used'), 2)} | "
+                         f"{n(mc.get('rss_peak_gb'))} | {n(post_ms)} | {'—' if post_event is None else f'{post_event / 60:.0f} min'} | "
+                         f"{'—' if post_event is None or not live.get('keeps_up') else f'**{event_s / post_event:.1f}×**'} |")
+            L.append("")
+        out["resource_fit"] = fits
+
 
     q1, q2 = quality["scoped_vs_full_inputs"], quality["rt_inputs_vs_production_inputs"]
     if q1 and q2:

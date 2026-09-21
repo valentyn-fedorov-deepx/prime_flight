@@ -52,7 +52,8 @@ class RtPipelineAdapter(Adapter):
                  exact_fast: bool = True, seed: int = 0, cone_camera: bool = True, refresh_every: int = 60,
                  pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None,
                  monitor=None, filter_rows: bool = False, alerts_file: bool = True, gating: bool = False,
-                 main_aircraft_rule: str = "longest_so_far"):
+                 main_aircraft_rule: str = "longest_so_far", gpu_slowdown: float = 1.0, gpu_base_ms: float | None = None,
+                 tracker_base_ms: float | None = None):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -66,6 +67,11 @@ class RtPipelineAdapter(Adapter):
         self.tracker_classes = tuple(tracker_classes or ALL_TRACKER_CLASSES)
         self.exact_fast, self.seed, self.cone_camera, self.refresh_every = exact_fast, seed, cone_camera, refresh_every
         self.main_aircraft_rule = main_aircraft_rule  # pf/pipeline/causal_rows.py: which aircraft track the rows carry
+        self.gpu_slowdown = float(gpu_slowdown)  # sizing experiments: the detector heads as if on a card this many times slower
+        self.gpu_base_ms = gpu_base_ms
+        # the pessimistic bound of the same emulation: the tracker (segmentors, re-id networks and a denoiser on the card, the
+        # rest on the CPU) slowed down as a whole; None leaves it alone (the optimistic bound)
+        self.tracker_base_ms = tracker_base_ms
         self.pixels = pixels
         self.out_dir = os.path.abspath(out_dir) if out_dir else None
         self.write_rows = bool(write_rows and self.out_dir)
@@ -162,7 +168,8 @@ class RtPipelineAdapter(Adapter):
                 provider=self.gm_provider, bgr_to_rgb=(self.gm_variant == "prod"),
                 trt_cache_dir=os.path.join(ROOT, "out", "trt_cache")))
 
-        self.detectors = Detectors(gm=head("gm"), chocks=head("chocks"), vehicle=head("vehicle"), parallel=True)
+        self.detectors = Detectors(gm=head("gm"), chocks=head("chocks"), vehicle=head("vehicle"), parallel=True,
+                                   gpu_slowdown=self.gpu_slowdown, gpu_base_ms=self.gpu_base_ms)
         self.gm = GmStream(cm, event_id=self.video_name or "live", fps=int(fps), detectors=self.detectors,
                            variant=self.gm_variant)
         self.causal = CausalSecondRun(self.gm.context, cm, refresh_every=self.refresh_every, main_rule=self.main_aircraft_rule)
@@ -195,6 +202,8 @@ class RtPipelineAdapter(Adapter):
         rows2 = self.causal.rows(fid, first_run)
         t2 = time.perf_counter()
         published = self.tracker.update(fid, image, rows2)
+        if self.gpu_slowdown > 1.0 and self.tracker_base_ms:
+            time.sleep((self.gpu_slowdown - 1.0) * self.tracker_base_ms / 1000.0)
         t3 = time.perf_counter()
         self._rows2[fid] = rows2
         if self.pixels:

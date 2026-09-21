@@ -232,6 +232,24 @@ Reading it:
 - **As production runs post-processing today** every job (GM, tracker, each module) holds a GPU node of its own for its duration, so the node time of this event is the sum of the jobs, about 2019 s on this machine, against 2160 s of one bigger node for the live stream. On a T4 the jobs are slower (an estimated 3–4×, not measured), the live stream does not fit at all.
 - **It cannot be deferred or preempted**: post jobs can wait for a free GPU or run on spot capacity, a live stream cannot, and the host must be sized for the busiest minutes (about 8 cores, 32 GB RAM, 8 GB GPU memory for the full set).
 
+### How small an allocation keeps 8 fps, and what the same allocation makes of post-processing
+
+`scripts/rt_resource_fit.py`. Post-processing takes whatever it gets and finishes sooner or later; real time has to keep up with the camera, so the question is the smallest allocation that does. **CPU**: the whole run pinned to N cores of this machine (4.7 GHz; one of them is worth roughly the 3.3 vCPU a production job gets). **GPU**: the detector heads run as if the card were k times slower (the run waits (k − 1) × the busy-card time of a frame); `+ tracker` slows the whole tracker down by the same factor, the pessimistic bound (its segmentors and re-id networks are on the card, the rest is CPU). A production T4 is an estimated 3–4× slower than this card on these heads; that ratio is **not measured**, so read the rows as "fits if the T4 is no more than k times slower". **RAM**: not limited, the peak is shown against the 8 GiB of a production job. `post` = the same allocation fed as fast as it goes, scaled to the whole event. One artefact of the emulation: at real-time speed the waits leave this card idle, it clocks down and the heads themselves get slower (`+ tracker`, 4×: 101 ms of GM at 8 fps against 68 ms when fed faster), so those rows overstate; the `post` column of the same row is the per-frame work without that effect.
+
+**steering-by-pass-pin-installed-or-steeri** (heads gm+chocks; tracked airplane+person; 180 s of `zHxIAF2vUGxJ_2071_4964.mp4`):
+
+| CPU cores | GPU slower by | real time keeps up | frame path ms, mean · p95 (of 125) | frame latency p95 s | CPU used, cores | peak RAM GB | post: ms per frame | post: this event in | real time holds the node ÷ post |
+|---|---|---|---|---|---|---|---|---|---|
+| 8 | 1× | **yes** | 28.8 · 54.7 | 0.15 | 0.37 | 4.9 | 25.6 | 9 min | **4.0×** |
+| 1 | 1× | **yes** | 57.0 · 124.3 | 0.30 | 0.34 | 4.8 | 56.0 | 18 min | **2.0×** |
+| 1 | 4× | **yes** | 83.1 · 135.8 | 0.29 | 0.29 | 4.8 | 89.4 | 27 min | **1.3×** |
+| 1 | 6× | **yes** | 109.4 · 172.5 | 0.44 | 0.32 | 4.8 | 118.5 | 36 min | **1.0×** |
+| 2 | 8× | **no** | 144.6 · 200.1 | 30.03 | 0.60 | 5.2 | 142.7 | 43 min | — |
+| 1 | 8× | **no** | 141.4 · 204.8 | 23.45 | 0.28 | 5.2 | 144.9 | 43 min | — |
+| 1 | 4× + tracker | **no** | 142.2 · 203.3 | 27.71 | 0.49 | 5.2 | 110.7 | 34 min | — |
+| 1 | 6× + tracker | **no** | 144.5 · 191.2 | 27.08 | 0.26 | 5.2 | 147.3 | 44 min | — |
+
+
 ## 6. Quality on the test set (69 events, 90 videos)
 
 | step | compared task verdicts | identical | accuracy against the labels |

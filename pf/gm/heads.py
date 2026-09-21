@@ -22,11 +22,16 @@ import numpy as np
 class MultiHeadRunner:
     heads: dict  # name -> YoloV8Onnx (insertion order = output order)
     parallel: bool = False
+    # Sizing experiments only: emulate a GPU `gpu_slowdown` times slower by waiting (k - 1) x the time this frame spent on
+    # the card (upload, letterbox, inference). 1.0 = off, the rows are not touched either way.
+    gpu_slowdown: float = 1.0
+    gpu_base_ms: float | None = None  # the card time of one frame measured with the card kept busy; None: this frame's own
     _pool: ThreadPoolExecutor | None = field(default=None, repr=False)
     frames: int = 0
     upload_s: float = 0.0
     prepare_s: float = 0.0
     run_s: float = 0.0
+    emulated_wait_s: float = 0.0
 
     def __post_init__(self):
         if self.parallel and self._pool is None:
@@ -66,6 +71,13 @@ class MultiHeadRunner:
                 name: head.predict_prepared(prepared[head.input_size][1]) for name, head in self.heads.items()
             }
         t3 = time.perf_counter()
+        if self.gpu_slowdown > 1.0:
+            # at 8 fps this card clocks down and a pinned CPU stretches the host side, so the frame's own wall time
+            # overstates its card time: a calibrated base keeps the emulation about the card only
+            base = self.gpu_base_ms / 1000.0 if self.gpu_base_ms else (t3 - t0)
+            wait = (self.gpu_slowdown - 1.0) * base
+            time.sleep(wait)
+            self.emulated_wait_s += wait
 
         self.frames += 1
         self.upload_s += t1 - t0
@@ -79,6 +91,7 @@ class MultiHeadRunner:
             "upload_ms": round(1000 * self.upload_s / n, 3),
             "prepare_ms": round(1000 * self.prepare_s / n, 3),
             "run_ms_all_heads": round(1000 * self.run_s / n, 3),
+            "gpu_slowdown": self.gpu_slowdown, "gpu_base_ms": self.gpu_base_ms, "emulated_wait_ms": round(1000 * self.emulated_wait_s / n, 3),
             "parallel": self.parallel,
             "heads": {name: head.timings.as_ms_per_frame() for name, head in self.heads.items()},
         }

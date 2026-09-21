@@ -120,6 +120,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
     p = o.paths(a.video)
     rec = {"video": a.video, "module": a.module, "extra_modules": a.extra_modules, "tag": a.tag, "speed": a.speed,
            "subscriptions": a.subscriptions, "main_aircraft_rule": a.main_aircraft_rule,
+           "gpu_slowdown": a.gpu_slowdown, "cpu_cores": a.cpu_cores or None,
            "ingest": a.ingest, "bandwidth_mbps": a.bandwidth_mbps,
            "max_seconds": a.max_seconds, "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider,
            "exit_code": rc, "wall_s": round(wall_s, 1)}
@@ -197,6 +198,14 @@ def main() -> int:
                     help="hand every hosted module only what it declared (pf/rt/component.py); gated by verdict parity")
     ap.add_argument("--main-aircraft-rule", default="longest_so_far", choices=["longest_so_far", "largest_alive"],
                     help="which aircraft track the causal rows carry (pf/pipeline/causal_rows.py)")
+    ap.add_argument("--gpu-slowdown", type=float, default=1.0,
+                    help="sizing: run the detector heads as if the card were this many times slower (waits, rows unchanged)")
+    ap.add_argument("--gpu-base-ms", type=float, default=None,
+                    help="sizing: the card time of one frame with the card kept busy; the emulated wait is (k - 1) x this")
+    ap.add_argument("--tracker-base-ms", type=float, default=None,
+                    help="sizing, pessimistic bound: slow the whole tracker down by the same factor, (k - 1) x this per frame")
+    ap.add_argument("--cpu-cores", type=int, default=0,
+                    help="sizing: pin the whole run (pipeline, decoder, module processes) to this many logical cores")
     ap.add_argument("--watch-port", type=int, default=0, help="serve a live page of the run on this port (0 = off)")
     ap.add_argument("--hold-s", type=float, default=0.0, help="keep the live page up this long after the run ends")
     a = ap.parse_args()
@@ -221,7 +230,8 @@ def main() -> int:
              "tracker_classes": [c for c in a.tracker_classes.split(",") if c], "exact_fast": True, "seed": 0,
              "cone_camera": plan.cone(event), "pixels": not prof.get("pixel_free"), "out_dir": out,
              "write_rows": not a.no_write_rows, "extra_modules": extras, "filter_rows": a.subscriptions,
-             "main_aircraft_rule": a.main_aircraft_rule}
+             "main_aircraft_rule": a.main_aircraft_rule, "gpu_slowdown": a.gpu_slowdown, "gpu_base_ms": a.gpu_base_ms,
+             "tracker_base_ms": a.tracker_base_ms}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]
     cmd += ["--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps)]
@@ -230,6 +240,10 @@ def main() -> int:
     if a.watch_port:
         cmd += ["--monitor-port", str(a.watch_port), "--monitor-hold-s", str(a.hold_s)]
         print(f"live view: http://127.0.0.1:{a.watch_port}/ (the page fills in once the models are loaded)", flush=True)
+    if a.cpu_cores:
+        import psutil
+
+        psutil.Process().cpu_affinity(list(range(a.cpu_cores)))  # child processes inherit the mask
     t0 = time.time()
     with io.open(os.path.join(ROOT, out + ".log"), "w", encoding="utf-8") as log:
         rc = subprocess.run(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT).returncode

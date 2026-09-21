@@ -37,6 +37,8 @@ class Detectors:
     chocks: object = None
     vehicle: object = None
     parallel: bool = False
+    gpu_slowdown: float = 1.0  # sizing experiments: see MultiHeadRunner
+    gpu_base_ms: float | None = None
     _runner: object = field(default=None, repr=False)
 
     def _heads(self) -> dict:
@@ -53,7 +55,8 @@ class Detectors:
         if self._runner is None:
             from pf.gm.heads import MultiHeadRunner  # lazy
 
-            self._runner = MultiHeadRunner(heads, parallel=self.parallel)
+            self._runner = MultiHeadRunner(heads, parallel=self.parallel, gpu_slowdown=self.gpu_slowdown,
+                                           gpu_base_ms=self.gpu_base_ms)
         out = self._runner.predict_all(image)
         return first_run_rows(out.get("gm"), out.get("chocks"), out.get("vehicle"), cm)
 
