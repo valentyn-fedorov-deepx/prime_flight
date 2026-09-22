@@ -782,5 +782,43 @@
    "real_time_over_post_gpu_shared": 1.07,
    "not_ready": []
   }
+ },
+ "gates": {
+  "gates": 40,
+  "cameras_per_gate": 2,
+  "sets": {
+   "light: six pixel-free modules": {
+    "per_stream": {
+     "runs": 30,
+     "gpu_median": 0.13765024,
+     "gpu_max": 0.19360808000000002,
+     "vram": 3.11,
+     "cpu": 1.08,
+     "ram": 6.0
+    },
+    "streams_per_card": 4,
+    "streams": 80,
+    "cards_16gb": 20,
+    "cpu_cores": 86,
+    "ram_gb": 480,
+    "gpu_memory_gb": 249
+   },
+   "with pixel modules: three pixel-free + three pixel modules": {
+    "per_stream": {
+     "runs": 8,
+     "gpu_median": 0.17389512000000001,
+     "gpu_max": 0.20291839999999997,
+     "vram": 5.37,
+     "cpu": 3.22,
+     "ram": 10.8
+    },
+    "streams_per_card": 2,
+    "streams": 80,
+    "cards_16gb": 40,
+    "cpu_cores": 258,
+    "ram_gb": 864,
+    "gpu_memory_gb": 430
+   }
+  }
  }
 }

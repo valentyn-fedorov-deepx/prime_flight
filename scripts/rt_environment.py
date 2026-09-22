@@ -12,11 +12,13 @@ event (`scripts/rt_module_cost.py`, `scripts/rt_post_cost.py`, `scripts/rt_joint
 
     python scripts/rt_environment.py                         # the price list and three example sets -> docs/analysis/rt_environment.md
     python scripts/rt_environment.py --modules a,b,c,d,e     # size this set
+    python scripts/rt_environment.py --gates 40              # the environment for 40 gates (the default)
 """
 
 from __future__ import annotations
 
 import argparse
+import glob
 import io
 import json
 import os
@@ -118,10 +120,42 @@ class Data:
         }
 
 
+def per_stream_measured(d: Data) -> dict:
+    """GPU share, GPU memory, CPU and RAM of one camera stream running a set of about six modules, from the joint runs."""
+    pixel = {m for m, r in d.rows.items() if r.get("pixels")}
+    light, heavy = "light: six pixel-free modules", "with pixel modules: three pixel-free + three pixel modules"
+    groups: dict = {light: [], heavy: []}
+    for path in sorted(glob.glob(os.path.join(ROOT, "out", "rt", "cost", "*", "joint_*_x8.json"))):
+        j = load(path)
+        if not j or j.get("error") or j.get("exit_code") or j.get("runtime_error") or not j.get("ms_per_frame"):
+            continue
+        mc, total = j.get("machine") or {}, j["ms_per_frame"]["total"]["mean"]
+        if not total or not mc.get("gpu_util_mean") or len(j["modules"]) >= 18:  # the twenty-module set is not a 6-module set
+            continue
+        times_real_time = BUDGET_MS / total
+        groups[heavy if any(m in pixel for m in j["modules"]) else light].append({
+            "gpu": mc["gpu_util_mean"] / 100.0 / times_real_time, "vram": mc.get("gpu_mem_over_baseline_gb") or 0.0,
+            "cpu": (mc.get("cpu_cores_used") or 0.0) / times_real_time})
+    ram = {light: 3.0 + 0.6 * 5, heavy: 3.0 + 0.6 * 3 + 2.0 * 3}  # pipeline + module processes (pixel modules 1.3-3 GB each)
+    out = {}
+    for key, runs in groups.items():
+        if not runs:
+            continue
+        gpu, cpu = sorted(r["gpu"] for r in runs), sorted(r["cpu"] for r in runs)
+        # the sampler reads the memory of the whole card: a browser on the desktop shows up in single runs (one light run
+        # read 6.3 GB against 2.8-3.2 in the other 29), so the 90th percentile, not the maximum
+        vram = sorted(r["vram"] for r in runs if r["vram"] > 0)
+        out[key] = {"runs": len(runs), "gpu_median": gpu[len(gpu) // 2], "gpu_max": gpu[-1],
+                    "vram": vram[min(len(vram) - 1, round(0.9 * (len(vram) - 1)))], "cpu": round(cpu[len(cpu) // 2] * 1.75, 2),
+                    "ram": ram[key]}
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", default="zHxIAF2vUGxJ.mp4")
     ap.add_argument("--modules", default="", help="comma list: size this set and exit")
+    ap.add_argument("--gates", type=int, default=40, help="how many gates to size the environment for")
     a = ap.parse_args()
     d = Data(a.video)
     if a.modules:
@@ -211,8 +245,60 @@ def main() -> int:
           "time only; two pipelines contend for the card and for the cores), and the CPU and RAM of every module process measured in real "
           "time rather than taken from its post job. Both are one night of runs: `scripts/rt_joint_run.py` now records CPU seconds and "
           "peak memory per module process."]
+    # ------------------------------------------------------------------ sizing for N gates
+    per = per_stream_measured(d)
+    gates, cams = a.gates, 2
+    L += ["", f"## Sizing for {gates} gates", "",
+          f"Assumptions: **{cams} camera streams per gate** (cone + wing: the pushback and belt loader checks run on both cameras, "
+          "`docs/05_module_logic.md`), **every gate busy at the same time** (no delay at the peak; fewer if the schedule says the peak "
+          "is lower), the branch **as it is** (one GM + tracker pipeline per camera, every module a process of its own), 20 % headroom "
+          "on the card.", "",
+          "Per camera stream, measured in the joint runs of section 4 of `rt_module_cost.md` on this machine (RTX 5070 Ti 16 GB). The "
+          "GPU share comes from the runs fed faster than real time (the card at full clock): GPU busy % ÷ how many times real time "
+          "the run went. CPU at real-time speed is 1.6–1.9 times the same division (measured on the twenty-module runs: at 8 fps the "
+          "processes also wait on the card, and the waits spin), so the CPU column is the division × 1.75. RAM of a light set is the "
+          "pipeline (3 GB) plus 0.6 GB per module process; the fed-faster runs overstate RAM with their backlog.", "",
+          "| set | runs | GPU share of a 5070 Ti: median · max | GPU memory GB (p90) | CPU cores (4.7 GHz) | RAM GB | streams per 16 GB card | "
+          "limited by |", "|---|---|---|---|---|---|---|---|"]
+    sizing = {}
+    for name, p in per.items():
+        if not p:
+            continue
+        by_gpu = int(0.8 / p["gpu_max"])
+        by_mem = int((16 - 1.5) / p["vram"])
+        per_card = max(1, min(by_gpu, by_mem))
+        L.append(f"| {name} | {p['runs']} | {100 * p['gpu_median']:.0f} % · {100 * p['gpu_max']:.0f} % | {p['vram']:.1f} | "
+                 f"{p['cpu']:.1f} | {p['ram']:.0f} | **{per_card}** | {'GPU memory' if by_mem < by_gpu else 'GPU time'} |")
+        streams = gates * cams
+        cards = -(-streams // per_card)
+        sizing[name] = {"per_stream": p, "streams_per_card": per_card, "streams": streams, "cards_16gb": cards,
+                        "cpu_cores": round(streams * p["cpu"]), "ram_gb": round(streams * p["ram"]),
+                        "gpu_memory_gb": round(streams * p["vram"])}
+    L += ["", f"For {gates} gates = {gates * cams} camera streams:", "",
+          "| set | cards like this one (16 GB) | CPU cores (4.7 GHz) | RAM GB | the same per card |", "|---|---|---|---|---|"]
+    for name, s in sizing.items():
+        per_card = s["streams_per_card"]
+        L.append(f"| {name} | **{s['cards_16gb']}** | {s['cpu_cores']} | {s['ram_gb']} | {per_card} streams: "
+                 f"{per_card * s['per_stream']['cpu']:.0f} cores, {per_card * s['per_stream']['ram']:.0f} GB RAM |")
+    L += ["", "What moves these numbers:", "",
+          f"- **Cameras**: checks that run on the cone camera only need one stream per gate: halve every number ({gates} streams).",
+          "- **The peak**: the environment is sized for the gates that are busy at the same time. How many that is at the peak hour "
+          "comes from the flight schedule (the event documents in MongoDB have the times); a cloud fleet can follow the schedule "
+          "instead of holding the peak all day.",
+          "- **The card**: a 24 GB card (L4 on GCP, A10 on Azure) lifts the memory limit (about 7 light streams by memory). Its speed "
+          "against this card is **not measured**; if it is 1.5–2 times slower (an estimate), it carries about as many light streams "
+          "as this card by GPU time. A T4 (16 GB, an estimated 3–4 times slower) carries one light stream at most.",
+          "- **The architecture**: every stream loads its own copy of the three detector heads and the tracker networks, and every "
+          "module is a Python process of its own. One set of models per card serving all its streams in batches (TensorRT: the three "
+          "heads in 8 ms instead of 19, `gm_speed.md`) and fewer module processes are the levers of PF-Q4-02; they are not in these "
+          "numbers.",
+          "- **Not measured yet**: several streams on one card at the same time. The streams-per-card column is derived from one stream "
+          "at a time; the check is 1, 2, 3, 4 light streams on this card until frames start to wait (one night, the RAM of this "
+          "machine allows about three)."]
+    out_sizing = {"gates": gates, "cameras_per_gate": cams, "sets": sizing}
+
     io.open(os.path.join(ROOT, "docs", "analysis", "rt_environment.md"), "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
-    json.dump({"price_list": price, "sets": sized}, io.open(os.path.join(ROOT, "docs", "analysis", "rt_environment.json"), "w",
+    json.dump({"price_list": price, "sets": sized, "gates": out_sizing}, io.open(os.path.join(ROOT, "docs", "analysis", "rt_environment.json"), "w",
                                                              encoding="utf-8", newline="\n"), indent=1, default=str)
     for name, s in sized.items():
         print(name, "| frame path", s["frame_path_ms"], "ms | streams", s["streams_per_gpu_by_frame_time"], "| cpu", s["cpu_cores_mean_per_stream"],

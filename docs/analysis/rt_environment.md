@@ -69,3 +69,29 @@ Check of the model against the measured joint run of the 20 modules at real-time
 The CPU and RAM columns are estimates from the post jobs and they miss in opposite directions: for the twenty modules together they give 2.5 cores and 30.5 GB, the joint run measured 4.23 cores (handing rows and pixels to every process costs CPU the post jobs do not have) and 18.2–23 GB (a post job also holds the parsed files). Read RAM as an upper bound and CPU as a lower one.
 
 What this does not tell yet: how many streams one card really carries before frames start to wait (the number above is by frame time only; two pipelines contend for the card and for the cores), and the CPU and RAM of every module process measured in real time rather than taken from its post job. Both are one night of runs: `scripts/rt_joint_run.py` now records CPU seconds and peak memory per module process.
+
+## Sizing for 40 gates
+
+Assumptions: **2 camera streams per gate** (cone + wing: the pushback and belt loader checks run on both cameras, `docs/05_module_logic.md`), **every gate busy at the same time** (no delay at the peak; fewer if the schedule says the peak is lower), the branch **as it is** (one GM + tracker pipeline per camera, every module a process of its own), 20 % headroom on the card.
+
+Per camera stream, measured in the joint runs of section 4 of `rt_module_cost.md` on this machine (RTX 5070 Ti 16 GB). The GPU share comes from the runs fed faster than real time (the card at full clock): GPU busy % ÷ how many times real time the run went. CPU at real-time speed is 1.6–1.9 times the same division (measured on the twenty-module runs: at 8 fps the processes also wait on the card, and the waits spin), so the CPU column is the division × 1.75. RAM of a light set is the pipeline (3 GB) plus 0.6 GB per module process; the fed-faster runs overstate RAM with their backlog.
+
+| set | runs | GPU share of a 5070 Ti: median · max | GPU memory GB (p90) | CPU cores (4.7 GHz) | RAM GB | streams per 16 GB card | limited by |
+|---|---|---|---|---|---|---|---|
+| light: six pixel-free modules | 30 | 14 % · 19 % | 3.1 | 1.1 | 6 | **4** | GPU time |
+| with pixel modules: three pixel-free + three pixel modules | 8 | 17 % · 20 % | 5.4 | 3.2 | 11 | **2** | GPU memory |
+
+For 40 gates = 80 camera streams:
+
+| set | cards like this one (16 GB) | CPU cores (4.7 GHz) | RAM GB | the same per card |
+|---|---|---|---|---|
+| light: six pixel-free modules | **20** | 86 | 480 | 4 streams: 4 cores, 24 GB RAM |
+| with pixel modules: three pixel-free + three pixel modules | **40** | 258 | 864 | 2 streams: 6 cores, 22 GB RAM |
+
+What moves these numbers:
+
+- **Cameras**: checks that run on the cone camera only need one stream per gate: halve every number (40 streams).
+- **The peak**: the environment is sized for the gates that are busy at the same time. How many that is at the peak hour comes from the flight schedule (the event documents in MongoDB have the times); a cloud fleet can follow the schedule instead of holding the peak all day.
+- **The card**: a 24 GB card (L4 on GCP, A10 on Azure) lifts the memory limit (about 7 light streams by memory). Its speed against this card is **not measured**; if it is 1.5–2 times slower (an estimate), it carries about as many light streams as this card by GPU time. A T4 (16 GB, an estimated 3–4 times slower) carries one light stream at most.
+- **The architecture**: every stream loads its own copy of the three detector heads and the tracker networks, and every module is a Python process of its own. One set of models per card serving all its streams in batches (TensorRT: the three heads in 8 ms instead of 19, `gm_speed.md`) and fewer module processes are the levers of PF-Q4-02; they are not in these numbers.
+- **Not measured yet**: several streams on one card at the same time. The streams-per-card column is derived from one stream at a time; the check is 1, 2, 3, 4 light streams on this card until frames start to wait (one night, the RAM of this machine allows about three).
