@@ -298,6 +298,13 @@ def main() -> int:
                          f"{n((ms.get('total') or {}).get('mean'))} · {n((ms.get('total') or {}).get('p95'))} | "
                          f"{n((ms.get('gm') or {}).get('mean'))} | {n((ms.get('tracker') or {}).get('mean'))} | "
                          f"{n(mc.get('cpu_cores_used'), 2)} | {n(mc.get('rss_peak_gb'))} |")
+        def fitting(set_name: str, tensorrt: bool = False, k: float = 3.0):
+            """The cheapest run of that set that keeps 8 fps with the heads k times slower (no pessimistic tracker)."""
+            rows = [r for r in rows_fit if r["set"] == set_name and r["keeps_up"] and "tracker" not in r["gpu"]
+                    and ("TRT" in r["gpu"]) == tensorrt and f"{k:g}× slower" in r["gpu"]]
+            return min(rows, key=lambda r: (r["cores"], r["mean"])) if rows else None
+
+        t4_cuda, t4_trt = fitting("trio"), fitting("trio_trt", tensorrt=True)
         core_factor = 0.6  # a pod's 4 Haswell threads at 2.30 GHz against one core here (4.7 GHz): an estimate, node_bench.py measures it
         L += ["", f"Reading the CPU column: the pod's {gpu_pod['max CPU (vCPU)']} vCPU of an Intel Haswell at 2.30 GHz are worth "
               f"about **{core_factor} of one core of this machine** in throughput (an estimate from clock and generation; "
@@ -306,17 +313,26 @@ def main() -> int:
               "**What one camera stream needs to fit**, from the rows above:", "",
               "| | production GPU pod today | needed for a set of 3–6 modules |", "|---|---|---|",
               f"| GPU | Tesla T4, {gpu_pod['GPU FP16 tensor (TFLOPS)']} FP16 TFLOPS, {gpu_pod['GPU memory speed (GB/s)']} GB/s, 70 W | "
-              "a card no more than ~3× slower than an RTX 5070 Ti **and** TensorRT for the heads, or a card ~1.5–2× slower "
-              "(L4 24 GB on GCP, A10 on Azure) with the heads as they are |",
+              + (f"a T4-class card is enough **with TensorRT heads** (measured: {t4_trt['mean']:.0f} ms of 125, p95 "
+                 f"{t4_trt['p95']:.0f}, on {t4_trt['cores']} cores) and only just without them "
+                 f"({t4_cuda['mean']:.0f} ms, p95 {t4_cuda['p95']:.0f}); a card 1.5–2× slower than this one (L4 24 GB on GCP, "
+                 "A10 on Azure) fits either way |" if t4_trt and t4_cuda else
+                 "a card no more than about 3× slower than an RTX 5070 Ti |"),
               f"| GPU memory | {gpu_pod['GPU memory (GB)']} GB (14.6 free) | 3 GB for a pixel-free set, 5+ GB with pixel modules — "
               "the T4 has room for 2–4 streams, the limit is its speed, not its memory |",
               f"| CPU | {gpu_pod['max CPU (vCPU)']} vCPU Haswell 2.30 GHz ≈ {core_factor} core here | **2 cores of this machine keep "
-              "8 fps, 1 does not** → about 3–4 pods' worth of CPU, and on the current Haswell nodes that is 12–16 vCPU; on a modern "
-              "server generation (Ice Lake and later, Azure v5) 6–8 vCPU should do the same work |",
-              f"| RAM | {gpu_pod['max RAM (GB)']} GB | 5 GB for three modules, 7 GB for six, 18–23 GB for all twenty — the pod fits "
-              "a small set, not the full one |",
+              "8 fps, 1 does not** (the mean load is 0.7 of a core; the peaks need the rest) → about 3–4 pods' worth of CPU: "
+              "12–16 vCPU on the current Haswell nodes, 6–8 vCPU on a modern server generation (Ice Lake and later, Azure v5) |",
+              f"| RAM | {gpu_pod['max RAM (GB)']} GB | 5 GB for three modules, 7 GB for six, 10.7 GB for ten pixel-free — the pod fits "
+              "about ten light modules; the full twenty with the pixel ones need 18–23 GB |",
               f"| scratch disk | {gpu_pod['max scratch disk (GB)']} GB | almost none: the frames live in memory and nothing "
-              "downloads an 87-minute video |"]
+              "downloads an 87-minute video |", "",
+              "Two things are still estimates rather than measurements, and both are one run away: **how slow the T4 really is** on "
+              "these heads (k = 3 comes from the published rates) and **what the tracker's own GPU work costs there** — the rows "
+              "with `+ tracker` slow the whole tracker by k and do not fit, so if the T4 is that hard on the tracker's segmentors "
+              "and re-id, a T4-class card is out even with TensorRT. `scripts/node_bench.py` answers the first in two minutes "
+              "inside a pod (it prints the factor against this machine, for the card and for a core); the second needs the tracker "
+              "weights in that pod."]
         pod_envelope = {"pools": env["pools"], "post_processing_per_video": per, "runs": rows_fit,
                         "core_factor_estimate": core_factor}
 

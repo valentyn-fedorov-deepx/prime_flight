@@ -863,6 +863,17 @@
   },
   "runs": [
    {
+    "set": "pixel_free",
+    "modules": 10,
+    "cores": 8,
+    "gpu": "3\u00d7 slower",
+    "keeps_up": true,
+    "mean": 89.3,
+    "p95": 123.42,
+    "cpu": 0.67,
+    "ram": 10.67
+   },
+   {
     "set": "six",
     "modules": 6,
     "cores": 8,
@@ -1048,6 +1059,39 @@
     "p95": 228.66,
     "cpu": 0.57,
     "ram": 5.18
+   },
+   {
+    "set": "trio_trt",
+    "modules": 3,
+    "cores": 8,
+    "gpu": "this card, TRT",
+    "keeps_up": true,
+    "mean": 41.53,
+    "p95": 71.76,
+    "cpu": 0.55,
+    "ram": 6.99
+   },
+   {
+    "set": "trio_trt",
+    "modules": 3,
+    "cores": 8,
+    "gpu": "3\u00d7 slower, TRT",
+    "keeps_up": true,
+    "mean": 57.84,
+    "p95": 86.47,
+    "cpu": 0.52,
+    "ram": 4.56
+   },
+   {
+    "set": "trio_trt",
+    "modules": 3,
+    "cores": 2,
+    "gpu": "3\u00d7 slower, TRT",
+    "keeps_up": true,
+    "mean": 60.94,
+    "p95": 94.81,
+    "cpu": 0.43,
+    "ram": 4.5
    }
   ],
   "core_factor_estimate": 0.6

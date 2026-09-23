@@ -37,10 +37,14 @@ HEADS = {  # name: (weights file, input size, what the real-time branch runs)
 }
 # measured on the machine of the real-time campaign (RTX 5070 Ti 16 GB, Ryzen 8 x 4.7 GHz, onnxruntime-gpu 1.29,
 # fp16 ONNX, CUDA EP): ms per frame with the card kept busy, and the CPU loop below
-REFERENCE = {"machine": "RTX 5070 Ti + 8 cores at 4.7 GHz",
-             "heads_ms": {"gm": 8.5, "chocks": 3.0, "vehicle": 5.8, "all_three_parallel": 19.2},
-             "cpu_loop_s_1_thread": None,  # filled in by running this script on that machine
-             "budget_ms_per_frame": 125.0}
+REFERENCE = {  # this script, 23.09, on the machine of the real-time campaign
+    "machine": "RTX 5070 Ti 16 GB (300 W) + 8 cores at 4.7 GHz, onnxruntime-gpu 1.29, CUDA EP, fp16 ONNX",
+    "heads_ms": {"gm": 4.27, "chocks": 5.59, "vehicle": 8.31, "all_three_parallel": 13.63},
+    "cpu_loop_per_s_1_thread": 17_100_000, "cpu_loop_per_s_4_workers": 67_200_000,
+    "budget_ms_per_frame": 125.0,
+    "note": "the heads here are pure inference on a tensor already on the card; the branch also pays upload, letterbox and "
+            "post-processing, which is why its GM step is 19.2 ms with the three heads",
+}
 
 
 def cpu_loop(seconds_target: float = 2.0) -> float:
@@ -53,12 +57,46 @@ def cpu_loop(seconds_target: float = 2.0) -> float:
     return n / (time.perf_counter() - t0)
 
 
-def cpu_bench(threads: int) -> float:
-    with ThreadPoolExecutor(max_workers=threads) as pool:
-        return sum(pool.map(lambda _: cpu_loop(), range(threads)))  # GIL-bound: shows what threads really add
+def cpu_bench(workers: int) -> float:
+    """The same loop in `workers` processes: what the node's threads really add (the branch runs process per module)."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    try:
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            return sum(pool.map(cpu_loop, [2.0] * workers))
+    except Exception as e:
+        print(f"parallel CPU loop failed ({type(e).__name__}); threads instead", flush=True)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            return sum(pool.map(cpu_loop, [2.0] * workers))
+
+
+def add_dll_dirs() -> list:
+    """Windows only: the CUDA and cuDNN libraries of the pip nvidia packages are not on the DLL search path."""
+    added = []
+    if not hasattr(os, "add_dll_directory"):
+        return added
+    import site
+
+    for root in site.getsitepackages():
+        for folder in ("nvidia", "tensorrt_libs"):
+            base = os.path.join(root, folder)
+            for path, dirs, files in os.walk(base) if os.path.isdir(base) else []:
+                if any(f.endswith(".dll") for f in files):
+                    try:
+                        os.add_dll_directory(path)
+                        os.environ["PATH"] = path + os.pathsep + os.environ.get("PATH", "")
+                        added.append(path)
+                    except OSError:
+                        pass
+    return added
 
 
 def gpu_bench(weights_dir: str, frames: int) -> dict:
+    add_dll_dirs()
+    try:  # torch ships the CUDA and cuDNN libraries and loads them into the process; onnxruntime then finds them
+        import torch  # noqa: F401
+    except Exception:
+        pass
     import onnxruntime as ort
 
     providers = [("CUDAExecutionProvider", {"device_id": 0, "cudnn_conv_algo_search": "EXHAUSTIVE"}), "CPUExecutionProvider"]
@@ -126,7 +164,9 @@ def main() -> int:
               "cpu": platform.processor(), "cpu_count": os.cpu_count(), "gpu": gpu_facts(), "reference": REFERENCE}
     print("CPU...", flush=True)
     result["cpu_loop_per_s_1_thread"] = round(cpu_loop(), 1)
-    result[f"cpu_loop_per_s_{a.cpu_threads}_threads"] = round(cpu_bench(a.cpu_threads), 1)
+    result[f"cpu_loop_per_s_{a.cpu_threads}_workers"] = round(cpu_bench(a.cpu_threads), 1)
+    if REFERENCE["cpu_loop_per_s_1_thread"]:
+        result["cpu_core_against_the_reference"] = round(result["cpu_loop_per_s_1_thread"] / REFERENCE["cpu_loop_per_s_1_thread"], 2)
     print("GPU...", flush=True)
     result["gpu_bench"] = gpu_bench(a.weights_dir, a.frames)
 

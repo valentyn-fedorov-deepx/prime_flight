@@ -85,6 +85,7 @@ The envelope is what a pod can actually reach in the cluster (`docs\inbox\2026-0
 
 | modules | cores here | GPU | keeps 8 fps | frame path ms, mean · p95 | GM | tracker | CPU used, cores | RAM GB |
 |---|---|---|---|---|---|---|---|---|
+| pixel_free (10) | 8 | 3× slower | **yes** | 89.3 · 123.4 | 57.9 | 28.9 | 0.67 | 10.7 |
 | six (6) | 8 | this card | **yes** | 51.0 · 82.3 | 19.9 | 28.5 | 0.71 | 7.2 |
 | six (6) | 8 | 3× slower | **yes** | 88.6 · 120.1 | 58.6 | 27.7 | 0.65 | 7.2 |
 | steering-by-pass-pin-ins (1) | 8 | this card | **yes** | 28.8 · 54.7 | 13.8 | 12.3 | 0.37 | 4.9 |
@@ -102,6 +103,9 @@ The envelope is what a pod can actually reach in the cluster (`docs\inbox\2026-0
 | trio (3) | 4 | 3× slower | **yes** | 90.1 · 123.4 | 58.9 | 28.8 | 0.66 | 4.9 |
 | trio (3) | 2 | 3× slower | **yes** | 108.2 · 144.9 | 74.4 | 30.7 | 0.73 | 4.9 |
 | trio (3) | 1 | 3× slower | **no** | 167.7 · 228.7 | 120.6 | 43.1 | 0.57 | 5.2 |
+| trio_trt (3) | 8 | this card, TRT | **yes** | 41.5 · 71.8 | 11.0 | 28.0 | 0.55 | 7.0 |
+| trio_trt (3) | 8 | 3× slower, TRT | **yes** | 57.8 · 86.5 | 27.3 | 28.2 | 0.52 | 4.6 |
+| trio_trt (3) | 2 | 3× slower, TRT | **yes** | 60.9 · 94.8 | 28.4 | 29.8 | 0.43 | 4.5 |
 
 Reading the CPU column: the pod's 3.92 vCPU of an Intel Haswell at 2.30 GHz are worth about **0.6 of one core of this machine** in throughput (an estimate from clock and generation; `scripts/node_bench.py`, two minutes in a pod, replaces it with a measurement). So the pod gives less CPU than the single pinned core that already failed here, and it gives it as four slow threads instead of one fast one.
 
@@ -109,11 +113,13 @@ Reading the CPU column: the pod's 3.92 vCPU of an Intel Haswell at 2.30 GHz are 
 
 | | production GPU pod today | needed for a set of 3–6 modules |
 |---|---|---|
-| GPU | Tesla T4, 65 FP16 TFLOPS, 320 GB/s, 70 W | a card no more than ~3× slower than an RTX 5070 Ti **and** TensorRT for the heads, or a card ~1.5–2× slower (L4 24 GB on GCP, A10 on Azure) with the heads as they are |
+| GPU | Tesla T4, 65 FP16 TFLOPS, 320 GB/s, 70 W | a T4-class card is enough **with TensorRT heads** (measured: 61 ms of 125, p95 95, on 2 cores) and only just without them (108 ms, p95 145); a card 1.5–2× slower than this one (L4 24 GB on GCP, A10 on Azure) fits either way |
 | GPU memory | 16 GB (14.6 free) | 3 GB for a pixel-free set, 5+ GB with pixel modules — the T4 has room for 2–4 streams, the limit is its speed, not its memory |
-| CPU | 3.92 vCPU Haswell 2.30 GHz ≈ 0.6 core here | **2 cores of this machine keep 8 fps, 1 does not** → about 3–4 pods' worth of CPU, and on the current Haswell nodes that is 12–16 vCPU; on a modern server generation (Ice Lake and later, Azure v5) 6–8 vCPU should do the same work |
-| RAM | 12.1 GB | 5 GB for three modules, 7 GB for six, 18–23 GB for all twenty — the pod fits a small set, not the full one |
+| CPU | 3.92 vCPU Haswell 2.30 GHz ≈ 0.6 core here | **2 cores of this machine keep 8 fps, 1 does not** (the mean load is 0.7 of a core; the peaks need the rest) → about 3–4 pods' worth of CPU: 12–16 vCPU on the current Haswell nodes, 6–8 vCPU on a modern server generation (Ice Lake and later, Azure v5) |
+| RAM | 12.1 GB | 5 GB for three modules, 7 GB for six, 10.7 GB for ten pixel-free — the pod fits about ten light modules; the full twenty with the pixel ones need 18–23 GB |
 | scratch disk | 44 GB | almost none: the frames live in memory and nothing downloads an 87-minute video |
+
+Two things are still estimates rather than measurements, and both are one run away: **how slow the T4 really is** on these heads (k = 3 comes from the published rates) and **what the tracker's own GPU work costs there** — the rows with `+ tracker` slow the whole tracker by k and do not fit, so if the T4 is that hard on the tracker's segmentors and re-id, a T4-class card is out even with TensorRT. `scripts/node_bench.py` answers the first in two minutes inside a pod (it prints the factor against this machine, for the card and for a core); the second needs the tracker weights in that pod.
 
 ## Sizing for 40 gates
 
