@@ -39,13 +39,14 @@ BUDGET_MS = 125.0
 
 
 def run(slice_video: str, event: str, modules: list, heads: list, classes: list, cores: int, k: float, speed: float,
-        seconds: float, tag: str, gpu_base_ms: float, tracker_base_ms: float | None = None) -> dict:
+        seconds: float, tag: str, gpu_base_ms: float, tracker_base_ms: float | None = None, provider: str = "cuda") -> dict:
     stem = os.path.splitext(slice_video)[0]
     cmd = [sys.executable, "scripts/rt_pipeline_run.py", "--video", slice_video, "--plan-video", event, "--module", modules[0],
            "--tag", tag, "--speed", str(speed), "--no-write-rows", "--heads", ",".join(heads), "--tracker-classes", ",".join(classes),
            "--ingest", "frames" if speed == 1 else "chunks", "--bandwidth-mbps", "10" if speed == 1 else "1000",
            "--max-seconds", str(seconds), "--chunks", os.path.join("out", "rt", "chunks", f"{stem}_gop1"),
-           "--gpu-slowdown", str(k), "--gpu-base-ms", str(gpu_base_ms), "--cpu-cores", str(cores), "--subscriptions"]
+           "--gpu-slowdown", str(k), "--gpu-base-ms", str(gpu_base_ms), "--cpu-cores", str(cores), "--subscriptions",
+           "--provider", provider]
     if len(modules) > 1:
         cmd += ["--extra-modules", ",".join(modules[1:])]
     if tracker_base_ms:
@@ -55,7 +56,8 @@ def run(slice_video: str, event: str, modules: list, heads: list, classes: list,
     sampler = MachineSampler(proc.pid).start()
     rc = proc.wait()
     sampler.stop()
-    rec = {"cpu_cores": cores, "gpu_slowdown": k, "tracker_slowed_too": bool(tracker_base_ms), "speed": speed, "exit_code": rc,
+    rec = {"cpu_cores": cores, "gpu_slowdown": k, "tracker_slowed_too": bool(tracker_base_ms), "provider": provider,
+           "speed": speed, "exit_code": rc,
            "wall_s": round(time.time() - t0, 1)}
     path = os.path.join(ROOT, "out", "rt", "runs", tag, "summary.json")
     if rc != 0 or not os.path.exists(path):
@@ -79,6 +81,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--video", default="zHxIAF2vUGxJ.mp4")
     ap.add_argument("--module", default="steering-by-pass-pin-installed-or-steering-otherwise-bypassed")
+    ap.add_argument("--modules", default="", help="instead of one module or a named set: this comma list, on the common busy stretch")
+    ap.add_argument("--name", default="", help="name of the result file when --modules is given")
     ap.add_argument("--set", default="", choices=["", "pixel_free", "all_ready"],
                     help="instead of one module: the ready modules (all, or the pixel-free ones) behind the full GM and tracker, "
                          "on the common busy stretch")
@@ -87,21 +91,28 @@ def main() -> int:
     ap.add_argument("--with-post", action="store_true", help="also feed every allocation as fast as it goes (post-processing)")
     ap.add_argument("--slow-tracker", action="store_true",
                     help="pessimistic bound: the tracker slowed down by the same factor as the detector heads")
+    ap.add_argument("--provider", default="cuda", choices=["cuda", "tensorrt"],
+                    help="tensorrt: the same heads through TensorRT (8 ms instead of 19 on this card; tolerant parity)")
+    ap.add_argument("--gpu-base-ms", type=float, default=None,
+                    help="override the busy-card time of the heads the slowdown is built on (TensorRT: about 8 ms for three)")
     ap.add_argument("--redo", action="store_true")
     a = ap.parse_args()
 
     stem = os.path.splitext(a.video)[0]
     cost_dir = os.path.join(ROOT, "out", "rt", "cost", stem)
     measured = json.load(io.open(os.path.join(cost_dir, "modules.json"), encoding="utf-8"))
-    if a.set:
+    if a.set or a.modules:
         table = json.load(io.open(os.path.join(ROOT, "docs", "analysis", "rt_module_cost.json"), encoding="utf-8"))
         ready = [r for r in table["modules"] if r["runs_in_real_time_as_is"].startswith("yes")]
         if a.set == "pixel_free":
             ready = [r for r in ready if not r.get("pixels")]
+        if a.modules:
+            chosen = [m for m in a.modules.split(",") if m]
+            ready = sorted((r for r in ready if r["module"] in chosen), key=lambda r: chosen.index(r["module"]))
         ready.sort(key=lambda r: r["whole_event_ms"].get("module") or 1e9)
         modules = [r["module"] for r in ready]
         heads, classes = ["gm", "chocks", "vehicle"], ["airplane", "beltloader", "gse", "person"]
-        slice_video, name = f"{stem}_6961_12007.mp4", a.set  # the common busy stretch of rt_shared_cost.py
+        slice_video, name = f"{stem}_6961_12007.mp4", a.set or a.name or "set"  # the common busy stretch of rt_shared_cost.py
         gpu_base_ms = table["gm_by_head_set_ms"]["gm+chocks+vehicle"]
         tracker_base_ms = table["tracker_by_tracked_classes_ms"]["airplane+beltloader+gse+person"]
     else:
@@ -110,6 +121,7 @@ def main() -> int:
         slice_video, name = f"{stem}_{rec['slice']['start']}_{rec['slice']['end']}.mp4", a.module[:40]
         gpu_base_ms = rec["whole_event"]["ms_per_frame_at_this_speed"]["gm"]  # the heads of this module with the card kept busy
         tracker_base_ms = rec["whole_event"]["ms_per_frame_at_this_speed"]["tracker"]
+    gpu_base_ms = a.gpu_base_ms or gpu_base_ms
     out_path = os.path.join(cost_dir, f"resource_fit_{name}.json")
     result = json.load(io.open(out_path, encoding="utf-8")) if os.path.exists(out_path) else {"runs": {}}
     result.update(modules=modules, heads=heads, tracker_classes=classes, slice=slice_video, seconds=a.seconds,
@@ -117,11 +129,11 @@ def main() -> int:
     for item in [g for g in a.grid.split(",") if g]:
         cores, k = int(item.split(":")[0]), float(item.split(":")[1])
         for speed in ([1.0, 8.0] if a.with_post else [1.0]):
-            key = f"cores{cores}_k{k:g}{'_trk' if a.slow_tracker else ''}_x{speed:g}"
+            key = f"cores{cores}_k{k:g}{'_trk' if a.slow_tracker else ''}{'_trt' if a.provider == 'tensorrt' else ''}_x{speed:g}"
             if not a.redo and key in result["runs"] and not result["runs"][key].get("error"):
                 continue
             rec = run(slice_video, a.video, modules, heads, classes, cores, k, speed, a.seconds, f"fit_{name}_{key}", gpu_base_ms,
-                      tracker_base_ms if a.slow_tracker else None)
+                      tracker_base_ms if a.slow_tracker else None, a.provider)
             result["runs"][key] = rec
             json.dump(result, io.open(out_path, "w", encoding="utf-8", newline="\n"), indent=1, default=str)
             ms = rec.get("ms_per_frame") or {}

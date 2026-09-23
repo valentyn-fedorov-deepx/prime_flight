@@ -158,6 +158,7 @@ def main() -> int:
     ap.add_argument("--gates", type=int, default=40, help="how many gates to size the environment for")
     a = ap.parse_args()
     d = Data(a.video)
+    cost_dir = os.path.join(ROOT, "out", "rt", "cost", os.path.splitext(a.video)[0])
     if a.modules:
         print(json.dumps(d.size([m for m in a.modules.split(",") if m]), indent=1))
         return 0
@@ -245,6 +246,80 @@ def main() -> int:
           "time only; two pipelines contend for the card and for the cores), and the CPU and RAM of every module process measured in real "
           "time rather than taken from its post job. Both are one night of runs: `scripts/rt_joint_run.py` now records CPU seconds and "
           "peak memory per module process."]
+    # ------------------------------------------------------------------ the production pod envelope
+    pod_envelope: dict = {}
+    env = load(os.path.join(ROOT, "docs", "analysis", "production_envelope.json"))
+    fits = {os.path.basename(p)[len("resource_fit_"):-len(".json")]: load(p)
+            for p in sorted(glob.glob(os.path.join(cost_dir, "resource_fit_*.json")))}
+    fits = {k: v for k, v in fits.items() if v and v.get("runs") and (v.get("seconds") or 0) >= 120}
+    if env and fits:
+        gpu_pod, cpu_pod = env["pools"]["gpu-pool"], env["pools"]["cpu-pool"]
+        per = env["per_video"]
+        L += ["", "## What it takes to fit in a production-like pod", "",
+              f"The envelope is what a pod can actually reach in the cluster (`{env['source']['pods']}`, measured 23.09 on a test "
+              "node of each pool):", "",
+              "| pool | vCPU | CPU | RAM GB | GPU | GPU memory | scratch GB | modules there |", "|---|---|---|---|---|---|---|---|"]
+        for pool, spec in env["pools"].items():
+            L.append(f"| {pool} | {spec['max CPU (vCPU)']} | {spec['CPU']} | {spec['max RAM (GB)']} | {spec['GPU']} | "
+                     f"{spec['GPU memory (GB)'] or '—'} | {spec['max scratch disk (GB)']} | {len(env['modules_per_pool'][pool])} |")
+        L += ["", "**What post-processing does inside that envelope today** "
+              f"({env['source']['time_to_result']}, videos about {env['video_minutes']} min long): GM runs "
+              f"{env['time_to_result_h']['GM running']} h per video = **{per['gm_ms_per_frame']} ms per frame** "
+              f"({per['gm_x_real_time']}× the recording), the tracker {env['time_to_result_h']['tracker running']} h = "
+              f"**{per['tracker_ms_per_frame']} ms per frame** ({per['tracker_x_real_time']}×), the modules finish "
+              f"{env['time_to_result_h']['modules, until the video is done']} h after the tracker. Those two jobs alone are "
+              f"**{per['gpu_pod_hours_gm_and_tracker']} GPU-pod hours per video**, {per['gpu_pod_hours_per_recorded_hour']} per "
+              "recorded hour; a real-time stream holds one host for one hour per recorded hour. So the question is not whether "
+              "real time costs more machine time — it costs less — but what a host has to be for the frame path to stay under "
+              "125 ms. On this pod it does not: the GM job alone spends 1.7 times the whole real-time budget on a frame.", "",
+              "**The same branch, measured here inside an emulated envelope** (`scripts/rt_resource_fit.py`: the run pinned to "
+              f"N cores of this machine, the detector heads made k times slower than this card). The T4 by the published rates "
+              f"({gpu_pod['GPU FP16 tensor (TFLOPS)']} against about 176 FP16 tensor TFLOPS here, "
+              f"{gpu_pod['GPU memory speed (GB/s)']} against 896 GB/s) is **k ≈ 3**; `+ tracker` makes the tracker k times slower "
+              "too, which is the pessimistic end (part of it is CPU work that a card cannot change); `TRT` runs the heads through "
+              "TensorRT, where three heads take 8 ms on this card instead of 19 (`gm_speed.md`, tolerant parity).", "",
+              "| modules | cores here | GPU | keeps 8 fps | frame path ms, mean · p95 | GM | tracker | CPU used, cores | RAM GB |",
+              "|---|---|---|---|---|---|---|---|---|"]
+        rows_fit = []
+        for name, fit in fits.items():
+            for key, r in sorted(fit["runs"].items(), key=lambda kv: (kv[1].get("provider") or "", -(kv[1].get("cpu_cores") or 0),
+                                                                     kv[1].get("gpu_slowdown") or 0)):
+                if r.get("error") or r.get("speed") != 1:
+                    continue
+                ms, mc = r.get("ms_per_frame") or {}, r.get("machine") or {}
+                gpu = ("this card" if r["gpu_slowdown"] == 1 else f"{r['gpu_slowdown']:g}× slower") + \
+                      (" + tracker" if r.get("tracker_slowed_too") else "") + \
+                      (", TRT" if r.get("provider") == "tensorrt" else "")
+                rows_fit.append({"set": name, "modules": len(fit["modules"]), "cores": r["cpu_cores"], "gpu": gpu,
+                                 "keeps_up": bool(r.get("keeps_up")), "mean": (ms.get("total") or {}).get("mean"),
+                                 "p95": (ms.get("total") or {}).get("p95"), "cpu": mc.get("cpu_cores_used"),
+                                 "ram": mc.get("rss_peak_gb")})
+                L.append(f"| {name[:24]} ({len(fit['modules'])}) | {r['cpu_cores']} | {gpu} | **{'yes' if r.get('keeps_up') else 'no'}** | "
+                         f"{n((ms.get('total') or {}).get('mean'))} · {n((ms.get('total') or {}).get('p95'))} | "
+                         f"{n((ms.get('gm') or {}).get('mean'))} | {n((ms.get('tracker') or {}).get('mean'))} | "
+                         f"{n(mc.get('cpu_cores_used'), 2)} | {n(mc.get('rss_peak_gb'))} |")
+        core_factor = 0.6  # a pod's 4 Haswell threads at 2.30 GHz against one core here (4.7 GHz): an estimate, node_bench.py measures it
+        L += ["", f"Reading the CPU column: the pod's {gpu_pod['max CPU (vCPU)']} vCPU of an Intel Haswell at 2.30 GHz are worth "
+              f"about **{core_factor} of one core of this machine** in throughput (an estimate from clock and generation; "
+              "`scripts/node_bench.py`, two minutes in a pod, replaces it with a measurement). So the pod gives less CPU than the "
+              "single pinned core that already failed here, and it gives it as four slow threads instead of one fast one.", "",
+              "**What one camera stream needs to fit**, from the rows above:", "",
+              "| | production GPU pod today | needed for a set of 3–6 modules |", "|---|---|---|",
+              f"| GPU | Tesla T4, {gpu_pod['GPU FP16 tensor (TFLOPS)']} FP16 TFLOPS, {gpu_pod['GPU memory speed (GB/s)']} GB/s, 70 W | "
+              "a card no more than ~3× slower than an RTX 5070 Ti **and** TensorRT for the heads, or a card ~1.5–2× slower "
+              "(L4 24 GB on GCP, A10 on Azure) with the heads as they are |",
+              f"| GPU memory | {gpu_pod['GPU memory (GB)']} GB (14.6 free) | 3 GB for a pixel-free set, 5+ GB with pixel modules — "
+              "the T4 has room for 2–4 streams, the limit is its speed, not its memory |",
+              f"| CPU | {gpu_pod['max CPU (vCPU)']} vCPU Haswell 2.30 GHz ≈ {core_factor} core here | **2 cores of this machine keep "
+              "8 fps, 1 does not** → about 3–4 pods' worth of CPU, and on the current Haswell nodes that is 12–16 vCPU; on a modern "
+              "server generation (Ice Lake and later, Azure v5) 6–8 vCPU should do the same work |",
+              f"| RAM | {gpu_pod['max RAM (GB)']} GB | 5 GB for three modules, 7 GB for six, 18–23 GB for all twenty — the pod fits "
+              "a small set, not the full one |",
+              f"| scratch disk | {gpu_pod['max scratch disk (GB)']} GB | almost none: the frames live in memory and nothing "
+              "downloads an 87-minute video |"]
+        pod_envelope = {"pools": env["pools"], "post_processing_per_video": per, "runs": rows_fit,
+                        "core_factor_estimate": core_factor}
+
     # ------------------------------------------------------------------ sizing for N gates
     per = per_stream_measured(d)
     gates, cams = a.gates, 2
@@ -298,7 +373,7 @@ def main() -> int:
     out_sizing = {"gates": gates, "cameras_per_gate": cams, "sets": sizing}
 
     io.open(os.path.join(ROOT, "docs", "analysis", "rt_environment.md"), "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
-    json.dump({"price_list": price, "sets": sized, "gates": out_sizing}, io.open(os.path.join(ROOT, "docs", "analysis", "rt_environment.json"), "w",
+    json.dump({"price_list": price, "sets": sized, "gates": out_sizing, "pod_envelope": pod_envelope}, io.open(os.path.join(ROOT, "docs", "analysis", "rt_environment.json"), "w",
                                                              encoding="utf-8", newline="\n"), indent=1, default=str)
     for name, s in sized.items():
         print(name, "| frame path", s["frame_path_ms"], "ms | streams", s["streams_per_gpu_by_frame_time"], "| cpu", s["cpu_cores_mean_per_stream"],

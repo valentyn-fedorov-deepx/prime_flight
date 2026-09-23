@@ -70,6 +70,51 @@ The CPU and RAM columns are estimates from the post jobs and they miss in opposi
 
 What this does not tell yet: how many streams one card really carries before frames start to wait (the number above is by frame time only; two pipelines contend for the card and for the cores), and the CPU and RAM of every module process measured in real time rather than taken from its post job. Both are one night of runs: `scripts/rt_joint_run.py` now records CPU seconds and peak memory per module process.
 
+## What it takes to fit in a production-like pod
+
+The envelope is what a pod can actually reach in the cluster (`docs\inbox\2026-09-23_cluster_pod_max_resources.xlsx`, measured 23.09 on a test node of each pool):
+
+| pool | vCPU | CPU | RAM GB | GPU | GPU memory | scratch GB | modules there |
+|---|---|---|---|---|---|---|---|
+| gpu-pool | 3.92 | Intel Haswell Xeon @ 2.30 GHz, 4 threads (2 cores) | 12.1 | Tesla T4 | 16 | 44 | 15 |
+| cpu-pool | 3.92 | Intel Broadwell Xeon @ 2.20 GHz, 4 threads (2 cores) | 7.6 | none | — | 44 | 15 |
+
+**What post-processing does inside that envelope today** (monthly sheet, median of 148 videos, 10-22 Sep, videos about 87 min long): GM runs 2.4 h per video = **206.9 ms per frame** (1.66× the recording), the tracker 1.3 h = **112.1 ms per frame** (0.9×), the modules finish 0.9 h after the tracker. Those two jobs alone are **3.7 GPU-pod hours per video**, 2.55 per recorded hour; a real-time stream holds one host for one hour per recorded hour. So the question is not whether real time costs more machine time — it costs less — but what a host has to be for the frame path to stay under 125 ms. On this pod it does not: the GM job alone spends 1.7 times the whole real-time budget on a frame.
+
+**The same branch, measured here inside an emulated envelope** (`scripts/rt_resource_fit.py`: the run pinned to N cores of this machine, the detector heads made k times slower than this card). The T4 by the published rates (65 against about 176 FP16 tensor TFLOPS here, 320 against 896 GB/s) is **k ≈ 3**; `+ tracker` makes the tracker k times slower too, which is the pessimistic end (part of it is CPU work that a card cannot change); `TRT` runs the heads through TensorRT, where three heads take 8 ms on this card instead of 19 (`gm_speed.md`, tolerant parity).
+
+| modules | cores here | GPU | keeps 8 fps | frame path ms, mean · p95 | GM | tracker | CPU used, cores | RAM GB |
+|---|---|---|---|---|---|---|---|---|
+| six (6) | 8 | this card | **yes** | 51.0 · 82.3 | 19.9 | 28.5 | 0.71 | 7.2 |
+| six (6) | 8 | 3× slower | **yes** | 88.6 · 120.1 | 58.6 | 27.7 | 0.65 | 7.2 |
+| steering-by-pass-pin-ins (1) | 8 | this card | **yes** | 28.8 · 54.7 | 13.8 | 12.3 | 0.37 | 4.9 |
+| steering-by-pass-pin-ins (1) | 2 | 6× slower + tracker | **no** | 157.6 · 199.9 | 103.6 | 50.7 | 0.58 | 5.2 |
+| steering-by-pass-pin-ins (1) | 2 | 8× slower | **no** | 144.6 · 200.1 | 124.6 | 16.5 | 0.60 | 5.2 |
+| steering-by-pass-pin-ins (1) | 1 | this card | **yes** | 57.0 · 124.3 | 34.2 | 19.6 | 0.34 | 4.8 |
+| steering-by-pass-pin-ins (1) | 1 | 4× slower | **yes** | 83.1 · 135.8 | 62.0 | 17.9 | 0.29 | 4.8 |
+| steering-by-pass-pin-ins (1) | 1 | 4× slower + tracker | **no** | 142.2 · 203.3 | 100.9 | 38.4 | 0.49 | 5.2 |
+| steering-by-pass-pin-ins (1) | 1 | 6× slower | **yes** | 109.4 · 172.5 | 86.3 | 19.7 | 0.32 | 4.8 |
+| steering-by-pass-pin-ins (1) | 1 | 6× slower + tracker | **no** | 144.5 · 191.2 | 87.7 | 53.9 | 0.26 | 5.2 |
+| steering-by-pass-pin-ins (1) | 1 | 8× slower | **no** | 141.4 · 204.8 | 117.4 | 20.8 | 0.28 | 5.2 |
+| trio (3) | 8 | this card | **yes** | 53.3 · 88.4 | 20.6 | 29.9 | 0.72 | 4.9 |
+| trio (3) | 8 | 3× slower | **yes** | 92.1 · 129.0 | 59.1 | 30.4 | 0.72 | 5.0 |
+| trio (3) | 8 | 3× slower + tracker | **no** | 144.2 · 181.3 | 59.6 | 81.9 | 0.62 | 5.3 |
+| trio (3) | 4 | 3× slower | **yes** | 90.1 · 123.4 | 58.9 | 28.8 | 0.66 | 4.9 |
+| trio (3) | 2 | 3× slower | **yes** | 108.2 · 144.9 | 74.4 | 30.7 | 0.73 | 4.9 |
+| trio (3) | 1 | 3× slower | **no** | 167.7 · 228.7 | 120.6 | 43.1 | 0.57 | 5.2 |
+
+Reading the CPU column: the pod's 3.92 vCPU of an Intel Haswell at 2.30 GHz are worth about **0.6 of one core of this machine** in throughput (an estimate from clock and generation; `scripts/node_bench.py`, two minutes in a pod, replaces it with a measurement). So the pod gives less CPU than the single pinned core that already failed here, and it gives it as four slow threads instead of one fast one.
+
+**What one camera stream needs to fit**, from the rows above:
+
+| | production GPU pod today | needed for a set of 3–6 modules |
+|---|---|---|
+| GPU | Tesla T4, 65 FP16 TFLOPS, 320 GB/s, 70 W | a card no more than ~3× slower than an RTX 5070 Ti **and** TensorRT for the heads, or a card ~1.5–2× slower (L4 24 GB on GCP, A10 on Azure) with the heads as they are |
+| GPU memory | 16 GB (14.6 free) | 3 GB for a pixel-free set, 5+ GB with pixel modules — the T4 has room for 2–4 streams, the limit is its speed, not its memory |
+| CPU | 3.92 vCPU Haswell 2.30 GHz ≈ 0.6 core here | **2 cores of this machine keep 8 fps, 1 does not** → about 3–4 pods' worth of CPU, and on the current Haswell nodes that is 12–16 vCPU; on a modern server generation (Ice Lake and later, Azure v5) 6–8 vCPU should do the same work |
+| RAM | 12.1 GB | 5 GB for three modules, 7 GB for six, 18–23 GB for all twenty — the pod fits a small set, not the full one |
+| scratch disk | 44 GB | almost none: the frames live in memory and nothing downloads an 87-minute video |
+
 ## Sizing for 40 gates
 
 Assumptions: **2 camera streams per gate** (cone + wing: the pushback and belt loader checks run on both cameras, `docs/05_module_logic.md`), **every gate busy at the same time** (no delay at the peak; fewer if the schedule says the peak is lower), the branch **as it is** (one GM + tracker pipeline per camera, every module a process of its own), 20 % headroom on the card.

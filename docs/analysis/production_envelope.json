@@ -1,0 +1,137 @@
+{
+ "source": {
+  "pods": "docs\\inbox\\2026-09-23_cluster_pod_max_resources.xlsx",
+  "time_to_result": "monthly sheet, median of 148 videos, 10-22 Sep"
+ },
+ "pools": {
+  "gpu-pool": {
+   "pool": "gpu-pool",
+   "max CPU (vCPU)": 3.92,
+   "CPU": "Intel Haswell Xeon @ 2.30 GHz, 4 threads (2 cores)",
+   "max RAM (GB)": 12.1,
+   "GPU": "Tesla T4",
+   "GPU memory (GB)": 16,
+   "GPU memory speed (GB/s)": 320,
+   "GPU FP32 (TFLOPS)": 8.1,
+   "GPU FP16 tensor (TFLOPS)": 65,
+   "GPU INT8 (TOPS)": 130,
+   "GPU clock boost (MHz)": 1590,
+   "max scratch disk (GB)": 44
+  },
+  "cpu-pool": {
+   "pool": "cpu-pool",
+   "max CPU (vCPU)": 3.92,
+   "CPU": "Intel Broadwell Xeon @ 2.20 GHz, 4 threads (2 cores)",
+   "max RAM (GB)": 7.6,
+   "GPU": "none",
+   "GPU memory (GB)": 0,
+   "GPU memory speed (GB/s)": 0,
+   "GPU FP32 (TFLOPS)": 0,
+   "GPU FP16 tensor (TFLOPS)": 0,
+   "GPU INT8 (TOPS)": 0,
+   "GPU clock boost (MHz)": 0,
+   "max scratch disk (GB)": 44
+  }
+ },
+ "module_pool": {
+  "GM": "gpu-pool",
+  "trackers": "gpu-pool",
+  "wing-walkers-in-proper-position-and-using-approved-wands": "gpu-pool",
+  "hair-policy": "gpu-pool",
+  "crew-present-10-minutes-prior-to-aircraft-arrival": "cpu-pool",
+  "chocks-and-cones-available-and-staged-for-arrival": "cpu-pool",
+  "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed": "gpu-pool",
+  "post-arrival-aircraft-walk-around-inspection-completed-accurately": "gpu-pool",
+  "pre-departure-walk-around-completed": "gpu-pool",
+  "pushback-pathway-confirmed-clear-of-obstacles": "gpu-pool",
+  "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked": "cpu-pool",
+  "3-stop-brake-check": "cpu-pool",
+  "aircraft-chocks": "cpu-pool",
+  "all-cargo-bin-doors-opened-and-verified": "cpu-pool",
+  "beltloader-chocks": "cpu-pool",
+  "cones-placed-in-proper-positions-and-timely": "cpu-pool",
+  "bl_rear_cone": "cpu-pool",
+  "fod-walk-completed": "cpu-pool",
+  "gse-chocks": "cpu-pool",
+  "hand-signals": "gpu-pool",
+  "handrails-on-gse-being-used": "gpu-pool",
+  "lead-marshaller-and-wing-walkers-in-position": "gpu-pool",
+  "pin-verification": "gpu-pool",
+  "pre-arrival-safety-huddle": "cpu-pool",
+  "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready": "cpu-pool",
+  "safety-handrails-fully-extended": "gpu-pool",
+  "safety-vests-secured-to-body": "gpu-pool",
+  "safety-zone-confirmed-clear": "cpu-pool",
+  "seat-belts-used-on-all-gse-equipped-with-seat-belts": "cpu-pool",
+  "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": "gpu-pool"
+ },
+ "notes": [
+  "Cap the local run to this row. These are the maximums one pod can reach, not the Kubernetes request.",
+  "Measured 23 Sep on a test gpu-pool node, same machine as prod (n1-standard-4 + T4): CPU is Intel Haswell at 2.30 GHz, 4 threads. Kubernetes shows 3.92 vCPU and 12.0 GB RAM (prod nodes were 12.1 GB) because it keeps 0.08 vCPU and about 3 GB for itself. The process can use all 4 threads. Scratch disk left after GKE was about 44 GB of the 100 GB disk.",
+  "CPU pods run on e2-custom-4-10240 (4 vCPU, 10 GB, 100 GB disk). Measured 23 Sep on a test cpu-pool node: Intel Broadwell, 2.20 GHz, 4 threads. Kubernetes shows 3.92 vCPU and 7.6 GB because it keeps 0.08 vCPU and about 2 GB for itself. The process can use all 4 threads. Scratch disk left after GKE was about 44 GB. E2 does not promise this CPU every time; the next node can be a different Intel or AMD chip.",
+  "T4 measured on that node: Tesla T4, driver 580, 15360 MiB on the card, 449 MiB reserved by the driver, so about 14.6 GB is free for the process. Memory clock 5001 MHz (320 GB/s on a 256-bit bus). Idle clock 585 MHz, max boost 1590 MHz. Power limit 70 W. PCIe max is Gen3 x16; while idle the link drops to Gen1. FP32 8.1 TFLOPS, FP16 tensor 65 TFLOPS, INT8 130 TOPS are the published T4 rates at that boost clock.",
+  "proper-beltloader-approach-stopbrake-and-handsignals is not a pod."
+ ],
+ "modules_per_pool": {
+  "gpu-pool": [
+   "GM",
+   "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "hair-policy",
+   "hand-signals",
+   "handrails-on-gse-being-used",
+   "lead-marshaller-and-wing-walkers-in-position",
+   "pin-verification",
+   "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "pre-departure-walk-around-completed",
+   "pushback-pathway-confirmed-clear-of-obstacles",
+   "safety-handrails-fully-extended",
+   "safety-vests-secured-to-body",
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "trackers",
+   "wing-walkers-in-proper-position-and-using-approved-wands"
+  ],
+  "cpu-pool": [
+   "3-stop-brake-check",
+   "aircraft-chocks",
+   "all-cargo-bin-doors-opened-and-verified",
+   "beltloader-chocks",
+   "bl_rear_cone",
+   "chocks-and-cones-available-and-staged-for-arrival",
+   "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "cones-placed-in-proper-positions-and-timely",
+   "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "fod-walk-completed",
+   "gse-chocks",
+   "pre-arrival-safety-huddle",
+   "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "safety-zone-confirmed-clear",
+   "seat-belts-used-on-all-gse-equipped-with-seat-belts"
+  ]
+ },
+ "time_to_result_h": {
+  "last chunk filmed, until it is in the bucket": 9.5,
+  "merge waiting to start": 1.7,
+  "merge running": 0.8,
+  "merged file arrived, until GM starts": 0.1,
+  "GM running": 2.4,
+  "GM finished, until the tracker starts": 0.1,
+  "tracker running": 1.3,
+  "modules, until the video is done": 0.9
+ },
+ "totals_h": {
+  "merged file to results": 5.0,
+  "chunks uploaded to results": 8.6,
+  "recorded to results": 20.3
+ },
+ "video_minutes": 87,
+ "videos": 148,
+ "per_video": {
+  "gm_x_real_time": 1.66,
+  "tracker_x_real_time": 0.9,
+  "modules_wall_x_real_time": 0.62,
+  "gm_ms_per_frame": 206.9,
+  "tracker_ms_per_frame": 112.1,
+  "gpu_pod_hours_gm_and_tracker": 3.7,
+  "gpu_pod_hours_per_recorded_hour": 2.55
+ }
+}

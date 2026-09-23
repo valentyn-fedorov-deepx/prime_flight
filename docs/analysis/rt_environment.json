@@ -820,5 +820,236 @@
     "gpu_memory_gb": 430
    }
   }
+ },
+ "pod_envelope": {
+  "pools": {
+   "gpu-pool": {
+    "pool": "gpu-pool",
+    "max CPU (vCPU)": 3.92,
+    "CPU": "Intel Haswell Xeon @ 2.30 GHz, 4 threads (2 cores)",
+    "max RAM (GB)": 12.1,
+    "GPU": "Tesla T4",
+    "GPU memory (GB)": 16,
+    "GPU memory speed (GB/s)": 320,
+    "GPU FP32 (TFLOPS)": 8.1,
+    "GPU FP16 tensor (TFLOPS)": 65,
+    "GPU INT8 (TOPS)": 130,
+    "GPU clock boost (MHz)": 1590,
+    "max scratch disk (GB)": 44
+   },
+   "cpu-pool": {
+    "pool": "cpu-pool",
+    "max CPU (vCPU)": 3.92,
+    "CPU": "Intel Broadwell Xeon @ 2.20 GHz, 4 threads (2 cores)",
+    "max RAM (GB)": 7.6,
+    "GPU": "none",
+    "GPU memory (GB)": 0,
+    "GPU memory speed (GB/s)": 0,
+    "GPU FP32 (TFLOPS)": 0,
+    "GPU FP16 tensor (TFLOPS)": 0,
+    "GPU INT8 (TOPS)": 0,
+    "GPU clock boost (MHz)": 0,
+    "max scratch disk (GB)": 44
+   }
+  },
+  "post_processing_per_video": {
+   "gm_x_real_time": 1.66,
+   "tracker_x_real_time": 0.9,
+   "modules_wall_x_real_time": 0.62,
+   "gm_ms_per_frame": 206.9,
+   "tracker_ms_per_frame": 112.1,
+   "gpu_pod_hours_gm_and_tracker": 3.7,
+   "gpu_pod_hours_per_recorded_hour": 2.55
+  },
+  "runs": [
+   {
+    "set": "six",
+    "modules": 6,
+    "cores": 8,
+    "gpu": "this card",
+    "keeps_up": true,
+    "mean": 51.04,
+    "p95": 82.33,
+    "cpu": 0.71,
+    "ram": 7.18
+   },
+   {
+    "set": "six",
+    "modules": 6,
+    "cores": 8,
+    "gpu": "3\u00d7 slower",
+    "keeps_up": true,
+    "mean": 88.63,
+    "p95": 120.13,
+    "cpu": 0.65,
+    "ram": 7.2
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 8,
+    "gpu": "this card",
+    "keeps_up": true,
+    "mean": 28.84,
+    "p95": 54.74,
+    "cpu": 0.37,
+    "ram": 4.91
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 2,
+    "gpu": "6\u00d7 slower + tracker",
+    "keeps_up": false,
+    "mean": 157.55,
+    "p95": 199.9,
+    "cpu": 0.58,
+    "ram": 5.2
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 2,
+    "gpu": "8\u00d7 slower",
+    "keeps_up": false,
+    "mean": 144.64,
+    "p95": 200.1,
+    "cpu": 0.6,
+    "ram": 5.17
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 1,
+    "gpu": "this card",
+    "keeps_up": true,
+    "mean": 57.05,
+    "p95": 124.29,
+    "cpu": 0.34,
+    "ram": 4.82
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 1,
+    "gpu": "4\u00d7 slower",
+    "keeps_up": true,
+    "mean": 83.14,
+    "p95": 135.78,
+    "cpu": 0.29,
+    "ram": 4.83
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 1,
+    "gpu": "4\u00d7 slower + tracker",
+    "keeps_up": false,
+    "mean": 142.25,
+    "p95": 203.29,
+    "cpu": 0.49,
+    "ram": 5.24
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 1,
+    "gpu": "6\u00d7 slower",
+    "keeps_up": true,
+    "mean": 109.37,
+    "p95": 172.54,
+    "cpu": 0.32,
+    "ram": 4.85
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 1,
+    "gpu": "6\u00d7 slower + tracker",
+    "keeps_up": false,
+    "mean": 144.5,
+    "p95": 191.23,
+    "cpu": 0.26,
+    "ram": 5.24
+   },
+   {
+    "set": "steering-by-pass-pin-installed-or-steeri",
+    "modules": 1,
+    "cores": 1,
+    "gpu": "8\u00d7 slower",
+    "keeps_up": false,
+    "mean": 141.39,
+    "p95": 204.76,
+    "cpu": 0.28,
+    "ram": 5.25
+   },
+   {
+    "set": "trio",
+    "modules": 3,
+    "cores": 8,
+    "gpu": "this card",
+    "keeps_up": true,
+    "mean": 53.34,
+    "p95": 88.42,
+    "cpu": 0.72,
+    "ram": 4.94
+   },
+   {
+    "set": "trio",
+    "modules": 3,
+    "cores": 8,
+    "gpu": "3\u00d7 slower",
+    "keeps_up": true,
+    "mean": 92.09,
+    "p95": 128.96,
+    "cpu": 0.72,
+    "ram": 4.99
+   },
+   {
+    "set": "trio",
+    "modules": 3,
+    "cores": 8,
+    "gpu": "3\u00d7 slower + tracker",
+    "keeps_up": false,
+    "mean": 144.23,
+    "p95": 181.34,
+    "cpu": 0.62,
+    "ram": 5.34
+   },
+   {
+    "set": "trio",
+    "modules": 3,
+    "cores": 4,
+    "gpu": "3\u00d7 slower",
+    "keeps_up": true,
+    "mean": 90.07,
+    "p95": 123.36,
+    "cpu": 0.66,
+    "ram": 4.94
+   },
+   {
+    "set": "trio",
+    "modules": 3,
+    "cores": 2,
+    "gpu": "3\u00d7 slower",
+    "keeps_up": true,
+    "mean": 108.19,
+    "p95": 144.88,
+    "cpu": 0.73,
+    "ram": 4.89
+   },
+   {
+    "set": "trio",
+    "modules": 3,
+    "cores": 1,
+    "gpu": "3\u00d7 slower",
+    "keeps_up": false,
+    "mean": 167.66,
+    "p95": 228.66,
+    "cpu": 0.57,
+    "ram": 5.18
+   }
+  ],
+  "core_factor_estimate": 0.6
  }
 }
