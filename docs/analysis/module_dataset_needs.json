@@ -1,0 +1,1143 @@
+{
+ "modules": [
+  {
+   "module": "safety-vests-secured-to-body",
+   "short": "safety-vests",
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "Swin-T pose classifier pose_classifier.pt",
+    "Swin-T vest classifier vest_classifier.pt",
+    "HSV colour segmentation rules vests_utils.py"
+   ],
+   "classes_for_the_check": [
+    "person",
+    "safety_vest"
+   ],
+   "aircraft_classes": [],
+   "traffic_classes": [],
+   "derived_rows": [],
+   "drawn_only": [],
+   "tracker_classes": [
+    "person"
+   ],
+   "recomputes_the_stage_itself": false,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "short": "steering",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "mmpose HRNet-w48 td-hm",
+    "tsai time-series classifier model_newaug.pkl",
+    "joblib scaler.gz"
+   ],
+   "classes_for_the_check": [
+    "chock"
+   ],
+   "aircraft_classes": [
+    "airplane_nose"
+   ],
+   "traffic_classes": [],
+   "derived_rows": [],
+   "drawn_only": [
+    "airplane",
+    "front_wheel",
+    "person"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "3-stop-brake-check",
+   "short": "3-stop",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "cone"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "traffic_classes": [
+    "gse",
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "beltloader",
+    "obstacle"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "pre-arrival-safety-huddle",
+   "short": "huddle",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "cone"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "traffic_classes": [
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [
+    "roi"
+   ],
+   "drawn_only": [
+    "obstacle",
+    "person"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "seat-belts-used-on-all-gse-equipped-with-seat-belts",
+   "short": "seat-belts (out of scope)",
+   "runs_in_real_time_as_is": null,
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "mmpose",
+    "own norfair person tracker"
+   ],
+   "classes_for_the_check": [
+    "beltloader",
+    "fuel_truck"
+   ],
+   "aircraft_classes": [
+    "airplane_engine"
+   ],
+   "traffic_classes": [
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "airplane",
+    "gse",
+    "person"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "gse"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "short": "crew-present",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "traffic_classes": [
+    "gse",
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [
+    "obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "pin-verification",
+   "short": "pin-verification",
+   "runs_in_real_time_as_is": "no: two passes",
+   "pixels": true,
+   "passes": 2,
+   "own_models": [
+    "mmpose simcc_res50"
+   ],
+   "classes_for_the_check": [
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "beltloader",
+    "gse",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "side_obstacle"
+   ],
+   "drawn_only": [
+    "airplane_nose",
+    "obstacle",
+    "roi"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "safety-zone-confirmed-clear",
+   "short": "safety-zone",
+   "runs_in_real_time_as_is": "no: two passes",
+   "pixels": true,
+   "passes": 2,
+   "own_models": [
+    "mobile_sam.pt"
+   ],
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "side_obstacle"
+   ],
+   "drawn_only": [
+    "obstacle",
+    "safety_zone"
+   ],
+   "tracker_classes": [
+    "airplane"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "short": "chocks-and-cones-staged",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "chock",
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "traffic_classes": [
+    "air_conditioning",
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "safety-handrails-fully-extended",
+   "short": "safety-handrails",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "EfficientNetB0 handrail classifier"
+   ],
+   "classes_for_the_check": [
+    "beltloader",
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "gse",
+    "trailer"
+   ],
+   "derived_rows": [
+    "obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "fod-walk-completed",
+   "short": "fod-walk",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "movenet_singlepose_thunder_4.onnx PoseEstimation.is_backside"
+   ],
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane_nose",
+    "airplane_tail",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "beltloader",
+    "gse",
+    "pushback"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "roi"
+   ],
+   "drawn_only": [
+    "airplane"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "short": "lead-marshaller",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_tail",
+    "airplane_wing"
+   ],
+   "traffic_classes": [
+    "air_conditioning",
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "short": "cargo-doors",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "short": "pushback-pathway",
+   "runs_in_real_time_as_is": "yes, report shifts",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "chock",
+    "cone",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "airplane_tail"
+   ],
+   "traffic_classes": [
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "trailer"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "back_door",
+    "front_door",
+    "obstacle",
+    "roi"
+   ],
+   "tracker_classes": [
+    "airplane"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "short": "conditioned-air",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "YOLOv8 ONNX best28_full.onnx"
+   ],
+   "classes_for_the_check": [
+    "air_conditioning"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_wing",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane"
+   ],
+   "recomputes_the_stage_itself": false,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "aircraft-chocks",
+   "short": "aircraft-chocks",
+   "runs_in_real_time_as_is": "no: two passes",
+   "pixels": true,
+   "passes": 2,
+   "own_models": [
+    "effnetb0 difference classifier",
+    "complex_difference.test_chocks_difference / simple_difference.test_env_static"
+   ],
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "back_wheel",
+    "tow_bar"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "beltloader",
+    "chock",
+    "front_wheel",
+    "obstacle"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "handrails-on-gse-being-used",
+   "short": "handrails-on-gse",
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "EfficientNetB0 handrail classifier",
+    "MixVisionTransformer segmentation",
+    "DWpose ONNX",
+    "EfficientNetB0WithRegularization hand classifier"
+   ],
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "gse",
+    "trailer"
+   ],
+   "derived_rows": [
+    "obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "short": "cones-removed",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "beltloader",
+    "cone",
+    "engine_cone",
+    "front_door",
+    "gse",
+    "tail_cone",
+    "wing_cone"
+   ],
+   "aircraft_classes": [
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "airplane"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "recomputes_the_stage_itself": false,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "short": "pushback-wing-walkers",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "air_conditioning",
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "short": "wing-walkers-wands",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [
+    "cv_common Model"
+   ],
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "wand"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing"
+   ],
+   "traffic_classes": [
+    "air_conditioning",
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "roi",
+    "side_obstacle"
+   ],
+   "drawn_only": [
+    "front_wheel (collected, unused)"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "short": "cones-placed",
+   "runs_in_real_time_as_is": "yes, report shifts",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "cone",
+    "engine_cone",
+    "person",
+    "tail_cone",
+    "wing_cone"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "airplane_tail"
+   ],
+   "traffic_classes": [
+    "air_conditioning",
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [
+    "airplane_engine",
+    "airplane_wing"
+   ],
+   "tracker_classes": [
+    "airplane"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "beltloader-chocks",
+   "short": "beltloader-chocks",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "chock",
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_wing",
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "obstacle"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "hand-signals",
+   "short": "hand-signals",
+   "runs_in_real_time_as_is": "no: two passes",
+   "pixels": true,
+   "passes": 2,
+   "own_models": [
+    "mmpose HRNet-w48 td-hm"
+   ],
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_wing",
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "obstacle"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "short": "walk-around post-arrival",
+   "runs_in_real_time_as_is": "not hosted",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "back_door",
+    "cone",
+    "front_door"
+   ],
+   "aircraft_classes": [
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "back_wheel",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [
+    "airplane",
+    "beltloader",
+    "person",
+    "roi"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "pre-departure-walk-around-completed",
+   "short": "walk-around pre-departure",
+   "runs_in_real_time_as_is": "not hosted",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "back_door",
+    "cone",
+    "front_door"
+   ],
+   "aircraft_classes": [
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "back_wheel",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [
+    "airplane",
+    "beltloader",
+    "person",
+    "roi"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": false
+  },
+  {
+   "module": "bl_rear_cone",
+   "short": "bl_rear_cone",
+   "runs_in_real_time_as_is": "yes",
+   "pixels": false,
+   "passes": 1,
+   "own_models": [],
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "beltloader_cone",
+    "cone",
+    "engine_cone",
+    "person",
+    "wing_cone"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "back_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "pushback",
+    "trailer"
+   ],
+   "derived_rows": [],
+   "drawn_only": [
+    "obstacle"
+   ],
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  },
+  {
+   "module": "gse-chocks",
+   "short": "gse-chocks",
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "pixels": true,
+   "passes": 1,
+   "own_models": [
+    "rtmpose-l ONNX",
+    "effnetb0 difference classifier"
+   ],
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "chock",
+    "cone",
+    "front_door",
+    "gse",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "back_wheel",
+    "front_wheel"
+   ],
+   "traffic_classes": [
+    "fuel_truck",
+    "ladder",
+    "pushback",
+    "trailer",
+    "vehicle"
+   ],
+   "derived_rows": [
+    "obstacle",
+    "side_obstacle"
+   ],
+   "drawn_only": [],
+   "tracker_classes": [
+    "beltloader",
+    "gse",
+    "person"
+   ],
+   "recomputes_the_stage_itself": true,
+   "reads_optical_flow_state": true
+  }
+ ],
+ "class_to_modules": {
+  "person": [
+   "safety-vests",
+   "crew-present",
+   "pin-verification",
+   "safety-zone",
+   "chocks-and-cones-staged",
+   "safety-handrails",
+   "fod-walk",
+   "lead-marshaller",
+   "aircraft-chocks",
+   "handrails-on-gse",
+   "pushback-wing-walkers",
+   "wing-walkers-wands",
+   "cones-placed",
+   "beltloader-chocks",
+   "hand-signals",
+   "bl_rear_cone",
+   "gse-chocks"
+  ],
+  "safety_vest": [
+   "safety-vests"
+  ],
+  "chock": [
+   "steering",
+   "chocks-and-cones-staged",
+   "pushback-pathway",
+   "beltloader-chocks",
+   "gse-chocks"
+  ],
+  "cone": [
+   "3-stop",
+   "huddle",
+   "crew-present",
+   "safety-zone",
+   "chocks-and-cones-staged",
+   "safety-handrails",
+   "fod-walk",
+   "lead-marshaller",
+   "cargo-doors",
+   "pushback-pathway",
+   "aircraft-chocks",
+   "handrails-on-gse",
+   "cones-removed",
+   "pushback-wing-walkers",
+   "wing-walkers-wands",
+   "cones-placed",
+   "beltloader-chocks",
+   "hand-signals",
+   "walk-around post-arrival",
+   "walk-around pre-departure",
+   "bl_rear_cone",
+   "gse-chocks"
+  ],
+  "beltloader": [
+   "seat-belts (out of scope)",
+   "safety-handrails",
+   "cargo-doors",
+   "handrails-on-gse",
+   "cones-removed",
+   "beltloader-chocks",
+   "hand-signals",
+   "bl_rear_cone",
+   "gse-chocks"
+  ],
+  "fuel_truck": [
+   "seat-belts (out of scope)"
+  ],
+  "pushback": [
+   "pin-verification",
+   "pushback-pathway",
+   "aircraft-chocks",
+   "pushback-wing-walkers"
+  ],
+  "back_door": [
+   "cargo-doors",
+   "handrails-on-gse",
+   "beltloader-chocks",
+   "hand-signals",
+   "walk-around post-arrival",
+   "walk-around pre-departure",
+   "bl_rear_cone",
+   "gse-chocks"
+  ],
+  "front_door": [
+   "cargo-doors",
+   "handrails-on-gse",
+   "cones-removed",
+   "hand-signals",
+   "walk-around post-arrival",
+   "walk-around pre-departure",
+   "gse-chocks"
+  ],
+  "air_conditioning": [
+   "conditioned-air"
+  ],
+  "engine_cone": [
+   "cones-removed",
+   "cones-placed",
+   "bl_rear_cone"
+  ],
+  "gse": [
+   "cones-removed",
+   "gse-chocks"
+  ],
+  "tail_cone": [
+   "cones-removed",
+   "cones-placed"
+  ],
+  "wing_cone": [
+   "cones-removed",
+   "cones-placed",
+   "bl_rear_cone"
+  ],
+  "wand": [
+   "wing-walkers-wands"
+  ],
+  "beltloader_cone": [
+   "bl_rear_cone"
+  ]
+ }
+}
