@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RampVision Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap">
+<style>
+:root{--ground:#f4f6fa;--surface:#ffffff;--ink:#101828;--muted:#5d6678;--line:#e1e5ec;--rail:#c9d0dc;--accent:#0b8fd0;
+--accent-soft:#dff1fb;--quarter:#64748b;--quarter-ink:#ffffff;--station:#1e293b;--chip-ink:#141414;
+--edge:#22c55e;--rt:#f59e0b;--post:#ec4899;--blue:#2563eb;--hover:#eef2f7;
+--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 1px rgba(16,24,40,.04);
+--cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;--semi:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark;--ground:#0b0e14;--surface:#141924;--ink:#e9edf4;
+--muted:#9aa3b5;--line:#252d3d;--rail:#39435a;--accent:#38bdf8;--accent-soft:#0f2a3a;--quarter:#556179;--station:#cbd5e1;
+--hover:#1b2130;--shadow:none}}
+:root[data-theme="dark"]{color-scheme:dark;--ground:#0b0e14;--surface:#141924;--ink:#e9edf4;--muted:#9aa3b5;--line:#252d3d;
+--rail:#39435a;--accent:#38bdf8;--accent-soft:#0f2a3a;--quarter:#556179;--station:#cbd5e1;--hover:#1b2130;--shadow:none}
+body{background:var(--ground);color:var(--ink);font-family:"Barlow",system-ui,"Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.45;
+padding-inline:16px;padding-block:28px 56px}
+.page{max-width:1240px;margin:0 auto;display:grid;gap:18px}
+h1{font-family:var(--cond);font-weight:700;font-size:32px;letter-spacing:.01em;margin:0;text-wrap:balance}
+.lead{margin:4px 0 0;font-size:17px;color:var(--muted);text-wrap:pretty}
+h2{font-family:var(--cond);font-weight:600;font-size:21px;letter-spacing:.02em;margin:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+button{font:inherit}
+.panel{padding:18px 22px 20px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px 32px;align-items:center}
+.readout{display:flex;align-items:baseline;gap:8px;min-width:150px}
+.readout b{font-family:var(--cond);font-size:72px;line-height:.85;font-weight:700}
+.readout span{font-size:20px;color:var(--muted)}
+.strip{overflow-x:auto;padding-bottom:2px}
+.strip-in{min-width:372px}
+.quarters,.months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}
+.q{grid-column:span 3;text-align:center;border-radius:999px;background:var(--quarter);color:var(--quarter-ink);font-family:var(--cond);
+font-weight:600;font-size:17px;letter-spacing:.04em;padding:3px 0;transition:opacity .25s}
+.months{margin-top:8px}
+.m{display:grid;justify-items:center;gap:5px;padding:6px 0 4px;border:0;background:none;color:var(--ink);cursor:pointer;border-radius:8px}
+.m:hover{background:var(--accent-soft)}
+.m i{width:15px;height:15px;transform:rotate(45deg);border:2px solid var(--accent);background:var(--accent);border-radius:2px;
+transition:background .2s,border-color .2s}
+.m span{font-family:var(--semi);font-weight:600;font-size:14px}
+.m.out i{background:transparent;border-color:var(--rail)}
+.m.out span{color:var(--muted)}
+.m.end i{box-shadow:0 0 0 4px var(--accent-soft)}
+.q.out{opacity:.3}
+.legend{padding:16px 22px 18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 28px;align-items:start}
+.lg-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px 26px}
+.lg{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center}
+.lg b{font-family:var(--semi);font-weight:600;font-size:18px;line-height:1.15}
+.lg p{grid-column:2;margin:0;font-size:14px;line-height:1.35;color:var(--muted)}
+.sw{flex:none;display:inline-block;width:16px;height:16px;border-radius:4px}
+.lg .hex{width:19px;height:17px;background:var(--blue);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+.edge{--c:var(--edge)}.rt{--c:var(--rt)}.post{--c:var(--post)}
+.sw,.cell,.chip,.swb{background:var(--c)}
+.bar{grid-column:1 / -1;display:grid;column-gap:3px}
+.seg{display:grid;gap:5px;min-width:0}
+.seg-n{font-family:var(--cond);font-weight:700;font-size:26px;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cells{display:grid;column-gap:3px}
+.cell{height:14px;border-radius:3px}
+.cell.hot,.chip.hot{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.main{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:18px;align-items:start}
+.board{padding:16px 20px 18px;display:grid;gap:12px}
+.row{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:start;transition:opacity .25s,filter .25s}
+.mk{display:flex;align-items:center;gap:8px;padding-top:6px}
+.mk i{width:11px;height:11px;transform:rotate(45deg);background:var(--accent);border-radius:2px;flex:none}
+.mk span{font-family:var(--semi);font-weight:600;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chip{font-family:var(--semi);font-weight:500;font-size:14px;line-height:1.25;color:var(--chip-ink);border-radius:6px;padding:5px 9px;max-width:320px;
+transition:box-shadow .15s}
+.chip.platform{--c:var(--blue);color:#fff;border-radius:0;padding:5px 17px;
+clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%)}
+.note{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);font-weight:600;padding:4px 4px}
+.note .dot{flex:none;width:10px;height:10px;border-radius:50%;border:2px solid var(--station)}
+.board .out{opacity:.3;filter:saturate(.2)}
+.cut{display:flex;align-items:center;gap:10px;margin:2px 0}
+.cut::before,.cut::after{content:"";height:2px;background:var(--accent);flex:1}
+.cut::before{flex:0 0 18px}
+.cut span{font-family:var(--semi);font-weight:600;font-size:14px;color:var(--accent);border:2px solid var(--accent);border-radius:999px;padding:0 10px}
+.stay{display:flex;align-items:center;gap:8px;margin-top:4px;padding-top:14px;border-top:1px solid var(--line);font-family:var(--semi);
+font-weight:600;font-size:16px}
+.stay small{font-family:"Barlow",system-ui,sans-serif;font-weight:400;font-size:14px;color:var(--muted)}
+.prio{padding:16px 14px 14px}
+.prio header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 6px 6px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:4px 12px;font-size:14px;cursor:pointer}
+.btn:hover{background:var(--hover)}
+.hint{margin:0 6px 6px;font-size:13.5px;color:var(--muted)}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.grp{display:flex;align-items:center;gap:8px;padding:14px 6px 4px;font-family:var(--semi);font-weight:600;font-size:15px}
+.pr{display:grid;grid-template-columns:18px 18px minmax(0,1fr) auto;gap:10px;align-items:center;border-radius:8px;padding:5px 8px 5px 6px;
+transition:opacity .25s,background .15s}
+.pr:hover,.pr.hot{background:var(--hover)}
+.pr.drag{background:var(--accent-soft);box-shadow:0 2px 10px rgba(0,0,0,.18);position:relative;z-index:2}
+.h{width:18px;height:24px;display:grid;place-items:center;cursor:grab;touch-action:none;color:var(--muted);border-radius:5px;font-size:13px;
+letter-spacing:-2px;user-select:none}
+.h:active{cursor:grabbing}
+.swb{width:18px;height:18px;border:0;border-radius:5px;padding:0;cursor:pointer}
+.swb:not([disabled]):hover{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.swb[disabled]{cursor:default}
+.m:focus-visible,.btn:focus-visible,.swb:focus-visible,.h:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pr .t{font-family:var(--semi);font-weight:500;font-size:14.5px;line-height:1.25}
+.pr .when{font-family:var(--semi);font-weight:600;font-size:14px;min-width:30px;text-align:right;color:var(--accent);font-variant-numeric:tabular-nums}
+.pr.out{opacity:.4}
+.pr.out .when{color:var(--muted)}
+details.settings{padding:10px 18px}
+details.settings summary{cursor:pointer;font-weight:600;padding:4px 0;color:var(--muted)}
+.set{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 24px;padding:10px 0 6px}
+.set label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
+.set input{width:70px;font:inherit;font-size:15px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:7px;
+padding:4px 8px;text-align:right}
+.set-note{margin:2px 0 6px;font-size:14px;color:var(--muted)}
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:10px 0 0;font-size:14px;color:var(--muted)}
+.status .dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--rail)}
+.status.live .dot{background:var(--edge);box-shadow:0 0 0 3px color-mix(in srgb,var(--edge) 25%,transparent)}
+.status b{color:var(--ink);font-weight:600}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,8px);max-width:min(560px,calc(100vw - 32px));background:var(--ink);
+color:var(--surface);padding:9px 14px;border-radius:10px;font-size:14px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;
+pointer-events:none;transition:opacity .2s,transform .2s;z-index:20}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.hist{list-style:none;margin:8px 0 4px;padding:0;display:grid;gap:2px}
+.hist li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;font-size:14px;padding:5px 6px;border-radius:8px}
+.hist li:hover{background:var(--hover)}
+.hist li.empty{display:block;color:var(--muted)}
+.hist time{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ro .restore,.ro #reset{display:none}
+@media (max-width:980px){.main{grid-template-columns:1fr}}
+@media (max-width:640px){.panel,.legend{grid-template-columns:1fr;padding:16px}.readout b{font-size:60px}.row{grid-template-columns:44px minmax(0,1fr)}
+.bar,.cells{column-gap:2px}.seg-n{font-size:22px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head><body><div class="page">
+  <div>
+    <h1>RampVision Roadmap</h1>
+    <p class="lead">Today every result arrives in hours. Pick the number of months to see what gets faster by then.</p>
+    <p class="status" id="status" aria-live="polite"></p>
+  </div>
+  <section class="card legend" aria-label="Legend">
+    <h2>Legend</h2>
+    <div class="lg-list">
+      <div class="lg"><i class="sw edge"></i><b>Seconds</b><p>Result in seconds. Edge real-time, on the camera.</p></div>
+      <div class="lg"><i class="sw rt"></i><b>Minutes</b><p>Result in minutes, sometimes sooner, but slower than green. Server real-time.</p></div>
+      <div class="lg"><i class="sw post"></i><b>Hours</b><p>Result in hours, as today. Post-processing.</p></div>
+      <div class="lg"><i class="hex"></i><b>System work</b><p>Alerts, Automated Feedback, Hardware improvements, Azure Migration, Scale tests &amp; docs.</p></div>
+    </div>
+  </section>
+  <section class="card panel" aria-label="months">
+    <div class="readout" aria-live="polite"><b id="n-months">12</b><span id="u-months">months</span></div>
+    <div class="strip"><div class="strip-in">
+      <div class="quarters" id="quarters"></div>
+      <div class="months" id="months" role="radiogroup" aria-label="months"></div>
+    </div></div>
+    <div class="bar" id="bar" role="img"></div>
+  </section>
+  <div class="main">
+    <section class="card board" id="board" aria-label="Roadmap"></section>
+    <section class="card prio" aria-label="Priority">
+      <header><h2>Priority</h2><button class="btn" id="reset" type="button">Reset</button></header>
+      <p class="hint" id="hint">Higher in the list gets faster sooner. Drag a row to change the order.
+        Click a colour square to switch between minutes and hours.</p>
+      <ol class="plist" id="plist"></ol>
+    </section>
+  </div>
+  <details class="card settings" id="settings">
+    <summary>Settings</summary>
+    <div class="set" id="set"></div>
+    <p class="set-note">Between these months the pace is even. Nothing gets faster before M3.</p>
+  </details>
+  <details class="card settings" id="history-box" hidden>
+    <summary>History</summary>
+    <ol class="hist" id="hist"></ol>
+  </details>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script>
+const DATA = [{"id": "b4", "label": "Safety vests", "month": 3, "kind": "check", "mode": "rt", "lock": false}, {"id": "b3", "label": "FOD walk", "month": 3, "kind": "check", "mode": "rt", "lock": false}, {"id": "b6", "label": "Steering by pass pin", "month": 3, "kind": "check", "mode": "rt", "lock": false}, {"id": "b1", "label": "Hair Policy", "month": 3, "kind": "check", "mode": "edge", "lock": true}, {"id": "b59", "label": "1 station ready", "month": 3, "kind": "station"}, {"id": "b64", "label": "Alerts", "month": 6, "kind": "platform"}, {"id": "b65", "label": "Automated Feedback", "month": 6, "kind": "platform"}, {"id": "b66", "label": "Hardware improvements", "month": 6, "kind": "platform"}, {"id": "b2", "label": "Nose Gear Chocks", "month": 7, "kind": "check", "mode": "edge", "lock": true}, {"id": "b13", "label": "Pushback does not start until wing walkers are in place", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b5", "label": "Safety zone clear", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b7", "label": "3 stop brake", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b8", "label": "GSE parked", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b9", "label": "Handrails on GSE", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b10", "label": "Handrails fully extended", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b11", "label": "Conditioned air removed", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b12", "label": "Pushback verify pin installation", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b16", "label": "Beltloader rear cone positioned after BL", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b14", "label": "Wing walkers in proper position", "month": 7, "kind": "check", "mode": "rt", "lock": false}, {"id": "b60", "label": "8 stations ready", "month": 7, "kind": "station"}, {"id": "b63", "label": "Azure Migration", "month": 9, "kind": "platform"}, {"id": "b67", "label": "Scale tests & docs", "month": 11, "kind": "platform"}, {"id": "b22", "label": "Lead marshaller and wing walkers in correct position", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b17", "label": "Main gear chocks removed only after aircraft is attached to pushback", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b19", "label": "Belt loader forward chock remained in place until unit is backed up clear of aircraft", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b20", "label": "Nose wheel chock removed from aircraft", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b21", "label": "Pushback pathway confirmed clear", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b15", "label": "Cones placed in proper positions", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b18", "label": "Cones are removed only after all GSE is clear of A/C and chocked", "month": 12, "kind": "check", "mode": "rt", "lock": false}, {"id": "b23", "label": "Chocks and cones available and staged for arrival", "month": 12, "kind": "check", "mode": "post", "lock": false}, {"id": "b24", "label": "Crew present 10 minutes prior to aircraft arrival", "month": 12, "kind": "check", "mode": "post", "lock": false}, {"id": "b25", "label": "Safety huddle conducted at huddle cone", "month": 12, "kind": "check", "mode": "post", "lock": false}, {"id": "b26", "label": "All GSE guided into aircraft using approved hand signals", "month": 12, "kind": "check", "mode": "post", "lock": false}, {"id": "b30", "label": "Pre-departure walk around completed", "month": 12, "kind": "check", "mode": "post", "lock": true}, {"id": "b29", "label": "All cargo bin doors opened and verified", "month": 12, "kind": "check", "mode": "post", "lock": false}, {"id": "b28", "label": "Proper beltloader approach including 3 stop brake check and handsignals", "month": 12, "kind": "check", "mode": "post", "lock": false}, {"id": "b27", "label": "Post-arrival aircraft walk around inspection completed accurately", "month": 12, "kind": "check", "mode": "post", "lock": true}];
+const CHECKS = DATA.filter(d => d.kind === "check");
+const FIXED = DATA.filter(d => d.kind !== "check");
+const BY_ID = Object.fromEntries(CHECKS.map(c => [c.id, c]));
+const MODES = {edge: {name: "Seconds", sub: "Edge real-time"}, rt: {name: "Minutes", sub: "Server real-time"},
+               post: {name: "Hours", sub: "Post-processing"}};
+const GROUPS = ["edge", "rt", "post"];
+const PARAMS = [
+  ["s3", "Minutes: how many by M3", 3], ["s7", "Minutes: how many by M7", 13], ["s12", "Minutes: how many by M12", 20],
+  ["e3", "Seconds: how many by M3", 1], ["e7", "Seconds: how many by M7", 2], ["e12", "Seconds: how many by M12", 2],
+];
+const DEFAULT = () => ({order: CHECKS.map(c => c.id), modes: Object.fromEntries(CHECKS.map(c => [c.id, c.mode])),
+                        params: Object.fromEntries(PARAMS.map(p => [p[0], p[2]]))});
+const KEY = "rv-roadmap-calculator-2";
+const HINT = "Higher in the list gets faster sooner. Drag a row to change the order. Click a colour square to switch between minutes and hours.";
+let state = DEFAULT();
+let months = 12;
+/* The shared plan lives in the page's db (plan/current, and every change in history/); everyone who opens the page sees it
+   live. A saved copy of the page has no db: the plan then stays in this browser. */
+let shared = null, readOnly = false, waiting = false, dragging = null, remoteWhileDragging = null, lastPlan = null, seen = false;
+const ownWrites = new Set();
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+/* a plan from storage or from another viewer is untrusted input: keep only what fits this diagram */
+function normalize(s) {
+  const d = DEFAULT();
+  if (!s || typeof s !== "object") return d;
+  const order = Array.isArray(s.order) ? s.order.filter((id, i, a) => typeof id === "string" && BY_ID[id] && a.indexOf(id) === i) : [];
+  for (const id of d.order) if (!order.includes(id)) order.push(id);
+  const modes = {};
+  for (const c of CHECKS) { const m = s.modes && s.modes[c.id]; modes[c.id] = !c.lock && (m === "rt" || m === "post") ? m : c.mode; }
+  const params = {};
+  for (const [k, , dv] of PARAMS) { const v = Number(s.params && s.params[k]); params[k] = Number.isFinite(v) && v >= 0 && v <= CHECKS.length ? v : dv; }
+  return {order, modes, params};
+}
+function loadLocal() { try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); return s ? normalize(s) : null; } catch (_) { return null; } }
+function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
+const canAct = () => !readOnly && !waiting;
+
+/* the calculator: how many modules are faster by month m (a line through the milestones), and the month of each */
+function capacity(ms, m) {
+  const [a, b, c] = ms;
+  if (m < 3) return 0;
+  if (m <= 7) return a + (b - a) * (m - 3) / 4;
+  if (m <= 12) return b + (c - b) * (m - 7) / 5;
+  const pace = [(c - b) / 5, (b - a) / 4, a / 3].find(v => v > 0) || 0;
+  return c + pace * (m - 12);
+}
+function monthOf(ms, k) { for (let m = 1; m <= 60; m++) if (capacity(ms, m) >= k - 1e-9) return m; return Infinity; }
+function schedule() {
+  const p = state.params, minutes = [p.s3, p.s7, p.s12], seconds = [p.e3, p.e7, p.e12], when = {};
+  let km = 0, ks = 0;
+  for (const id of state.order) {
+    if (state.modes[id] === "rt") when[id] = monthOf(minutes, ++km);
+    else if (state.modes[id] === "edge") when[id] = monthOf(seconds, ++ks);
+  }
+  return when;
+}
+function whenText(id) {
+  const w = schedule()[id];
+  return w === undefined ? "" : w === Infinity ? " (not in the plan)" : " (now M" + w + ")";
+}
+const q = id => '"' + BY_ID[id].label + '"';
+
+/* month strip */
+for (let n = 1; n <= 4; n++) { const e = el("div", "q", "Q" + n); e.dataset.first = 3 * n - 2; $("quarters").append(e); }
+for (let m = 1; m <= 12; m++) {
+  const b = el("button", "m"); b.type = "button"; b.dataset.m = m; b.setAttribute("role", "radio"); b.setAttribute("aria-label", "M" + m);
+  b.append(el("i"), el("span", "", "M" + m));
+  b.addEventListener("click", () => setMonths(m, true));
+  $("months").append(b);
+}
+$("months").addEventListener("keydown", e => {
+  const d = e.key === "ArrowRight" || e.key === "ArrowUp" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowDown" ? -1 : 0;
+  if (!d) return;
+  e.preventDefault(); setMonths(Math.min(12, Math.max(1, months + d)), true); $("months").children[months - 1].focus();
+});
+
+/* priority list: one list per time to result; the seconds team and the minutes team each work down their own list */
+const inGroup = g => state.order.filter(id => state.modes[id] === g);
+function renderList() {
+  const list = $("plist"); list.textContent = "";
+  for (const g of GROUPS) {
+    const ids = inGroup(g); if (!ids.length) continue;
+    const head = el("li", "grp"); head.setAttribute("role", "presentation");
+    head.append(el("i", "sw " + g), el("span", "", MODES[g].name)); list.append(head);
+    for (const id of ids) list.append(row(id, g));
+  }
+}
+function row(id, g) {
+  const c = BY_ID[id];
+  const li = el("li", "pr"); li.dataset.id = id; li.dataset.group = g;
+  if (g === "post" || readOnly) li.append(el("span"));
+  else {
+    const h = el("span", "h", "\u22ee\u22ee"); h.tabIndex = 0; h.setAttribute("role", "button");
+    h.setAttribute("aria-label", "Move " + c.label + " (arrow up or down)");
+    h.addEventListener("pointerdown", e => drag(e, li, h));
+    h.addEventListener("keydown", e => { const d = e.key === "ArrowUp" ? -1 : e.key === "ArrowDown" ? 1 : 0; if (d) { e.preventDefault(); move(id, d); } });
+    li.append(h);
+  }
+  const sw = el("button", "swb " + g); sw.type = "button";
+  if (c.lock || readOnly) { sw.disabled = true; sw.setAttribute("aria-label", MODES[g].name); }
+  else {
+    const to = g === "rt" ? "post" : "rt";
+    sw.title = "Switch to " + MODES[to].name.toLowerCase(); sw.setAttribute("aria-label", sw.title);
+    sw.addEventListener("click", () => toggle(id));
+  }
+  li.append(sw, el("span", "t", c.label), el("span", "when"));
+  li.addEventListener("pointerenter", () => hot(id, true));
+  li.addEventListener("pointerleave", () => hot(id, false));
+  return li;
+}
+function toggle(id) {
+  if (!canAct()) return;
+  if (state.modes[id] === "rt") state.modes[id] = "post";
+  else { state.modes[id] = "rt"; state.order = state.order.filter(x => x !== id).concat(id); }   // joins the end of the minutes list
+  renderList(); update();
+  commit(state.modes[id] === "post" ? q(id) + " stays in hours" : q(id) + " moved to minutes" + whenText(id));
+  const b = $("plist").querySelector('[data-id="' + id + '"] .swb'); if (b) { b.focus(); b.scrollIntoView({block: "nearest"}); }
+}
+let moving = null, moveTimer = 0;             // arrow-key moves: one change per pause, not one per key press
+function move(id, d) {
+  if (!canAct()) return;
+  const g = state.modes[id], ids = inGroup(g), i = ids.indexOf(id), j = i + d;
+  if (j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  state.order = GROUPS.flatMap(x => x === g ? ids : inGroup(x));
+  renderList(); update();
+  if (moving && moving.id !== id) flushMove();
+  moving = {id, g, at: j, net: (moving ? moving.net : 0) + d};
+  clearTimeout(moveTimer); moveTimer = setTimeout(flushMove, 900);
+  const h = $("plist").querySelector('[data-id="' + id + '"] .h'); if (h) h.focus();
+}
+function flushMove() {
+  clearTimeout(moveTimer);
+  const m = moving; moving = null;
+  if (!m || !m.net) return;
+  const n = Math.abs(m.net);
+  commit(q(m.id) + " moved " + (m.net < 0 ? "up" : "down") + (n > 1 ? " " + n + " places" : "") + whenText(m.id));
+}
+function placeInGroup(id, g, at) {                // after taking somebody else's plan: put this row back where it was moved to
+  if (state.modes[id] !== g) return;
+  const ids = inGroup(g).filter(x => x !== id); ids.splice(Math.min(at, ids.length), 0, id);
+  state.order = GROUPS.flatMap(x => x === g ? ids : inGroup(x));
+}
+function drag(e, li, h) {
+  if (!canAct()) return;
+  e.preventDefault(); const list = $("plist"); li.classList.add("drag");
+  const id = li.dataset.id, g = li.dataset.group, before0 = state.order.join();
+  dragging = id;
+  try { h.setPointerCapture(e.pointerId); } catch (_) {}
+  const onMove = ev => {
+    const rows = [...list.querySelectorAll('.pr[data-group="' + g + '"]')].filter(r => r !== li);
+    if (!rows.length) return;
+    let before = rows[rows.length - 1].nextSibling;
+    for (const r of rows) { const b = r.getBoundingClientRect(); if (ev.clientY < b.top + b.height / 2) { before = r; break; } }
+    if (before !== li.nextSibling && before !== li) {
+      list.insertBefore(li, before); state.order = [...list.querySelectorAll(".pr")].map(r => r.dataset.id); update();
+    }
+  };
+  const onUp = () => {
+    li.classList.remove("drag"); h.removeEventListener("pointermove", onMove); h.removeEventListener("pointerup", onUp);
+    h.removeEventListener("pointercancel", onUp);
+    dragging = null;
+    const moved = state.order.join() !== before0, at = inGroup(g).indexOf(id);
+    if (remoteWhileDragging) {       // somebody changed the plan meanwhile: take their plan, then put this row where it was dropped
+      state = normalize(remoteWhileDragging); remoteWhileDragging = null;
+      if (moved) placeInGroup(id, g, at);
+    }
+    renderList(); update(); syncInputs();
+    if (moved) commit(q(id) + " moved" + whenText(id));
+  };
+  h.addEventListener("pointermove", onMove); h.addEventListener("pointerup", onUp); h.addEventListener("pointercancel", onUp);
+}
+function hot(id, on) { for (const x of document.querySelectorAll('[data-id="' + id + '"]')) x.classList.toggle("hot", on); }
+function linked(node, id) {
+  node.dataset.id = id;
+  node.addEventListener("pointerenter", () => hot(id, true));
+  node.addEventListener("pointerleave", () => hot(id, false));
+  return node;
+}
+
+/* roadmap board: the month each module gets faster, then what stays in hours */
+const board = $("board");
+const cut = el("div", "cut"); cut.setAttribute("aria-hidden", "true"); const cutTag = el("span"); cut.append(cutTag);
+function renderBoard(when) {
+  board.textContent = ""; board.append(el("h2", "", "Roadmap"));
+  const byMonth = {};
+  const add = (m, x) => (byMonth[m] = byMonth[m] || []).push(x);
+  for (const id of state.order) if (when[id] !== undefined && when[id] !== Infinity) add(when[id], {id});
+  for (const f of FIXED) add(f.month, f);
+  for (const m of Object.keys(byMonth).map(Number).sort((a, b) => a - b)) {
+    const r = el("div", "row"); r.dataset.m = m;
+    const mk = el("div", "mk"); mk.append(el("i"), el("span", "", "M" + m));
+    const chips = el("div", "chips");
+    for (const it of byMonth[m].filter(x => x.id && BY_ID[x.id])) chips.append(linked(el("span", "chip " + state.modes[it.id], BY_ID[it.id].label), it.id));
+    for (const f of byMonth[m].filter(x => x.kind === "platform")) chips.append(el("span", "chip platform", f.label));
+    for (const f of byMonth[m].filter(x => x.kind === "station")) { const n = el("span", "note"); n.append(el("i", "dot"), el("span", "", f.label)); chips.append(n); }
+    r.append(mk, chips); board.append(r);
+  }
+  const stay = state.order.filter(id => state.modes[id] === "post" || when[id] === Infinity);
+  if (stay.length) {
+    const h = el("div", "stay"); h.append(el("i", "sw post"), el("span", "", MODES.post.name), el("small", "", "no change")); board.append(h);
+    const chips = el("div", "chips");
+    for (const id of stay) chips.append(linked(el("span", "chip post", BY_ID[id].label), id));
+    board.append(chips);
+  }
+}
+
+function setMonths(m, fromUser) {
+  months = m;
+  $("n-months").textContent = m; $("u-months").textContent = m === 1 ? "month" : "months";
+  for (const b of $("months").children) {
+    const bm = +b.dataset.m; b.classList.toggle("out", bm > m); b.classList.toggle("end", bm === m);
+    b.setAttribute("aria-checked", String(bm === m)); b.tabIndex = bm === m ? 0 : -1;
+  }
+  for (const qe of $("quarters").children) qe.classList.toggle("out", +qe.dataset.first > m);
+  if (fromUser) { try { history.replaceState(null, "", "#m" + m); } catch (_) {} }
+  update();
+}
+function update() {
+  const when = schedule();
+  renderBoard(when);
+  let first = null;
+  for (const e of board.children) {
+    if (!e.dataset.m) continue;
+    const out = +e.dataset.m > months; e.classList.toggle("out", out);
+    if (out && !first) first = e;
+  }
+  if (first) { cutTag.textContent = "M" + months; board.insertBefore(cut, first); }
+  for (const li of $("plist").querySelectorAll(".pr")) {
+    const w = when[li.dataset.id];
+    li.querySelector(".when").textContent = w === undefined ? "" : w === Infinity ? "\u2013" : "M" + w;
+    li.classList.toggle("out", w !== undefined && w > months);
+  }
+  const ready = g => state.order.filter(id => state.modes[id] === g && when[id] <= months);
+  const secs = ready("edge"), mins = ready("rt"), hours = state.order.filter(id => !secs.includes(id) && !mins.includes(id));
+  const bar = $("bar"); bar.textContent = ""; bar.style.gridTemplateColumns = "repeat(" + CHECKS.length + ",minmax(0,1fr))";
+  for (const [ids, g] of [[secs, "edge"], [mins, "rt"], [hours, "post"]]) {
+    if (!ids.length) continue;
+    const seg = el("div", "seg"); seg.style.gridColumn = "span " + ids.length;
+    const cells = el("div", "cells"); cells.style.gridTemplateColumns = "repeat(" + ids.length + ",minmax(0,1fr))";
+    for (const id of ids) { const c = linked(el("span", "cell " + g), id); c.title = BY_ID[id].label; cells.append(c); }
+    seg.append(el("b", "seg-n", ids.length), cells); bar.append(seg);
+  }
+  bar.setAttribute("aria-label", "M" + months + ": " + secs.length + " in seconds, " + mins.length + " in minutes, " + hours.length + " in hours");
+}
+
+/* settings */
+let settingsTimer = 0;
+for (const [key, label] of PARAMS) {
+  const l = el("label"); l.append(el("span", "", label));
+  const input = el("input"); input.type = "number"; input.id = "p-" + key; input.min = 0; input.max = CHECKS.length; input.step = 1;
+  input.value = state.params[key];
+  input.addEventListener("input", () => {
+    if (!canAct()) return;
+    const v = parseFloat(input.value);
+    if (isNaN(v) || v < 0 || v > CHECKS.length) return;
+    state.params[key] = v; update();
+    clearTimeout(settingsTimer); settingsTimer = setTimeout(() => commit("Settings: " + label.toLowerCase() + " = " + v), 800);
+  });
+  l.append(input); $("set").append(l);
+}
+function syncInputs() {
+  for (const [key] of PARAMS) { const i = $("p-" + key); if (document.activeElement !== i) i.value = state.params[key]; i.disabled = readOnly; }
+}
+let resetArmed = 0;
+$("reset").addEventListener("click", () => {
+  if (!canAct()) return;
+  if (shared && !resetArmed) {                 // the shared plan is everybody's: ask once more
+    $("reset").textContent = "Reset for everyone?";
+    resetArmed = setTimeout(() => { resetArmed = 0; $("reset").textContent = "Reset"; }, 4000);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = 0; $("reset").textContent = "Reset";
+  state = DEFAULT(); renderList(); update(); syncInputs();
+  commit("Reset to the roadmap diagram");
+});
+
+/* ---- sharing ------------------------------------------------------------------------------------------------------------ */
+let toastTimer = 0;
+function toast(text) {
+  const t = $("toast"); t.textContent = text; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("on"), 5000);
+}
+function fmtTime(iso) {
+  const d = new Date(iso); if (isNaN(d)) return "";
+  const today = d.toDateString() === new Date().toDateString();
+  return (today ? "" : d.toLocaleDateString(undefined, {day: "numeric", month: "short"}) + ", ")
+    + d.toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"});
+}
+async function names(ids) {
+  ids = [...new Set(ids.filter(Boolean))];
+  if (!ids.length || !shared || !shared.user) return {};
+  try { return await shared.user.profiles(ids); } catch (_) { return {}; }
+}
+function who(ps, id) { return !id ? "" : shared && id === shared.me ? "You" : (ps[id] && ps[id].name) || "Someone"; }
+
+async function showStatus() {
+  const s = $("status"); s.textContent = "";
+  if (!shared) {
+    s.className = "status"; s.append(el("i", "dot"), el("span", "", waiting ? "Connecting to the shared plan..." : "This copy is not shared: changes stay in this browser."));
+    return;
+  }
+  s.className = "status live";
+  s.append(el("i", "dot"), el("b", "", readOnly ? "Shared plan, view only." : "Shared plan: everyone who opens this page sees the same plan, live."));
+  const p = lastPlan;
+  if (p && p.at) {
+    const ps = await names([p.by]), by = who(ps, p.by);
+    s.append(el("span", "", "Last change" + (by ? " by " + by : "") + ", " + fmtTime(p.at) + (p.note ? ": " + p.note : "") + "."));
+  } else if (seen) s.append(el("span", "", "Nobody has changed it yet."));
+}
+function setReadOnly(on) {
+  if (readOnly === on) return;
+  readOnly = on;
+  document.documentElement.classList.toggle("ro", on);
+  $("hint").textContent = on ? "View only: ask the owner of this page for edit access to change the order." : HINT;
+  renderList(); update(); syncInputs(); showStatus();
+}
+
+function commit(note) {
+  syncInputs();
+  if (!shared) { saveLocal(); return; }
+  if (!canAct()) return;
+  const body = {order: state.order.slice(), modes: Object.assign({}, state.modes), params: Object.assign({}, state.params),
+                by: shared.me, at: new Date().toISOString(), note: String(note || "").slice(0, 240)};
+  ownWrites.add(body.at); if (ownWrites.size > 50) ownWrites.delete(ownWrites.values().next().value);
+  lastPlan = body; showStatus();
+  write(body);
+}
+let writing = false, queued = null;
+async function write(body) {                   // one write at a time; a burst of changes becomes the latest plan
+  queued = body; if (writing) return;
+  writing = true;
+  while (queued) {
+    const b = queued; queued = null;
+    try { await setOnce(shared.plan, b); }
+    catch (e) { failed(e); break; }
+    try { await shared.hist.doc().set(b); if (Math.random() < 0.05) prune(); }
+    catch (e) { if (e && e.code === "quota_exceeded") prune(); }
+  }
+  writing = false;
+}
+async function setOnce(ref, body) {
+  try { await ref.set(body); }
+  catch (e) {
+    if (!e || e.code !== "unavailable") throw e;
+    await new Promise(r => setTimeout(r, 400 + Math.random() * 800));
+    await ref.set(body);
+  }
+}
+function failed(e) {
+  const code = e && e.code;
+  if (["invalid_argument", "revoked", "not_granted", "capability_disabled", "capability_removed"].includes(code)) {
+    setReadOnly(true); toast("This change was not saved: this page is view only for you.");
+  } else toast("The change was not saved. Try again in a moment.");
+}
+async function prune() {                        // keep the last 200 changes
+  try {
+    const qs = await shared.hist.orderBy("at", "desc").limit(400).get();
+    for (const d of qs.docs.slice(200)) await shared.hist.doc(d.id).delete();
+  } catch (_) {}
+}
+async function onPlan(snap) {
+  const first = !seen; seen = true; waiting = false;
+  if (!snap.exists) { if (first) { renderList(); update(); syncInputs(); } showStatus(); return; }
+  const d = snap.data();
+  lastPlan = d;
+  if (d.at && ownWrites.has(d.at)) { showStatus(); return; }            // the echo of this page's own write
+  if (dragging) { remoteWhileDragging = d; showStatus(); return; }
+  state = normalize(d);
+  if (moving) { placeInGroup(moving.id, moving.g, moving.at); flushMove(); }   // keep this viewer's unsaved arrow moves
+  renderList(); update(); syncInputs(); showStatus();
+  if (!first && !snap.metadata.hasPendingWrites && d.by !== shared.me && d.note) {
+    const ps = await names([d.by]); toast((who(ps, d.by) || "Someone") + ": " + d.note);
+  }
+}
+async function renderHistory(items) {
+  const list = $("hist"); list.textContent = "";
+  if (!items.length) { list.append(el("li", "empty", "No changes yet.")); return; }
+  const ps = await names(items.map(h => h.by));
+  list.textContent = "";
+  for (const h of items) {
+    const li = el("li"), by = who(ps, h.by);
+    li.append(el("time", "", fmtTime(h.at)), el("span", "", (by ? by + ": " : "") + (h.note || "")));
+    if (!readOnly) {
+      const b = el("button", "btn restore", "Restore"); b.type = "button";
+      b.addEventListener("click", () => { if (!canAct()) return; state = normalize(h); renderList(); update(); syncInputs(); commit("Restored the plan of " + fmtTime(h.at)); });
+      li.append(b);
+    }
+    list.append(li);
+  }
+}
+async function connect() {
+  let db = null;
+  try { db = await window.claude.use("db"); } catch (_) {}
+  if (!db) { waiting = false; state = loadLocal() || state; renderList(); update(); syncInputs(); showStatus(); return; }
+  let user = null, me = null, can = null;
+  try { user = await window.claude.use("user"); } catch (_) {}
+  try { me = user ? await user.id() : null; } catch (_) {}
+  try { can = user ? await user.can("data.write") : null; } catch (_) {}
+  shared = {db, user, me, plan: db.doc("plan/current"), hist: db.collection("history")};
+  $("history-box").hidden = false;
+  if (can === false) setReadOnly(true);
+  showStatus();
+  shared.plan.onSnapshot(onPlan, () => { waiting = false; toast("The shared plan stopped updating: reload the page."); });
+  shared.hist.orderBy("at", "desc").limit(10).onSnapshot(qs => renderHistory(qs.docs.filter(d => d.exists).map(d => d.data())), () => {});
+}
+
+const runtime = typeof window.claude === "object" && window.claude !== null && typeof window.claude.use === "function";
+if (runtime) waiting = true; else state = loadLocal() || state;
+renderList(); syncInputs();
+const fromHash = () => { const h = /^#m(\d{1,2})$/.exec(location.hash); const v = h ? +h[1] : 12; setMonths(v >= 1 && v <= 12 ? v : 12, false); };
+window.addEventListener("hashchange", fromHash);
+fromHash();
+showStatus();
+if (runtime) connect();
+</script>
+</body></html>

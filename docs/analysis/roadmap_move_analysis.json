@@ -1,0 +1,1106 @@
+{
+ "checks": [
+  {
+   "check": "Safety vests",
+   "module": "safety-vests-secured-to-body",
+   "plan_mode": "rt",
+   "plan_month": 3,
+   "locked": false,
+   "runs_as_is": "yes, verdict at session end",
+   "verdict_arrives": "session end",
+   "needs_new_trigger": false,
+   "drags_in_ms": 2.8,
+   "own_ms": 18.75,
+   "total_alone_ms": 35.02,
+   "classes_for_the_check": [
+    "person",
+    "safety_vest"
+   ],
+   "aircraft_classes": [],
+   "own_models": [
+    "Swin-T pose classifier pose_classifier.pt",
+    "Swin-T vest classifier vest_classifier.pt",
+    "HSV colour segmentation rules vests_utils.py"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": false,
+   "critical_fails_in_the_test_set": 35,
+   "test_set_scoped_inputs": {
+    "runs": 6,
+    "status_same": 6,
+    "report_same": 6
+   }
+  },
+  {
+   "check": "FOD walk",
+   "module": "fod-walk-completed",
+   "plan_mode": "rt",
+   "plan_month": 3,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "6:00 (T_arr + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 8.6,
+   "own_ms": 1.32,
+   "total_alone_ms": 22.81,
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane_nose",
+    "airplane_tail",
+    "front_wheel"
+   ],
+   "own_models": [
+    "movenet_singlepose_thunder_4.onnx PoseEstimation.is_backside"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Steering by pass pin",
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "plan_mode": "rt",
+   "plan_month": 3,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "10:05 (T_arr + 245 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 5.8,
+   "own_ms": 0.73,
+   "total_alone_ms": 19.61,
+   "classes_for_the_check": [
+    "chock"
+   ],
+   "aircraft_classes": [
+    "airplane_nose"
+   ],
+   "own_models": [
+    "mmpose HRNet-w48 td-hm",
+    "tsai time-series classifier model_newaug.pkl",
+    "joblib scaler.gz"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   }
+  },
+  {
+   "check": "Hair Policy",
+   "module": "hair-policy",
+   "plan_mode": "edge",
+   "plan_month": 3,
+   "locked": true,
+   "runs_as_is": "not hosted",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": null,
+   "own_ms": null,
+   "total_alone_ms": null,
+   "classes_for_the_check": null,
+   "aircraft_classes": null,
+   "own_models": null,
+   "pixels": null,
+   "works_out_the_stage_itself": null,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {}
+  },
+  {
+   "check": "Nose Gear Chocks",
+   "module": "aircraft-chocks",
+   "plan_mode": "edge",
+   "plan_month": 7,
+   "locked": true,
+   "runs_as_is": "no: two passes",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": 32.0,
+   "own_ms": 0.48,
+   "total_alone_ms": 46.09,
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "back_wheel",
+    "tow_bar"
+   ],
+   "own_models": [
+    "effnetb0 difference classifier",
+    "complex_difference.test_chocks_difference / simple_difference.test_env_static"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Pushback does not start until wing walkers are in place",
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:39 (T_dep + 14 s)",
+   "needs_new_trigger": true,
+   "drags_in_ms": 8.6,
+   "own_ms": 0.33,
+   "total_alone_ms": 22.42,
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "front_wheel"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": 17,
+   "test_set_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   }
+  },
+  {
+   "check": "Safety zone clear",
+   "module": "safety-zone-confirmed-clear",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "no: two passes",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": true,
+   "drags_in_ms": 5.8,
+   "own_ms": 0.25,
+   "total_alone_ms": 19.17,
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "front_wheel"
+   ],
+   "own_models": [
+    "mobile_sam.pt"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": 13,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "3 stop brake",
+   "module": "3-stop-brake-check",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 21.6,
+   "own_ms": 0.64,
+   "total_alone_ms": 38.31,
+   "classes_for_the_check": [
+    "cone"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": 43,
+   "test_set_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   }
+  },
+  {
+   "check": "GSE parked",
+   "module": "gse-chocks",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes, verdict at session end",
+   "verdict_arrives": "session end",
+   "needs_new_trigger": false,
+   "drags_in_ms": 32.0,
+   "own_ms": 3.25,
+   "total_alone_ms": 43.56,
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "chock",
+    "cone",
+    "front_door",
+    "gse",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "back_wheel",
+    "front_wheel"
+   ],
+   "own_models": [
+    "rtmpose-l ONNX",
+    "effnetb0 difference classifier"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Handrails on GSE",
+   "module": "handrails-on-gse-being-used",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes, verdict at session end",
+   "verdict_arrives": "session end",
+   "needs_new_trigger": false,
+   "drags_in_ms": 21.5,
+   "own_ms": 12.46,
+   "total_alone_ms": 47.05,
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "back_wheel"
+   ],
+   "own_models": [
+    "EfficientNetB0 handrail classifier",
+    "MixVisionTransformer segmentation",
+    "DWpose ONNX",
+    "EfficientNetB0WithRegularization hand classifier"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   }
+  },
+  {
+   "check": "Handrails fully extended",
+   "module": "safety-handrails-fully-extended",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 21.6,
+   "own_ms": 2.37,
+   "total_alone_ms": 34.6,
+   "classes_for_the_check": [
+    "beltloader",
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "back_wheel"
+   ],
+   "own_models": [
+    "EfficientNetB0 handrail classifier"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   }
+  },
+  {
+   "check": "Conditioned air removed",
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:35 (T_dep + 10 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 5.8,
+   "own_ms": 1.26,
+   "total_alone_ms": 19.95,
+   "classes_for_the_check": [
+    "air_conditioning"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_wing",
+    "front_wheel"
+   ],
+   "own_models": [
+    "YOLOv8 ONNX best28_full.onnx"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": false,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Pushback verify pin installation",
+   "module": "pin-verification",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "no: two passes",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": 8.6,
+   "own_ms": 0.44,
+   "total_alone_ms": 22.73,
+   "classes_for_the_check": [
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "front_wheel"
+   ],
+   "own_models": [
+    "mmpose simcc_res50"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 2,
+    "status_same": 2,
+    "report_same": 2
+   }
+  },
+  {
+   "check": "Beltloader rear cone positioned after BL",
+   "module": "bl_rear_cone",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 21.6,
+   "own_ms": 0.37,
+   "total_alone_ms": 41.64,
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "beltloader_cone",
+    "cone",
+    "engine_cone",
+    "person",
+    "wing_cone"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "back_wheel"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   }
+  },
+  {
+   "check": "Wing walkers in proper position",
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "plan_mode": "rt",
+   "plan_month": 7,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "25:09 (T_dep + 44 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 8.6,
+   "own_ms": 5.14,
+   "total_alone_ms": 26.62,
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "wand"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing"
+   ],
+   "own_models": [
+    "cv_common Model"
+   ],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": 15,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Lead marshaller and wing walkers in correct position",
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "6:10 (T_arr + 10 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 8.6,
+   "own_ms": 2.5,
+   "total_alone_ms": 25.84,
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_tail",
+    "airplane_wing"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Main gear chocks removed only after aircraft is attached to pushback",
+   "module": "aircraft-chocks",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "no: two passes",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": 32.0,
+   "own_ms": 0.48,
+   "total_alone_ms": 46.09,
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "back_wheel",
+    "tow_bar"
+   ],
+   "own_models": [
+    "effnetb0 difference classifier",
+    "complex_difference.test_chocks_difference / simple_difference.test_env_static"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+   "module": "beltloader-chocks",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 26.5,
+   "own_ms": 0.34,
+   "total_alone_ms": 39.85,
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "chock",
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_wing",
+    "back_wheel"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   }
+  },
+  {
+   "check": "Nose wheel chock removed from aircraft",
+   "module": "aircraft-chocks",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "no: two passes",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": 32.0,
+   "own_ms": 0.48,
+   "total_alone_ms": 46.09,
+   "classes_for_the_check": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "back_wheel",
+    "tow_bar"
+   ],
+   "own_models": [
+    "effnetb0 difference classifier",
+    "complex_difference.test_chocks_difference / simple_difference.test_env_static"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Pushback pathway confirmed clear",
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes, report shifts",
+   "verdict_arrives": "24:46 (T_dep + 20 s)",
+   "needs_new_trigger": true,
+   "drags_in_ms": 10.7,
+   "own_ms": 0.48,
+   "total_alone_ms": 23.1,
+   "classes_for_the_check": [
+    "chock",
+    "cone",
+    "pushback"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "airplane_tail"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": 3,
+   "test_set_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   }
+  },
+  {
+   "check": "Cones placed in proper positions",
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes, report shifts",
+   "verdict_arrives": "24:35 (T_dep + 10 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 5.8,
+   "own_ms": 0.62,
+   "total_alone_ms": 19.51,
+   "classes_for_the_check": [
+    "cone",
+    "engine_cone",
+    "person",
+    "tail_cone",
+    "wing_cone"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_nose",
+    "airplane_tail"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 90,
+    "status_same": 90,
+    "report_same": 90
+   }
+  },
+  {
+   "check": "Cones are removed only after all GSE is clear of A/C and chocked",
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "plan_mode": "rt",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 21.6,
+   "own_ms": 1.54,
+   "total_alone_ms": 38.43,
+   "classes_for_the_check": [
+    "beltloader",
+    "cone",
+    "engine_cone",
+    "front_door",
+    "gse",
+    "tail_cone",
+    "wing_cone"
+   ],
+   "aircraft_classes": [
+    "back_wheel"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": false,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 67,
+    "status_same": 67,
+    "report_same": 67
+   }
+  },
+  {
+   "check": "Chocks and cones available and staged for arrival",
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "6:00 (T_arr + 0 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 10.7,
+   "own_ms": 0.09,
+   "total_alone_ms": 31.35,
+   "classes_for_the_check": [
+    "chock",
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   }
+  },
+  {
+   "check": "Crew present 10 minutes prior to aircraft arrival",
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "7:04 (T_arr + 64 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 5.8,
+   "own_ms": 0.54,
+   "total_alone_ms": 19.47,
+   "classes_for_the_check": [
+    "cone",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 68,
+    "status_same": 68,
+    "report_same": 68
+   }
+  },
+  {
+   "check": "Safety huddle conducted at huddle cone",
+   "module": "pre-arrival-safety-huddle",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "7:00 (T_arr + 60 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 8.6,
+   "own_ms": 0.87,
+   "total_alone_ms": 22.94,
+   "classes_for_the_check": [
+    "cone"
+   ],
+   "aircraft_classes": [
+    "airplane"
+   ],
+   "own_models": [],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "All GSE guided into aircraft using approved hand signals",
+   "module": "hand-signals",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "no: two passes",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": true,
+   "drags_in_ms": 21.5,
+   "own_ms": 0.28,
+   "total_alone_ms": 36.57,
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door",
+    "person"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "airplane_engine",
+    "airplane_wing",
+    "back_wheel"
+   ],
+   "own_models": [
+    "mmpose HRNet-w48 td-hm"
+   ],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": 13,
+   "test_set_scoped_inputs": {
+    "runs": 4,
+    "status_same": 4,
+    "report_same": 4
+   }
+  },
+  {
+   "check": "Pre-departure walk around completed",
+   "module": "pre-departure-walk-around-completed",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": true,
+   "runs_as_is": "not hosted",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": null,
+   "own_ms": null,
+   "total_alone_ms": null,
+   "classes_for_the_check": [
+    "back_door",
+    "cone",
+    "front_door"
+   ],
+   "aircraft_classes": [
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "back_wheel",
+    "front_wheel"
+   ],
+   "own_models": [],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {}
+  },
+  {
+   "check": "All cargo bin doors opened and verified",
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": "yes",
+   "verdict_arrives": "8:44 (T_arr + 164 s)",
+   "needs_new_trigger": false,
+   "drags_in_ms": 21.6,
+   "own_ms": 0.87,
+   "total_alone_ms": 32.93,
+   "classes_for_the_check": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door"
+   ],
+   "aircraft_classes": [
+    "airplane",
+    "back_wheel"
+   ],
+   "own_models": [],
+   "pixels": false,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {
+    "runs": 77,
+    "status_same": 77,
+    "report_same": 77
+   }
+  },
+  {
+   "check": "Proper beltloader approach including 3 stop brake check and handsignals",
+   "module": null,
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": false,
+   "runs_as_is": null,
+   "verdict_arrives": null,
+   "needs_new_trigger": false,
+   "drags_in_ms": null,
+   "own_ms": null,
+   "total_alone_ms": null,
+   "classes_for_the_check": null,
+   "aircraft_classes": null,
+   "own_models": null,
+   "pixels": null,
+   "works_out_the_stage_itself": null,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": null
+  },
+  {
+   "check": "Post-arrival aircraft walk around inspection completed accurately",
+   "module": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "plan_mode": "post",
+   "plan_month": 12,
+   "locked": true,
+   "runs_as_is": "not hosted",
+   "verdict_arrives": "\u2014",
+   "needs_new_trigger": false,
+   "drags_in_ms": null,
+   "own_ms": null,
+   "total_alone_ms": null,
+   "classes_for_the_check": [
+    "back_door",
+    "cone",
+    "front_door"
+   ],
+   "aircraft_classes": [
+    "airplane_engine",
+    "airplane_nose",
+    "airplane_tail",
+    "airplane_wing",
+    "back_wheel",
+    "front_wheel"
+   ],
+   "own_models": [],
+   "pixels": true,
+   "works_out_the_stage_itself": true,
+   "critical_fails_in_the_test_set": null,
+   "test_set_scoped_inputs": {}
+  }
+ ],
+ "cheapest_into_minutes": [
+  "Crew present 10 minutes prior to aircraft arrival",
+  "Steering by pass pin",
+  "Conditioned air removed",
+  "Safety huddle conducted at huddle cone",
+  "FOD walk",
+  "Lead marshaller and wing walkers in correct position",
+  "Wing walkers in proper position",
+  "Chocks and cones available and staged for arrival",
+  "Beltloader rear cone positioned after BL",
+  "3 stop brake",
+  "All cargo bin doors opened and verified",
+  "Cones are removed only after all GSE is clear of A/C and chocked",
+  "Handrails fully extended",
+  "Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+  "Safety vests",
+  "Cones placed in proper positions",
+  "Handrails on GSE",
+  "GSE parked"
+ ],
+ "in_hours_today": [
+  "Crew present 10 minutes prior to aircraft arrival",
+  "Safety huddle conducted at huddle cone",
+  "Chocks and cones available and staged for arrival",
+  "All cargo bin doors opened and verified"
+ ],
+ "edge_candidates": [
+  {
+   "check": "Safety vests",
+   "module": "safety-vests-secured-to-body",
+   "gm_free": true,
+   "needs_stage": false,
+   "classes": [
+    "person",
+    "safety_vest"
+   ],
+   "models": [
+    "Swin-T pose classifier pose_classifier.pt",
+    "Swin-T vest classifier vest_classifier.pt",
+    "HSV colour segmentation rules vests_utils.py"
+   ],
+   "critical_fails_in_the_test_set": 35
+  },
+  {
+   "check": "3 stop brake",
+   "module": "3-stop-brake-check",
+   "gm_free": false,
+   "needs_stage": true,
+   "classes": [
+    "cone"
+   ],
+   "models": [],
+   "critical_fails_in_the_test_set": 43
+  },
+  {
+   "check": "Safety zone clear",
+   "module": "safety-zone-confirmed-clear",
+   "gm_free": false,
+   "needs_stage": true,
+   "classes": [
+    "cone",
+    "person"
+   ],
+   "models": [
+    "mobile_sam.pt"
+   ],
+   "critical_fails_in_the_test_set": 13
+  },
+  {
+   "check": "Pushback pathway confirmed clear",
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "gm_free": false,
+   "needs_stage": true,
+   "classes": [
+    "chock",
+    "cone",
+    "pushback"
+   ],
+   "models": [],
+   "critical_fails_in_the_test_set": 3
+  },
+  {
+   "check": "Pushback does not start until wing walkers are in place",
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "gm_free": false,
+   "needs_stage": true,
+   "classes": [
+    "cone",
+    "person",
+    "pushback"
+   ],
+   "models": [],
+   "critical_fails_in_the_test_set": 17
+  },
+  {
+   "check": "Wing walkers in proper position",
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "gm_free": false,
+   "needs_stage": true,
+   "classes": [
+    "cone",
+    "person",
+    "wand"
+   ],
+   "models": [
+    "cv_common Model"
+   ],
+   "critical_fails_in_the_test_set": 15
+  },
+  {
+   "check": "All GSE guided into aircraft using approved hand signals",
+   "module": "hand-signals",
+   "gm_free": false,
+   "needs_stage": true,
+   "classes": [
+    "back_door",
+    "beltloader",
+    "cone",
+    "front_door",
+    "person"
+   ],
+   "models": [
+    "mmpose HRNet-w48 td-hm"
+   ],
+   "critical_fails_in_the_test_set": 13
+  }
+ ]
+}
