@@ -37,6 +37,10 @@ ROADMAP = os.path.join(ROOT, "docs", "planning", "RV_scope_timeline.html")
 HEAD_ORDER, CLASS_ORDER = ("gm", "chocks", "vehicle"), ("airplane", "beltloader", "gse", "person")
 SEEDED = ["3-stop-brake-check", "pushback-pathway-confirmed-clear-of-obstacles",
           "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready"]
+# the edge list, in the order the camera gets them. The nose gear chocks are off it: that verdict comes out of the heaviest
+# module in the catalogue (two passes, two extra detector heads, four tracked classes, a stage event), while safety vests is
+# the one critical check that needs nothing but a person and a crop — `docs/analysis/roadmap_move_analysis.md`.
+EDGE_CHECKS = ("Hair Policy", "Safety vests")
 WAVE_NOTE = {
     "A": "runs unchanged, answers during the turnaround, no new trigger",
     "B": "runs unchanged, but the verdict only comes when the session closes (interim-verdict hook, PF-Q2-12)",
@@ -65,6 +69,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--write-roadmap", action="store_true", help="rewrite the plan in docs/planning/RV_scope_timeline.html")
     ap.add_argument("--by-month", default="5,16,24", help="how many checks are in minutes by M3, M7, M12")
+    ap.add_argument("--edge-by-month", default="1,2.5,3", help="how many checks are in seconds by M3, M7, M12 (2.5 by M7 puts "
+                                                              "the second edge check on M6)")
     a = ap.parse_args()
 
     checks = roadmap()
@@ -104,7 +110,7 @@ def main() -> int:
 
     # greedy order inside the minutes list: what the stream already pays for makes the next check cheaper
     order, heads, classes = [], {"gm"}, {"airplane"}
-    left = [r for r in rows if r["wave"] in ("A", "B", "C", "D") and r["plan_mode"] != "edge"]
+    left = [r for r in rows if r["wave"] in ("A", "B", "C", "D") and r["check"] not in EDGE_CHECKS]
     seeded = [r for m in SEEDED for r in left if r["module"] == m]
     for r in seeded:
         r["marginal_ms"] = round(table_lookup(gm_ms, heads | r["heads"], HEAD_ORDER) - table_lookup(gm_ms, heads, HEAD_ORDER)
@@ -118,16 +124,17 @@ def main() -> int:
     wave_rank = {"A": 0, "B": 1, "C": 2, "D": 3}
     while left:
         for r in left:
+            r["same_module_already_in"] = any(x["module"] == r["module"] for x in order)
             r["marginal_ms"] = round(table_lookup(gm_ms, heads | r["heads"], HEAD_ORDER) - table_lookup(gm_ms, heads, HEAD_ORDER)
                                      + table_lookup(trk_ms, classes | r["classes"], CLASS_ORDER) - table_lookup(trk_ms, classes, CLASS_ORDER)
                                      + r["own_ms"], 1)
-        nxt = min(left, key=lambda r: (wave_rank[r["wave"]], r["marginal_ms"], -r["critical"]))
+        nxt = min(left, key=lambda r: (wave_rank[r["wave"]], not r["same_module_already_in"], r["marginal_ms"], -r["critical"]))
         heads |= nxt["heads"]
         classes |= nxt["classes"]
         order.append(nxt)
         left.remove(nxt)
-    stays = [r for r in rows if r not in order and r["plan_mode"] != "edge"]
-    edge = [r for r in rows if r["plan_mode"] == "edge"]
+    edge = [r for name in EDGE_CHECKS for r in rows if r["check"] == name]
+    stays = [r for r in rows if r not in order and r not in edge]
 
     # ---------------------------------------------------------------- the document
     def fmt(v, d=1):
@@ -180,9 +187,18 @@ def main() -> int:
                 None: "derived from two other checks; it can only move when both of them have"}
     for r in stays:
         L.append(f"| {r['check']} | {why_stay.get(r['module'], 'not hosted by the branch')} |")
-    L += ["", "The edge list is untouched here: " + ", ".join(f"**{r['check']}**" for r in edge) +
-          " (`roadmap_move_analysis.md` argues that the nose gear chocks are the wrong check for a camera and that safety "
-          "vests is the one that fits).", "",
+    L += ["", "## The edge list", "",
+          "On the camera: " + ", ".join(f"**{r['check']}**" for r in edge) + ". The nose gear chocks were taken off it and "
+          "joined their two sibling verdicts in wave D, because all three come out of `aircraft-chocks` — the module that "
+          "reads the session twice, needs the chocks and vehicle heads on top of the main one, follows all four tracked "
+          "classes and waits for a stage event. Safety vests took the slot: it is the only critical check that needs nothing "
+          "from the aircraft, nothing from the stage and nothing from the traffic around the stand, and the camera already "
+          "runs a person crop for hair policy, so one detector serves both (`roadmap_move_analysis.md`).", "",
+          "It is not free either: as written it runs two Swin-T networks on every person of every frame (18.75 ms per frame, "
+          "5.5 cores on a desktop card), so the camera needs a small detector, a small classifier and a lower rate — the rule "
+          "latches a fail, it does not need every frame. And the client's verdict arrives at the end of the session; the "
+          "useful behaviour on a camera is the alert at the moment somebody is seen without a fastened vest, which is a "
+          "trigger to agree, not a port (PF-Q3-06).", "",
           "## The plan on the page", "",
           f"`{os.path.relpath(ROADMAP, ROOT)}` now carries this order, and the four checks that were sitting in hours although "
           "they already run live (crew present, safety huddle, chocks and cones staged, cargo doors) are in minutes. The page's "
@@ -205,10 +221,12 @@ def main() -> int:
         by_id = {d["id"]: d for d in data}
         new = []
         for r in edge:
-            new.append(by_id[r["id"]])
+            item = by_id[r["id"]]
+            item["mode"], item["lock"] = "edge", True
+            new.append(item)
         for r in order:  # the minutes list, in this order
             item = by_id[r["id"]]
-            item["mode"] = "rt"
+            item["mode"], item["lock"] = "rt", False
             new.append(item)
         for r in stays:
             item = by_id[r["id"]]
@@ -217,10 +235,15 @@ def main() -> int:
         new += [d for d in data if d.get("kind") != "check"]
         assert len(new) == len(data), (len(new), len(data))
         text = text.replace(re.search(r"const DATA = (\[.*?\]);", text, re.S).group(1), json.dumps(new), 1)
+        edge_ms = [float(x) if "." in x else int(x) for x in a.edge_by_month.split(",")]
         params = re.search(r"const PARAMS = \[(.*?)\];", text, re.S).group(0)
         new_params = re.sub(r'\["s3", "Minutes: how many by M3", \d+\], \["s7", "Minutes: how many by M7", \d+\], \["s12", "Minutes: how many by M12", \d+\]',
                             f'["s3", "Minutes: how many by M3", {milestones[0]}], ["s7", "Minutes: how many by M7", {milestones[1]}], '
                             f'["s12", "Minutes: how many by M12", {milestones[2]}]', params)
+        new_params = re.sub(r'\["e3", "Seconds: how many by M3", [\d.]+\], \["e7", "Seconds: how many by M7", [\d.]+\], '
+                            r'\["e12", "Seconds: how many by M12", [\d.]+\]',
+                            f'["e3", "Seconds: how many by M3", {edge_ms[0]}], ["e7", "Seconds: how many by M7", {edge_ms[1]}], '
+                            f'["e12", "Seconds: how many by M12", {edge_ms[2]}]', new_params)
         text = text.replace(params, new_params, 1)
         io.open(ROADMAP, "w", encoding="utf-8", newline="\n").write(text)
         print("roadmap rewritten:", os.path.relpath(ROADMAP, ROOT))

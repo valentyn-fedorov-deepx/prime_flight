@@ -191,16 +191,6 @@
    "verdict_arrives": "session end"
   },
   {
-   "id": "b4",
-   "check": "Safety vests",
-   "module": "safety-vests-secured-to-body",
-   "wave": "B",
-   "marginal_ms": 18.8,
-   "own_ms": 18.75,
-   "critical": 35,
-   "verdict_arrives": "session end"
-  },
-  {
    "id": "b5",
    "check": "Safety zone clear",
    "module": "safety-zone-confirmed-clear",
@@ -217,6 +207,16 @@
    "wave": "D",
    "marginal_ms": 0.4,
    "own_ms": 0.44,
+   "critical": 0,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "id": "b2",
+   "check": "Nose Gear Chocks",
+   "module": "aircraft-chocks",
+   "wave": "D",
+   "marginal_ms": 0.5,
+   "own_ms": 0.48,
    "critical": 0,
    "verdict_arrives": "\u2014"
   },
@@ -249,7 +249,7 @@
  ],
  "edge": [
   "Hair Policy",
-  "Nose Gear Chocks"
+  "Safety vests"
  ],
  "by_month": [
   5,

@@ -29,9 +29,9 @@ The three checks the branch already runs together live, with their alert hooks p
 | 17 | Wing walkers in proper position | A | +5.1 ms | 5.14 ms | 25:09 (T_dep + 44 s) | 15 |
 | 18 | GSE parked | B | +8.8 ms | 3.25 ms | session end | — |
 | 19 | Handrails on GSE | B | +12.5 ms | 12.46 ms | session end | — |
-| 20 | Safety vests | B | +18.8 ms | 18.75 ms | session end | 35 |
-| 21 | Safety zone clear | D | +0.2 ms | 0.25 ms | — | 13 |
-| 22 | Pushback verify pin installation | D | +0.4 ms | 0.44 ms | — | — |
+| 20 | Safety zone clear | D | +0.2 ms | 0.25 ms | — | 13 |
+| 21 | Pushback verify pin installation | D | +0.4 ms | 0.44 ms | — | — |
+| 22 | Nose Gear Chocks | D | +0.5 ms | 0.48 ms | — | — |
 | 23 | Main gear chocks removed only after aircraft is attached to pushback | D | +0.5 ms | 0.48 ms | — | — |
 | 24 | Nose wheel chock removed from aircraft | D | +0.5 ms | 0.48 ms | — | — |
 
@@ -42,9 +42,9 @@ Waves: **A** — runs unchanged, answers during the turnaround, no new trigger; 
 | wave | checks | what has to be in place |
 |---|---|---|
 | A | 15: 3 stop brake, Chocks and cones available and staged for arrival, Belt loader forward chock remained in place until unit is backed up clear of aircraft, Beltloader rear cone positioned after BL, Crew present 10 minutes prior to aircraft arrival, Cones placed in proper positions, Steering by pass pin, Safety huddle conducted at huddle cone, All cargo bin doors opened and verified, FOD walk, Conditioned air removed, Cones are removed only after all GSE is clear of A/C and chocked, Handrails fully extended, Lead marshaller and wing walkers in correct position, Wing walkers in proper position | the causal main-aircraft rule of the shared rows (PF-Q2-02: today it costs 2.9 points of accuracy on about one event in six), the stage detector for gating (PF-Q1-03), and a host that keeps 8 fps (PF-Q2-01: about 8 vCPU of a modern generation, 12 GB, a card no slower than a T4 with TensorRT heads) |
-| B | 3: GSE parked, Handrails on GSE, Safety vests | everything wave A needs plus the interim-verdict hook: these three give the batch verdict, but only when the camera stops (PF-Q2-12) |
+| B | 2: GSE parked, Handrails on GSE | everything wave A needs plus the interim-verdict hook: these three give the batch verdict, but only when the camera stops (PF-Q2-12) |
 | C | 2: Pushback pathway confirmed clear, Pushback does not start until wing walkers are in place | everything wave A needs plus a trigger agreed with Oksana and Ihor: the rule as written decides after the fact, so a live alert is a new definition, not a port (PF-Q3-06) |
-| D | 4: Safety zone clear, Pushback verify pin installation, Main gear chocks removed only after aircraft is attached to pushback, Nose wheel chock removed from aircraft | the second pass removed: a stage event instead of the replay for the chock checks and pin verification (PF-Q3-04), single-pass safety zone (PF-Q2-11) |
+| D | 5: Safety zone clear, Pushback verify pin installation, Nose Gear Chocks, Main gear chocks removed only after aircraft is attached to pushback, Nose wheel chock removed from aircraft | the second pass removed: a stage event instead of the replay for the chock checks and pin verification (PF-Q3-04), single-pass safety zone (PF-Q2-11) |
 
 ## What stays in hours
 
@@ -55,7 +55,11 @@ Waves: **A** — runs unchanged, answers during the turnaround, no new trigger; 
 | Proper beltloader approach including 3 stop brake check and handsignals | derived from two other checks; it can only move when both of them have |
 | Post-arrival aircraft walk around inspection completed accurately | not hosted by the branch (its own Python environment), and post by nature: it needs the whole walk-around |
 
-The edge list is untouched here: **Hair Policy**, **Nose Gear Chocks** (`roadmap_move_analysis.md` argues that the nose gear chocks are the wrong check for a camera and that safety vests is the one that fits).
+## The edge list
+
+On the camera: **Hair Policy**, **Safety vests**. The nose gear chocks were taken off it and joined their two sibling verdicts in wave D, because all three come out of `aircraft-chocks` — the module that reads the session twice, needs the chocks and vehicle heads on top of the main one, follows all four tracked classes and waits for a stage event. Safety vests took the slot: it is the only critical check that needs nothing from the aircraft, nothing from the stage and nothing from the traffic around the stand, and the camera already runs a person crop for hair policy, so one detector serves both (`roadmap_move_analysis.md`).
+
+It is not free either: as written it runs two Swin-T networks on every person of every frame (18.75 ms per frame, 5.5 cores on a desktop card), so the camera needs a small detector, a small classifier and a lower rate — the rule latches a fail, it does not need every frame. And the client's verdict arrives at the end of the session; the useful behaviour on a camera is the alert at the moment somebody is seen without a fastened vest, which is a trigger to agree, not a port (PF-Q3-06).
 
 ## The plan on the page
 
