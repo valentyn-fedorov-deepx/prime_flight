@@ -1,0 +1,259 @@
+{
+ "order": [
+  {
+   "id": "b7",
+   "check": "3 stop brake",
+   "module": "3-stop-brake-check",
+   "wave": "A",
+   "marginal_ms": 22.2,
+   "own_ms": 0.64,
+   "critical": 43,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "id": "b21",
+   "check": "Pushback pathway confirmed clear",
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "wave": "C",
+   "marginal_ms": 5.4,
+   "own_ms": 0.48,
+   "critical": 3,
+   "verdict_arrives": "24:46 (T_dep + 20 s)"
+  },
+  {
+   "id": "b13",
+   "check": "Pushback does not start until wing walkers are in place",
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "wave": "C",
+   "marginal_ms": 0.2,
+   "own_ms": 0.33,
+   "critical": 17,
+   "verdict_arrives": "24:39 (T_dep + 14 s)"
+  },
+  {
+   "id": "b23",
+   "check": "Chocks and cones available and staged for arrival",
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "wave": "A",
+   "marginal_ms": 0.1,
+   "own_ms": 0.09,
+   "critical": 0,
+   "verdict_arrives": "6:00 (T_arr + 0 s)"
+  },
+  {
+   "id": "b19",
+   "check": "Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+   "module": "beltloader-chocks",
+   "wave": "A",
+   "marginal_ms": 0.3,
+   "own_ms": 0.34,
+   "critical": 0,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "id": "b16",
+   "check": "Beltloader rear cone positioned after BL",
+   "module": "bl_rear_cone",
+   "wave": "A",
+   "marginal_ms": 0.4,
+   "own_ms": 0.37,
+   "critical": 0,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "id": "b24",
+   "check": "Crew present 10 minutes prior to aircraft arrival",
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "wave": "A",
+   "marginal_ms": 0.5,
+   "own_ms": 0.54,
+   "critical": 0,
+   "verdict_arrives": "7:04 (T_arr + 64 s)"
+  },
+  {
+   "id": "b15",
+   "check": "Cones placed in proper positions",
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "wave": "A",
+   "marginal_ms": 0.6,
+   "own_ms": 0.62,
+   "critical": 0,
+   "verdict_arrives": "24:35 (T_dep + 10 s)"
+  },
+  {
+   "id": "b6",
+   "check": "Steering by pass pin",
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "wave": "A",
+   "marginal_ms": 0.7,
+   "own_ms": 0.73,
+   "critical": 0,
+   "verdict_arrives": "10:05 (T_arr + 245 s)"
+  },
+  {
+   "id": "b25",
+   "check": "Safety huddle conducted at huddle cone",
+   "module": "pre-arrival-safety-huddle",
+   "wave": "A",
+   "marginal_ms": 0.9,
+   "own_ms": 0.87,
+   "critical": 0,
+   "verdict_arrives": "7:00 (T_arr + 60 s)"
+  },
+  {
+   "id": "b29",
+   "check": "All cargo bin doors opened and verified",
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "wave": "A",
+   "marginal_ms": 0.9,
+   "own_ms": 0.87,
+   "critical": 0,
+   "verdict_arrives": "8:44 (T_arr + 164 s)"
+  },
+  {
+   "id": "b3",
+   "check": "FOD walk",
+   "module": "fod-walk-completed",
+   "wave": "A",
+   "marginal_ms": 1.3,
+   "own_ms": 1.32,
+   "critical": 0,
+   "verdict_arrives": "6:00 (T_arr + 0 s)"
+  },
+  {
+   "id": "b11",
+   "check": "Conditioned air removed",
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "wave": "A",
+   "marginal_ms": 1.3,
+   "own_ms": 1.26,
+   "critical": 0,
+   "verdict_arrives": "24:35 (T_dep + 10 s)"
+  },
+  {
+   "id": "b18",
+   "check": "Cones are removed only after all GSE is clear of A/C and chocked",
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "wave": "A",
+   "marginal_ms": 1.5,
+   "own_ms": 1.54,
+   "critical": 0,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "id": "b10",
+   "check": "Handrails fully extended",
+   "module": "safety-handrails-fully-extended",
+   "wave": "A",
+   "marginal_ms": 2.4,
+   "own_ms": 2.37,
+   "critical": 0,
+   "verdict_arrives": "24:25 (T_dep + 0 s)"
+  },
+  {
+   "id": "b22",
+   "check": "Lead marshaller and wing walkers in correct position",
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "wave": "A",
+   "marginal_ms": 2.5,
+   "own_ms": 2.5,
+   "critical": 0,
+   "verdict_arrives": "6:10 (T_arr + 10 s)"
+  },
+  {
+   "id": "b14",
+   "check": "Wing walkers in proper position",
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "wave": "A",
+   "marginal_ms": 5.1,
+   "own_ms": 5.14,
+   "critical": 15,
+   "verdict_arrives": "25:09 (T_dep + 44 s)"
+  },
+  {
+   "id": "b8",
+   "check": "GSE parked",
+   "module": "gse-chocks",
+   "wave": "B",
+   "marginal_ms": 8.8,
+   "own_ms": 3.25,
+   "critical": 0,
+   "verdict_arrives": "session end"
+  },
+  {
+   "id": "b9",
+   "check": "Handrails on GSE",
+   "module": "handrails-on-gse-being-used",
+   "wave": "B",
+   "marginal_ms": 12.5,
+   "own_ms": 12.46,
+   "critical": 0,
+   "verdict_arrives": "session end"
+  },
+  {
+   "id": "b4",
+   "check": "Safety vests",
+   "module": "safety-vests-secured-to-body",
+   "wave": "B",
+   "marginal_ms": 18.8,
+   "own_ms": 18.75,
+   "critical": 35,
+   "verdict_arrives": "session end"
+  },
+  {
+   "id": "b5",
+   "check": "Safety zone clear",
+   "module": "safety-zone-confirmed-clear",
+   "wave": "D",
+   "marginal_ms": 0.2,
+   "own_ms": 0.25,
+   "critical": 13,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "id": "b12",
+   "check": "Pushback verify pin installation",
+   "module": "pin-verification",
+   "wave": "D",
+   "marginal_ms": 0.4,
+   "own_ms": 0.44,
+   "critical": 0,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "id": "b17",
+   "check": "Main gear chocks removed only after aircraft is attached to pushback",
+   "module": "aircraft-chocks",
+   "wave": "D",
+   "marginal_ms": 0.5,
+   "own_ms": 0.48,
+   "critical": 0,
+   "verdict_arrives": "\u2014"
+  },
+  {
+   "id": "b20",
+   "check": "Nose wheel chock removed from aircraft",
+   "module": "aircraft-chocks",
+   "wave": "D",
+   "marginal_ms": 0.5,
+   "own_ms": 0.48,
+   "critical": 0,
+   "verdict_arrives": "\u2014"
+  }
+ ],
+ "stays_in_hours": [
+  "All GSE guided into aircraft using approved hand signals",
+  "Pre-departure walk around completed",
+  "Proper beltloader approach including 3 stop brake check and handsignals",
+  "Post-arrival aircraft walk around inspection completed accurately"
+ ],
+ "edge": [
+  "Hair Policy",
+  "Nose Gear Chocks"
+ ],
+ "by_month": [
+  5,
+  16,
+  24
+ ]
+}
