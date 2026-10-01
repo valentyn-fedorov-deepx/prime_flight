@@ -1,0 +1,307 @@
+{
+ "camera_mbit_s": 4.0,
+ "cameras_per_station": 2,
+ "frame_path_s": 0.06,
+ "station_delay_by_chunk_frames_and_link": {
+  "30": {
+   "4": {
+    "upload_s": 7.5,
+    "falls_behind": true,
+    "backlog_s_per_minute": 60.0,
+    "delay_min_s": 9.3,
+    "delay_max_s": 11.3
+   },
+   "8": {
+    "upload_s": 3.8,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 5.5,
+    "delay_max_s": 7.6
+   },
+   "10": {
+    "upload_s": 3.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 4.8,
+    "delay_max_s": 6.8
+   },
+   "15": {
+    "upload_s": 2.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 3.8,
+    "delay_max_s": 5.8
+   },
+   "20": {
+    "upload_s": 1.5,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 3.3,
+    "delay_max_s": 5.3
+   },
+   "30": {
+    "upload_s": 1.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 2.8,
+    "delay_max_s": 4.8
+   },
+   "50": {
+    "upload_s": 0.6,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 2.4,
+    "delay_max_s": 4.4
+   },
+   "100": {
+    "upload_s": 0.3,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 2.1,
+    "delay_max_s": 4.1
+   }
+  },
+  "60": {
+   "4": {
+    "upload_s": 15.0,
+    "falls_behind": true,
+    "backlog_s_per_minute": 60.0,
+    "delay_min_s": 18.6,
+    "delay_max_s": 22.6
+   },
+   "8": {
+    "upload_s": 7.5,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 11.1,
+    "delay_max_s": 15.1
+   },
+   "10": {
+    "upload_s": 6.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 9.6,
+    "delay_max_s": 13.6
+   },
+   "15": {
+    "upload_s": 4.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 7.6,
+    "delay_max_s": 11.6
+   },
+   "20": {
+    "upload_s": 3.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 6.6,
+    "delay_max_s": 10.6
+   },
+   "30": {
+    "upload_s": 2.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 5.6,
+    "delay_max_s": 9.6
+   },
+   "50": {
+    "upload_s": 1.2,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 4.8,
+    "delay_max_s": 8.8
+   },
+   "100": {
+    "upload_s": 0.6,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 4.2,
+    "delay_max_s": 8.2
+   }
+  },
+  "120": {
+   "4": {
+    "upload_s": 30.0,
+    "falls_behind": true,
+    "backlog_s_per_minute": 60.0,
+    "delay_min_s": 37.2,
+    "delay_max_s": 45.1
+   },
+   "8": {
+    "upload_s": 15.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 22.2,
+    "delay_max_s": 30.1
+   },
+   "10": {
+    "upload_s": 12.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 19.2,
+    "delay_max_s": 27.1
+   },
+   "15": {
+    "upload_s": 8.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 15.2,
+    "delay_max_s": 23.1
+   },
+   "20": {
+    "upload_s": 6.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 13.2,
+    "delay_max_s": 21.1
+   },
+   "30": {
+    "upload_s": 4.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 11.2,
+    "delay_max_s": 19.1
+   },
+   "50": {
+    "upload_s": 2.4,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 9.6,
+    "delay_max_s": 17.5
+   },
+   "100": {
+    "upload_s": 1.2,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 8.4,
+    "delay_max_s": 16.3
+   }
+  },
+  "480": {
+   "4": {
+    "upload_s": 120.0,
+    "falls_behind": true,
+    "backlog_s_per_minute": 60.0,
+    "delay_min_s": 148.8,
+    "delay_max_s": 180.1
+   },
+   "8": {
+    "upload_s": 60.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 88.8,
+    "delay_max_s": 120.1
+   },
+   "10": {
+    "upload_s": 48.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 76.8,
+    "delay_max_s": 108.1
+   },
+   "15": {
+    "upload_s": 32.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 60.8,
+    "delay_max_s": 92.1
+   },
+   "20": {
+    "upload_s": 24.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 52.8,
+    "delay_max_s": 84.1
+   },
+   "30": {
+    "upload_s": 16.0,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 44.8,
+    "delay_max_s": 76.1
+   },
+   "50": {
+    "upload_s": 9.6,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 38.4,
+    "delay_max_s": 69.7
+   },
+   "100": {
+    "upload_s": 4.8,
+    "falls_behind": false,
+    "backlog_s_per_minute": 0,
+    "delay_min_s": 33.6,
+    "delay_max_s": 64.9
+   }
+  }
+ },
+ "measured_one_camera_30_frame_chunks": [
+  {
+   "link_mbit_s": 4.0,
+   "keeps_up": true,
+   "latency_s": {
+    "p50": 6.175,
+    "p95": 7.505,
+    "p99": 7.657,
+    "max": 8.443
+   },
+   "drift_s_per_recording_minute": -0.0238
+  },
+  {
+   "link_mbit_s": 4.5,
+   "keeps_up": true,
+   "latency_s": {
+    "p50": 5.743,
+    "p95": 7.067,
+    "p99": 7.215,
+    "max": 7.819
+   },
+   "drift_s_per_recording_minute": -0.0201
+  },
+  {
+   "link_mbit_s": 5.0,
+   "keeps_up": true,
+   "latency_s": {
+    "p50": 5.416,
+    "p95": 6.74,
+    "p99": 6.87,
+    "max": 7.487
+   },
+   "drift_s_per_recording_minute": -0.0207
+  },
+  {
+   "link_mbit_s": 6.0,
+   "keeps_up": true,
+   "latency_s": {
+    "p50": 4.91,
+    "p95": 6.237,
+    "p99": 6.365,
+    "max": 6.972
+   },
+   "drift_s_per_recording_minute": -0.0214
+  },
+  {
+   "link_mbit_s": 8.0,
+   "keeps_up": true,
+   "latency_s": {
+    "p50": 4.287,
+    "p95": 5.607,
+    "p99": 5.727,
+    "max": 6.314
+   },
+   "drift_s_per_recording_minute": -0.0206
+  },
+  {
+   "link_mbit_s": 12.0,
+   "keeps_up": true,
+   "latency_s": {
+    "p50": 3.671,
+    "p95": 4.986,
+    "p99": 5.094,
+    "max": 5.648
+   },
+   "drift_s_per_recording_minute": -0.0103
+  }
+ ]
+}
