@@ -21,6 +21,14 @@ over https return "not found" (permissions/path) — local clones exist, the SSH
 Module repos (M-ID → repo) and the architecture review's pinned commits are in `04_modules.md`. Locally there is also `seat-belts-used-on-all-gse-equipped-with-seat-belts`
 (M25, out of scope) and the working folders `_vest_verifier`, `_pa_scene_decomp`, `_steering_eval`, `onboarding_docs/` (safety_vests.md, walkaround.md).
 
+## Real-time worker (GitLab)
+
+https://gitlab.com/dxgat/detectors/realtime-pipeline — `main` @ 8cd6e62, cloned read-only into `external/realtime-pipeline`
+(https works). The architecture of the real-time branch from 2026-10-01: one always-up worker, containers on one time-sliced
+GPU, ingest → stage detector → general model (chocks + vehicle only) → trackers (person, BL, GSE; the plane track is copied)
+→ modules. `ARCHITECTURE.md` in that repo is the contract. Our `pf/gm` and `pf/tracker` are vendored there verbatim (import
+paths only) — see `docs/analysis/realtime_pipeline_alignment.md`.
+
 ## Prime Flight repo (GitHub)
 
 https://github.com/valentyn-fedorov-deepx/prime_flight — private, branch `main`, push over https (gh auth, keyring). Commits in English, without Claude trailers; `external/` and large artifacts are outside git.
