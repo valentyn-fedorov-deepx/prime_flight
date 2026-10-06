@@ -79,25 +79,27 @@ def main() -> int:
             if a.gm_provider:
                 gm_dir = os.path.join(TS, f"gm_{label}", video)
                 gm_compat = os.path.join(gm_dir, f"general_model{video}-second_run.ndjson")
-                if a.redo or not os.path.exists(gm_compat):
+                gm_report = os.path.join(gm_dir, f"gm_v2_report{video}.json")  # written last: a run that died has none
+                if a.redo or not os.path.exists(gm_report):
                     cmd = [PY, "scripts/gm_v2_run.py", "--video", p["video"], "--weights-dir", orch.GM_WEIGHTS, "--variant",
                            "entity_clip", "--parallel-heads", "--out-dir", gm_dir, "--compare", p["prod_gm"],
                            "--buffered-decisions", "--provider", a.gm_provider]
                     log(lf, f"{video}: gm ({a.gm_provider})")
                     rc = run(cmd, os.path.join(p["logs"], f"gm_{label}.log"))
-                    if rc or not os.path.exists(gm_compat):
+                    if rc or not os.path.exists(gm_report):
                         log(lf, f"{video}: gm FAILED rc={rc}")
                         continue
             trk_dir = os.path.join(TS, f"trk_{label}", video)
             trk_compat = os.path.join(trk_dir, f"trackers{video}.ndjson")
-            if a.redo or not os.path.exists(trk_compat):
+            trk_report = os.path.join(trk_dir, f"tracker_v2_report{video}.json")  # written last: a run that died has none
+            if a.redo or not os.path.exists(trk_report):
                 cmd = [PY, "scripts/tracker_v2_run.py", "--video", p["video"], "--gm-ndjson", gm_compat, "--seed", "0",
                        "--exact-fast", "--no-profile", "--out-dir", trk_dir, "--compare", p["trk_compat"]]
                 cmd += ["--cone-camera"] if plan.cone(video) else []
                 cmd += shlex.split(a.tracker_args)
                 log(lf, f"{video}: tracker")
                 rc = run(cmd, os.path.join(p["logs"], f"tracker_{label}.log"))
-                if rc or not os.path.exists(trk_compat):
+                if rc or not os.path.exists(trk_report):
                     log(lf, f"{video}: tracker FAILED rc={rc}")
                     continue
             inf = os.path.join(TS, f"{label}_inf", video)
