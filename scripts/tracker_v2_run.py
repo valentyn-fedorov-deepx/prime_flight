@@ -153,6 +153,14 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=None, help="np.random seed set right before the first frame")
     ap.add_argument("--exact-fast", action="store_true", help="output-identical performance paths")
     ap.add_argument("--fast-noise-gate", action="store_true", help="NOT exact: half-resolution noise estimate")
+    ap.add_argument("--sigma-interval", type=float, default=None,
+                    help="NOT exact: seconds between full-frame noise estimates (production: 2)")
+    ap.add_argument("--classes", default="airplane,beltloader,gse,person",
+                    help="tracked classes (the real-time worker tracks person,beltloader,gse and copies the plane)")
+    ap.add_argument("--publish-delay", type=int, default=None, help="0 = answer at the frame (production: 6)")
+    ap.add_argument("--reid-eval", action="store_true", help="NOT exact: transport re-id BatchNorm on running statistics")
+    ap.add_argument("--reid-half", action="store_true", help="NEAR: transport re-id in fp16")
+    ap.add_argument("--cudnn-benchmark", action="store_true", help="NEAR: cuDNN autotuning")
     ap.add_argument("--no-profile", action="store_true", help="do not install per-component timers")
     ap.add_argument("--no-compat", action="store_true", help="write only the v2 bus (skip the v1-compat serialisation)")
     ap.add_argument("--out-dir", default="out/tracker_v2")
@@ -176,7 +184,9 @@ def main() -> int:
     stream = TrackerStream(
         TrackerOptions(
             weights_dir=a.weights_dir, device=a.device, cone_camera=a.cone_camera, exact_fast=a.exact_fast,
-            fast_noise_gate=a.fast_noise_gate,
+            fast_noise_gate=a.fast_noise_gate, estimate_sigma_interval_s=a.sigma_interval,
+            classes=tuple(c.strip() for c in a.classes.split(",") if c.strip()), publish_delay=a.publish_delay,
+            reid_eval=a.reid_eval, reid_half=a.reid_half, cudnn_benchmark=a.cudnn_benchmark,
         )
     )
     init_s = time.perf_counter() - t_init
@@ -237,6 +247,11 @@ def main() -> int:
         "cone_camera": a.cone_camera,
         "exact_fast": a.exact_fast,
         "fast_noise_gate": a.fast_noise_gate,
+        "sigma_interval_s": a.sigma_interval,
+        "classes": a.classes,
+        "publish_delay": a.publish_delay,
+        "reid": {"eval": a.reid_eval, "half": a.reid_half, "cudnn_benchmark": a.cudnn_benchmark, "applied": stream.reid_changes},
+        "cpu_cores": os.environ.get("PF_CPU_CORES"),
         "init_s": round(init_s, 2),
         "total_s": round(total, 2),
         "ms_per_frame_total": round(1000 * total / max(frames, 1), 3),

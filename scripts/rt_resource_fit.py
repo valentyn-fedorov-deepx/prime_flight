@@ -39,7 +39,8 @@ BUDGET_MS = 125.0
 
 
 def run(slice_video: str, event: str, modules: list, heads: list, classes: list, cores: int, k: float, speed: float,
-        seconds: float, tag: str, gpu_base_ms: float, tracker_base_ms: float | None = None, provider: str = "cuda") -> dict:
+        seconds: float, tag: str, gpu_base_ms: float, tracker_base_ms: float | None = None, provider: str = "cuda",
+        tracker_opts: str = "") -> dict:
     stem = os.path.splitext(slice_video)[0]
     cmd = [sys.executable, "scripts/rt_pipeline_run.py", "--video", slice_video, "--plan-video", event, "--module", modules[0],
            "--tag", tag, "--speed", str(speed), "--no-write-rows", "--heads", ",".join(heads), "--tracker-classes", ",".join(classes),
@@ -51,6 +52,8 @@ def run(slice_video: str, event: str, modules: list, heads: list, classes: list,
         cmd += ["--extra-modules", ",".join(modules[1:])]
     if tracker_base_ms:
         cmd += ["--tracker-base-ms", str(tracker_base_ms)]
+    if tracker_opts:
+        cmd += ["--tracker-opts", tracker_opts]
     t0 = time.time()
     proc = subprocess.Popen(cmd, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     sampler = MachineSampler(proc.pid).start()
@@ -95,6 +98,7 @@ def main() -> int:
                     help="tensorrt: the same heads through TensorRT (8 ms instead of 19 on this card; tolerant parity)")
     ap.add_argument("--gpu-base-ms", type=float, default=None,
                     help="override the busy-card time of the heads the slowdown is built on (TensorRT: about 8 ms for three)")
+    ap.add_argument("--tracker-opts", default="", help="extra TrackerOptions as k=v,k=v, passed to rt_pipeline_run.py")
     ap.add_argument("--redo", action="store_true")
     a = ap.parse_args()
 
@@ -129,11 +133,13 @@ def main() -> int:
     for item in [g for g in a.grid.split(",") if g]:
         cores, k = int(item.split(":")[0]), float(item.split(":")[1])
         for speed in ([1.0, 8.0] if a.with_post else [1.0]):
-            key = f"cores{cores}_k{k:g}{'_trk' if a.slow_tracker else ''}{'_trt' if a.provider == 'tensorrt' else ''}_x{speed:g}"
+            key = (f"cores{cores}_k{k:g}{'_trk' if a.slow_tracker else ''}{'_trt' if a.provider == 'tensorrt' else ''}"
+                   f"{'_light' if a.tracker_opts else ''}_x{speed:g}")
             if not a.redo and key in result["runs"] and not result["runs"][key].get("error"):
                 continue
             rec = run(slice_video, a.video, modules, heads, classes, cores, k, speed, a.seconds, f"fit_{name}_{key}", gpu_base_ms,
-                      tracker_base_ms if a.slow_tracker else None, a.provider)
+                      tracker_base_ms if a.slow_tracker else None, a.provider, a.tracker_opts)
+            rec["tracker_opts"] = a.tracker_opts
             result["runs"][key] = rec
             json.dump(result, io.open(out_path, "w", encoding="utf-8", newline="\n"), indent=1, default=str)
             ms = rec.get("ms_per_frame") or {}

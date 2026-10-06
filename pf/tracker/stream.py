@@ -64,6 +64,13 @@ class TrackerOptions:
     exact_fast: bool = False  # output-identical performance paths (see module docstring)
     grouped_lk: bool = True  # within exact_fast: grouped optical flow for beltloaders/GSE
     fast_noise_gate: bool = False  # NOT exact: sigma on a half-resolution frame (needs calibration before use)
+    # NOT exact: how often the full-frame noise estimate runs (production: `estimate_sigma_interval` of the config, 2 s).
+    # The estimate decides the TV denoising of the frame optical flow reads; a longer interval changes when that switches.
+    estimate_sigma_interval_s: float | None = None
+    # --- transport re-id (belt loaders, GSE: torchvision ResNet-34 in training mode, fp32 in production) --------------
+    reid_eval: bool = False  # NOT exact: BatchNorm on running statistics (`pf.tracker.reid`)
+    reid_half: bool = False  # NEAR: fp16 forward
+    cudnn_benchmark: bool = False  # NEAR: cuDNN autotuning (process-wide)
     # --- scope (production tracks all four) -------------------------------------------------------------
     # A real-time tracker keeps only the classes its modules read. Dropping a class skips its DeepSORT update, state
     # machines and segmentor; the airplane records are then NOT byte-identical to the full tracker (np.random draws
@@ -217,6 +224,16 @@ class TrackerStream:
             use_cuda=use_cuda, metric_type=w.METRIC_TYPE,
         )
         self.n_init_delay = int(w.N_INIT) if self.opt.publish_delay is None else max(int(self.opt.publish_delay), 0)
+        self.reid_changes: dict = {}
+        if self.opt.reid_eval or self.opt.reid_half:
+            from pf.tracker.reid import configure_resnet_extractor
+
+            for name, tr in (("beltloader", self.bl_tracker), ("gse", self.gse_tracker)):
+                if tr is not None:
+                    self.reid_changes[name] = configure_resnet_extractor(tr.extractor, eval_mode=self.opt.reid_eval,
+                                                                         half=self.opt.reid_half)
+        if self.opt.cudnn_benchmark:
+            torch.backends.cudnn.benchmark = True
 
         import logging
 
@@ -248,7 +265,8 @@ class TrackerStream:
                 self.grouped = fast_grouped_lk
 
         self.noise = NoiseGate(
-            self.cfg["fps"], self.cfg["estimate_sigma_interval"], fast=self.opt.fast_noise_gate, device=device,
+            self.cfg["fps"], self.opt.estimate_sigma_interval_s or self.cfg["estimate_sigma_interval"],
+            fast=self.opt.fast_noise_gate, device=device,
             exact_fast_sigma=self.opt.exact_fast, copy_frames=not self.opt.exact_fast,
         )
         self.str2id = self.cfg["str2id"]

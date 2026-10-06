@@ -53,7 +53,7 @@ class RtPipelineAdapter(Adapter):
                  pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None,
                  monitor=None, filter_rows: bool = False, alerts_file: bool = True, gating: bool = False,
                  main_aircraft_rule: str = "longest_so_far", gpu_slowdown: float = 1.0, gpu_base_ms: float | None = None,
-                 tracker_base_ms: float | None = None):
+                 tracker_base_ms: float | None = None, tracker_opts: dict | None = None):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -72,6 +72,7 @@ class RtPipelineAdapter(Adapter):
         # the pessimistic bound of the same emulation: the tracker (segmentors, re-id networks and a denoiser on the card, the
         # rest on the CPU) slowed down as a whole; None leaves it alone (the optimistic bound)
         self.tracker_base_ms = tracker_base_ms
+        self.tracker_opts = dict(tracker_opts or {})  # extra TrackerOptions fields (cost switches), reported as given
         self.pixels = pixels
         self.out_dir = os.path.abspath(out_dir) if out_dir else None
         self.write_rows = bool(write_rows and self.out_dir)
@@ -176,7 +177,8 @@ class RtPipelineAdapter(Adapter):
         if self.monitor is not None:
             self.monitor.set_class_names(cm.id2str)
         self.tracker = TrackerStream(TrackerOptions(weights_dir=self.tracker_weights_dir, exact_fast=self.exact_fast,
-                                                    cone_camera=self.cone_camera, classes=self.tracker_classes))
+                                                    cone_camera=self.cone_camera, classes=self.tracker_classes,
+                                                    **self.tracker_opts))
         self.init_s["gm_and_tracker"] = round(time.perf_counter() - t0, 1)
         if self.write_rows:
             os.makedirs(self.out_dir, exist_ok=True)
@@ -273,7 +275,7 @@ class RtPipelineAdapter(Adapter):
         return {
             "components_ms": ms,
             "gm": {"heads": list(self.heads), "rows": rows, "variant": self.gm_variant, "provider": self.gm_provider},
-            "tracker": {"classes": list(self.tracker_classes), "records": records,
+            "tracker": {"classes": list(self.tracker_classes), "opts": self.tracker_opts, "records": records,
                         "publish_lag_frames": len(self._rows2), "published_frame": fno},
             "queues": {"unpublished": len(self._rows2)},
             "components": [{"module": h.module, "gate": h.gate.as_dict(), "frames_sent": h.frames_sent,

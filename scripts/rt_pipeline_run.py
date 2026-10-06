@@ -123,6 +123,7 @@ def summarise(a, out: str, rc: int, wall_s: float) -> dict:
            "gpu_slowdown": a.gpu_slowdown, "cpu_cores": a.cpu_cores or None,
            "ingest": a.ingest, "bandwidth_mbps": a.bandwidth_mbps,
            "max_seconds": a.max_seconds, "heads": a.heads, "tracker_classes": a.tracker_classes, "provider": a.provider,
+           "tracker_opts": a.tracker_opts,
            "exit_code": rc, "wall_s": round(wall_s, 1)}
     report_path = os.path.join(run, "report.json")
     if not os.path.exists(report_path):
@@ -188,6 +189,8 @@ def main() -> int:
     ap.add_argument("--max-seconds", type=float, default=None)
     ap.add_argument("--heads", default="gm,chocks,vehicle")
     ap.add_argument("--tracker-classes", default="airplane,beltloader,gse,person")
+    ap.add_argument("--tracker-opts", default="",
+                    help="extra TrackerOptions as k=v,k=v (e.g. reid_eval=1,reid_half=1,cudnn_benchmark=1,estimate_sigma_interval_s=10)")
     ap.add_argument("--provider", default="cuda", choices=["cuda", "tensorrt"])
     ap.add_argument("--chunks", default=None, help="default out/rt/chunks/<video stem>_gop1")
     ap.add_argument("--no-write-rows", action="store_true", help="timing runs: do not write the rows handed to the modules")
@@ -231,7 +234,9 @@ def main() -> int:
              "cone_camera": plan.cone(event), "pixels": not prof.get("pixel_free"), "out_dir": out,
              "write_rows": not a.no_write_rows, "extra_modules": extras, "filter_rows": a.subscriptions,
              "main_aircraft_rule": a.main_aircraft_rule, "gpu_slowdown": a.gpu_slowdown, "gpu_base_ms": a.gpu_base_ms,
-             "tracker_base_ms": a.tracker_base_ms}
+             "tracker_base_ms": a.tracker_base_ms,
+             "tracker_opts": {k: (v.lower() in ("1", "true") if v.lower() in ("0", "1", "true", "false") else float(v))
+                              for k, v in (kv.split("=", 1) for kv in a.tracker_opts.split(",") if kv)}}
     cmd = [sys.executable, "-m", "pf.rt.simulate", "--chunks", chunks, "--adapter", "pipeline", "--adapter-args",
            json.dumps(pargs), "--out", out, "--speed", str(a.speed)]
     cmd += ["--ingest", a.ingest, "--bandwidth-mbps", str(a.bandwidth_mbps)]
