@@ -71,6 +71,9 @@ class TrackerOptions:
     reid_eval: bool = False  # NOT exact: BatchNorm on running statistics (`pf.tracker.reid`)
     reid_half: bool = False  # NEAR: fp16 forward
     cudnn_benchmark: bool = False  # NEAR: cuDNN autotuning (process-wide)
+    # EXACT: the three DeepSORT updates in threads (production order is sequential; the results do not depend on the
+    # interleaving). On one core the threads only contend for the GIL, so a one-vCPU container runs them sequentially.
+    deepsort_parallel: bool = True
     # --- scope (production tracks all four) -------------------------------------------------------------
     # A real-time tracker keeps only the classes its modules read. Dropping a class skips its DeepSORT update, state
     # machines and segmentor; the airplane records are then NOT byte-identical to the full tracker (np.random draws
@@ -257,7 +260,8 @@ class TrackerStream:
             fast_paths.enable()
             fast_paths.end_stream()
             self.fast = fast_paths
-            self._pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="pf-deepsort")
+            if self.opt.deepsort_parallel:
+                self._pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="pf-deepsort")
             if self.opt.grouped_lk:
                 from pf.tracker import fast_grouped_lk
 
