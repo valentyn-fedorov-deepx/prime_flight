@@ -162,6 +162,7 @@ def main() -> int:
     ap.add_argument("--reid-half", action="store_true", help="NEAR: transport re-id in fp16")
     ap.add_argument("--cudnn-benchmark", action="store_true", help="NEAR: cuDNN autotuning")
     ap.add_argument("--no-deepsort-threads", action="store_true", help="EXACT: the three DeepSORT updates sequentially")
+    ap.add_argument("--cpu-threads", type=int, default=None, help="EXACT: cap the OpenCV / torch CPU thread pools")
     ap.add_argument("--no-profile", action="store_true", help="do not install per-component timers")
     ap.add_argument("--no-compat", action="store_true", help="write only the v2 bus (skip the v1-compat serialisation)")
     ap.add_argument("--out-dir", default="out/tracker_v2")
@@ -188,7 +189,7 @@ def main() -> int:
             fast_noise_gate=a.fast_noise_gate, estimate_sigma_interval_s=a.sigma_interval,
             classes=tuple(c.strip() for c in a.classes.split(",") if c.strip()), publish_delay=a.publish_delay,
             reid_eval=a.reid_eval, reid_half=a.reid_half, cudnn_benchmark=a.cudnn_benchmark,
-            deepsort_parallel=not a.no_deepsort_threads,
+            deepsort_parallel=not a.no_deepsort_threads, cpu_threads=a.cpu_threads,
         )
     )
     init_s = time.perf_counter() - t_init

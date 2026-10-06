@@ -74,6 +74,8 @@ class TrackerOptions:
     # EXACT: the three DeepSORT updates in threads (production order is sequential; the results do not depend on the
     # interleaving). On one core the threads only contend for the GIL, so a one-vCPU container runs them sequentially.
     deepsort_parallel: bool = True
+    # EXACT: cap the OpenCV / torch CPU thread pools (a one-vCPU container gains nothing from their default pools)
+    cpu_threads: int | None = None
     # --- scope (production tracks all four) -------------------------------------------------------------
     # A real-time tracker keeps only the classes its modules read. Dropping a class skips its DeepSORT update, state
     # machines and segmentor; the airplane records are then NOT byte-identical to the full tracker (np.random draws
@@ -237,6 +239,11 @@ class TrackerStream:
                                                                          half=self.opt.reid_half)
         if self.opt.cudnn_benchmark:
             torch.backends.cudnn.benchmark = True
+        if self.opt.cpu_threads:
+            import cv2
+
+            cv2.setNumThreads(int(self.opt.cpu_threads))
+            torch.set_num_threads(int(self.opt.cpu_threads))
 
         import logging
 
