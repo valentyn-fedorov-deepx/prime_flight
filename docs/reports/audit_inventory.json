@@ -1,0 +1,2025 @@
+{
+ "generated": "2026-10-06",
+ "modules": [
+  {
+   "m_id": "M01",
+   "module": "3-stop-brake-check",
+   "checks": [
+    "3 stop brake check"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Both, Jet=Wing",
+   "prod_ready": "False",
+   "reviewed_pin": "3a2337c1",
+   "repo_head": "14685f4",
+   "cv_common_pin": "86731e4c",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:224",
+   "stage": "DOWNLOAD",
+   "opens": "beltloader appeared",
+   "closes": "BL stopped next to the aircraft (intersection > 0.2)",
+   "decision": "EVENT",
+   "preventive": false,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "gse",
+    "pushback",
+    "trailer"
+   ],
+   "gm_cosmetic": [
+    "obstacle",
+    "beltloader"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_status",
+    "_xyxy",
+    "_obj_id",
+    "_color"
+   ],
+   "events_recomputed": [
+    "BL fully_stopped / re-init from _status counters (:76-102)",
+    "BL at door = get_relative_intersection(airplane.xyxy, bl.xyxy) > 0.2 (:190)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 16.1,
+   "live_ms_per_frame": 0.64,
+   "batch_ms_per_recorded_frame": 3.4,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "attention": "Do not replace its recomputed status with generic tracker status without replay comparison; seconds vary with configured FPS.",
+   "chunkwise_blockers": []
+  },
+  {
+   "m_id": "M02A",
+   "module": "aircraft-chocks",
+   "checks": [
+    "Nose gear chocks applied immediately",
+    "Main gear chocks removed only after aircraft is attached to pushback",
+    "Nose wheel chock removed from aircraft"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "fa00478f",
+   "repo_head": "fa00478",
+   "cv_common_pin": "ac5098d2",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:1214",
+   "stage": "PRE_DEP",
+   "opens": "T_arr",
+   "closes": "pushback attached → chock removal",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "PATCH",
+   "passes": 2,
+   "pixels": true,
+   "gm_classes": [
+    "pushback",
+    "chock",
+    "cone",
+    "trailer",
+    "fuel_truck",
+    "ladder",
+    "front_wheel",
+    "vehicle",
+    "tow_bar",
+    "airplane_nose",
+    "back_wheel",
+    "obstacle"
+   ],
+   "gm_cosmetic": [
+    "beltloader",
+    "chock",
+    "obstacle",
+    "front_wheel"
+   ],
+   "reads_conf": true,
+   "tracker_classes": [
+    "airplane",
+    "person",
+    "gse",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime",
+    "_obj_id (raw key)"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:1445-1472)",
+    "pushback_attached: IoU>0.8 with median_pushback from pass 1 for >5*FPS frames, or nose-geometry fallback (:1524-1548)",
+    "BL in safety zone / removal frame from bl_type!='undefined' + rear-wheel geometry, in/out thresholds 16/40 (:1561-1612)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "frame-difference chock classifier (rear wheels)",
+     "architecture": "timm efficientnet_b0 pretrained=False num_classes=1 (state dict, 360 tensors, 4 050 894 params); sigmoid >= 0.5",
+     "file": "effnetb0_ext_fix_993.pt",
+     "size_mb": null,
+     "sha256_16": "8211b62aa9c367aa",
+     "framework": "torch + timm; OpenCV/PIL/torchvision preprocessing",
+     "cadence": "[\"main.py:641 (initial checks)\", \"main.py:731 (main check)\", \"main.py:831 (support checks)\", \"complex_difference.py:135-142 -> 52-59 -> 27-34\"]"
+    }
+   ],
+   "post_job_s": 38.4,
+   "live_ms_per_frame": 0.48,
+   "batch_ms_per_recorded_frame": 5.7,
+   "runs_in_real_time_as_is": "no: two passes",
+   "verdict_arrives": "—",
+   "attention": "Placement is assessed within 30 seconds of aircraft stop. Pushback attachment and rear-wheel image differences are not prerequisites for this task.",
+   "chunkwise_blockers": [
+    "pass 1 needs the whole event to compute median_pushback before pass 2 (:1240-1291)",
+    "video_worker.number_of_frames used as end-of-video anchor (:1266)",
+    "frame_number == aircraft.arrival_frame / departure_frame equality (:1475,:1480) -> breaks if position != absolute id (X2)",
+    "full-frame buffers per wheel (~1 GB) (:453-478)"
+   ]
+  },
+  {
+   "m_id": "M03",
+   "module": "all-cargo-bin-doors-opened-and-verified",
+   "checks": [
+    "All cargo bin doors opened and verified"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Both, Jet=Wing",
+   "prod_ready": "True",
+   "reviewed_pin": "ac2707cb",
+   "repo_head": "c60aed2",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "6efc0b05",
+   "entry": "main.py:22",
+   "stage": "DOWNLOAD",
+   "opens": "T_arr",
+   "closes": "end of the stage or 480 frames of open doors",
+   "decision": "DEADLINE",
+   "preventive": false,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "front_door",
+    "back_door",
+    "gse",
+    "pushback",
+    "trailer",
+    "fuel_truck",
+    "vehicle",
+    "obstacle"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:112-139)",
+    "local stop_frame from status==STOPPED (:146-148)",
+    "local depart_frame from 5*fps MOVING frames (:149-152)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 7.7,
+   "live_ms_per_frame": 0.87,
+   "batch_ms_per_recorded_frame": 1.4,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "8:44 (T_arr + 164 s)",
+   "attention": "Does not verify a BL target-door relationship or independently distinguish mechanical open/closed state beyond detector-label semantics.",
+   "chunkwise_blockers": []
+  },
+  {
+   "m_id": "M04",
+   "module": "beltloader-chocks",
+   "checks": [
+    "Belt loader forward chock remained in place until unit is backed up clear of aircraft"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Both, Jet=Wing",
+   "prod_ready": "True",
+   "reviewed_pin": "7056099b",
+   "repo_head": "7056099",
+   "cv_common_pin": "ac5098d2",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:371",
+   "stage": "DOWNLOAD",
+   "opens": "BL next to the aircraft",
+   "closes": "BL drove away",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "chock",
+    "cone",
+    "back_wheel",
+    "airplane_engine",
+    "back_door",
+    "airplane_wing",
+    "pushback",
+    "trailer",
+    "gse",
+    "fuel_truck",
+    "beltloader",
+    "ladder",
+    "person"
+   ],
+   "gm_cosmetic": [
+    "obstacle"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_status (raw key)",
+    "_obj_id",
+    "_color",
+    "_xyxy (written in dead code :288)"
+   ],
+   "events_recomputed": [
+    "BL at door = bl_type==needed + stopped (:234,:490)",
+    "aircraft type jet/airplane from wing/engine y2 (:326-368, min_plane_type_frames_eval 40)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 11.8,
+   "live_ms_per_frame": 0.34,
+   "batch_ms_per_recorded_frame": 2.7,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "attention": "A one-time chock latch does not prove continuous chocking throughout the entire parked interval.",
+   "chunkwise_blockers": []
+  },
+  {
+   "m_id": "M05",
+   "module": "bl_rear_cone",
+   "checks": [
+    "Beltloader rear cone positioned after BL is in place"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Both, Jet=Wing",
+   "prod_ready": "False",
+   "reviewed_pin": "d75f1f8b",
+   "repo_head": "12429f5",
+   "cv_common_pin": "86731e4c",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:330",
+   "stage": "DOWNLOAD",
+   "opens": "BL next to the aircraft",
+   "closes": "BL confirmed in place",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "beltloader_cone",
+    "engine_cone",
+    "wing_cone",
+    "cone",
+    "back_wheel",
+    "airplane_engine",
+    "back_door",
+    "pushback",
+    "trailer",
+    "gse",
+    "fuel_truck",
+    "beltloader",
+    "ladder",
+    "person"
+   ],
+   "gm_cosmetic": [
+    "obstacle"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_status (raw key)",
+    "_obj_id",
+    "_color"
+   ],
+   "events_recomputed": [
+    "BL at door = bl_type==needed + stopped (:264,:446)",
+    "BL view side / enface from back_door geometry (:100-127)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 11.7,
+   "live_ms_per_frame": 0.37,
+   "batch_ms_per_recorded_frame": null,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "attention": "Checklist and code thresholds differ; preserve code behavior as the migration baseline, then approve requirement changes separately.",
+   "chunkwise_blockers": []
+  },
+  {
+   "m_id": "M06",
+   "module": "chocks-and-cones-available-and-staged-for-arrival",
+   "checks": [
+    "Chocks and cones available and staged for arrival"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "1413225f",
+   "repo_head": "1413225",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:40",
+   "stage": "PRE_ARR",
+   "opens": "start of the stream",
+   "closes": "T_arr",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "obstacle",
+    "side_obstacle",
+    "beltloader",
+    "gse",
+    "pushback",
+    "cone",
+    "chock"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime",
+    "_status"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:143-170)",
+    "HAD_ARRIVAL from 5 s of moving (:172-176, unused in verdict)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 7.0,
+   "live_ms_per_frame": 0.09,
+   "batch_ms_per_recorded_frame": 1.4,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "6:00 (T_arr + 0 s)",
+   "attention": "YAML 6/4 counts are not the active main-code 7/6 counts. Do not assume every configuration value controls behavior.",
+   "chunkwise_blockers": []
+  },
+  {
+   "m_id": "M07",
+   "module": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "checks": [
+    "Conditioned air removed 10 mins prior to departure and properly stowed"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "940fdfc5",
+   "repo_head": "940fdfc",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:229",
+   "stage": "PRE_DEP",
+   "opens": "T_dep − 10 min (in practice: BL leave)",
+   "closes": "T_dep",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "trailer",
+    "gse",
+    "beltloader",
+    "front_wheel",
+    "airplane_nose",
+    "pushback"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [],
+   "events_recomputed": [],
+   "recomputes_stage": false,
+   "models": [
+    {
+     "name": "AC hose detector (YOLO11s-seg, 1 class)",
+     "architecture": "ultralytics SegmentationModel yolo11s-seg, nc 1, task segment (checkpoint written by 8.3.229, FP16 storage cast to fp32 at load)",
+     "file": "yolo11s_seg-det_ac_tr18_noalb.pt",
+     "size_mb": null,
+     "sha256_16": "1a24fb38ea03ae4f",
+     "framework": "ultralytics YOLO on torch eager",
+     "cadence": "[\"main.py:579-583 (inside get_ac_hose_detections, called from main.py:900)\"]"
+    }
+   ],
+   "post_job_s": 27.2,
+   "live_ms_per_frame": 1.26,
+   "batch_ms_per_recorded_frame": 2.4,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:35 (T_dep + 10 s)",
+   "attention": "Held boxes are counted repeatedly in current history. Evidence is a visual area/position proxy, not an observed disconnected coupling.",
+   "chunkwise_blockers": [
+    "whole-event history lists air_cond/air_nose/pushback (:276-278,:325,:351,:353) — unbounded but needed only from stop_frame",
+    "decision fires only when frame_number == main_plane.departure_frame (:421): a lost chunk silently yields 'Plane departure was not captured' (:429-432)"
+   ]
+  },
+  {
+   "m_id": "M08",
+   "module": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "checks": [
+    "Cones removed only after all GSE is clear and chocked"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Cone, Jet=Wing",
+   "prod_ready": "False",
+   "reviewed_pin": "e2a25ba3",
+   "repo_head": "e2a25ba",
+   "cv_common_pin": "33c188d0",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:65",
+   "stage": "PRE_DEP",
+   "opens": "BL leave",
+   "closes": "T_dep",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "engine_cone",
+    "wing_cone",
+    "tail_cone",
+    "gse",
+    "pushback",
+    "trailer",
+    "beltloader",
+    "fuel_truck",
+    "front_door",
+    "back_wheel",
+    "vehicle"
+   ],
+   "gm_cosmetic": [
+    "airplane"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "private_fields": [],
+   "events_recomputed": [],
+   "recomputes_stage": false,
+   "models": [],
+   "post_job_s": 20.2,
+   "live_ms_per_frame": 1.54,
+   "batch_ms_per_recorded_frame": 4.9,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "attention": "Despite its name it does NOT test whether GSE is chocked, and its equipment coverage is narrower than all GSE. A chocked prerequisite is new functional work.",
+   "chunkwise_blockers": [
+    "frame_number == arrival_frame / departure_frame equality (:152,:154)"
+   ]
+  },
+  {
+   "m_id": "M09",
+   "module": "cones-placed-in-proper-positions-and-timely",
+   "checks": [
+    "Cones placed in proper positions and timely"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Both, Jet=Both",
+   "prod_ready": "True",
+   "reviewed_pin": "b2c53f69",
+   "repo_head": "b2c53f6",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:110",
+   "stage": "ARR_POST",
+   "opens": "T_arr",
+   "closes": "T_arr + time limit",
+   "decision": "DEADLINE",
+   "preventive": true,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "wing_cone",
+    "engine_cone",
+    "tail_cone",
+    "airplane_tail",
+    "gse",
+    "pushback",
+    "trailer",
+    "beltloader",
+    "fuel_truck",
+    "ladder",
+    "person"
+   ],
+   "gm_cosmetic": [
+    "airplane_engine",
+    "airplane_wing"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [
+    "_status"
+   ],
+   "events_recomputed": [
+    "T_arr = first frame with arrived (:62-63,:245-247)",
+    "T_dep = 30*fps MOVING frames after arrival (:252-258)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 12.6,
+   "live_ms_per_frame": 0.62,
+   "batch_ms_per_recorded_frame": 2.3,
+   "runs_in_real_time_as_is": "yes, report shifts",
+   "verdict_arrives": "24:35 (T_dep + 10 s)",
+   "attention": "Obstacle report text says 40% while code tests 65%; inconsistent return arity requires an explicit legacy adapter.",
+   "chunkwise_blockers": [
+    "no in-code deadline: Fail decided only at end of stream (:330); Pass latches in-stream when counters >100 (:266-273)"
+   ]
+  },
+  {
+   "m_id": "M10",
+   "module": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "checks": [
+    "Crew present 10 minutes prior to aircraft arrival"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "5cfd25c9",
+   "repo_head": "5cfd25c",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "6efc0b05",
+   "entry": "main.py:29",
+   "stage": "PRE_ARR",
+   "opens": "start of the stream",
+   "closes": "T_arr",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "person",
+    "gse",
+    "pushback",
+    "trailer"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:170-202, thresholds from crew_presence config)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 11.9,
+   "live_ms_per_frame": 0.54,
+   "batch_ms_per_recorded_frame": 1.2,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "7:04 (T_arr + 64 s)",
+   "attention": "This measures counts over a window, not continuous presence of the same three named workers for ten minutes.",
+   "chunkwise_blockers": [
+    "obst_counter/main_plane.arrival_frame and 'Start':'1' assume stream position 1 == video start (:232,:237,:250)"
+   ]
+  },
+  {
+   "m_id": "M11",
+   "module": "fod-walk-completed",
+   "checks": [
+    "FOD walk completed"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "b923b5c8",
+   "repo_head": "b923b5c",
+   "cv_common_pin": "ac5098d2",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:252",
+   "stage": "PRE_ARR",
+   "opens": "start of the stream",
+   "closes": "T_arr",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "front_wheel",
+    "gse",
+    "beltloader",
+    "pushback",
+    "airplane_tail",
+    "airplane_nose"
+   ],
+   "gm_cosmetic": [
+    "airplane"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:385-412)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "MoveNet SinglePose Thunder v4",
+     "architecture": "MoveNet SinglePose Thunder, ONNX from tf2onnx, opset 11, 229 nodes; input 'input' int32 [1,256,256,3], output [1,1,17,3] (y, x, score)",
+     "file": "movenet_singlepose_thunder_4.onnx",
+     "size_mb": 25.1,
+     "sha256_16": "7fae4dc3cdd07ebd",
+     "framework": "onnxruntime",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 20.6,
+   "live_ms_per_frame": 1.32,
+   "batch_ms_per_recorded_frame": 3.0,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "6:00 (T_arr + 0 s)",
+   "attention": "Not the simple horizontal-crossing rule in the basic description; bbox-derived scale is not calibrated physical distance.",
+   "chunkwise_blockers": [
+    "obst_counter / airplane_stop_frame assumes position 1 == video start (:501)"
+   ]
+  },
+  {
+   "m_id": "M12",
+   "module": "gse-chocks",
+   "checks": [
+    "Motorized GSE parked and properly chocked"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Both, Jet=Wing",
+   "prod_ready": "False",
+   "reviewed_pin": "3160b871",
+   "repo_head": "3160b87",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:1341",
+   "stage": "DOWNLOAD",
+   "opens": "GSE stopped next to the aircraft",
+   "closes": "GSE drove away",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "chock",
+    "pushback",
+    "trailer",
+    "fuel_truck",
+    "cone",
+    "ladder"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "gse",
+    "person",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_xyxy",
+    "_p0",
+    "_st",
+    "_status",
+    "_static_frames",
+    "_stopping_time_thres",
+    "_moving_frames",
+    "_display_proceeding_time_thres",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime",
+    "_obj_id"
+   ],
+   "events_recomputed": [
+    "GSE stop/departure moments from _static_frames==1 and _moving_frames==_display_proceeding_time_thres+1 (:1327-1336,:1135,:1150)",
+    "no airplane anchors used at all"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "frame-difference chock classifier",
+     "architecture": "timm efficientnet_b0 pretrained=False num_classes=1 (state dict, 360 tensors, 4 050 894 params); sigmoid >= 0.5",
+     "file": "effnetb0_small_clean_64_960.pt",
+     "size_mb": null,
+     "sha256_16": "e6453d73c4e59538",
+     "framework": "torch + timm; OpenCV/PIL/torchvision preprocessing",
+     "cadence": "[\"main.py:1315-1318 (stop check)\", \"main.py:1451-1454 (departure checks)\", \"complex_difference.py:140-147 -> 54-60 -> 27-34\"]"
+    },
+    {
+     "name": "RTMPose-l body pose (17 keypoints)",
+     "architecture": "RTMPose-l SimCC head, head.final_layer [17,1024,7,7]; ONNX opset 11, input [batch,3,256,192]",
+     "file": "rtmpose-l-4dba18fc.onnx",
+     "size_mb": null,
+     "sha256_16": "cff059fd58a2c0d5",
+     "framework": "onnxruntime-gpu (providers CUDA then CPU)",
+     "cadence": "[\"main.py:747\", \"onnx_model_utils.py:9-21, 128-150\"]"
+    }
+   ],
+   "post_job_s": 75.7,
+   "live_ms_per_frame": 3.25,
+   "batch_ms_per_recorded_frame": 6.1,
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "verdict_arrives": "session end",
+   "attention": "Different chock evidence channels have different semantics; current truthy fusion must be made explicit before sharing.",
+   "chunkwise_blockers": [
+    "end-of-video finalization for GSEs still parked: update_difference_result(end_of_video=True)/aggregate_results(end_of_video=True) (:1514-1517)",
+    "get_gse_report needs video_last_frame for timeline clipping (:1524, :59)"
+   ]
+  },
+  {
+   "m_id": "M13",
+   "module": "hand-signals",
+   "checks": [
+    "All GSE guided into aircraft using approved hand signals"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Both, Jet=Wing",
+   "prod_ready": "False",
+   "reviewed_pin": "6bd027f2",
+   "repo_head": "60c0faf",
+   "cv_common_pin": "8e3a7bf6",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:720",
+   "stage": "ARR_POST",
+   "opens": "T_arr",
+   "closes": "GSE pulled up to the door",
+   "decision": "EVENT",
+   "preventive": false,
+   "streaming_verdict": "RETHINK",
+   "passes": 2,
+   "pixels": true,
+   "gm_classes": [
+    "front_door",
+    "back_door",
+    "pushback",
+    "back_wheel",
+    "airplane_engine",
+    "airplane_wing",
+    "trailer",
+    "gse",
+    "fuel_truck",
+    "ladder",
+    "person"
+   ],
+   "gm_cosmetic": [
+    "obstacle"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "private_fields": [
+    "_status (raw, compared to enum .value)",
+    "_obj_id",
+    "_color",
+    "_xyxy (dead code :627)"
+   ],
+   "events_recomputed": [
+    "plane_stopped from raw arrival_frame <= frame_number (:771-777)",
+    "BL approach/stop from _status + workers ROI (:461-520)",
+    "aircraft type jet/airplane (:675-717)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "architecture": "mmpose TopdownPoseEstimator: HRNet-W48 backbone + HeatmapHead (17x48x1x1 final layer), MSRAHeatmap codec, heatmap 48x64",
+     "file": "td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_mb": 269.2,
+     "sha256_16": "0e67c6167d6a10fe",
+     "framework": "torch via mmpose 1.3.1 / mmengine 0.10.4 (overlay out/envs/mmpose1)",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 90.6,
+   "live_ms_per_frame": 0.28,
+   "batch_ms_per_recorded_frame": 10.1,
+   "runs_in_real_time_as_is": "no: two passes",
+   "verdict_arrives": "—",
+   "attention": "Raised wrists are a coarse gesture proxy, not an approved signal vocabulary. Same HRNet checkpoint as steering does not imply same crop preprocessing.",
+   "chunkwise_blockers": [
+    "pass 1 computes average_door from 60 s of door boxes after arrival before pass 2 (:761-797); used as fallback when _door_window empty (:158-161)",
+    "workers_image_buffer keeps 240 raw frames (~1.5 GB) (:758,:549)",
+    "check_hand_signals looks back 5-30 s at BL stop (:282) — needs 240-frame history kept across chunks"
+   ]
+  },
+  {
+   "m_id": "M14",
+   "module": "handrails-on-gse-being-used",
+   "checks": [
+    "Handrails on GSE being used"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Both, Jet=-",
+   "prod_ready": "True",
+   "reviewed_pin": "59fbced4",
+   "repo_head": "59fbced",
+   "cv_common_pin": "33c188d0",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:589",
+   "stage": "DOWNLOAD",
+   "opens": "BL next to the aircraft",
+   "closes": "worker got off the BL",
+   "decision": "EVENT",
+   "preventive": false,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "person",
+    "trailer",
+    "gse",
+    "airplane_engine",
+    "back_wheel",
+    "back_door"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_obj_id",
+    "_color"
+   ],
+   "events_recomputed": [
+    "BL active = bl_type==needed + is_stopped (:726,:764)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "EfficientNetB0 handrail-extension classifier",
+     "architecture": "torchvision efficientnet_b0(weights=None), classifier[1] = Linear(1280, 2), classes ['extended','not_extended']; 4 052 175 params, float32",
+     "file": "efficientNetb0_300_epoch_general_classifier_dataset_safety_handrails_v3_26_09_2023.pth",
+     "size_mb": null,
+     "sha256_16": "31aae690e256c54b",
+     "framework": "torch / torchvision",
+     "cadence": "[\"main.py:1065\", \"local_models/efficientnet.py:39-48\"]"
+    },
+    {
+     "name": "SegFormer-style handrail segmentation (smp Unet, MiT-B0 encoder)",
+     "architecture": "smp Unet, encoder mit_b0, 1-class head; 5 551 483 params, float32",
+     "file": "safety_handrails_mit_b0_best_model_293_epoch_30_10_2023.pth",
+     "size_mb": null,
+     "sha256_16": "13c5f321659ee6f3",
+     "framework": "torch + segmentation_models_pytorch (pickled segmentation_models_pytorch.decoders.unet.model.Unet; loads only with TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1, G:/prime_flight/scripts/testset/profiles.py:73)",
+     "cadence": "[\"main.py:1074\", \"local_models/mix_vision_transformer.py:40-54\"]"
+    },
+    {
+     "name": "DWPose-l whole-body pose (133 keypoints incl. hands)",
+     "architecture": "RTMPose/SimCC head, head.final_layer [133,1024,7,7]; ONNX opset 11, input [batch,3,384,288]; the YOLOX person detector of DWPose is commented out: the whole crop is the box",
+     "file": "dw-ll_ucoco_384.onnx",
+     "size_mb": null,
+     "sha256_16": "724f4ff2439ed61a",
+     "framework": "onnxruntime (providers ['CUDAExecutionProvider'] only, device hard-coded 'cuda:0')",
+     "cadence": "[\"main.py:1212\", \"main.py:423-427\", \"local_models/dwpose/wholebody.py:21-26\", \"local_models/dwpose/onnxpose.py:353-358\"]"
+    },
+    {
+     "name": "Hand-contact classifier (blind checks)",
+     "architecture": "timm efficientnet_b0 (num_classes=0, created with pretrained=True) + BatchNorm1d + Dropout + Linear(1280,1); state dict 365 tensors, 4 056 015 params",
+     "file": "effnetb0_weighted_norm_aug_929.pt",
+     "size_mb": null,
+     "sha256_16": "7fc4e4fdf8db0d4d",
+     "framework": "torch + timm",
+     "cadence": "[\"main.py:636\", \"main.py:673\", \"local_models/efficientnet_reg.py:57-64\"]"
+    }
+   ],
+   "post_job_s": 249.4,
+   "live_ms_per_frame": 12.46,
+   "batch_ms_per_recorded_frame": 30.7,
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "verdict_arrives": "session end",
+   "attention": "Whole-body hands are required; do not substitute body-only pose. Unknown climbers are excluded rather than forcing global unknown in current aggregation.",
+   "chunkwise_blockers": [
+    "assess_coverage(end_of_video=True) finalizes climbers only after the loop (:926-927); no 'BL left' event in code",
+    "climbers_dict never reset between BL visits; single beltloader object re-created each frame (:757)"
+   ]
+  },
+  {
+   "m_id": "M15",
+   "module": "lead-marshaller-and-wing-walkers-in-position",
+   "checks": [
+    "Lead marshaller and wing walkers in correct position"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "False",
+   "reviewed_pin": "9b37ccff",
+   "repo_head": "9b37ccf",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:224",
+   "stage": "PRE_ARR",
+   "opens": "start of the stream",
+   "closes": "T_arr",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "airplane_tail",
+    "airplane_wing",
+    "beltloader",
+    "gse",
+    "pushback",
+    "trailer",
+    "obstacle"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:395-422)",
+    "start_moving from first STOPPING/MOVING frame (:434-438)",
+    "departured_frame from 30*fps MOVING after arrival (:452-458, unused)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "architecture": "mmpose TopdownPoseEstimator HRNet-W48 + HeatmapHead (same checkpoint and config as hand-signals)",
+     "file": "td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_mb": 269.2,
+     "sha256_16": "0e67c6167d6a10fe",
+     "framework": "torch via mmpose 1.3.1",
+     "cadence": null
+    },
+    {
+     "name": "worker role classifier (SVC)",
+     "architecture": "imblearn Pipeline(StandardScaler, SMOTE, SVC), scikit-learn 1.6.1 (pickle class scan)",
+     "file": "worker_classifier_svc.pkl",
+     "size_mb": 0.0,
+     "sha256_16": "6a049e293cf13f2d",
+     "framework": "scikit-learn 1.6.1 + imbalanced-learn 0.13.0 (overlay out/envs/sklearn161)",
+     "cadence": null
+    },
+    {
+     "name": "walk-along classifier (RandomForest)",
+     "architecture": "imblearn Pipeline(SMOTE, RandomForestClassifier), scikit-learn 1.6.1",
+     "file": "walk_along_classifier_rfc.pkl",
+     "size_mb": 1.5,
+     "sha256_16": "74fb67d1012e8a19",
+     "framework": "scikit-learn / imbalanced-learn",
+     "cadence": null
+    },
+    {
+     "name": "walker movement-start models (left, right)",
+     "architecture": "sklearn Pipeline(StandardScaler, GradientBoostingClassifier), scikit-learn 1.6.1",
+     "file": "right_walk_start_prediction_sgb.pkl",
+     "size_mb": 4.1,
+     "sha256_16": "[\"893f608cd177a307\", \"5ecf5ddccf278a5d\"]",
+     "framework": "scikit-learn",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 58.7,
+   "live_ms_per_frame": 2.5,
+   "batch_ms_per_recorded_frame": 5.7,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "6:10 (T_arr + 10 s)",
+   "attention": "No separate pose/wand model or lead-marshaller signal proof on the active path.",
+   "chunkwise_blockers": [
+    "blocked_counter / stop_frame assumes position 1 == video start (:177)",
+    "dataset.nframes needed for default stop_frame (:250)"
+   ]
+  },
+  {
+   "m_id": "M16",
+   "module": "pin-verification",
+   "checks": [
+    "Pushback operator verifies steering bypass pin installation"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=-",
+   "prod_ready": "False",
+   "reviewed_pin": "8e1863c7",
+   "repo_head": "8e1863c",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "6efc0b05",
+   "entry": "main.py:480",
+   "stage": "PRE_DEP",
+   "opens": "BL leave",
+   "closes": "pushback attached",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "PATCH",
+   "passes": 2,
+   "pixels": true,
+   "gm_classes": [
+    "pushback",
+    "airplane_nose",
+    "front_wheel",
+    "beltloader",
+    "gse",
+    "trailer",
+    "obstacle",
+    "side_obstacle",
+    "vehicle"
+   ],
+   "gm_cosmetic": [
+    "roi",
+    "airplane_nose",
+    "obstacle"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [
+    "_status"
+   ],
+   "events_recomputed": [
+    "pushback_attached: pushback_frames > 10*fps with IoU>0.8 to median_pushback (pass 1) or nose geometry (:663-681)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "SimCC ResNet-50 top-down pose (COCO-17)",
+     "architecture": "mmpose TopdownPoseEstimator: ResNet-50 backbone + SimCCHead (deconv head, 17 channels), SimCCLabel codec input 288x384, sigma 6.0, split ratio 2.0",
+     "file": "simcc_res50_8xb32-140e_coco-384x288-45c3ba34_20220913.pth (relative to the working directory)",
+     "size_mb": 178.3,
+     "sha256_16": "9e3c7ee446c0cc3a",
+     "framework": "torch via mmpose 1.3.1",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 27.2,
+   "live_ms_per_frame": 0.44,
+   "batch_ms_per_recorded_frame": 3.9,
+   "runs_in_real_time_as_is": "no: two passes",
+   "verdict_arrives": "—",
+   "attention": "Measures a verification-like worker action, not direct pin visibility. Current 1.5/2.5-second criteria differ from the supplied description.",
+   "chunkwise_blockers": [
+    "pass 1 computes median_pushback over the event (:504-549)",
+    "video_worker.number_of_frames as end anchor (:530)",
+    "hard-coded cuda:0 device (:499)"
+   ]
+  },
+  {
+   "m_id": "M17",
+   "module": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "checks": [
+    "Post-arrival walk around inspection completed accurately",
+    "(also returns Pre-departure walk around in the same detect :650-652)"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Cone, Jet=-",
+   "prod_ready": "False",
+   "reviewed_pin": "a0d9ee4f",
+   "repo_head": "7112c99",
+   "cv_common_pin": "bb0b1746",
+   "db_worker_pin": "0248146c",
+   "entry": "main.py:270",
+   "stage": "ARR_POST",
+   "opens": "T_arr",
+   "closes": "end of the walk-around",
+   "decision": "WHOLE",
+   "preventive": false,
+   "streaming_verdict": "POST",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "beltloader",
+    "fuel_truck",
+    "gse",
+    "ladder",
+    "trailer",
+    "back_wheel",
+    "airplane_tail",
+    "airplane_wing",
+    "airplane_engine",
+    "front_door",
+    "back_door"
+   ],
+   "gm_cosmetic": [
+    "airplane",
+    "roi",
+    "person",
+    "beltloader"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person",
+    "beltloader"
+   ],
+   "private_fields": [],
+   "events_recomputed": [
+    "T_arr = first status==STOPPED (:397-399)",
+    "T_dep = 3*fps MOVING/STOPPING after stop (:422-426)",
+    "BL entering/leaving area from own velocity direction (:236-246,:543-555)",
+    "tail_left camera side (:452-458)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "YOLOv8m-pose (worker keypoints; singleton shared with the TDV extractor)",
+     "architecture": "YOLOv8m-pose, 17 keypoints; checkpoint written by ultralytics 8.0.77, train imgsz 640, FP16 storage",
+     "file": "yolov8m-pose.pt",
+     "size_mb": null,
+     "sha256_16": "2d0c64408d6b4015",
+     "framework": "ultralytics 8.2.48 (venv)",
+     "cadence": "[\"code/walk_around/detection_processor.py:53 (batched person crops per frame)\", \"code/walk_around/temp/plane_tdv_extractor.py:347 (one person ROI per successful TDV build)\"]"
+    },
+    {
+     "name": "Depth Anything V2 metric ViT-B",
+     "architecture": "DINOv2 ViT-B/14 + DPT head, max_depth 80; 97 470 785 params",
+     "file": "depth_anything_v2_metric_vkitti_vitb.pth",
+     "size_mb": null,
+     "sha256_16": "4dad67a7cc10b462",
+     "framework": "torch (vendored depth_anything/)",
+     "cadence": "[\"code/walk_around/temp/plane_tdv_extractor.py:336 (TDV frame)\", \"code/walk_around/temp/plane_tdv_extractor.py:169-175 (each queued nose frame, after gamma.correct_shadows)\"]"
+    },
+    {
+     "name": "MobileSAM vit_t (TDV masks)",
+     "architecture": "TinyViT encoder + SAM decoder",
+     "file": "mobile_sam.pt",
+     "size_mb": null,
+     "sha256_16": "6dbb90523a35330f",
+     "framework": "torch, mobile_sam",
+     "cadence": "[\"code/walk_around/temp/plane_tdv_extractor.py:44-51 ObjectSegmenter.segment_object (set_image + predict per box), from get_mask_from_detection (:245-311)\"]"
+    },
+    {
+     "name": "Walk-around canvas CNN (TorchPredictor CNNModel)",
+     "architecture": "small conv net (features 8->...) + MLP classifier ending Linear(128,1) + Sigmoid; 3 673 171 params",
+     "file": "best_model.pth",
+     "size_mb": null,
+     "sha256_16": "480c6f871f125e8c",
+     "framework": "torch",
+     "cadence": "[\"code/walk_around/walk_around.py:341\", \"code/walk_around/model/predictor.py:73-97\"]"
+    }
+   ],
+   "post_job_s": null,
+   "live_ms_per_frame": null,
+   "batch_ms_per_recorded_frame": 6.8,
+   "runs_in_real_time_as_is": "not hosted",
+   "verdict_arrives": "—",
+   "attention": "Post-arrival rescue/outlier options are disabled by default. Score-derived confidence is not demonstrated calibrated probability; required cached geometry must exist.",
+   "chunkwise_blockers": [
+    "structurally iterates video frames (needs decoded pixels even with no pixel logic) (:325)",
+    "dataset.nframes as default frame_airplane_stopped (:286)"
+   ]
+  },
+  {
+   "m_id": "M18",
+   "module": "pre-arrival-safety-huddle",
+   "checks": [
+    "Safety huddle conducted at huddle cone"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "5c8a7599",
+   "repo_head": "9b61d2e",
+   "cv_common_pin": "acfc0808",
+   "db_worker_pin": "6efc0b05",
+   "entry": "main.py:292",
+   "stage": "PRE_ARR",
+   "opens": "start of the stream",
+   "closes": "T_arr",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "cone",
+    "beltloader",
+    "gse",
+    "pushback",
+    "trailer",
+    "fuel_truck"
+   ],
+   "gm_cosmetic": [
+    "person",
+    "obstacle"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (inside Plane.update_inner_state :57-84)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 22.5,
+   "live_ms_per_frame": 0.87,
+   "batch_ms_per_recorded_frame": 1.9,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "7:00 (T_arr + 60 s)",
+   "attention": "Pinned cv_common ac5098d lacks imported PlaneArrivalDetector. A candidate implementation exists at cv_common 2759daf, not at the reviewed pin.",
+   "chunkwise_blockers": [
+    "pixel-based decision (green cone hue) requires decoded frames (:363)",
+    "camera_obstacle_counter > 0.5*frame_id assumes position 1 == video start (:482)"
+   ]
+  },
+  {
+   "m_id": "M19",
+   "module": "pre-departure-walk-around-completed",
+   "checks": [
+    "Pre-departure walk around completed"
+   ],
+   "tier": "post",
+   "cameras": "Aircraft=Cone, Jet=-",
+   "prod_ready": "False",
+   "reviewed_pin": "e407de23",
+   "repo_head": "f2b6c36",
+   "cv_common_pin": "d7f907cd",
+   "db_worker_pin": "0248146c",
+   "entry": "main.py:89",
+   "stage": "PRE_DEP",
+   "opens": "BL leave",
+   "closes": "T_dep",
+   "decision": "WHOLE",
+   "preventive": false,
+   "streaming_verdict": "POST",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "beltloader",
+    "gse",
+    "pushback",
+    "trailer",
+    "airplane_engine",
+    "cone",
+    "airplane_tail",
+    "airplane_nose"
+   ],
+   "gm_cosmetic": [
+    "roi",
+    "airplane",
+    "beltloader",
+    "person"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person",
+    "beltloader"
+   ],
+   "private_fields": [],
+   "events_recomputed": [
+    "T_arr = first status==STOPPED (:261-263)",
+    "T_dep = status==MOVING after stop, immediate (:264-267)",
+    "BL entering/leaving from own velocity direction (:352-369)",
+    "nose_left camera side (:232-252)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "YOLOv8m-pose (worker keypoints, singleton)",
+     "architecture": "YOLOv8m-pose, 17 keypoints",
+     "file": "yolov8m-pose.pt",
+     "size_mb": null,
+     "sha256_16": "2d0c64408d6b4015",
+     "framework": "ultralytics 8.2.48 (venv)",
+     "cadence": "[\"code/walk_around/detection_processor.py:44 (per person crop)\", \"code/walk_around/temp/plane_tdv_extractor.py:391 (one ROI per TDV build)\"]"
+    },
+    {
+     "name": "YOLOv8m-pose rescue re-track (second YOLO instance, BoT-SORT)",
+     "architecture": "YOLOv8m-pose boxes + BoT-SORT ids",
+     "file": "yolov8m-pose.pt",
+     "size_mb": null,
+     "sha256_16": "2d0c64408d6b4015",
+     "framework": "ultralytics 8.2.48 track()",
+     "cadence": "[\"code/walk_around/gs1737_addons.py:219-220\"]"
+    },
+    {
+     "name": "Depth Anything V2 metric ViT-B",
+     "architecture": "DINOv2 ViT-B/14 + DPT head",
+     "file": "depth_anything_v2_metric_vkitti_vitb.pth",
+     "size_mb": null,
+     "sha256_16": "4dad67a7cc10b462",
+     "framework": "torch (vendored depth_anything/)",
+     "cadence": "[\"code/walk_around/temp/plane_tdv_extractor.py:371 (TDV frame)\", \"code/walk_around/temp/plane_tdv_extractor.py:175 (queued frames)\"]"
+    },
+    {
+     "name": "MobileSAM vit_t (TDV masks)",
+     "architecture": "TinyViT encoder + SAM decoder",
+     "file": "mobile_sam.pt",
+     "size_mb": null,
+     "sha256_16": "6dbb90523a35330f",
+     "framework": "torch, mobile_sam",
+     "cadence": "[\"code/walk_around/temp/plane_tdv_extractor.py:45-52 (set_image + predict per box)\"]"
+    },
+    {
+     "name": "Walk-around canvas CNN best_acc.keras via torch twin",
+     "architecture": "VGG-style 10 conv + BN + 5 max-pool + 4 dense, sigmoid; input 224x224x3",
+     "file": "best_acc.keras",
+     "size_mb": null,
+     "sha256_16": "9b2df8cb8edd8bfe",
+     "framework": "PyTorch twin of a Keras 2.15 Sequential (keras_torch_shim.py:22-141)",
+     "cadence": "[\"code/walk_around/walk_around.py:291 (per canvas)\", \"code/walk_around/walk_around.py:524-525 (outlier pass on Fail)\"]"
+    }
+   ],
+   "post_job_s": null,
+   "live_ms_per_frame": null,
+   "batch_ms_per_recorded_frame": 26.1,
+   "runs_in_real_time_as_is": "not hosted",
+   "verdict_arrives": "—",
+   "attention": "Pinned cv_common e4c5e36 lacks imported departure/presence helpers. The reported five-minute wording does not match the 480-second code window. Torch and Keras paths must remain separate profiles.",
+   "chunkwise_blockers": [
+    "structurally iterates video frames (:161)",
+    "whole-stage decision after departure (:485-488,:513)"
+   ]
+  },
+  {
+   "m_id": "M20",
+   "module": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "checks": [
+    "Pushback does not start until wing walkers are in place and ready"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "False",
+   "reviewed_pin": "f3b041cb",
+   "repo_head": "f3b041c",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:303",
+   "stage": "DEP",
+   "opens": "pushback attached",
+   "closes": "pushback started moving",
+   "decision": "EVENT",
+   "preventive": true,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "airplane_tail",
+    "airplane_wing",
+    "pushback",
+    "front_wheel",
+    "beltloader",
+    "gse",
+    "trailer",
+    "obstacle",
+    "side_obstacle"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [],
+   "events_recomputed": [
+    "T_arr = STOPPED for fps*60 frames (:498-500)",
+    "T_dep = MOVING after stop (moving_frames, start_moving :502-505)",
+    "pushback attached = wheel-pushback distance < 315 px (:460, display only)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 12.6,
+   "live_ms_per_frame": 0.33,
+   "batch_ms_per_recorded_frame": 2.4,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:39 (T_dep + 14 s)",
+   "attention": "Current evidence is post-start co-motion, not a direct proof that everyone was ready before start. Global role flags require per-turn state isolation.",
+   "chunkwise_blockers": [
+    "module-level global two_wing_wolkers persists across detect() calls in one process (:29,:148,:491)",
+    "dataset.nframes (:316)"
+   ]
+  },
+  {
+   "m_id": "M21",
+   "module": "pushback-pathway-confirmed-clear-of-obstacles",
+   "checks": [
+    "Pushback pathway confirmed clear of obstacles"
+   ],
+   "tier": "real-time",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "104db85a",
+   "repo_head": "104db85",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:201",
+   "stage": "DEP",
+   "opens": "T_dep − 45 s",
+   "closes": "T_dep",
+   "decision": "INSTANT",
+   "preventive": true,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "pushback",
+    "airplane_tail",
+    "airplane_nose",
+    "beltloader",
+    "gse",
+    "fuel_truck",
+    "trailer",
+    "cone",
+    "chock",
+    "ladder"
+   ],
+   "gm_cosmetic": [
+    "front_door",
+    "back_door",
+    "obstacle",
+    "roi"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [],
+   "events_recomputed": [
+    "pushback_moving = airplane status in [PROCEEDING, MOVING] (:370)",
+    "final_frame = departure_frame + 15*8 (:81,:187)"
+   ],
+   "recomputes_stage": true,
+   "models": [],
+   "post_job_s": 15.7,
+   "live_ms_per_frame": 0.48,
+   "batch_ms_per_recorded_frame": 3.4,
+   "runs_in_real_time_as_is": "yes, report shifts",
+   "verdict_arrives": "24:46 (T_dep + 20 s)",
+   "attention": "Current hazard class list does not include people. Variable pushback_moving uses aircraft state, not an independent pushback motion state.",
+   "chunkwise_blockers": [
+    "in-stream Fail is provisional: report entries older than final_frame-30 s are dropped at the end and may flip to Pass (:526-532); needs final_frame = T_dep+15 s"
+   ]
+  },
+  {
+   "m_id": "M22",
+   "module": "safety-handrails-fully-extended",
+   "checks": [
+    "Safety handrails fully extended and used"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Both, Jet=-",
+   "prod_ready": "True",
+   "reviewed_pin": "8b9a2a9b",
+   "repo_head": "8b9a2a9",
+   "cv_common_pin": "33c188d0",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:120",
+   "stage": "DOWNLOAD",
+   "opens": "BL next to the aircraft",
+   "closes": "BL drove away",
+   "decision": "EVENT",
+   "preventive": false,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "person",
+    "trailer",
+    "gse",
+    "back_wheel"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "beltloader"
+   ],
+   "private_fields": [
+    "_obj_id (raw key, rewritten)",
+    "_color"
+   ],
+   "events_recomputed": [
+    "BL active = bl_type==needed + is_stopped + rear-wheel filter (:235-239,:269)",
+    "BL identity swap across track ids (:251-258)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "EfficientNetB0 handrail-extension classifier",
+     "architecture": "torchvision efficientnet_b0(weights=None), classifier[1] = Linear(1280, 2), classes ['extended', 'not_extended']; state dict 360 tensors, 4 052 175 params, float32",
+     "file": "efficientNetb0_300_epoch_general_classifier_dataset_safety_handrails_v3_26_09_2023.pth",
+     "size_mb": null,
+     "sha256_16": "31aae690e256c54b",
+     "framework": "torch / torchvision",
+     "cadence": "[\"main.py:284\", \"efficientnet.py:39-48\"]"
+    }
+   ],
+   "post_job_s": 46.4,
+   "live_ms_per_frame": 2.37,
+   "batch_ms_per_recorded_frame": 8.4,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "24:25 (T_dep + 0 s)",
+   "attention": "480 frames is about 60 seconds at 8 FPS, not eight minutes. Shared classifier reuse needs artifact/preprocessing identity.",
+   "chunkwise_blockers": [
+    "verdict only in make_inference after the loop (:301); no in-stream latch and no 'BL left' event; needs an explicit close trigger"
+   ]
+  },
+  {
+   "m_id": "M23",
+   "module": "safety-vests-secured-to-body",
+   "checks": [
+    "Employees wearing safety vests secured to body"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Both, Jet=Both",
+   "prod_ready": "True",
+   "reviewed_pin": "ae8ef164",
+   "repo_head": "ae8ef16",
+   "cv_common_pin": "4291b0d9",
+   "db_worker_pin": "0248146c",
+   "entry": "main.py:247",
+   "stage": "ALL",
+   "opens": "start of the stream",
+   "closes": "end of the stream",
+   "decision": "INSTANT",
+   "preventive": true,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "safety_vest"
+   ],
+   "gm_cosmetic": [],
+   "reads_conf": false,
+   "tracker_classes": [
+    "person"
+   ],
+   "private_fields": [],
+   "events_recomputed": [],
+   "recomputes_stage": false,
+   "models": [
+    {
+     "name": "Swin-T orientation classifier (back / head / side)",
+     "architecture": "torchvision swin_t(num_classes=3) state dict (head 3x768)",
+     "file": "pose_classifier.pt",
+     "size_mb": 110.4,
+     "sha256_16": "175e87d3668a5c9c",
+     "framework": "torch / torchvision",
+     "cadence": null
+    },
+    {
+     "name": "Swin-T vest classifier (unzipped / zipped)",
+     "architecture": "torchvision swin_t(num_classes=2) state dict (head 2x768)",
+     "file": "vest_classifier.pt",
+     "size_mb": 110.4,
+     "sha256_16": "b0a5f34b168a97f6",
+     "framework": "torch / torchvision",
+     "cadence": null
+    },
+    {
+     "name": "ResNet-18 vest-presence gate",
+     "architecture": "torchvision resnet18(num_classes=2) state dict",
+     "file": "presence_bbox_r18.pt",
+     "size_mb": 44.8,
+     "sha256_16": "4bcb3e3f2a242f24",
+     "framework": "torch / torchvision",
+     "cadence": null
+    },
+    {
+     "name": "YOLOv8m-pose (v4 belly-visible gate)",
+     "architecture": "ultralytics PoseModel (C2f, SPPF, Pose head) (pickle class scan)",
+     "file": "yolov8m-pose.pt",
+     "size_mb": 53.3,
+     "sha256_16": "dbe539ea268db253",
+     "framework": "ultralytics 8.4.83 on torch",
+     "cadence": null
+    },
+    {
+     "name": "ResNet-18 small-band vest CNN (v4_cnn2)",
+     "architecture": "torchvision resnet18, fc -> 1 logit (v4_override.py:154-158)",
+     "file": "v4_cnn2.pt",
+     "size_mb": 44.8,
+     "sha256_16": "66d4a8f79a4843c2",
+     "framework": "torch / torchvision",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 369.8,
+   "live_ms_per_frame": 18.75,
+   "batch_ms_per_recorded_frame": 28.2,
+   "runs_in_real_time_as_is": "yes, verdict at session end",
+   "verdict_arrives": "session end",
+   "attention": "No keypoint pose despite the model name. Current unknown/undefined workers can coexist with Pass; do not silently strengthen semantics during extraction.",
+   "chunkwise_blockers": []
+  },
+  {
+   "m_id": "M24",
+   "module": "safety-zone-confirmed-clear",
+   "checks": [
+    "Safety zone confirmed clear"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "91676a55",
+   "repo_head": "91676a5",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:831",
+   "stage": "PRE_ARR",
+   "opens": "T_arr − 2 min",
+   "closes": "T_arr",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "RETHINK",
+   "passes": 2,
+   "pixels": true,
+   "gm_classes": [
+    "cone",
+    "front_wheel",
+    "person",
+    "pushback",
+    "beltloader",
+    "gse",
+    "fuel_truck",
+    "trailer",
+    "obstacle",
+    "vehicle",
+    "side_obstacle"
+   ],
+   "gm_cosmetic": [
+    "safety_zone",
+    "obstacle"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (twice: :922-949, :1111-1138)",
+    "own norfair truck tracker + cv_common Vehicle instances with pixel optical flow (:990-994,:1420-1426)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "MobileSAM vit_t (SamPredictor, box prompt)",
+     "architecture": "TinyViT image encoder (1024 input -> 256x64x64 embedding) + SAM prompt encoder + mask decoder (3 masks); state dict 439 tensors, 10 140 231 params",
+     "file": "mobile_sam.pt",
+     "size_mb": null,
+     "sha256_16": "6dbb90523a35330f",
+     "framework": "torch, package mobile_sam",
+     "cadence": "[\"main.py:1426 -> cv_common/tracked_object.py:393-403 -> 385 -> 367 -> 111-114 -> 180-195 (set_image :185, predict :187)\"]"
+    }
+   ],
+   "post_job_s": 83.2,
+   "live_ms_per_frame": 0.25,
+   "batch_ms_per_recorded_frame": 10.3,
+   "runs_in_real_time_as_is": "no: two passes",
+   "verdict_arrives": "—",
+   "attention": "Upstream tracker does not cover every transport class currently tracked here. FOD and safety-zone ROIs are related but not identical.",
+   "chunkwise_blockers": [
+    "pass 1 must reach T_arr to fit the front-wheel trajectory and build the zone before pass 2 (:847-987)",
+    "frame_start = stop_frame - 120*fps known only after pass 1 (:1010)",
+    "pass 2 needs pixels + SAM for its own vehicle tracking (:1426)"
+   ]
+  },
+  {
+   "m_id": "M26",
+   "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "checks": [
+    "Steering by-pass pin installed, or steering otherwise bypassed"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=-",
+   "prod_ready": "True",
+   "reviewed_pin": "60dca736",
+   "repo_head": "60dca73",
+   "cv_common_pin": "8e3a7bf6",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:643",
+   "stage": "ARR_POST",
+   "opens": "T_arr",
+   "closes": "T_arr + 240 s",
+   "decision": "DEADLINE",
+   "preventive": true,
+   "streaming_verdict": "NOW_PX",
+   "passes": 1,
+   "pixels": true,
+   "gm_classes": [
+    "person",
+    "front_wheel",
+    "chock"
+   ],
+   "gm_cosmetic": [
+    "airplane",
+    "front_wheel",
+    "person"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [
+    "_p0",
+    "_st",
+    "_of_dots_lifetime",
+    "_init_dots_lifetime"
+   ],
+   "events_recomputed": [
+    "arrival stage block: movement_anomaly_custom from _p0/_prev_p0/_st -> normal_moving_counter_custom>24 -> have_arrival_stage_custom; have_pre_arrival_stage_custom = arrival_frame > 60*fps (:201-228)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "architecture": "mmpose TopdownPoseEstimator HRNet-W48 + HeatmapHead, MSRAHeatmap 48x64 (same checkpoint and config file as hand-signals)",
+     "file": "td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_mb": 269.2,
+     "sha256_16": "0e67c6167d6a10fe",
+     "framework": "torch via mmpose 1.3.1",
+     "cadence": null
+    },
+    {
+     "name": "tsai InceptionTime pin-installation classifier",
+     "architecture": "fastai Learner wrapping tsai.models.InceptionTime (Conv1d, BatchNorm1d, GAP1d, Linear), CategoryMap labels (pickle class scan)",
+     "file": "model_newaug.pkl",
+     "size_mb": 2.2,
+     "sha256_16": "bfa75c6ce2f6e6da",
+     "framework": "fastai 2.7.18 + tsai 0.3.9 on torch (overlay)",
+     "cadence": null
+    },
+    {
+     "name": "MinMaxScaler",
+     "architecture": "sklearn.preprocessing.MinMaxScaler, pickled with scikit-learn 1.6.1 (joblib, gzip)",
+     "file": "scaler.gz",
+     "size_mb": 0.0,
+     "sha256_16": "03248ad564e45926",
+     "framework": "scikit-learn / joblib",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 25.5,
+   "live_ms_per_frame": 0.73,
+   "batch_ms_per_recorded_frame": 1.9,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "10:05 (T_arr + 245 s)",
+   "attention": "Distinct learned installation task from heuristic pin verification. Chock detections are collected but do not establish chocking prerequisite.",
+   "chunkwise_blockers": [
+    "image_buffer of 200 raw frames (~1.2 GB) (:260)",
+    "analysis window centred at frame-100 -> decision lags 12.5 s (:453,:488)"
+   ]
+  },
+  {
+   "m_id": "M27",
+   "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "checks": [
+    "Wing walkers in proper position and using approved wands"
+   ],
+   "tier": "streaming",
+   "cameras": "Aircraft=Cone, Jet=Cone",
+   "prod_ready": "True",
+   "reviewed_pin": "4800b649",
+   "repo_head": "5f7ca1a",
+   "cv_common_pin": "dd5b5547",
+   "db_worker_pin": "5a4aa83d",
+   "entry": "main.py:395",
+   "stage": "DEP",
+   "opens": "T_dep − predeparture_prepare",
+   "closes": "T_dep + 60 s",
+   "decision": "LOOKBACK",
+   "preventive": false,
+   "streaming_verdict": "NOW",
+   "passes": 1,
+   "pixels": false,
+   "gm_classes": [
+    "airplane_engine",
+    "airplane_wing",
+    "airplane_nose",
+    "airplane_tail",
+    "pushback",
+    "beltloader",
+    "gse",
+    "trailer",
+    "obstacle"
+   ],
+   "gm_cosmetic": [
+    "front_wheel (collected, unused)"
+   ],
+   "reads_conf": false,
+   "tracker_classes": [
+    "airplane",
+    "person"
+   ],
+   "private_fields": [
+    "_status"
+   ],
+   "events_recomputed": [
+    "T_arr = STOPPED for stop_thd*fps frames (:556-561)",
+    "T_dep = MOVING for depart_thd*fps frames with reset on STOPPED (:563-575)",
+    "fallback T_dep from statuses_airplane history at end (:772-795)"
+   ],
+   "recomputes_stage": true,
+   "models": [
+    {
+     "name": "HRNet-W48 top-down heatmap pose (COCO-17)",
+     "architecture": "mmpose TopdownPoseEstimator HRNet-W48 + HeatmapHead (same checkpoint and config as hand-signals)",
+     "file": "td-hm_hrnet-w48_8xb32-210e_coco-256x192-0e67c616_20220913.pth",
+     "size_mb": 269.2,
+     "sha256_16": "0e67c6167d6a10fe",
+     "framework": "torch via mmpose 1.3.1",
+     "cadence": null
+    }
+   ],
+   "post_job_s": 111.3,
+   "live_ms_per_frame": 5.14,
+   "batch_ms_per_recorded_frame": 3.2,
+   "runs_in_real_time_as_is": "yes",
+   "verdict_arrives": "25:09 (T_dep + 44 s)",
+   "attention": "CRITICAL semantic gap: approved-wand Pass is hard-coded on the active path. Old wand-count code is not called; merely extracting it would not preserve active behavior or establish correctness.",
+   "chunkwise_blockers": [
+    "fallback decision uses the whole statuses_airplane history at end of stream (:772-795)"
+   ]
+  }
+ ],
+ "shared": {
+  "general_model": [
+   {
+    "name": "GM YOLOv8m (apron classes)",
+    "file": "GM_yolov8m_best_augmentation_march2024.onnx",
+    "input": "1088x1088 fp16",
+    "cadence": "every frame",
+    "ms_busy": 8.5,
+    "ms_pure": 4.27,
+    "size_mb": 6.2
+   },
+   {
+    "name": "Chocks YOLOv8 v4.3",
+    "file": "chocks_v4.3_200ep_yolov8.onnx",
+    "input": "1280x1280 fp16",
+    "cadence": "every frame",
+    "ms_busy": 3.0,
+    "ms_pure": 5.59,
+    "size_mb": 22.6
+   },
+   {
+    "name": "Vehicle YOLOv8m",
+    "file": "VM_yolov8m_last_september2023.onnx",
+    "input": "1088x1088 fp16",
+    "cadence": "every frame",
+    "ms_busy": 5.8,
+    "ms_pure": 8.31,
+    "size_mb": 52.0
+   },
+   {
+    "name": "MobileSAM vit_t (main-aircraft mask)",
+    "file": "mobile_sam.pt",
+    "input": "1024 (full frame)",
+    "cadence": "every frame with the main aircraft",
+    "ms_busy": null,
+    "ms_pure": null,
+    "size_mb": 40.7
+   },
+   {
+    "name": "Entity (airline) YOLOv5",
+    "file": "entity_det_aug_expnd.pt",
+    "input": "1280",
+    "cadence": "every 8th frame, up to 40 hits",
+    "ms_busy": null,
+    "ms_pure": null,
+    "size_mb": 14.7
+   },
+   {
+    "name": "Camera cone/wing EfficientNet-B0 v1.8.1",
+    "file": "camera_cls_effnet_b0_october_v1.8.1.pt",
+    "input": "224 (rows 150:930)",
+    "cadence": "every post-arrival frame with the main aircraft, CPU",
+    "ms_busy": null,
+    "ms_pure": null,
+    "size_mb": 16.3
+   },
+   {
+    "name": "Tail classifier",
+    "file": "general_tail_classifier.pth",
+    "input": "crop",
+    "cadence": "aircraft type vote",
+    "ms_busy": null,
+    "ms_pure": null,
+    "size_mb": 0.4
+   }
+  ],
+  "tracker": [
+   {
+    "name": "DeepSORT re-id, workers (TorchScript)",
+    "file": "scripted_ckpt.t7",
+    "input": "64x128 crops",
+    "cadence": "every frame with persons",
+    "ms_busy": 4.1,
+    "size_mb": 46.1
+   },
+   {
+    "name": "DeepSORT re-id, belt loaders and GSE (torchvision ResNet-34, ImageNet, training mode)",
+    "file": "torchvision resnet34",
+    "input": "128x64 crops",
+    "cadence": "every frame with BL / GSE, two instances",
+    "ms_busy": 15.2,
+    "size_mb": 87.3
+   },
+   {
+    "name": "Plane segmentor YOLO11s-seg",
+    "file": "yolo11s-seg_plane.pt",
+    "input": "640",
+    "cadence": "at keypoint (re)initialisation, every 8 frames per object",
+    "ms_busy": null,
+    "size_mb": 20.6
+   },
+   {
+    "name": "BL / GSE segmentor YOLO26s-seg",
+    "file": "yolo26s_seg_bl_gse_tr10_noalb.pt",
+    "input": "640",
+    "cadence": "the same, cached per class per frame",
+    "ms_busy": 4.2,
+    "size_mb": 23.4
+   },
+   {
+    "name": "FAST keypoints + PyrLK optical flow (OpenCV, CPU)",
+    "file": "—",
+    "input": "<=250 points per object",
+    "cadence": "every frame",
+    "ms_busy": 12.0,
+    "size_mb": null
+   },
+   {
+    "name": "estimate_sigma noise estimate (scikit-image, CPU)",
+    "file": "—",
+    "input": "full frame",
+    "cadence": "every 2 s",
+    "ms_busy": 2.1,
+    "size_mb": null
+   }
+  ]
+ }
+}
