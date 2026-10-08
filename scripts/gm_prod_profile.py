@@ -373,11 +373,15 @@ def run(a) -> int:
     instrument(main, log_fh)
     from db_worker.ML_worker import VideoWorker
 
+    os.makedirs(os.path.join(out, "inferences_dir"), exist_ok=True)
+    for f in os.listdir(os.path.join(out, "inferences_dir")):
+        os.remove(os.path.join(out, "inferences_dir", f))
     for f in os.listdir(out):  # outputs of an earlier run in this directory
         if f.endswith(".ndjson") or f.startswith("report_video_selection") or f.startswith("gm-output"):
             os.remove(os.path.join(out, f))
+    # each run keeps its own first-run file (the default `../inferences_dir` would be shared by sibling run directories)
     vw = VideoWorker(source=video, model_name="general_model", load_tracks=False, load_from_file=True, testing=True,
-                     auto_download_inference=False)
+                     auto_download_inference=False, inferences_dir=os.path.join(out, "inferences_dir"))
     t0 = time.perf_counter()
     with torch.no_grad():
         result = main.detect(source=video, output_path=os.path.join(out, "gm-output.mp4") if a.save_video else "",
@@ -446,6 +450,9 @@ def compare(a_dir: str, b_dir: str) -> int:
     same = True
     files = sorted(f for f in os.listdir(a_dir) if f.endswith(".ndjson") or f in ("result.json",)
                    or f.startswith("report_video_selection") or f.endswith(".mp4"))
+    first = os.path.join(a_dir, "inferences_dir")
+    if os.path.isdir(first):  # the first-run file
+        files += sorted(os.path.join("inferences_dir", f) for f in os.listdir(first) if f.endswith(".ndjson"))
     for f in files:
         pa, pb = os.path.join(a_dir, f), os.path.join(b_dir, f)
         if not os.path.exists(pb):
