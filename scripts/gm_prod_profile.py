@@ -463,6 +463,16 @@ def compare(a_dir: str, b_dir: str) -> int:
             ha, hb = video_frames_hash(pa), video_frames_hash(pb)
             ok = ha == hb
             print(f"{f}: decoded frames {'IDENTICAL' if ok else 'DIFFERENT'} ({ha[1]} frames; {ha[0]} vs {hb[0]})")
+        elif f.startswith("report_video_selection") and sha(pa) != sha(pb):
+            # the camera-motion pass (opt-in on the branch) only adds its own section and lines to this local file
+            def without_motion(path):
+                text = io.open(path, encoding="utf-8").read()
+                text = text.split(chr(10) + "General area" + chr(10))[0]
+                return chr(10).join(line for line in text.splitlines() if not line.startswith("Camera replaced at")
+                                    and not line.startswith("Video selected:"))
+
+            ok = without_motion(pa) == without_motion(pb)
+            print(f"{f}: differs only by the camera-motion section: {ok} (a local file of the pod, not an output)")
         else:
             sa, sb = sha(pa), sha(pb)
             ok = sa == sb
