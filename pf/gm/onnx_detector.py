@@ -17,10 +17,12 @@ Speedups that do not change values:
     so GM and the vehicle head preprocess once;
   * the output buffer is allocated once and rebound, not allocated per frame;
   * a vectorized gather + one device→host copy instead of a Python loop with per-element synchronisations.
-`provider="cuda"` is the production path with the SAME session options as v1 (`scripts/new_model.py:232` passes plain
-provider names, i.e. onnxruntime defaults: `cudnn_conv_algo_search=EXHAUSTIVE`). Forcing the "DEFAULT" heuristic search
-instead made cuDNN 9.19 run every conv in "Fallback mode" on sm_120 — 2.6× slower AND different fp16 rounding
-(`scripts/gm_ep_probe.py`); keep the v1 options. `provider="tensorrt"` is the fast path (fp16 engines, ~2.3× faster than
+`provider="cuda"` runs the onnxruntime defaults (`cudnn_conv_algo_search=EXHAUSTIVE`). Correction (2026-10-08): this is
+NOT what production does — `general_model/main.py:41` (master and a0157a4) passes its own provider list with
+`cudnn_conv_algo_search=DEFAULT` to every head; `new_model.py:232` is only the constructor default. The "DEFAULT" heuristic
+made cuDNN 9.19 run every conv in "Fallback mode" on sm_120 — 2.6× slower AND different fp16 rounding
+(`scripts/gm_ep_probe.py`); on the production T4 with cuDNN 8.2 the heuristic returns usable kernels. Either way the rows
+differ from production's in the last bits, which is why GM v2 parity is tolerant. `provider="tensorrt"` is the fast path (fp16 engines, ~2.3× faster than
 CUDA EP on the 5070 Ti) with different kernels → small numeric differences; it is validated with the tolerant parity
 metric + the L2 module gate, never with exact parity. torch / onnxruntime are imported lazily.
 """

@@ -12,7 +12,9 @@ GSE, persons), frames pre-decoded (decode is NOT included; OpenCV decode costs 2
 
 The first port of the detector (`pf/gm/onnx_detector.py`, commit 91d6bfa) created the ORT session with
 `cudnn_conv_algo_search=DEFAULT`. v1 (`general_model/scripts/new_model.py:232`) passes plain provider names, i.e. the
-onnxruntime defaults (`EXHAUSTIVE`). On this GPU + cuDNN 9.19 the `DEFAULT` heuristic returns no usable algorithm and
+onnxruntime defaults (`EXHAUSTIVE`).
+
+> **Correction, 2026-10-08:** that last sentence is wrong. `new_model.py:232` is only the constructor default; `main.py:41` (master and production a0157a4) builds its own provider list with `cudnn_conv_algo_search=DEFAULT` and passes it to all three heads. Production asks for the heuristic search; on its T4 with cuDNN 8.2 the heuristic returns usable kernels, on this card with cuDNN 9.19 it does not (the fallback below). GM v2 keeps the onnxruntime default (`EXHAUSTIVE`), the same speed as a working heuristic; its parity with production rows was tolerant all along, so no figure changes. `scripts/gm_prod_profile.py --cudnn-search` sets it for runs of the production code on this card. On this GPU + cuDNN 9.19 the `DEFAULT` heuristic returns no usable algorithm and
 onnxruntime runs **every one of the 64 convolutions of a head in "Fallback mode"** (warning in stderr) — 2.6× slower and
 with different fp16 rounding. Probe on the GM head alone (`gm_ep_probe.py`, 150 frames, inference only):
 
