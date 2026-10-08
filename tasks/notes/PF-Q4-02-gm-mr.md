@@ -31,7 +31,9 @@ already different on every run of the same video; removing the first-run draws c
 with `np.random` seeded before the first run and re-seeded before the second, and compares two runs file by file:
 first-run ndjson, second-run ndjson, the returned report (`camera_type`, `confidence_camera`, `frame_stopped`, statistics,
 stages, entity, aircraft type, noise fields), the annotated video frame by frame, the video-selection report.
-Results: see `tasks/notes/PF-Q4-02.md` (slice and full event).
+Results (`tasks/notes/PF-Q4-02.md`): on a 6-minute slice and on the full 36-minute event zHxIAF2vUGxJ every output is byte-identical (first-run and second-run ndjson, the report, 17 280 frames of the annotated video, the selection report). The GM job is 15–17 % faster (measured −14.2 % on a machine that was not idle; −17 % with the removed parts timed inside the production run); the job log goes from 212 145 lines per video to 55.
+
+Apply: `git am tasks/patches/gm-exact-speedups/*.patch` on a0157a4 (`deployment_v_py3_10`).
 
 ## Not in this MR (they change numbers; they need the verdict gate)
 

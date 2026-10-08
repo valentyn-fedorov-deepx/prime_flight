@@ -1,0 +1,43 @@
+From 793494b0863f0a7ec4e1aee851adcd245d98fcfc Mon Sep 17 00:00:00 2001
+From: valentyn-fedorov-deepx <valikfed0003@gmail.com>
+Date: Thu, 8 Oct 2026 19:15:01 +0300
+Subject: [PATCH 2/2] Make the camera-motion pass of video selection opt-in
+
+It decodes the whole video a third time and its result is only written to report_video_selection_module.txt inside the pod: not returned by detect(), not uploaded, not sent. check_camera_motion: true restores it.
+---
+ local_config.yaml                  | 3 +++
+ scripts/videos_selection_script.py | 4 ++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/local_config.yaml b/local_config.yaml
+index b16502c..4ca266c 100644
+--- a/local_config.yaml
++++ b/local_config.yaml
+@@ -5,6 +5,9 @@ conf_thres: 0.35
+ airplane_min_height: 150  # if height < thresh - reject detection
+ 
+ video_selection:
++  # the camera-motion check decodes the whole video a third time; its result goes only to
++  # report_video_selection_module.txt inside the pod (not returned, not uploaded, not sent) - set true to run it
++  check_camera_motion: false
+   stages:  # min time for the stage in seconds
+     pre_arrival: 300
+     from_arrival_till_departure: 300
+diff --git a/scripts/videos_selection_script.py b/scripts/videos_selection_script.py
+index 5292245..1665dbc 100644
+--- a/scripts/videos_selection_script.py
++++ b/scripts/videos_selection_script.py
+@@ -56,8 +56,8 @@ def select_video(info_dict, dataset, source):
+                                    f"{min_det}) at {stage_det} stage")
+ 
+     general_area_info = {}
+-    # filter by motion
+-    if video_selected:
++    # filter by motion (a third decode of the whole video; off unless `video_selection.check_camera_motion`)
++    if video_selected and config['video_selection'].get('check_camera_motion', True):
+         airplane_first_frame = stages_dict["pre_arrival"][1]
+         airplane_last_frame = stages_dict["departure"][0]
+ 
+-- 
+2.53.0.windows.2
+

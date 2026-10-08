@@ -1,0 +1,267 @@
+From 58cc275480cfd3300b20cd2a1486e641e3a68e9a Mon Sep 17 00:00:00 2001
+From: valentyn-fedorov-deepx <valikfed0003@gmail.com>
+Date: Thu, 8 Oct 2026 19:14:50 +0300
+Subject: [PATCH 1/2] Skip work whose results are never used; outputs unchanged
+
+- first run: tracked aircraft get a box-only update; their motion analysis (optical flow, MobileSAM masks, stage counters) was never read
+- aircraft tracker: no FAST/ORB features (the feature check never received an image)
+- second run: no unused float32 GPU copy of every frame; the retired YOLOv5 entity detector is no longer loaded
+- camera classifier: no ImageNet download before loading its checkpoint
+- heads: upload uint8 and convert on the GPU, share the 1088 preprocessing between GM and vehicle, no clone, one host copy of the detections
+- per-frame printouts only with GM_VERBOSE=1
+---
+ main.py              | 66 +++++++++++++++++++++++++++++---------------
+ scripts/new_model.py | 48 ++++++++++++++++++++------------
+ 2 files changed, 75 insertions(+), 39 deletions(-)
+
+diff --git a/main.py b/main.py
+index 018dce4..b08f17b 100644
+--- a/main.py
++++ b/main.py
+@@ -16,8 +16,9 @@ import cv_common.image_preprocessing
+ # ---- Common functions --------------------------
+ from cv_common.utils.plots import plot_one_box
+ from cv_common.common import (bbox_area, bboxes_iou, get_hw, get_relative_intersection, parse_config, check_output_path,
+-                              xyxy_to_det_arr, iou_distance, get_center)
++                              xyxy_to_det_arr, iou_distance, get_center, check_bounding_box)
+ from cv_common.transport import Airplane
++from cv_common.tracked_object import Status
+ from cv_common.detections import BboxStabilizer
+ from scripts.classifier_utils import classifier_inference
+ from scripts.engine_script import save_plane_type_frame_data, evaluate_plane_type
+@@ -43,6 +44,14 @@ onnx_provider = [('CUDAExecutionProvider', {"cudnn_conv_use_max_workspace": "1",
+ 
+ config = parse_config()
+ 
++# per-frame diagnostics go to the job log only when asked for (about ten lines per frame otherwise)
++VERBOSE = os.environ.get('GM_VERBOSE', '0') == '1'
++
++
++def log_frame(*args, **kwargs):
++    if VERBOSE:
++        print(*args, **kwargs)
++
+ 
+ class NoPlaneException(Exception):
+     """Raised when the aircraft was not detected at all during the video"""
+@@ -75,6 +84,21 @@ class Plane(Airplane):
+         if frame_id is not None:
+             self._frame_end = frame_id
+ 
++    def update_box(self, xyxy, frame_shape, frame_id):
++        """The first run's update: the same box check and assignment as `update_params`, without the motion analysis.
++
++        In the first run only `xyxy` of these objects is read back (to re-associate a new track id); their motion state
++        (optical flow, MobileSAM key-point masks, arrival / departure counters) is never used — the second run builds the
++        main aircraft from scratch. The motion analysis also draws from `np.random` (key-point sampling, prompt points);
++        that draw is the only effect it had on the outputs.
++        """
++        if self.status != Status.UNOBSERVED:
++            if xyxy and not check_bounding_box(xyxy, frame_shape[:2]):
++                raise ValueError(f'Trying to set incorrect bounding box: {xyxy}')
++            self.xyxy = xyxy
++        if frame_id is not None:
++            self._frame_end = frame_id
++
+     @property
+     def frame_start(self):
+         """Returns the frame number when the plane was first detected"""
+@@ -359,8 +383,7 @@ def update_plane(id, xyxy, frame_id, planes_dict, im0s, prev_im0s, predictor, no
+         # xyxy = stabilize_aiplane_bbox(id, frame_id, planes_dict, xyxy)
+ 
+     plane_obj = planes_dict[id][0]
+-    plane_obj.update_params(xyxy, prev_im0s, im0s, frame_id, predictor,
+-                            nose_list, worker_bboxes=bboxes_to_remove, is_noised=stabilize_bbox)
++    plane_obj.update_box(xyxy, im0s.shape, frame_id)  # the motion state of first-run planes is never read
+     planes_dict[id][0] = plane_obj
+     planes_dict[id][1][frame_id] = xyxy
+     return planes_dict
+@@ -527,13 +550,12 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+         image_preprocessor.update(frame_id, im0s)
+         if airplane_detected:
+             im0s = image_preprocessor.get_preprocessed()
+-        image_tensor = torch.from_numpy(im0s).float().cuda()
+-        # image_tensor = torch.from_numpy(image_preprocessor.get_preprocessed()).float().cuda()
+-        
+-        image_tensor = image_tensor.half()  # Convert to float16
+-        print(frame_id)
++        # upload the uint8 frame and convert on the GPU: the same float16 values as converting to float32 on the CPU
++        # first (0..255 are exact in both), a quarter of the bytes over PCIe and no 24 MB CPU conversion per frame
++        image_tensor = torch.from_numpy(im0s).cuda().half()
++        log_frame(frame_id)
+         ip_name, ip_mean, ip_std = image_preprocessor.get_current_preprocessing(), image_preprocessor.get_mean(), image_preprocessor.get_noise_std()
+-        print(f"Current preprocessing: {ip_name}; {round(ip_mean, 3)}, {round(ip_std, 3)}")
++        log_frame(f"Current preprocessing: {ip_name}; {round(ip_mean, 3)}, {round(ip_std, 3)}")
+ 
+         # GM prediction
+         det = general_model.predict(image_tensor)
+@@ -622,7 +644,9 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+ 
+         # track planes
+         if list_of_planes:
+-            planes_tr = tracker.update(list_of_planes, image=im0s)
++            # no `image`: the tracker would compute FAST / ORB features of every track, but its association never
++            # receives an image, so the feature check is never made and the features are never read
++            planes_tr = tracker.update(list_of_planes)
+             if planes_tr:
+                 stabilize_airplane_bbox = image_preprocessor.is_heavy()
+                 for obj in planes_tr:
+@@ -661,9 +685,9 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+         prev_came_status, prev_leave_status = bl_came, bl_leave
+         bl_came, bl_leave, coming_counter, leaving_counter = check_if_bl_came(bl_list, front_door, back_door, bl_came,
+                                                                               bl_leave, coming_counter, leaving_counter)
+-        print(f'COMING COUNTER {coming_counter}, LEAVING COUNTER {leaving_counter}')
+-        print(f'PREV STATUS BL_COME {prev_came_status}, BL_LEAVE {prev_leave_status}')
+-        print(f'CURRENT STATUS BL_COME {bl_came}, BL_LEAVE {bl_leave}')
++        log_frame(f'COMING COUNTER {coming_counter}, LEAVING COUNTER {leaving_counter}')
++        log_frame(f'PREV STATUS BL_COME {prev_came_status}, BL_LEAVE {prev_leave_status}')
++        log_frame(f'CURRENT STATUS BL_COME {bl_came}, BL_LEAVE {bl_leave}')
+         if prev_came_status != bl_came and prev_leave_status != bl_leave:
+             if bl_came:
+                 appearence_of_bl.append(frame_id)
+@@ -671,7 +695,7 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+                 disappearing_of_bl.append(frame_id)
+                 bl_came, bl_leave = None, None
+ 
+-        prev_im0s = im0s.copy()
++        # no copy of the frame: the previous frame only fed the first-run motion analysis, which is gone
+ 
+     last_frame = frame_id
+     print(f'Last frame is {last_frame}')
+@@ -724,11 +748,10 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+     video_worker.init_writer(file_prefix="second_run")
+ 
+     # ----- SECOND RUN ----- #
+-    # initialize entity detector model
+-    entity_model = UModel(f'./weights/{config["entity_detector_weights"]}', img_size=1280, device=device)
++    # (the YOLOv5 entity detector is retired: its calls below are commented out, so it is no longer loaded)
+ 
+-    # load camera type classifier (cone/wing)
+-    classifier_model = timm.create_model('efficientnet_b0', pretrained=True, num_classes=1)
++    # load camera type classifier (cone/wing); no ImageNet download, every weight comes from the checkpoint (strict load)
++    classifier_model = timm.create_model('efficientnet_b0', pretrained=False, num_classes=1)
+     classifier_model.load_state_dict(torch.load(os.path.join(weights_dir, config['camera_classifier_weights']),
+                                                 map_location=torch.device(device=device)))
+     classifier_model.to(device)
+@@ -773,8 +796,7 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+         image_preprocessor.update(frame_id, im0s)
+         if airplane_detected:
+             im0s = image_preprocessor.get_preprocessed()
+-        # image_tensor = torch.from_numpy(image_preprocessor.get_preprocessed()).float().cuda()
+-        image_tensor = torch.from_numpy(im0s).float().cuda()
++        # (no GPU copy of the frame: the second run reads the first run's detections, nothing here used that tensor)
+ 
+         if save_video:
+             img_to_draw = im0s.copy()
+@@ -899,7 +921,7 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+             if save_video:
+                 main_plane.draw_bbox(img_to_draw)
+                 main_plane.draw_OF_points(img_to_draw)
+-                print(f'Plane : {main_plane}')
++                log_frame(f'Plane : {main_plane}')
+ 
+         video_worker.model_pub(detc, frame_id)
+ 
+@@ -942,7 +964,7 @@ def detect(source, output_path, device, weights_dir, video_worker: VideoWorker =
+                     classifier_frame_result = 'cone'
+                 else:
+                     classifier_frame_result = 'wing'
+-                print(f'Camera classifier detect: {classifier_frame_result}')
++                log_frame(f'Camera classifier detect: {classifier_frame_result}')
+ 
+                 cone_camera_det.append(camera)
+         else:
+diff --git a/scripts/new_model.py b/scripts/new_model.py
+index 6e1e88b..f196896 100644
+--- a/scripts/new_model.py
++++ b/scripts/new_model.py
+@@ -1,3 +1,4 @@
++import os
+ import torch
+ import numpy as np
+ import cv2
+@@ -14,6 +15,8 @@ import onnxruntime
+ 
+ config = parse_config()
+ 
++VERBOSE = os.environ.get('GM_VERBOSE', '0') == '1'  # per-frame printouts only when asked for
++
+ 
+ def box_iou(box1, box2):
+     # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+@@ -229,6 +232,8 @@ class YOLO8():
+         
+ 
+ class YOLOv8_onnx():
++    _preprocessed = {}  # (width, height, padding) -> (the frame tensor it was made from, the preprocessed tensor)
++
+     def __init__(self, weights, options, provider=['CUDAExecutionProvider', 'CPUExecutionProvider'],
+                  input_shape=[1088, 1088], conf_thres=0.3, iou_thres=0.7,
+                  device_type='cuda', device_id=0):
+@@ -302,9 +307,9 @@ class YOLOv8_onnx():
+             torch.Tensor: The preprocessed image.
+         """
+ 
+-        # clone and transpose the image data from HWC to CHW
+-        image_data = image.clone()
+-        image_data = image_data.permute(2, 0, 1)
++        # transpose the image data from HWC to CHW (a view; no clone needed: the channel gather below copies, so the
++        # in-place normalisation never touches the caller's tensor)
++        image_data = image.permute(2, 0, 1)
+         # convert bgr to rgb
+         image_data = image_data[[2, 1, 0], :, :]
+         # Normalize the image data
+@@ -357,8 +362,15 @@ class YOLOv8_onnx():
+             self.x_factor = torch.tensor(self.img_width / self.new_width, dtype=torch.float32, device=self._device_type)
+             self.y_factor = torch.tensor(self.img_height / self.new_height, dtype=torch.float32, device=self._device_type)
+ 
+-        # preprocess the image
+-        image_data = self.preprocess(image, self.new_width, self.new_height, self.padding).contiguous()
++        # preprocess the image; heads with the same input size (GM and vehicle, 1088) share one preprocessed tensor of
++        # the same frame: the same operations on the same input give the same tensor, computed once
++        key = (self.new_width, self.new_height, tuple(self.padding))
++        cached = YOLOv8_onnx._preprocessed.get(key)
++        if cached is not None and cached[0] is image:
++            image_data = cached[1]
++        else:
++            image_data = self.preprocess(image, self.new_width, self.new_height, self.padding).contiguous()
++            YOLOv8_onnx._preprocessed[key] = (image, image_data)
+ 
+         # bind the input
+         self.binding.bind_input(
+@@ -426,18 +438,20 @@ class YOLOv8_onnx():
+ 
+         # non-maximum suppression
+         indices = torch.ops.torchvision.nms(boxes, scores, torch.tensor(self._iou_thres).cuda().float())
+-        detections = []
+-        for i in indices:
+-            detections.append([*boxes[i], scores[i], classes[i]])
+-        
+-        # convert detections to numpy
+-        detections = torch.tensor(detections).cpu().numpy()
+-        
+-        # print the results like the original YOLOv8
+-        print(f'Device id: {self._device_id}; Image size: {self.new_width}x{self.new_height}; {len(detections)} detects')
+-        print(f'Speed: {round((inference_time - preprocess_time) * 1000, 1)} ms preprocess, '
+-              f'{round((postprocess_time - inference_time) * 1000, 1)} ms inference, '
+-              f'{round((time.time() - postprocess_time) * 1000, 1)} ms postprocess')
++
++        # one gather and one copy to the host instead of a GPU synchronisation per value: the same float32 rows
++        # [x1, y1, x2, y2, score, class] in the same order (fp16 scores and integer classes are exact in float32)
++        if len(indices):
++            detections = torch.cat([boxes[indices], scores[indices].float().unsqueeze(1),
++                                    classes[indices].float().unsqueeze(1)], dim=1).cpu().numpy()
++        else:
++            detections = np.zeros((0,), dtype=np.float32)
++
++        if VERBOSE:  # the per-frame timing lines of the original YOLOv8 printout
++            print(f'Device id: {self._device_id}; Image size: {self.new_width}x{self.new_height}; {len(detections)} detects')
++            print(f'Speed: {round((inference_time - preprocess_time) * 1000, 1)} ms preprocess, '
++                  f'{round((postprocess_time - inference_time) * 1000, 1)} ms inference, '
++                  f'{round((time.time() - postprocess_time) * 1000, 1)} ms postprocess')
+         return detections
+ 
+ 
+-- 
+2.53.0.windows.2
+
