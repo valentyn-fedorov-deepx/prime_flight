@@ -1,6 +1,6 @@
-From 58cc275480cfd3300b20cd2a1486e641e3a68e9a Mon Sep 17 00:00:00 2001
-From: valentyn-fedorov-deepx <valikfed0003@gmail.com>
-Date: Thu, 8 Oct 2026 19:14:50 +0300
+From fe243c143e21e2bddfd5c3750da1b948b0d70590 Mon Sep 17 00:00:00 2001
+From: valentyn-fedorov-deepx <valentyn.fedorov@deepxhub.com>
+Date: Fri, 9 Oct 2026 16:28:01 +0300
 Subject: [PATCH 1/2] Skip work whose results are never used; outputs unchanged
 
 - first run: tracked aircraft get a box-only update; their motion analysis (optical flow, MobileSAM masks, stage counters) was never read
