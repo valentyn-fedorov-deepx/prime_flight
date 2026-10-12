@@ -42,6 +42,21 @@ def log(fh, text: str) -> None:
     fh.flush()
 
 
+def hold_rows(src: str, dst: str, stride: int) -> None:
+    """Every `stride`-th line of a GM rows file kept, the lines in between replaced by the last kept line's rows
+    (frame keys unchanged): what the modules see when GM runs on every `stride`-th frame."""
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    held = None
+    with io.open(src, encoding="utf-8") as fi, io.open(dst + ".part", "w", encoding="utf-8", newline="") as fo:
+        for i, line in enumerate(fi):
+            rec = json.loads(line)
+            ((key, rows),) = rec.items()
+            if i % stride == 0:
+                held = rows
+            fo.write(json.dumps({key: held}) + chr(10))
+    os.replace(dst + ".part", dst)
+
+
 def run(cmd: list, log_path: str, env=None) -> int:
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     with io.open(log_path, "w", encoding="utf-8") as fh:
@@ -54,6 +69,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--variant", required=True, help="label: rows in out/testset/trk_<variant>, results in modules/<variant>")
     ap.add_argument("--gm-provider", default="", choices=["", "cuda", "tensorrt"], help="rerun GM v2 with this provider")
+    ap.add_argument("--hold-stride", type=int, default=1,
+                    help="GM and the tracker on every N-th frame: the GM rows of the frames in between are the last processed frame's, the tracker runs with --stride N")
     ap.add_argument("--tracker-args", default="", help="extra flags for scripts/tracker_v2_run.py (quoted)")
     ap.add_argument("--videos", default="", help="comma list (default: every video on disk with v2 rows and module results)")
     ap.add_argument("--modules", default="", help="comma list (default: every module with a v2 result for the video)")
@@ -89,6 +106,11 @@ def main() -> int:
                     if rc or not os.path.exists(gm_report):
                         log(lf, f"{video}: gm FAILED rc={rc}")
                         continue
+            if a.hold_stride > 1:  # the GM rows the modules get: every N-th frame, held in between
+                held = os.path.join(TS, f"gm_{label}", video, f"general_model{video}-second_run.ndjson")
+                if a.redo or not os.path.exists(held):
+                    hold_rows(gm_compat, held, a.hold_stride)
+                gm_compat = held
             trk_dir = os.path.join(TS, f"trk_{label}", video)
             trk_compat = os.path.join(trk_dir, f"trackers{video}.ndjson")
             trk_report = os.path.join(trk_dir, f"tracker_v2_report{video}.json")  # written last: a run that died has none
@@ -97,6 +119,8 @@ def main() -> int:
                        "--exact-fast", "--no-profile", "--out-dir", trk_dir, "--compare", p["trk_compat"]]
                 cmd += ["--cone-camera"] if plan.cone(video) else []
                 cmd += shlex.split(a.tracker_args)
+                if a.hold_stride > 1:
+                    cmd += ["--stride", str(a.hold_stride)]
                 log(lf, f"{video}: tracker")
                 rc = run(cmd, os.path.join(p["logs"], f"tracker_{label}.log"))
                 if rc or not os.path.exists(trk_report):

@@ -53,7 +53,7 @@ class RtPipelineAdapter(Adapter):
                  pixels: bool = True, out_dir: str | None = None, write_rows: bool = True, extra_modules=None,
                  monitor=None, filter_rows: bool = False, alerts_file: bool = True, gating: bool = False,
                  main_aircraft_rule: str = "longest_so_far", gpu_slowdown: float = 1.0, gpu_base_ms: float | None = None,
-                 tracker_base_ms: float | None = None, tracker_opts: dict | None = None):
+                 tracker_base_ms: float | None = None, tracker_opts: dict | None = None, stride: int = 1):
         unknown = set(heads) - set(HEADS)
         if unknown:
             raise ValueError(f"unknown heads {sorted(unknown)}; known: {sorted(HEADS)}")
@@ -73,6 +73,12 @@ class RtPipelineAdapter(Adapter):
         # rest on the CPU) slowed down as a whole; None leaves it alone (the optimistic bound)
         self.tracker_base_ms = tracker_base_ms
         self.tracker_opts = dict(tracker_opts or {})  # extra TrackerOptions fields (cost switches), reported as given
+        # GM and the tracker on every `stride`-th frame (1, 1 + stride, ...). The frames in between are decoded and handed
+        # to the modules as usual, with the rows and records of the last processed frame (sample and hold), so a module
+        # still sees 8 frames a second and its frame-count thresholds keep their meaning. The tracker is NOT retimed: its
+        # own thresholds count updates, so at stride 2 they last twice as long in seconds.
+        self.stride = max(1, int(stride))
+        self._skipped: dict = {}  # frame id -> image of a frame GM and the tracker did not process
         self.pixels = pixels
         self.out_dir = os.path.abspath(out_dir) if out_dir else None
         self.write_rows = bool(write_rows and self.out_dir)
@@ -198,6 +204,16 @@ class RtPipelineAdapter(Adapter):
             if self._blank is None:
                 self._blank = np.zeros((1080, 1920, 3), np.uint8)
             image = self._blank
+        if self.stride > 1 and (fid - 1) % self.stride:
+            # skipped: keep the noise preprocessor's cadence (it samples on frame ids that may be skipped ones) and the
+            # frame itself; rows and records come from the last processed frame when that one is published
+            if self.gm.preprocessor is not None:
+                self.gm.preprocessor.update(fid, image)
+            self._skipped[fid] = image
+            t4 = time.perf_counter()
+            for key, value in (("gm", t4 - t0), ("second_run_rows", 0.0), ("tracker", 0.0), ("module", 0.0), ("total", t4 - t0)):
+                self._times[key].append(value)
+            return self.bus.drain() if self.bus is not None else []
         self.gm._ingest(fid, image)
         first_run = self.gm.raw_rows.pop(fid)
         t1 = time.perf_counter()
@@ -223,43 +239,54 @@ class RtPipelineAdapter(Adapter):
         return outs
 
     def _publish(self, published) -> list:
-        from pf.gm.compat_writer import ndjson_line
-
         outs = []
         for fno, records in published:
             rows2 = self._rows2.pop(fno, [])
             image = self._images.pop(fno, None)
-            self._published += 1
-            # A module in batch reads these records from the tracker file, i.e. after a JSON round trip: lists, never
-            # tuples. Handing over the tracker's own objects crashed three modules that edit a box in place ("'tuple'
-            # object does not support item assignment"), so the live hand-off goes through the same trip.
-            encoded = json.dumps(records)
-            records = json.loads(encoded)
-            if len(self._anchors) < 2:
-                for rec in records:
-                    if rec.get("cls_str") == "airplane":
-                        state = rec.get("state_dict") or {}
-                        for key in ("arrival_frame", "departure_frame"):
-                            if key not in self._anchors and isinstance(state.get(key), int):
-                                self._anchors[key] = {"value": state[key], "first_published_frame": fno}
-            if self.write_rows:
-                tw = time.perf_counter()
-                self._gm_fh.write(ndjson_line(fno, rows2))
-                self._trk_fh.write('{"%d": %s}\n' % (self._published, encoded))
-                self._write_s += time.perf_counter() - tw
-            meta = {"general_model": rows2, "trackers": records}
-            th = time.perf_counter()
-            slot = self.ring.write(fno, image, [h for h in self.hosts if h.pixels]) if self.ring is not None else None
-            for host in self.hosts:
-                outs.extend(host.push(fno, meta, slot))
-            self._host_send_s += time.perf_counter() - th
-            outs.extend(self.module.push(fno, image, meta))
-            if self.monitor is not None:
-                self._last_published = (fno, len(rows2), len(records))
-                view = image if image is not None else self._mon_images.get(fno)
-                for stale in [k for k in self._mon_images if k <= fno]:
-                    del self._mon_images[stale]
-                self.monitor.set_frame(view, rows2, records, fno)
+            outs.extend(self._publish_one(fno, rows2, records, image))
+            # the frames skipped after this one get its rows and records (fresh copies: modules may edit them in place)
+            for g in range(fno + 1, fno + self.stride):
+                if g in self._skipped:
+                    held_image = self._skipped.pop(g)
+                    outs.extend(self._publish_one(g, json.loads(json.dumps(rows2)), json.loads(json.dumps(records)),
+                                                  held_image if self.pixels else None))
+        return outs
+
+    def _publish_one(self, fno, rows2, records, image) -> list:
+        from pf.gm.compat_writer import ndjson_line
+
+        outs = []
+        self._published += 1
+        # A module in batch reads these records from the tracker file, i.e. after a JSON round trip: lists, never
+        # tuples. Handing over the tracker's own objects crashed three modules that edit a box in place ("'tuple'
+        # object does not support item assignment"), so the live hand-off goes through the same trip.
+        encoded = json.dumps(records)
+        records = json.loads(encoded)
+        if len(self._anchors) < 2:
+            for rec in records:
+                if rec.get("cls_str") == "airplane":
+                    state = rec.get("state_dict") or {}
+                    for key in ("arrival_frame", "departure_frame"):
+                        if key not in self._anchors and isinstance(state.get(key), int):
+                            self._anchors[key] = {"value": state[key], "first_published_frame": fno}
+        if self.write_rows:
+            tw = time.perf_counter()
+            self._gm_fh.write(ndjson_line(fno, rows2))
+            self._trk_fh.write('{"%d": %s}\n' % (self._published, encoded))
+            self._write_s += time.perf_counter() - tw
+        meta = {"general_model": rows2, "trackers": records}
+        th = time.perf_counter()
+        slot = self.ring.write(fno, image, [h for h in self.hosts if h.pixels]) if self.ring is not None else None
+        for host in self.hosts:
+            outs.extend(host.push(fno, meta, slot))
+        self._host_send_s += time.perf_counter() - th
+        outs.extend(self.module.push(fno, image, meta))
+        if self.monitor is not None:
+            self._last_published = (fno, len(rows2), len(records))
+            view = image if image is not None else self._mon_images.get(fno)
+            for stale in [k for k in self._mon_images if k <= fno]:
+                del self._mon_images[stale]
+            self.monitor.set_frame(view, rows2, records, fno)
         return outs
 
     # ------------------------------------------------------------------ live view
@@ -325,7 +352,7 @@ class RtPipelineAdapter(Adapter):
             "module": self.module_name, "video": self.video_name, "heads": list(self.heads),
             "gm_variant": self.gm_variant, "gm_provider": self.gm_provider, "tracker_classes": list(self.tracker_classes),
             "exact_fast": self.exact_fast, "seed": self.seed, "pixels_to_module": self.pixels, "init_s": self.init_s,
-            "frames": frames, "published_frames": self._published, "max_unpublished_frames": self._max_unpublished,
+            "frames": frames, "stride": self.stride, "published_frames": self._published, "max_unpublished_frames": self._max_unpublished,
             "ms_per_frame": {k: _ms(v) for k, v in self._times.items()},
             "row_files_ms_per_frame": round(1000 * self._write_s / max(frames, 1), 3),
             "module_hosts": {h.module: h.report() for h in self.hosts},

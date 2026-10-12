@@ -163,6 +163,8 @@ def main() -> int:
     ap.add_argument("--cudnn-benchmark", action="store_true", help="NEAR: cuDNN autotuning")
     ap.add_argument("--no-deepsort-threads", action="store_true", help="EXACT: the three DeepSORT updates sequentially")
     ap.add_argument("--cpu-threads", type=int, default=None, help="EXACT: cap the OpenCV / torch CPU thread pools")
+    ap.add_argument("--stride", type=int, default=1,
+                    help="the tracker on every N-th frame (1, 1+N, ...); the frames in between get the last records")
     ap.add_argument("--no-profile", action="store_true", help="do not install per-component timers")
     ap.add_argument("--no-compat", action="store_true", help="write only the v2 bus (skip the v1-compat serialisation)")
     ap.add_argument("--out-dir", default="out/tracker_v2")
@@ -201,6 +203,7 @@ def main() -> int:
 
     counter = 1
     frames = 0
+    frames_read = 0
     t_decode = 0.0
     t_write = 0.0
     bus_bytes = compat_bytes = 0
@@ -212,14 +215,18 @@ def main() -> int:
             nonlocal counter, bus_bytes, compat_bytes, t_write
             tw = time.perf_counter()
             for fno, records in items:
-                if fc is not None:
-                    line = json.dumps({str(counter): records}) + "\n"
-                    fc.write(line)
-                    compat_bytes += len(line)
-                bl = json.dumps({"frame_id": a.start + fno, "records": [strip_private(r) for r in records]}) + "\n"
-                fb.write(bl)
-                bus_bytes += len(bl)
-                counter += 1
+                # the processed frame, then the frames skipped after it with the same records (sample and hold)
+                for g in range(fno, fno + a.stride):
+                    if g > fno and g > frames_read:
+                        break
+                    if fc is not None:
+                        line = json.dumps({str(counter): records}) + "\n"
+                        fc.write(line)
+                        compat_bytes += len(line)
+                    bl = json.dumps({"frame_id": a.start + g, "records": [strip_private(r) for r in records]}) + "\n"
+                    fb.write(bl)
+                    bus_bytes += len(bl)
+                    counter += 1
             t_write += time.perf_counter() - tw
 
         torch.cuda.synchronize()
@@ -230,8 +237,11 @@ def main() -> int:
             t_decode += time.perf_counter() - td
             if not ok:
                 break
-            publish(stream.update(frame_number, img, rows))
+            frames_read = frame_number
             frames += 1
+            if a.stride > 1 and (frame_number - 1) % a.stride:
+                continue  # skipped: published with the records of the frame before it
+            publish(stream.update(frame_number, img, rows))
         publish(stream.finish())
         torch.cuda.synchronize()
         total = time.perf_counter() - t0
@@ -255,6 +265,7 @@ def main() -> int:
         "publish_delay": a.publish_delay,
         "reid": {"eval": a.reid_eval, "half": a.reid_half, "cudnn_benchmark": a.cudnn_benchmark, "applied": stream.reid_changes},
         "deepsort_threads": not a.no_deepsort_threads,
+        "stride": a.stride,
         "cpu_cores": os.environ.get("PF_CPU_CORES"),
         "init_s": round(init_s, 2),
         "total_s": round(total, 2),
