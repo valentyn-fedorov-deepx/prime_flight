@@ -1,0 +1,1684 @@
+{
+ "pose_rtm": {
+  "label": "pose_rtm",
+  "modules": {
+   "hand-signals": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 535.5,
+    "v2_seconds_total": 1839.3,
+    "pose_calls": 2602,
+    "pose_boxes": 3257,
+    "pose_s": 22.53,
+    "pose_ms_per_call_median_run": 9.07,
+    "runs_detail": [
+     {
+      "video": "ICfrXaND7Jqf.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 67.4,
+      "v2_seconds": 193.6,
+      "pose_calls": 41,
+      "pose_boxes": 41,
+      "pose_s": 0.723
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 115.5,
+      "v2_seconds": 123.9,
+      "pose_calls": 450,
+      "pose_boxes": 484,
+      "pose_s": 3.63
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 101.2,
+      "v2_seconds": 439.1,
+      "pose_calls": 570,
+      "pose_boxes": 930,
+      "pose_s": 5.008
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 103.5,
+      "v2_seconds": 290.7,
+      "pose_calls": 548,
+      "pose_boxes": 710,
+      "pose_s": 5.126
+     },
+     {
+      "video": "iRRy2la05yGf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 84.6,
+      "v2_seconds": 328.4,
+      "pose_calls": 617,
+      "pose_boxes": 627,
+      "pose_s": 4.43
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 63.3,
+      "v2_seconds": 463.6,
+      "pose_calls": 376,
+      "pose_boxes": 465,
+      "pose_s": 3.609
+     }
+    ]
+   },
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
+    "own_model": "HRNet-W48",
+    "runs": 4,
+    "errors": 0,
+    "identical": 4,
+    "seconds_total": 95.7,
+    "v2_seconds_total": 137.5,
+    "pose_calls": 878,
+    "pose_boxes": 878,
+    "pose_s": 7.78,
+    "pose_ms_per_call_median_run": 8.41,
+    "runs_detail": [
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 15.6,
+      "v2_seconds": 19.9,
+      "pose_calls": 113,
+      "pose_boxes": 113,
+      "pose_s": 1.47
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 24.0,
+      "v2_seconds": 44.0,
+      "pose_calls": 310,
+      "pose_boxes": 310,
+      "pose_s": 2.483
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 28.6,
+      "v2_seconds": 48.1,
+      "pose_calls": 455,
+      "pose_boxes": 455,
+      "pose_s": 3.825
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 27.5,
+      "v2_seconds": 25.5,
+      "pose_calls": 0,
+      "pose_boxes": 0,
+      "pose_s": 0.0
+     }
+    ]
+   },
+   "pin-verification": {
+    "own_model": "SimCC ResNet-50",
+    "runs": 4,
+    "errors": 0,
+    "identical": 3,
+    "seconds_total": 166.2,
+    "v2_seconds_total": 454.9,
+    "pose_calls": 279,
+    "pose_boxes": 290,
+    "pose_s": 4.54,
+    "pose_ms_per_call_median_run": 33.78,
+    "runs_detail": [
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 58.7,
+      "v2_seconds": 46.4,
+      "pose_calls": 210,
+      "pose_boxes": 221,
+      "pose_s": 2.688
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 32.6,
+      "v2_seconds": 198.7,
+      "pose_calls": 12,
+      "pose_boxes": 12,
+      "pose_s": 0.631
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 46.6,
+      "v2_seconds": 45.1,
+      "pose_calls": 54,
+      "pose_boxes": 54,
+      "pose_s": 0.809
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 28.3,
+      "v2_seconds": 164.7,
+      "pose_calls": 3,
+      "pose_boxes": 3,
+      "pose_s": 0.412
+     }
+    ]
+   },
+   "lead-marshaller-and-wing-walkers-in-position": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 235.0,
+    "v2_seconds_total": 582.9,
+    "pose_calls": 1782,
+    "pose_boxes": 2898,
+    "pose_s": 20.25,
+    "pose_ms_per_call_median_run": 10.64,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 31.5,
+      "v2_seconds": 90.6,
+      "pose_calls": 132,
+      "pose_boxes": 231,
+      "pose_s": 3.429
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 39.7,
+      "v2_seconds": 87.5,
+      "pose_calls": 239,
+      "pose_boxes": 488,
+      "pose_s": 3.084
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 41.9,
+      "v2_seconds": 54.0,
+      "pose_calls": 338,
+      "pose_boxes": 530,
+      "pose_s": 2.906
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 42.4,
+      "v2_seconds": 138.2,
+      "pose_calls": 381,
+      "pose_boxes": 762,
+      "pose_s": 4.461
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 39.8,
+      "v2_seconds": 57.3,
+      "pose_calls": 256,
+      "pose_boxes": 374,
+      "pose_s": 2.19
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 39.7,
+      "v2_seconds": 155.3,
+      "pose_calls": 436,
+      "pose_boxes": 513,
+      "pose_s": 4.176
+     }
+    ]
+   },
+   "wing-walkers-in-proper-position-and-using-approved-wands": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 5,
+    "seconds_total": 256.0,
+    "v2_seconds_total": 709.9,
+    "pose_calls": 2622,
+    "pose_boxes": 4273,
+    "pose_s": 23.18,
+    "pose_ms_per_call_median_run": 8.8,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 46.6,
+      "v2_seconds": 194.5,
+      "pose_calls": 448,
+      "pose_boxes": 624,
+      "pose_s": 3.943
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 40.0,
+      "v2_seconds": 222.0,
+      "pose_calls": 270,
+      "pose_boxes": 285,
+      "pose_s": 2.91
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 33.5,
+      "v2_seconds": 67.1,
+      "pose_calls": 130,
+      "pose_boxes": 193,
+      "pose_s": 1.477
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 15.8,
+      "v2_seconds": 17.4,
+      "pose_calls": 0,
+      "pose_boxes": 0,
+      "pose_s": 0.0
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 48.5,
+      "v2_seconds": 75.5,
+      "pose_calls": 482,
+      "pose_boxes": 595,
+      "pose_s": 3.675
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 71.6,
+      "v2_seconds": 133.4,
+      "pose_calls": 1292,
+      "pose_boxes": 2576,
+      "pose_s": 11.179
+     }
+    ]
+   },
+   "fod-walk-completed": {
+    "own_model": "MoveNet Thunder",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 259.6,
+    "v2_seconds_total": 372.6,
+    "pose_calls": 21297,
+    "pose_boxes": 21297,
+    "pose_s": 151.71,
+    "pose_ms_per_call_median_run": 7.05,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 17.0,
+      "v2_seconds": 60.8,
+      "pose_calls": 898,
+      "pose_boxes": 898,
+      "pose_s": 5.92
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 21.2,
+      "v2_seconds": 50.4,
+      "pose_calls": 1252,
+      "pose_boxes": 1252,
+      "pose_s": 8.114
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 80.1,
+      "v2_seconds": 46.1,
+      "pose_calls": 7834,
+      "pose_boxes": 7834,
+      "pose_s": 56.796
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 31.1,
+      "v2_seconds": 34.4,
+      "pose_calls": 1877,
+      "pose_boxes": 1877,
+      "pose_s": 13.385
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 80.4,
+      "v2_seconds": 53.9,
+      "pose_calls": 7550,
+      "pose_boxes": 7550,
+      "pose_s": 54.358
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 29.8,
+      "v2_seconds": 127.0,
+      "pose_calls": 1886,
+      "pose_boxes": 1886,
+      "pose_s": 13.139
+     }
+    ]
+   },
+   "gse-chocks": {
+    "own_model": "RTMPose-l (own runner)",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 589.1,
+    "v2_seconds_total": 1235.7,
+    "pose_calls": 2438,
+    "pose_boxes": 2438,
+    "pose_s": 21.32,
+    "pose_ms_per_call_median_run": 8.94,
+    "runs_detail": [
+     {
+      "video": "ICfrXaND7Jqf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 107.9,
+      "v2_seconds": 290.2,
+      "pose_calls": 577,
+      "pose_boxes": 577,
+      "pose_s": 3.944
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 77.7,
+      "v2_seconds": 74.8,
+      "pose_calls": 104,
+      "pose_boxes": 104,
+      "pose_s": 1.372
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 82.9,
+      "v2_seconds": 91.1,
+      "pose_calls": 106,
+      "pose_boxes": 106,
+      "pose_s": 0.931
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 147.8,
+      "v2_seconds": 139.4,
+      "pose_calls": 1275,
+      "pose_boxes": 1275,
+      "pose_s": 11.601
+     },
+     {
+      "video": "iRRy2la05yGf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 104.3,
+      "v2_seconds": 410.1,
+      "pose_calls": 230,
+      "pose_boxes": 230,
+      "pose_s": 1.835
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 68.5,
+      "v2_seconds": 230.1,
+      "pose_calls": 146,
+      "pose_boxes": 146,
+      "pose_s": 1.636
+     }
+    ]
+   }
+  },
+  "changed": [
+   {
+    "module": "pin-verification",
+    "video": "MwCSLbQ7QvXQ.mp4",
+    "status": "Pass",
+    "v2": "Not observed",
+    "error": null,
+    "seconds": 32.6,
+    "v2_seconds": 198.7,
+    "pose_calls": 12,
+    "pose_boxes": 12,
+    "pose_s": 0.631
+   },
+   {
+    "module": "wing-walkers-in-proper-position-and-using-approved-wands",
+    "video": "KB04bkqBI7ms.mp4",
+    "status": "Pass",
+    "v2": "Fail",
+    "error": null,
+    "seconds": 33.5,
+    "v2_seconds": 67.1,
+    "pose_calls": 130,
+    "pose_boxes": 193,
+    "pose_s": 1.477
+   }
+  ],
+  "events": {
+   "paired_task_verdicts": 38,
+   "identical": 36,
+   "with_truth": 38,
+   "correct": 32,
+   "v2_correct": 32,
+   "changed": [
+    {
+     "event_id": "63e52c05e4a3b4a9cb4f79ad",
+     "task": "pinveref",
+     "ours": "pass",
+     "baseline": "notObserved",
+     "true": "notObserved",
+     "videos": [
+      "MwCSLbQ7QvXQ.mp4"
+     ]
+    },
+    {
+     "event_id": "6328189893ce641c01fe71db",
+     "task": "wing-walkers-in-proper-position-and-using-approved-wands",
+     "ours": "pass",
+     "baseline": "fail",
+     "true": "pass",
+     "videos": [
+      "KB04bkqBI7ms.mp4"
+     ]
+    }
+   ]
+  }
+ },
+ "pose_ctl": {
+  "label": "pose_ctl",
+  "modules": {
+   "hand-signals": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 742.3,
+    "v2_seconds_total": 1839.3,
+    "pose_calls": 2602,
+    "pose_boxes": 3257,
+    "pose_s": 156.02,
+    "pose_ms_per_call_median_run": 60.04,
+    "runs_detail": [
+     {
+      "video": "ICfrXaND7Jqf.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 80.1,
+      "v2_seconds": 193.6,
+      "pose_calls": 41,
+      "pose_boxes": 41,
+      "pose_s": 2.468
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 149.7,
+      "v2_seconds": 123.9,
+      "pose_calls": 450,
+      "pose_boxes": 484,
+      "pose_s": 27.904
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 136.5,
+      "v2_seconds": 439.1,
+      "pose_calls": 570,
+      "pose_boxes": 930,
+      "pose_s": 34.136
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 144.0,
+      "v2_seconds": 290.7,
+      "pose_calls": 548,
+      "pose_boxes": 710,
+      "pose_s": 36.762
+     },
+     {
+      "video": "iRRy2la05yGf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 144.3,
+      "v2_seconds": 328.4,
+      "pose_calls": 617,
+      "pose_boxes": 627,
+      "pose_s": 36.022
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 87.7,
+      "v2_seconds": 463.6,
+      "pose_calls": 376,
+      "pose_boxes": 465,
+      "pose_s": 18.726
+     }
+    ]
+   },
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
+    "own_model": "HRNet-W48",
+    "runs": 4,
+    "errors": 0,
+    "identical": 4,
+    "seconds_total": 148.8,
+    "v2_seconds_total": 137.5,
+    "pose_calls": 878,
+    "pose_boxes": 878,
+    "pose_s": 51.61,
+    "pose_ms_per_call_median_run": 58.41,
+    "runs_detail": [
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 21.6,
+      "v2_seconds": 19.9,
+      "pose_calls": 113,
+      "pose_boxes": 113,
+      "pose_s": 6.6
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 40.2,
+      "v2_seconds": 44.0,
+      "pose_calls": 310,
+      "pose_boxes": 310,
+      "pose_s": 17.057
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 54.9,
+      "v2_seconds": 48.1,
+      "pose_calls": 455,
+      "pose_boxes": 455,
+      "pose_s": 27.955
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 32.1,
+      "v2_seconds": 25.5,
+      "pose_calls": 0,
+      "pose_boxes": 0,
+      "pose_s": 0.0
+     }
+    ]
+   },
+   "pin-verification": {
+    "own_model": "SimCC ResNet-50",
+    "runs": 4,
+    "errors": 0,
+    "identical": 4,
+    "seconds_total": 185.3,
+    "v2_seconds_total": 454.9,
+    "pose_calls": 633,
+    "pose_boxes": 645,
+    "pose_s": 8.25,
+    "pose_ms_per_call_median_run": 14.77,
+    "runs_detail": [
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 52.8,
+      "v2_seconds": 46.4,
+      "pose_calls": 210,
+      "pose_boxes": 221,
+      "pose_s": 2.561
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 51.9,
+      "v2_seconds": 198.7,
+      "pose_calls": 379,
+      "pose_boxes": 380,
+      "pose_s": 4.722
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 51.3,
+      "v2_seconds": 45.1,
+      "pose_calls": 41,
+      "pose_boxes": 41,
+      "pose_s": 0.7
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 29.3,
+      "v2_seconds": 164.7,
+      "pose_calls": 3,
+      "pose_boxes": 3,
+      "pose_s": 0.267
+     }
+    ]
+   },
+   "lead-marshaller-and-wing-walkers-in-position": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 339.3,
+    "v2_seconds_total": 582.9,
+    "pose_calls": 1782,
+    "pose_boxes": 2898,
+    "pose_s": 110.28,
+    "pose_ms_per_call_median_run": 63.28,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 33.1,
+      "v2_seconds": 90.6,
+      "pose_calls": 132,
+      "pose_boxes": 231,
+      "pose_s": 9.649
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 44.8,
+      "v2_seconds": 87.5,
+      "pose_calls": 239,
+      "pose_boxes": 488,
+      "pose_s": 14.565
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 75.1,
+      "v2_seconds": 54.0,
+      "pose_calls": 338,
+      "pose_boxes": 530,
+      "pose_s": 25.191
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 60.9,
+      "v2_seconds": 138.2,
+      "pose_calls": 381,
+      "pose_boxes": 762,
+      "pose_s": 19.875
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 57.6,
+      "v2_seconds": 57.3,
+      "pose_calls": 256,
+      "pose_boxes": 374,
+      "pose_s": 12.384
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 67.8,
+      "v2_seconds": 155.3,
+      "pose_calls": 436,
+      "pose_boxes": 513,
+      "pose_s": 28.612
+     }
+    ]
+   },
+   "wing-walkers-in-proper-position-and-using-approved-wands": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 416.7,
+    "v2_seconds_total": 709.9,
+    "pose_calls": 2622,
+    "pose_boxes": 4273,
+    "pose_s": 150.64,
+    "pose_ms_per_call_median_run": 57.85,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 65.0,
+      "v2_seconds": 194.5,
+      "pose_calls": 448,
+      "pose_boxes": 624,
+      "pose_s": 23.63
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 49.8,
+      "v2_seconds": 222.0,
+      "pose_calls": 270,
+      "pose_boxes": 285,
+      "pose_s": 15.619
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 49.2,
+      "v2_seconds": 67.1,
+      "pose_calls": 130,
+      "pose_boxes": 193,
+      "pose_s": 8.392
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 19.4,
+      "v2_seconds": 17.4,
+      "pose_calls": 0,
+      "pose_boxes": 0,
+      "pose_s": 0.0
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 82.8,
+      "v2_seconds": 75.5,
+      "pose_calls": 482,
+      "pose_boxes": 595,
+      "pose_s": 27.622
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 150.5,
+      "v2_seconds": 133.4,
+      "pose_calls": 1292,
+      "pose_boxes": 2576,
+      "pose_s": 75.374
+     }
+    ]
+   },
+   "fod-walk-completed": {
+    "own_model": "MoveNet Thunder",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 232.1,
+    "v2_seconds_total": 372.6,
+    "pose_calls": 21297,
+    "pose_boxes": 21297,
+    "pose_s": 105.31,
+    "pose_ms_per_call_median_run": 4.82,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 19.6,
+      "v2_seconds": 60.8,
+      "pose_calls": 898,
+      "pose_boxes": 898,
+      "pose_s": 6.097
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 18.9,
+      "v2_seconds": 50.4,
+      "pose_calls": 1252,
+      "pose_boxes": 1252,
+      "pose_s": 4.958
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 65.9,
+      "v2_seconds": 46.1,
+      "pose_calls": 7834,
+      "pose_boxes": 7834,
+      "pose_s": 38.616
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 28.4,
+      "v2_seconds": 34.4,
+      "pose_calls": 1877,
+      "pose_boxes": 1877,
+      "pose_s": 8.368
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 68.9,
+      "v2_seconds": 53.9,
+      "pose_calls": 7550,
+      "pose_boxes": 7550,
+      "pose_s": 35.556
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 30.4,
+      "v2_seconds": 127.0,
+      "pose_calls": 1886,
+      "pose_boxes": 1886,
+      "pose_s": 11.718
+     }
+    ]
+   },
+   "gse-chocks": {
+    "own_model": "RTMPose-l (own runner)",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 668.8,
+    "v2_seconds_total": 1235.7,
+    "pose_calls": 2438,
+    "pose_boxes": 2438,
+    "pose_s": 16.95,
+    "pose_ms_per_call_median_run": 8.75,
+    "runs_detail": [
+     {
+      "video": "ICfrXaND7Jqf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 122.7,
+      "v2_seconds": 290.2,
+      "pose_calls": 577,
+      "pose_boxes": 577,
+      "pose_s": 3.406
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 80.5,
+      "v2_seconds": 74.8,
+      "pose_calls": 104,
+      "pose_boxes": 104,
+      "pose_s": 0.903
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 95.5,
+      "v2_seconds": 91.1,
+      "pose_calls": 106,
+      "pose_boxes": 106,
+      "pose_s": 0.934
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 154.0,
+      "v2_seconds": 139.4,
+      "pose_calls": 1275,
+      "pose_boxes": 1275,
+      "pose_s": 7.845
+     },
+     {
+      "video": "iRRy2la05yGf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 131.2,
+      "v2_seconds": 410.1,
+      "pose_calls": 230,
+      "pose_boxes": 230,
+      "pose_s": 2.168
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 84.9,
+      "v2_seconds": 230.1,
+      "pose_calls": 146,
+      "pose_boxes": 146,
+      "pose_s": 1.696
+     }
+    ]
+   }
+  },
+  "changed": [],
+  "events": {
+   "paired_task_verdicts": 38,
+   "identical": 38,
+   "with_truth": 38,
+   "correct": 32,
+   "v2_correct": 32,
+   "changed": []
+  }
+ },
+ "pose_dw": {
+  "label": "pose_dw",
+  "modules": {
+   "hand-signals": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 638.7,
+    "v2_seconds_total": 1839.3,
+    "pose_calls": 2602,
+    "pose_boxes": 3257,
+    "pose_s": 42.71,
+    "pose_ms_per_call_median_run": 16.42,
+    "runs_detail": [
+     {
+      "video": "ICfrXaND7Jqf.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 91.8,
+      "v2_seconds": 193.6,
+      "pose_calls": 41,
+      "pose_boxes": 41,
+      "pose_s": 1.237
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 121.9,
+      "v2_seconds": 123.9,
+      "pose_calls": 450,
+      "pose_boxes": 484,
+      "pose_s": 6.225
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 112.7,
+      "v2_seconds": 439.1,
+      "pose_calls": 570,
+      "pose_boxes": 930,
+      "pose_s": 9.19
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 119.6,
+      "v2_seconds": 290.7,
+      "pose_calls": 548,
+      "pose_boxes": 710,
+      "pose_s": 10.215
+     },
+     {
+      "video": "iRRy2la05yGf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 125.0,
+      "v2_seconds": 328.4,
+      "pose_calls": 617,
+      "pose_boxes": 627,
+      "pose_s": 10.31
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 67.7,
+      "v2_seconds": 463.6,
+      "pose_calls": 376,
+      "pose_boxes": 465,
+      "pose_s": 5.532
+     }
+    ]
+   },
+   "steering-by-pass-pin-installed-or-steering-otherwise-bypassed": {
+    "own_model": "HRNet-W48",
+    "runs": 4,
+    "errors": 0,
+    "identical": 3,
+    "seconds_total": 122.4,
+    "v2_seconds_total": 137.5,
+    "pose_calls": 908,
+    "pose_boxes": 908,
+    "pose_s": 15.67,
+    "pose_ms_per_call_median_run": 18.34,
+    "runs_detail": [
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 28.6,
+      "v2_seconds": 19.9,
+      "pose_calls": 310,
+      "pose_boxes": 310,
+      "pose_s": 5.685
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 23.0,
+      "v2_seconds": 44.0,
+      "pose_calls": 143,
+      "pose_boxes": 143,
+      "pose_s": 2.73
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Fail",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 42.1,
+      "v2_seconds": 48.1,
+      "pose_calls": 455,
+      "pose_boxes": 455,
+      "pose_s": 7.259
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 28.7,
+      "v2_seconds": 25.5,
+      "pose_calls": 0,
+      "pose_boxes": 0,
+      "pose_s": 0.0
+     }
+    ]
+   },
+   "pin-verification": {
+    "own_model": "SimCC ResNet-50",
+    "runs": 4,
+    "errors": 0,
+    "identical": 3,
+    "seconds_total": 167.7,
+    "v2_seconds_total": 454.9,
+    "pose_calls": 274,
+    "pose_boxes": 285,
+    "pose_s": 5.7,
+    "pose_ms_per_call_median_run": 38.06,
+    "runs_detail": [
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 52.1,
+      "v2_seconds": 46.4,
+      "pose_calls": 210,
+      "pose_boxes": 221,
+      "pose_s": 3.374
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Pass",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 34.0,
+      "v2_seconds": 198.7,
+      "pose_calls": 12,
+      "pose_boxes": 12,
+      "pose_s": 0.615
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 53.3,
+      "v2_seconds": 45.1,
+      "pose_calls": 49,
+      "pose_boxes": 49,
+      "pose_s": 1.219
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 28.3,
+      "v2_seconds": 164.7,
+      "pose_calls": 3,
+      "pose_boxes": 3,
+      "pose_s": 0.495
+     }
+    ]
+   },
+   "lead-marshaller-and-wing-walkers-in-position": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 260.6,
+    "v2_seconds_total": 582.9,
+    "pose_calls": 1782,
+    "pose_boxes": 2898,
+    "pose_s": 32.31,
+    "pose_ms_per_call_median_run": 17.49,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 32.5,
+      "v2_seconds": 90.6,
+      "pose_calls": 132,
+      "pose_boxes": 231,
+      "pose_s": 4.32
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 42.1,
+      "v2_seconds": 87.5,
+      "pose_calls": 239,
+      "pose_boxes": 488,
+      "pose_s": 4.832
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 50.7,
+      "v2_seconds": 54.0,
+      "pose_calls": 338,
+      "pose_boxes": 530,
+      "pose_s": 5.061
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 48.6,
+      "v2_seconds": 138.2,
+      "pose_calls": 381,
+      "pose_boxes": 762,
+      "pose_s": 7.481
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 46.9,
+      "v2_seconds": 57.3,
+      "pose_calls": 256,
+      "pose_boxes": 374,
+      "pose_s": 3.927
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 39.8,
+      "v2_seconds": 155.3,
+      "pose_calls": 436,
+      "pose_boxes": 513,
+      "pose_s": 6.691
+     }
+    ]
+   },
+   "wing-walkers-in-proper-position-and-using-approved-wands": {
+    "own_model": "HRNet-W48",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 309.9,
+    "v2_seconds_total": 709.9,
+    "pose_calls": 2622,
+    "pose_boxes": 4273,
+    "pose_s": 46.86,
+    "pose_ms_per_call_median_run": 18.99,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 52.0,
+      "v2_seconds": 194.5,
+      "pose_calls": 448,
+      "pose_boxes": 624,
+      "pose_s": 7.074
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 42.4,
+      "v2_seconds": 222.0,
+      "pose_calls": 270,
+      "pose_boxes": 285,
+      "pose_s": 5.128
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 40.0,
+      "v2_seconds": 67.1,
+      "pose_calls": 130,
+      "pose_boxes": 193,
+      "pose_s": 2.939
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 20.9,
+      "v2_seconds": 17.4,
+      "pose_calls": 0,
+      "pose_boxes": 0,
+      "pose_s": 0.0
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 67.1,
+      "v2_seconds": 75.5,
+      "pose_calls": 482,
+      "pose_boxes": 595,
+      "pose_s": 9.457
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 87.5,
+      "v2_seconds": 133.4,
+      "pose_calls": 1292,
+      "pose_boxes": 2576,
+      "pose_s": 22.263
+     }
+    ]
+   },
+   "fod-walk-completed": {
+    "own_model": "MoveNet Thunder",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 438.3,
+    "v2_seconds_total": 372.6,
+    "pose_calls": 21297,
+    "pose_boxes": 21297,
+    "pose_s": 298.94,
+    "pose_ms_per_call_median_run": 13.57,
+    "runs_detail": [
+     {
+      "video": "1WBBTx2wApOn.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 25.9,
+      "v2_seconds": 60.8,
+      "pose_calls": 898,
+      "pose_boxes": 898,
+      "pose_s": 11.877
+     },
+     {
+      "video": "B1BtQWGUShsv.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 32.5,
+      "v2_seconds": 50.4,
+      "pose_calls": 1252,
+      "pose_boxes": 1252,
+      "pose_s": 16.3
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 144.4,
+      "v2_seconds": 46.1,
+      "pose_calls": 7834,
+      "pose_boxes": 7834,
+      "pose_s": 109.069
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 43.6,
+      "v2_seconds": 34.4,
+      "pose_calls": 1877,
+      "pose_boxes": 1877,
+      "pose_s": 24.344
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 149.0,
+      "v2_seconds": 53.9,
+      "pose_calls": 7550,
+      "pose_boxes": 7550,
+      "pose_s": 111.021
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Fail",
+      "v2": "Fail",
+      "error": null,
+      "seconds": 42.9,
+      "v2_seconds": 127.0,
+      "pose_calls": 1886,
+      "pose_boxes": 1886,
+      "pose_s": 26.333
+     }
+    ]
+   },
+   "gse-chocks": {
+    "own_model": "RTMPose-l (own runner)",
+    "runs": 6,
+    "errors": 0,
+    "identical": 6,
+    "seconds_total": 738.0,
+    "v2_seconds_total": 1235.7,
+    "pose_calls": 2438,
+    "pose_boxes": 2438,
+    "pose_s": 39.74,
+    "pose_ms_per_call_median_run": 16.37,
+    "runs_detail": [
+     {
+      "video": "ICfrXaND7Jqf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 149.2,
+      "v2_seconds": 290.2,
+      "pose_calls": 577,
+      "pose_boxes": 577,
+      "pose_s": 7.649
+     },
+     {
+      "video": "KB04bkqBI7ms.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 95.9,
+      "v2_seconds": 74.8,
+      "pose_calls": 104,
+      "pose_boxes": 104,
+      "pose_s": 2.132
+     },
+     {
+      "video": "MwCSLbQ7QvXQ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 96.3,
+      "v2_seconds": 91.1,
+      "pose_calls": 106,
+      "pose_boxes": 106,
+      "pose_s": 1.625
+     },
+     {
+      "video": "TtKESVA7IEIU.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 188.4,
+      "v2_seconds": 139.4,
+      "pose_calls": 1275,
+      "pose_boxes": 1275,
+      "pose_s": 21.723
+     },
+     {
+      "video": "iRRy2la05yGf.mp4",
+      "status": "Pass",
+      "v2": "Pass",
+      "error": null,
+      "seconds": 143.0,
+      "v2_seconds": 410.1,
+      "pose_calls": 230,
+      "pose_boxes": 230,
+      "pose_s": 4.318
+     },
+     {
+      "video": "zHxIAF2vUGxJ.mp4",
+      "status": "Not observed",
+      "v2": "Not observed",
+      "error": null,
+      "seconds": 65.2,
+      "v2_seconds": 230.1,
+      "pose_calls": 146,
+      "pose_boxes": 146,
+      "pose_s": 2.293
+     }
+    ]
+   }
+  },
+  "changed": [
+   {
+    "module": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "video": "TtKESVA7IEIU.mp4",
+    "status": "Fail",
+    "v2": "Pass",
+    "error": null,
+    "seconds": 42.1,
+    "v2_seconds": 48.1,
+    "pose_calls": 455,
+    "pose_boxes": 455,
+    "pose_s": 7.259
+   },
+   {
+    "module": "pin-verification",
+    "video": "MwCSLbQ7QvXQ.mp4",
+    "status": "Pass",
+    "v2": "Not observed",
+    "error": null,
+    "seconds": 34.0,
+    "v2_seconds": 198.7,
+    "pose_calls": 12,
+    "pose_boxes": 12,
+    "pose_s": 0.615
+   }
+  ],
+  "events": {
+   "paired_task_verdicts": 38,
+   "identical": 36,
+   "with_truth": 38,
+   "correct": 30,
+   "v2_correct": 32,
+   "changed": [
+    {
+     "event_id": "62a33db25ab51c2e3609ff2b",
+     "task": "steering",
+     "ours": "fail",
+     "baseline": "pass",
+     "true": "pass",
+     "videos": [
+      "TtKESVA7IEIU.mp4"
+     ]
+    },
+    {
+     "event_id": "63e52c05e4a3b4a9cb4f79ad",
+     "task": "pinveref",
+     "ours": "pass",
+     "baseline": "notObserved",
+     "true": "notObserved",
+     "videos": [
+      "MwCSLbQ7QvXQ.mp4"
+     ]
+    }
+   ]
+  }
+ }
+}

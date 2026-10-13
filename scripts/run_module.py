@@ -48,6 +48,11 @@ Robustness (every outcome lands in the JSON, so a batch never stops and never re
     per-video artefacts in `./data/<video>/` inside the checkout and skip the work when they already exist) get a folder of
     their own next to the result JSON (`<out>.cache/`); one left by an earlier attempt is renamed aside first. Every run
     computes from scratch and the control and v2 runs of a video never share results. Recorded as `cache_folder`.
+  * `--pose-override MODEL` (opt-in, pose unification): the module's pose interface (mmpose `init_model` /
+    `inference_topdown`, fod-walk's MoveNet `PoseEstimation`, gse-chocks' `onnx_model_utils`) is served by one shared ONNX
+    SimCC model (`pf.pose.shims`, e.g. `rtmpose-l`), installed before the module is imported; the module's own pose
+    weights are not loaded. `--pose-timing` keeps the module's own model and only counts and times its pose calls (the
+    control). Both are recorded in the JSON as `pose`.
 """
 
 from __future__ import annotations
@@ -263,6 +268,13 @@ def main() -> int:
                     "module's import-time `pathlib.WindowsPath = pathlib.PosixPath` alias on Windows")
     ap.add_argument("--keras-torch-shim", action="store_true", help="route tf.keras.models.load_model through the module's "
                     "keras_torch_shim.KerasCompatModel, as the walk-around tdv_cone single_run.py does")
+    ap.add_argument("--pose-override", default="", help="serve the module's pose interface with this shared ONNX SimCC "
+                    "model (pf.pose.topdown_onnx.MODELS name or a path), e.g. rtmpose-l")
+    ap.add_argument("--pose-flip-test", action="store_true", help="with --pose-override: flip test (2 passes), as the "
+                    "modules' mmpose configs do")
+    ap.add_argument("--pose-bgr", action="store_true", help="with --pose-override: feed BGR (gse-chocks' own runner) "
+                    "instead of mmpose's RGB")
+    ap.add_argument("--pose-timing", action="store_true", help="count and time the module's own pose calls")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -301,9 +313,20 @@ def main() -> int:
     substituted = os.path.join(moddir, "cv_common", "SUBSTITUTED_PIN.txt")
     if os.path.exists(substituted):
         result["cv_common_substituted"] = open(substituted, encoding="utf-8").read().strip()
+    pose_record = None
     try:
         import torch
 
+        if a.pose_override or a.pose_timing:  # before the module import: it binds the pose functions at import
+            if ROOT not in sys.path:
+                sys.path.append(ROOT)
+            from pf.pose import shims
+
+            if a.pose_override:
+                pose_record = shims.install(a.pose_override, device="cpu" if a.device == "cpu" else "cuda",
+                                            flip_test=a.pose_flip_test, to_rgb=not a.pose_bgr)
+            else:
+                pose_record = shims.install_timing()
         native_windows_path = pathlib.WindowsPath
         prod = importlib.import_module(a.entry)
         if os.name == "nt" and pathlib.WindowsPath is not native_windows_path:
@@ -375,6 +398,10 @@ def main() -> int:
                 "seconds": round(time.time() - t0, 1),
             }
         )
+    if pose_record is not None:
+        from pf.pose import shims
+
+        result["pose"] = shims.finish(pose_record)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(result, fh, ensure_ascii=False, indent=1, default=str)
