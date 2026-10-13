@@ -61,6 +61,29 @@ def hold_rows(src: str, dst: str, stride: int) -> None:
     os.replace(dst + ".part", dst)
 
 
+def module_command(plan, label: str, video: str, module: str, inf: str, module_args: str = "") -> list:
+    """The scripts/run_module.py command line of one module run, with the test set's profile and plan flags."""
+    out = orch.module_out(label, video, module)
+    prof = profiles.profile(module)
+    launcher = prof.get("launcher")
+    rel = (lambda x: os.path.relpath(x, ROOT).replace("\\", "/")) if launcher else (lambda x: x)
+    cmd = (list(launcher) if launcher else [PY, "scripts/run_module.py"]) + [
+        "--module", module, "--video", video, "--inferences-dir", rel(inf),
+        "--device", prof["device"], "--cone-camera", "true" if plan.cone(video) else "false",
+        "--out", rel(out), "--videos-dir", rel(os.path.join(TS, "videos"))]
+    if prof["numpy1"]:
+        cmd.append("--numpy1-scalars")
+    if plan.airplane_type(video):
+        cmd += ["--airplane-type", plan.airplane_type(video)]
+    for x in prof["prepend_path"]:
+        cmd += ["--prepend-path", x]
+    if prof["drop_state_keys"]:
+        cmd += ["--drop-state-keys", prof["drop_state_keys"]]
+    if prof["module_dir"]:
+        cmd += ["--module-dir", prof["module_dir"]]
+    return cmd + shlex.split(module_args)
+
+
 def run(cmd: list, log_path: str, env=None) -> int:
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     with io.open(log_path, "w", encoding="utf-8") as fh:
@@ -151,25 +174,7 @@ def main() -> int:
                 out = orch.module_out(label, video, module)
                 if not a.redo and os.path.exists(out):
                     continue
-                prof = profiles.profile(module)
-                launcher = prof.get("launcher")
-                rel = (lambda x: os.path.relpath(x, ROOT).replace("\\", "/")) if launcher else (lambda x: x)
-                cmd = (list(launcher) if launcher else [PY, "scripts/run_module.py"]) + [
-                    "--module", module, "--video", video, "--inferences-dir", rel(inf),
-                    "--device", prof["device"], "--cone-camera", "true" if plan.cone(video) else "false",
-                    "--out", rel(out), "--videos-dir", rel(os.path.join(TS, "videos"))]
-                if prof["numpy1"]:
-                    cmd.append("--numpy1-scalars")
-                if plan.airplane_type(video):
-                    cmd += ["--airplane-type", plan.airplane_type(video)]
-                for x in prof["prepend_path"]:
-                    cmd += ["--prepend-path", x]
-                if prof["drop_state_keys"]:
-                    cmd += ["--drop-state-keys", prof["drop_state_keys"]]
-                if prof["module_dir"]:
-                    cmd += ["--module-dir", prof["module_dir"]]
-                cmd += shlex.split(a.module_args)
-                pending.append((module, cmd))
+                pending.append((module, module_command(plan, label, video, module, inf, a.module_args)))
             log(lf, f"{video}: {len(pending)} module runs")
             running: list = []
             env = dict(os.environ, **profiles.ENV)
