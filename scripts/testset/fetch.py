@@ -27,6 +27,9 @@ from concurrent.futures import ThreadPoolExecutor
 warnings.filterwarnings("ignore", message="Your application has authenticated using end user credentials")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# NOTE (2026-10-20): 8576299 is the `entity_clip_integration` line, which feeds BGR to the detector heads like the
+# April-2024 monthly baseline 087dfa9; the deployed production GM (`deployment_v_py3_10`, a0157a4 / d4ae8e5) feeds RGB
+# and has files for 1 of the 90 test videos. See docs/analysis/gm_baseline_lineage.md.
 DEFAULT_GM_COMMIT = "8576299"
 DEFAULT_TRACKER_COMMIT = "bd43c3c"
 _CLIENT = None
