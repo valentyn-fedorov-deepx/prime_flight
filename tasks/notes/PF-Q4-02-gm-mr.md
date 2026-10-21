@@ -4,6 +4,11 @@
 branch `deployment_v_py3_10` @ d4ae8e5 (cv_common ac5098d, db_worker 5a4aa83 — the same pins the proof below ran with).
 Create the MR: https://gitlab.com/dxgat/detectors/general_model/-/merge_requests/new?merge_request%5Bsource_branch%5D=pf%2Fq4-02-gm-exact-speedups
 
+**Production runs the a0157a4 image, not d4ae8e5** (Maksym, 2026-10-21): python 3.8 `gpu_base:legacy_base`, cv_common
+d74eb09. The same two commits on a0157a4 are in the local branch `pf/q4-02-gm-exact-speedups-a0157a4` (8d8c9a4, the same
+diff, python 3.8 grammar checked): that is the drop-in to test against production (`tasks/notes/PF-Q2-16.md`). The proof
+below ran with cv_common ac5098d; d74eb09 is not readable to us.
+
 Two commits:
 
 1. **fe243c1 — Skip work whose results are never used; outputs unchanged**
@@ -44,8 +49,9 @@ aircraft type, noise fields), the annotated video frame by frame, the video-sele
 
 ## For the test on the cluster (Maksym)
 
-1. Build the image from the branch as usual (Dockerfile unchanged) and run the GM job on a few videos with the current
-   image and with the new one.
+1. Take the production image and swap only the four files and `.git` (the output file name is `git rev-parse HEAD`;
+   without the new `.git` the run is named a0157a4 and overwrites production's files). Run the GM job on a few videos
+   with the production image and with the new one.
 2. **Expected identical:** `general_model<video>.ndjson` and `general_model<video>-second_run.ndjson` (the files the
    tracker and the modules read), the annotated video, `detection_statistics` and `stages`.
 3. **May differ, and already differs between two runs of production itself:** `frame_stopped`, `confidence_camera` and
