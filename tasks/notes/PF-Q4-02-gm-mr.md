@@ -5,8 +5,8 @@ branch `deployment_v_py3_10` @ d4ae8e5 (cv_common ac5098d, db_worker 5a4aa83 —
 Create the MR: https://gitlab.com/dxgat/detectors/general_model/-/merge_requests/new?merge_request%5Bsource_branch%5D=pf%2Fq4-02-gm-exact-speedups
 
 **Production runs the a0157a4 image, not d4ae8e5** (Maksym, 2026-10-21): python 3.8 `gpu_base:legacy_base`, cv_common
-d74eb09. The same two commits on a0157a4 are in the local branch `pf/q4-02-gm-exact-speedups-a0157a4` (8d8c9a4, the same
-diff, python 3.8 grammar checked): that is the drop-in to test against production (`tasks/notes/PF-Q2-16.md`). The proof
+d74eb09. The same two commits on a0157a4: `pf/q4-02-gm-exact-speedups-a0157a4` @ 8d8c9a4 (the same diff, python 3.8
+grammar checked), **pushed 2026-10-22** — the drop-in to test against production (`tasks/notes/PF-Q2-16.md`). The proof
 below ran with cv_common ac5098d; d74eb09 is not readable to us.
 
 Two commits:
