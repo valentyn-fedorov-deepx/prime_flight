@@ -33,7 +33,7 @@ Dockerfile and requirements are untouched. The two commits change `main.py`, `sc
 | 6 | first run, every frame | full frame converted to float32 on the CPU, 24 MB uploaded, then `.half()` | — | upload the uint8 frame (6 MB), `.half()` on the GPU: the same fp16 values |
 | 7 | every head, every frame | `image.clone()` of the full frame before a channel gather that copies anyway; GM and vehicle (both 1088) preprocess the same frame twice | — | no clone; one preprocessed tensor per input size per frame |
 | 8 | every head, every frame | a Python loop over detections with a GPU→CPU synchronisation per value | — | one gather, one host copy (identical float32 rows) |
-| 9 | every frame | about eleven `print` lines per frame to the job log (212 145 lines per 36-minute video) | log storage | behind `GM_VERBOSE=1`; per-video summaries kept (55 lines) |
+| 9 | every frame | about eleven `print` lines per frame from the GM code to the job log (212 145 lines per 36-minute video) | log storage | behind `GM_VERBOSE=1`; per-video summaries kept (55 lines). The cv_common video reader and the main-aircraft motion code still print per frame, so the whole job log shrinks about 5×, not to 55 lines |
 | 10 | after the second run (commit 2) | `select_video`: a third decode of the whole video with frame differences, when the stage / detection filters pass | nobody — the result goes only to `report_video_selection_module.txt` in the pod's working directory: not returned by `detect()`, not uploaded, not sent | opt-in: `video_selection.check_camera_motion: true` restores it |
 
 ## How it was proved
@@ -48,7 +48,9 @@ aircraft type, noise fields), the annotated video frame by frame, the video-sele
   interleaved production / branch / production / branch rerun on 2026-10-09): **every output byte-identical**, with the
   same hashes in every run.
 - Speed of the GM job on the full event: **17–19 % faster** (first run about −30 %, second about −5 %); the job log goes
-  from 212 145 lines per video to 55. Details: `tasks/notes/PF-Q4-02.md`.
+  GM's own print lines go from 212 145 per video to 55; the whole job log shrinks about 5× (fAkpu3dj2NIj: ≈ 444 000 →
+  ≈ 89 000 lines), because the cv_common video reader still prints one line per frame and run. Details:
+  `tasks/notes/PF-Q4-02.md`.
 - The camera-motion pass did not run on that event (its filters failed), so commit 2's saving is not in these numbers.
 
 ## For the test on the cluster (Maksym)
