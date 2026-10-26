@@ -9,6 +9,10 @@ d74eb09. The same two commits on a0157a4: `pf/q4-02-gm-exact-speedups-a0157a4` @
 grammar checked), **pushed 2026-10-22** — the drop-in to test against production (`tasks/notes/PF-Q2-16.md`). The proof
 below ran with cv_common ac5098d; d74eb09 is not readable to us.
 
+**Cluster result, 2026-10-22** (Maksym's build b6e1a3e = this branch + image fixes, five videos, production image
+against production): every GM file byte-identical; **GM job time −26 %** (799 → 589 min over the five videos, −18 to
+−33 % per video).
+
 Two commits:
 
 1. **fe243c1 — Skip work whose results are never used; outputs unchanged**
