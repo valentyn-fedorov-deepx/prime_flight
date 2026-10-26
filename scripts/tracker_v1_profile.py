@@ -133,6 +133,8 @@ def main() -> int:
     ap.add_argument("--cone-camera", action="store_true")
     ap.add_argument("--device", default="0")
     ap.add_argument("--seed", type=int, default=None, help="np.random seed set when the first frame is pulled")
+    ap.add_argument("--save-video", action="store_true",
+                    help="draw and encode the debug video, as the production job does by default (--write_video t)")
     ap.add_argument("--out", default=None, help="default out/tracker_v1_profile_<pin>.json")
     a = ap.parse_args()
     tracker_dir = a.tracker_dir or os.path.join(ROOT, "external", PINS[a.pin])
@@ -225,12 +227,14 @@ def main() -> int:
             device=a.device,
             weights_dir=a.weights_dir,
             cone_camera=a.cone_camera,
+            save_video=a.save_video,
         )
     torch.cuda.synchronize()
     total = time.perf_counter() - t0
 
     report = {
         "pin": a.pin,
+        "save_video": a.save_video,
         "tracker_dir": tracker_dir,
         "windows_shims": shims,
         "video": name,
