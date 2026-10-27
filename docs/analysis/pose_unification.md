@@ -145,3 +145,48 @@ and the verdict gate on those six modules; it is not done here.
    separate test with the same gate.
 5. GM: fold the vehicle class into the GM head (§6) — the largest single GM saving left, needs a training run (Denys's
    datasets, Yurii) and the gate on the six modules that read `vehicle`.
+
+## 8. The whole validation set: 66 of 90 videos (run 2026-10-13/14, summary 2026-10-27)
+
+`scripts/testset/pose_full_run.py` ran every pose module with its own model (`pose_ctl`) and with RTMPose-l (`pose_rtm`)
+side by side, four jobs at a time, on the v2 GM / tracker inferences (the same for both); DWPose-l was dropped from the
+run (twice as slow, already worse in §4). It stopped after 66 of the 90 videos with pose modules (24 videos, 185 runs
+left). Summary: `out/pose/interim_summary3.json`, `out/testset/compare_pose_rtm_vs_pose_ctl_interim.json`; event
+verdicts merged over cameras, truth from the monthly report.
+
+| module | correct, own → RTMPose-l | changed (toward / away from the label) | module time, own → RTMPose-l | pose time |
+|---|---|---|---|---|
+| hand-signals | 53 → 53 of 55 | 0 | 15 033 → 12 647 s (−16 %) | 2 392 → 367 s |
+| lead-marshaller | 53 → 53 of 55 | 0 | 6 187 → 4 187 s (−32 %) | 2 219 → 385 s |
+| steering | 38 → 41 of 46 | 7 (5 / 2) | 3 439 → 1 489 s (−57 %, partly earlier exits) | 1 889 → 171 s |
+| pin-verification | 35 → 36 of 46 | 4 (2 / 1, 1 neither) | 4 730 → 4 901 s (+4 %) | 284 → 167 s |
+| gse-chocks (same model, shared runner) | 47 → 47 of 56 | 2 (1 / 1) | 14 946 → 14 937 s | 718 → 701 s |
+| fod-walk | 53 → 52 of 57 | 1 (0 / 1) | 5 004 → 5 769 s (+15 %) | 2 781 → 3 473 s |
+| **wing-walkers** | **47 → 36 of 55** | **13 (1 / 12)** | 7 258 → 5 483 s (−24 %) | 2 194 → 351 s |
+| **total** | **326 → 318 of 370** (without wing-walkers 279 → 282) | 27 | 56 597 → 49 414 s (−13 %) | 12 477 → 5 614 s (−55 %) |
+
+With fod-walk left on MoveNet: pose time −78 % (9 696 → 2 141 s), module time −14 %. Every module except wing-walkers
+keeps or gains correct verdicts.
+
+### Wing walkers: why it loses with RTMPose-l
+
+- All 12 losses are the hand-signal rule: the walkers of both sides are found (from the tracks' paths, no pose
+  involved), and with RTMPose-l one of them "does not signal" (11 × Pass → Fail, label pass; one Fail → Not observed,
+  label fail). The one gain is KB04bkqBI7ms, where HRNet missed the right walker's signal.
+- The rule (`main.py:314-323`, `:494-505`): a frame signals when a wrist is less than 4.8–8 % of the box height below
+  its elbow and both points score ≥ 0.2; 8 such frames (1 s) in the 60 s window are enough.
+- The persons are small: the median box is 57 px high, an arm about 10 px. Arm scores sit at the threshold for both
+  models (median of min(wrist, elbow): HRNet 0.21, RTMPose-l 0.19; half of the boxes below 0.2). The rule measures
+  whether the model ever puts a wrist at elbow height with some confidence for 8 frames, and HRNet does so about twice
+  as often (wMk1umBGpV8f, 442 boxes: 19 % against 10 % of the frames). The thresholds were set on HRNet.
+- Flip test and DWPose-l do not help (wMk1umBGpV8f: both Fail; DWPose-l scores lower still, median 0.12).
+- The hand-signal part decides one of the 11 Fail labels (HwGR6Wvf7mE2K3, both models agree); the other Fails come from
+  a missing walker or a blocked side, without the pose. 15 of the 55 videos do not depend on the pose at all.
+
+Fix in progress: record both models' arm keypoints on the same walkers (`scripts/ww_pose_record.py`: the module decides
+with HRNet; RTMPose-l on the CLAHE frame, on the raw frame, with flip test, and DWPose-l run on the same boxes) over the
+40 pose-dependent videos (`scripts/ww_pose_batch.py`), then replay the rule offline for any model and thresholds
+(`scripts/ww_pose_replay.py`; on KB04bkqBI7ms the replay gives the recorded verdicts of both runs). Target: the three
+thresholds (`handsignals.conf_thr`, the margins, `min_frames`) for RTMPose-l that give HRNet's verdicts on the 40 videos,
+recover the 11 passes and keep HwGR6Wvf7mE2K3 a Fail. New thresholds go to Oksana / Ihor with the verdict table before
+production; the fallback is HRNet in wing-walkers only.
