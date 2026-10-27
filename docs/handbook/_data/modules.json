@@ -1,0 +1,1759 @@
+{
+ "monthly_test": {
+  "source": "monthly test report (continuous-integration job of the client's monthly validation)",
+  "turnarounds": 69
+ },
+ "modules": [
+  {
+   "repository": "chocks-and-cones-available-and-staged-for-arrival",
+   "internal_ids": "M06",
+   "plain_title": "Chocks and cones ready before the aircraft arrives",
+   "stages": [
+    "Pre-arrival"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Chocks and cones ready before the aircraft arrives.md",
+   "production_version": "not_observed_logic @ 2b4fca9",
+   "glance": {
+    "Checks": "M06 · Chocks and cones available and staged for arrival",
+    "Stage": "Pre-arrival",
+    "Looks at": "From the start of the video until the tracker reports that the aircraft has stopped",
+    "Cameras": "Cone camera, for aircraft and jets (the code does not read the camera flag)",
+    "Uses": "General Model: `cone`, `chock`; GSE (ground support equipment), BL (belt loader) and pushback boxes (chocks on vehicles); other vehicle, person, ladder and obstacle boxes (blocked view). Tracks: aircraft. Video frames: no (annotated video only)",
+    "Own models": "None",
+    "Runs on": "CPU",
+    "Real time": "Ready as is — one pass over detections and tracks, verdict at the aircraft stop",
+    "Production version": "`not_observed_logic` @ 2b4fca9 (2026-04-29)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Chocks and cones available and staged for arrival",
+     "plain_name": "Chocks and cones ready before the aircraft arrives",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "Chocks and cones available and staged for arrival",
+      "tier": "post",
+      "cameras": "Cone/Cone",
+      "pass_": "There are (7) cones and (6) chocks on the pre-arrival stage",
+      "fail": "There are no (7) cones and (6) chocks on the pre-arrival stage",
+      "not_observed": "Obstacle or there are no pre-arrival stage",
+      "not_observed_blocked": "There are obstacles more than 50% of pre-arrival stage or there is a side obstacle",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 61,
+      "labelled": 68,
+      "percent": 90,
+      "fails_labelled": 24,
+      "fails_caught": 20
+     }
+    }
+   ],
+   "code_review_finding": "The shared arrival detector (also in M11, M18) uses 90 frames (11.25 s) where its comment says 90 s. Pass skips the aircraft and pre-arrival checks. The rule's side-obstacle case is missing.",
+   "sources": {
+    "technical_page": "docs/modules/chocks-and-cones-available-and-staged-for-arrival.md",
+    "code": "external/_branches/chocks-and-cones-available-and-staged-for-arrival@not_observed_logic",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "crew-present-10-minutes-prior-to-aircraft-arrival",
+   "internal_ids": "M10",
+   "plain_title": "Crew present 10 minutes before the aircraft arrives",
+   "stages": [
+    "Pre-arrival"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Crew present 10 minutes before the aircraft arrives.md",
+   "production_version": "main @ 5cfd25c",
+   "glance": {
+    "Checks": "M10 · Crew present 10 minutes prior to aircraft arrival",
+    "Stage": "Pre-arrival",
+    "Looks at": "From the start of the video until the aircraft stops; the count is taken from 12 to 8 min before the stop (from the video start to 1 min before the stop if the video starts less than 12 min before it)",
+    "Cameras": "Cone camera, for aircraft and jets (the code does not read the camera flag)",
+    "Uses": "General Model: `person` (crew count); GSE (ground support equipment), pushback and trailer boxes (blocked view). Tracks: aircraft. Video frames: no (annotated video only)",
+    "Own models": "None",
+    "Runs on": "CPU",
+    "Real time": "Ready as is — one pass over detections and tracks, verdict at the aircraft stop (a warning before the arrival would need the scheduled arrival time)",
+    "Production version": "`main` @ 5cfd25c (2026-02-12)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Crew present 10 minutes prior to aircraft arrival",
+     "plain_name": "Crew present 10 minutes before the aircraft arrives",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "Crew present 10 minutes prior to aircraft arrival",
+      "tier": "post",
+      "cameras": "Cone/Cone",
+      "pass_": "If amount of frames with three workers more that 80 between from 12 min to 8 min",
+      "fail": "Opposite to pass",
+      "not_observed": "There is no pre-arrival stage on the video (less than 4 minutes)",
+      "not_observed_blocked": "If amount of blocked frames is more than 70% of prearrival stage.",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 62,
+      "labelled": 68,
+      "percent": 91,
+      "fails_labelled": 25,
+      "fails_caught": 22
+     }
+    }
+   ],
+   "code_review_finding": "If no person is ever detected it returns Fail before the blocked-view and 4-minute checks (the rule says Not observed). The branch for videos shorter than 12 minutes never runs.",
+   "sources": {
+    "technical_page": "docs/modules/crew-present-10-minutes-prior-to-aircraft-arrival.md",
+    "code": "external/crew-present-10-minutes-prior-to-aircraft-arrival",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "fod-walk-completed",
+   "internal_ids": "M11",
+   "plain_title": "Foreign object debris walk completed",
+   "stages": [
+    "Pre-arrival"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Foreign object debris walk completed.md",
+   "production_version": "dev @ a30826f",
+   "glance": {
+    "Checks": "M11 · FOD walk completed",
+    "Stage": "Pre-arrival",
+    "Looks at": "From the start of the video until the aircraft stops; people's paths only until the aircraft first appears on camera",
+    "Cameras": "Cone camera, for aircraft and jets (the code does not read the camera flag)",
+    "Uses": "General Model: `front_wheel`, `airplane_nose`, `airplane_tail` (corridor); GSE (ground support equipment), BL (belt loader) and pushback boxes (blocked view, drivers). Tracks: aircraft, person. Video frames: yes (person crops for the pose model; the stop frame for drawing)",
+    "Own models": "MoveNet SinglePose Thunder v4 (stock pose model, ONNX, not trained by us) — tells from the shoulder order whether a person faces away from the camera",
+    "Runs on": "CPU (ONNX Runtime 1.14.1, CPU build)",
+    "Real time": "Ready, needs video frames — pose model on person crops; verdict at the stop",
+    "Production version": "`dev` @ a30826f (2026-04-14)"
+   },
+   "checks": [
+    {
+     "client_check_name": "FOD walk completed",
+     "plain_name": "Foreign object debris walk completed",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "FOD walk completed",
+      "tier": "streaming",
+      "cameras": "Cone/Cone",
+      "pass_": "diamond area is visible, a person(s) walked from the beginning to end of the area horizontally (from safety clearance zone start line to end of lead in line)",
+      "fail": "diamond area is visible, no one walked from the beginning to end and plane arrived",
+      "not_observed": "diamond area is not visible or plane did not arrive",
+      "not_observed_blocked": "If amount of blocked frames is more than 80% of prearrival stage.",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 64,
+      "labelled": 68,
+      "percent": 94,
+      "fails_labelled": 49,
+      "fails_caught": 47
+     }
+    }
+   ],
+   "code_review_finding": "People are followed only until the aircraft first appears; there is no \"diamond area visible\" check.",
+   "sources": {
+    "technical_page": "docs/modules/fod-walk-completed.md",
+    "code": "external/_branches/fod-walk-completed@dev",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "pre-arrival-safety-huddle",
+   "internal_ids": "M18",
+   "plain_title": "Safety huddle at the huddle cone",
+   "stages": [
+    "Pre-arrival"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Safety huddle at the huddle cone.md",
+   "production_version": "green_cone_median @ a1210c5",
+   "glance": {
+    "Checks": "M18 · Safety huddle conducted at huddle cone",
+    "Stage": "Pre-arrival",
+    "Looks at": "From the start of the video until the aircraft stops (huddle), plus 60 s after the stop for the blocked-view count",
+    "Cameras": "Cone camera, for aircraft and jets (the code does not read the camera flag)",
+    "Uses": "General Model: `cone` (huddle cone); BL (belt loader), GSE (ground support equipment), pushback, trailer and fuel truck boxes (blocked view). Tracks: aircraft, person. Video frames: yes (colour inside every cone box)",
+    "Own models": "None (a colour rule; cones are followed with the norfair tracker)",
+    "Runs on": "CPU",
+    "Real time": "Ready, needs video frames — reads cone pixels for the colour test; verdict 60 s after the stop",
+    "Production version": "`green_cone_median` @ a1210c5 (2026-08-04)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Safety huddle conducted at huddle cone",
+     "plain_name": "Safety huddle at the huddle cone",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "Safety huddle conducted at huddle cone",
+      "tier": "post",
+      "cameras": "Cone/Cone",
+      "pass_": "No plane is detected and at least 3 person are detected near to one green cone for 15 sec",
+      "fail": "No huddle is detected",
+      "not_observed": "There is no pre-arrival stage on the video or airplane has not arrived",
+      "not_observed_blocked": "There are obstacles more than 50% of pre-arrival stage",
+      "notes": "Cone is validated by: Color verification using LAB color space Size requirements"
+     },
+     "monthly_test": {
+      "correct": 63,
+      "labelled": 68,
+      "percent": 93,
+      "fails_labelled": 52,
+      "fails_caught": 51
+     }
+    }
+   ],
+   "code_review_finding": "Green is checked with a red–green value and a box-shape test, not LAB colour with a minimum size; Pass and Not observed use different pre-arrival rules.",
+   "sources": {
+    "technical_page": "docs/modules/pre-arrival-safety-huddle.md",
+    "code": "external/_branches/pre-arrival-safety-huddle@green_cone_median",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "safety-vests-secured-to-body",
+   "internal_ids": "M23",
+   "plain_title": "Safety vests worn and fastened",
+   "stages": [
+    "Pre-arrival",
+    "Arrival",
+    "Post-arrival",
+    "Download",
+    "Upload",
+    "Pre-departure",
+    "Departure"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives",
+    "arrival",
+    "after the aircraft stops",
+    "unloading",
+    "loading",
+    "before departure",
+    "departure and pushback"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Safety vests worn and fastened.md",
+   "production_version": "tdv_cone @ 8f58d7e",
+   "glance": {
+    "Checks": "M23 · Employees wearing safety vests secured to body",
+    "Stage": "Pre-arrival, Arrival, Post-arrival, Download, Upload, Pre-departure, Departure",
+    "Looks at": "The whole video, first frame to last; no aircraft or stage is needed",
+    "Cameras": "Cone and wing cameras, aircraft and jets (client split); the db_worker task list names only the cone camera — to confirm",
+    "Uses": "General Model (GM) boxes: safety_vest. Tracks: person. Video frames: yes, every frame",
+    "Own models": "Vest orientation classifier (Swin-T: back / head / side); vest closure classifier (Swin-T: zipped / unzipped); vest presence gate (ResNet-18); small-vest classifier (ResNet-18, \"v4\"). Also runs the stock YOLOv8m-pose model for a shoulder check",
+    "Runs on": "GPU",
+    "Real time": "ready, needs video frames — classifies vest crops on every frame; the small-vest re-check runs once, at the end",
+    "Production version": "tdv_cone @ 8f58d7e (2026-08-13)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Employees wearing safety vests secured to body",
+     "plain_name": "Safety vests worn and fastened",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "Employees wearing safety vests secured to body",
+      "tier": "streaming",
+      "cameras": "Both/Both",
+      "pass_": "A worker is detected wearing a zipped vest for more than 50% of the video frames, without any intervals where the vest is unzipped",
+      "fail": "A worker is detected with an unzipped vest in at least one interval during the video",
+      "not_observed": "No workers wearing vests are detected, or all detections are unclear due to low quality or the worker being too far away",
+      "not_observed_blocked": "Frames containing a worker with vest are mostly blocked by obstacles (more than 80%)",
+      "notes": "Interval - time series when we can clearly see the vest;"
+     },
+     "monthly_test": {
+      "correct": 51,
+      "labelled": 69,
+      "percent": 74,
+      "fails_labelled": 35,
+      "fails_caught": 24
+     }
+    }
+   ],
+   "code_review_finding": "A worker's vest status is overwritten at each check, so \"unzipped, then zipped\" ends as Pass; no obstacle logic; any tracked person gives Pass; dark or small vests cannot fail.",
+   "sources": {
+    "technical_page": "docs/modules/safety-vests-secured-to-body.md",
+    "code": "external/_branches/safety-vests-secured-to-body@tdv_cone",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "safety-zone-confirmed-clear",
+   "internal_ids": "M24",
+   "plain_title": "Safety zone clear before the aircraft arrives",
+   "stages": [
+    "Pre-arrival"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Safety zone clear before the aircraft arrives.md",
+   "production_version": "master @ 91676a5",
+   "glance": {
+    "Checks": "M24 · Safety zone confirmed clear",
+    "Stage": "Pre-arrival",
+    "Looks at": "From 2 min before the aircraft stops until 30 s before the stop (a little later when the straight approach is shorter than about 25 s)",
+    "Cameras": "Cone camera, for aircraft and jets (the camera flag only changes an overlay label)",
+    "Uses": "General Model: `cone`, `front_wheel` (zone); BL (belt loader), GSE (ground support equipment), fuel truck, trailer, pushback, vehicle and obstacle boxes (moving vehicles, view blockers); `person` (masked out). Tracks: aircraft. Video frames: yes (second pass)",
+    "Own models": "MobileSAM (stock segmentation model, not trained by us) — outlines each tracked vehicle so its motion can be measured",
+    "Runs on": "CPU in the production image; GPU when a GPU device is passed (to confirm)",
+    "Real time": "Needs a new first pass — the zone is built only after the stop; a second pass then scores the 2 minutes before it",
+    "Production version": "`master` @ 91676a5 (2026-03-24)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Safety zone confirmed clear",
+     "plain_name": "Safety zone clear before the aircraft arrives",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "Safety zone confirmed clear",
+      "tier": "streaming",
+      "cameras": "Cone/Cone",
+      "pass_": "Safety zone is visible and clear during last 2 min prior to plane arrival",
+      "fail": "Safety zone is visible and beltloader, fuel truck, trailer, GSE or pushback are detected moving in it during last 2 min prior to plane arrival",
+      "not_observed": "Diamond area is not visible or build area is too small or plane did not arrive or there is no pre-arrival stage",
+      "not_observed_blocked": "There are obstacles more than 30 secs in the pre-arrival stage",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 63,
+      "labelled": 68,
+      "percent": 93,
+      "fails_labelled": 13,
+      "fails_caught": 13
+     }
+    }
+   ],
+   "code_review_finding": "The last 30 s before the stop are never checked; Not observed comes from blocked frames outnumbering clear ones, not from \"obstacles over 30 s\".",
+   "sources": {
+    "technical_page": "docs/modules/safety-zone-confirmed-clear.md",
+    "code": "external/safety-zone-confirmed-clear",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "hair-policy",
+   "internal_ids": "HP",
+   "plain_title": "Hair policy",
+   "stages": [
+    "Pre-arrival",
+    "Arrival",
+    "Post-arrival",
+    "Download",
+    "Upload",
+    "Pre-departure",
+    "Departure"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives",
+    "arrival",
+    "after the aircraft stops",
+    "unloading",
+    "loading",
+    "before departure",
+    "departure and pushback"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Hair policy.md",
+   "production_version": "master @ 8a343bf (to confirm; a `python_3_10` branch exists)",
+   "glance": {
+    "Checks": "HP · Hair policy",
+    "Stage": "Pre-arrival, Arrival, Post-arrival, Download, Upload, Pre-departure, Departure",
+    "Looks at": "The whole video (client sheet: \"executed throughout the entire video\"); to confirm in the code",
+    "Cameras": "Cone and wing cameras, aircraft and jets (client split)",
+    "Uses": "Tracks: person (seen in the module's output). General Model (GM) classes: to confirm. Video frames: yes",
+    "Own models": "Hair classifier (EfficientNet-B0, `night_efficientNetb0_223_epoch_06_01_2024.pth`, trained with night images); inside / outside classifier (EfficientNet-B0, `inside_outside_efficientnet_b0_best_model_17_epoch.pt`). MediaPipe is installed too; whether it is used: to confirm",
+    "Runs on": "GPU in production (GPU pool); the test set runs it on CPU at about 0.9 CPU-s per frame",
+    "Real time": "to confirm — not in the streaming audit because the code cannot be read; it needs video frames",
+    "Production version": "master @ 8a343bf (2025-06-19) — to confirm; the module code last changed on 2024-02-22"
+   },
+   "checks": [
+    {
+     "client_check_name": "Hair policy",
+     "plain_name": "Hair policy",
+     "client_rule": {
+      "stage": "Pre-arrival stage",
+      "check": "Hair policy",
+      "tier": "real-time",
+      "cameras": "Both/Both",
+      "pass_": "Every worker's hair is above shoulder level.",
+      "fail": "At least one worker has hair below shoulder length.",
+      "not_observed": "Workers were not detected or were too far away to identify their hair.",
+      "not_observed_blocked": "",
+      "notes": "Currently, this module is executed throughout the entire video. Hair length is measured to the lowest point where there is hair, regardless of the hairstyle (whether the hair is tied up or not)."
+     },
+     "monthly_test": {
+      "correct": 56,
+      "labelled": 69,
+      "percent": 81,
+      "fails_labelled": 31,
+      "fails_caught": 28
+     }
+    }
+   ],
+   "code_review_finding": "The production `main.py` is an obfuscated build that runs only on Python 3.8, so the logic cannot be read; which build runs in production: to confirm.",
+   "sources": {
+    "technical_page": "docs/modules/hair-policy.md",
+    "code": "external/hair-policy",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "aircraft-chocks",
+   "internal_ids": "M02A, M02B, M02C",
+   "plain_title": "Aircraft wheel chocks: placed on arrival, removed only after the pushback is attached",
+   "stages": [
+    "Arrival",
+    "Pre-departure",
+    "Departure"
+   ],
+   "stages_plain": [
+    "arrival",
+    "before departure",
+    "departure and pushback"
+   ],
+   "folder": "2 Arrival",
+   "output": "docs/handbook/system/modules/2 Arrival/Aircraft wheel chocks - placed on arrival, removed only after the pushback is attached.md",
+   "production_version": "master @ fa00478",
+   "glance": {
+    "Checks": "M02A · Nose gear chocks applied immediately<br>M02B · Main gear chocks removed only after aircraft is attached to pushback<br>M02C · Nose wheel chock removed from aircraft",
+    "Stage": "Arrival, Pre-departure, Departure",
+    "Looks at": "From the aircraft's arrival to its departure: the nose wheel in the first 30 s after arrival, then the rear and nose wheels around the pushback attachment",
+    "Cameras": "Cone camera, aircraft and jets (client split); the code does not check the camera",
+    "Uses": "GM boxes: front_wheel, back_wheel, chock (separate chock detector), airplane_nose, pushback, vehicle; obstacles cone, trailer, fuel_truck, ladder, obstacle. Tracks: airplane, person, GSE (ground support equipment), BL (belt loader). Video frames: yes (rear wheels, every frame from arrival to departure)",
+    "Own models": "Aircraft chock classifier (EfficientNet-B0, `effnetb0_ext_fix_993.pt`): compares a rear-wheel view with the wheel's reference image and says whether a chock is there",
+    "Runs on": "CPU (production CPU pool); the code can use a GPU when given one",
+    "Real time": "needs a small patch — a first pass reads ahead to the pushback's final position; a live \"pushback attached\" event can replace it",
+    "Production version": "master @ fa00478 (2026-01-30)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Nose gear chocks applied immediately",
+     "plain_name": "nose wheel chock placed right after arrival",
+     "client_rule": {
+      "stage": "Arrival stage",
+      "check": "Nose gear chocks applied immediately",
+      "tier": "real-time",
+      "cameras": "Cone/Cone",
+      "pass_": "Front wheel was chocked in the first 240 frames (30 sec)",
+      "fail": "Front wheel was detected, but NOT chocked in the first 240 frames",
+      "not_observed": "Either airplane or front wheel was not observed or there is no arrival stage or there is an obstacle",
+      "not_observed_blocked": "All arrival frames are blocked",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 62,
+      "labelled": 68,
+      "percent": 91,
+      "fails_labelled": 1,
+      "fails_caught": 1
+     }
+    },
+    {
+     "client_check_name": "Main gear chocks removed only after aircraft is attached to pushback",
+     "plain_name": "main gear chocks removed only after the pushback is attached",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Main gear chocks removed only after aircraft is attached to pushback",
+      "tier": "real-time",
+      "cameras": "Cone/Cone",
+      "pass_": "Main gear chocks removed only after aircraft is attached to pushback",
+      "fail": "Main gear chocks removed before aircraft is attached to pushback",
+      "not_observed": "Airplane or back wheels were not detected or there is an obstacle",
+      "not_observed_blocked": "All frames are blocked",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 61,
+      "labelled": 68,
+      "percent": 90,
+      "fails_labelled": 19,
+      "fails_caught": 15
+     }
+    },
+    {
+     "client_check_name": "Nose wheel chock removed from aircraft",
+     "plain_name": "nose wheel chock removed only after the pushback is attached",
+     "client_rule": {
+      "stage": "Departure stage (Tow-Bar disconnet)",
+      "check": "Nose wheel chock removed from aircraft",
+      "tier": "real-time",
+      "cameras": "Cone/Cone",
+      "pass_": "Nose gear chocks removed only after aircraft is attached to pushback",
+      "fail": "Nose gear chocks removed before aircraft is attached to pushback or video stops before we can see chocks removal",
+      "not_observed": "Airplane or nose wheel was not detected or there is an obstacle",
+      "not_observed_blocked": "All frames are blocked",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 60,
+      "labelled": 68,
+      "percent": 88,
+      "fails_labelled": 1,
+      "fails_caught": 0
+     }
+    }
+   ],
+   "code_review_finding": "M02B also waits for the belt loaders to leave, which the rule does not ask for. M02C passes if the chock is still seen after attachment; the rule's \"video stops before the removal\" Fail is missing. `installed_no` looks like a bug.",
+   "sources": {
+    "technical_page": "docs/modules/aircraft-chocks.md",
+    "code": "external/aircraft-chocks",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "cones-placed-in-proper-positions-and-timely",
+   "internal_ids": "M09",
+   "plain_title": "Cones placed in the right positions on time",
+   "stages": [
+    "Arrival",
+    "Post-arrival",
+    "Download",
+    "Upload",
+    "Pre-departure"
+   ],
+   "stages_plain": [
+    "arrival",
+    "after the aircraft stops",
+    "unloading",
+    "loading",
+    "before departure"
+   ],
+   "folder": "2 Arrival",
+   "output": "docs/handbook/system/modules/2 Arrival/Cones placed in the right positions on time.md",
+   "production_version": "not_observed_logic @ d2a6898",
+   "glance": {
+    "Checks": "M09 · Cones placed in proper positions and timely",
+    "Stage": "Arrival, Post-arrival, Download, Upload, Pre-departure",
+    "Looks at": "From the moment the aircraft has been stopped for 5 s until its departure movement is confirmed",
+    "Cameras": "Cone camera (wing and engine cones) and wing camera (tail cone), aircraft and jets (client split); the db_worker task list names only the cone camera — to confirm",
+    "Uses": "GM boxes: wing_cone, engine_cone, tail_cone, airplane_nose, airplane_wing, airplane_engine, airplane_tail; obstacles pushback, beltloader, gse, trailer, fuel_truck, obstacle, side_obstacle, vehicle, person, ladder. Tracks: airplane. Video frames: no (only for the annotated video)",
+    "Own models": "none (`weights/cones_v1.pt` and `cones_helpers.py` are shipped but never used)",
+    "Runs on": "CPU",
+    "Real time": "ready as is — reads only detections and the aircraft track; the verdict is final when the departure is confirmed",
+    "Production version": "not_observed_logic @ d2a6898 (2026-03-25)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Cones placed in proper positions and timely",
+     "plain_name": "Cones placed in the right positions on time",
+     "client_rule": {
+      "stage": "Arrival stage",
+      "check": "Cones placed in proper positions and timely",
+      "tier": "real-time",
+      "cameras": "Both/Both",
+      "pass_": "1 wing and 2 engine cones (only 1 wing if airplane type is jett) are seen at least 100 frames from cone camera and 1 tail cone is seen at least 100 frames from wing camera",
+      "fail": "At least one cone is detected less than 100 times",
+      "not_observed": "Plane is not detected",
+      "not_observed_blocked": "If amount of blocked frames is more than 65% of fullturn.",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 62,
+      "labelled": 69,
+      "percent": 90,
+      "fails_labelled": 2,
+      "fails_caught": 2
+     }
+    }
+   ],
+   "code_review_finding": "\"Timely\" is never checked. The jet rules never fire (`jet` vs `JET`).",
+   "sources": {
+    "technical_page": "docs/modules/cones-placed-in-proper-positions-and-timely.md",
+    "code": "external/_branches/cones-placed-in-proper-positions-and-timely@not_observed_logic",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+   "internal_ids": "M26",
+   "plain_title": "Steering bypass pin installed",
+   "stages": [
+    "Arrival",
+    "Post-arrival"
+   ],
+   "stages_plain": [
+    "arrival",
+    "after the aircraft stops"
+   ],
+   "folder": "2 Arrival",
+   "output": "docs/handbook/system/modules/2 Arrival/Steering bypass pin installed.md",
+   "production_version": "master @ 60dca73",
+   "glance": {
+    "Checks": "M26 · Steering by-pass pin installed, or steering otherwise bypassed",
+    "Stage": "Arrival, Post-arrival",
+    "Looks at": "From the tracker's arrival frame (aircraft stopped for about 4 s) until 4 min (1920 frames) later",
+    "Cameras": "Cone camera, aircraft only (no camera for jets in the client split); the camera flag is ignored",
+    "Uses": "General Model (GM) boxes: front_wheel (person and chock boxes are collected but not used). Tracks: airplane, person. Video frames: yes (buffered for the pose model)",
+    "Own models": "Pin-installation classifier (InceptionTime via tsai, `model_newaug.pkl`, with its fitted scaler `scaler.gz`): labels a 200-frame pose sequence LEFT_PIN, AUTO_PIN or NOTHING. Also runs the stock HRNet-W48 COCO pose model (mmpose)",
+    "Runs on": "GPU",
+    "Real time": "ready, needs video frames — pose runs on buffered frames; a decision comes 12.5 s after the stop, a Fail only at arrival + 4 min",
+    "Production version": "master @ 60dca73 (2025-06-19)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Steering by-pass pin installed, or steering otherwise bypassed",
+     "plain_name": "Steering bypass pin installed",
+     "client_rule": {
+      "stage": "Arrival stage",
+      "check": "Steering by-pass pin installed, or steering otherwise bypassed",
+      "tier": "streaming",
+      "cameras": "Cone/-",
+      "pass_": "Pin is installed during 4 minutes after plane arrival (first minute after arrival or till installation the check for chocks installation is being made)",
+      "fail": "Pin is not installed during 4 minutes after plane arrival",
+      "not_observed": "The front wheel was not seen for 1 minute after plane stop OR there was no pre-arrival stage",
+      "not_observed_blocked": "There are obstacles more than 1 minute after plane arrival",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 50,
+      "labelled": 55,
+      "percent": 91,
+      "fails_labelled": 6,
+      "fails_caught": 4
+     }
+    }
+   ],
+   "code_review_finding": "The chock and obstacle conditions are not implemented.",
+   "sources": {
+    "technical_page": "docs/modules/steering-by-pass-pin-installed-or-steering-otherwise-bypassed.md",
+    "code": "external/steering-by-pass-pin-installed-or-steering-otherwise-bypassed",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "lead-marshaller-and-wing-walkers-in-position",
+   "internal_ids": "M15",
+   "plain_title": "Lead marshaller and wing walkers in position",
+   "stages": [
+    "Pre-arrival",
+    "Arrival"
+   ],
+   "stages_plain": [
+    "before the aircraft arrives",
+    "arrival"
+   ],
+   "folder": "1 Before the aircraft arrives",
+   "output": "docs/handbook/system/modules/1 Before the aircraft arrives/Lead marshaller and wing walkers in position.md",
+   "production_version": "pre_arrival_departure @ 9e1a9f0",
+   "glance": {
+    "Checks": "M15 · Lead marshaller and wing walkers in correct position",
+    "Stage": "Pre-arrival, Arrival",
+    "Looks at": "from the start of the video until the aircraft stops: pre-arrival, then the approach",
+    "Cameras": "cone camera (aircraft and jet)",
+    "Uses": "tracks of the aircraft and persons; General Model (GM) vehicle and equipment boxes and `obstacle` / `side_obstacle` rows (blocked sides only); video frames: yes",
+    "Own models": "worker role classifier (SVC), walk-along classifier (RandomForest), two walking-start models (gradient boosting); plus the stock HRNet-W48 pose model (mmpose)",
+    "Runs on": "GPU for the pose model (`cuda:0` unless the device is `cpu`); the worker settings file says CPU — to confirm",
+    "Real time": "ready, needs video frames — decides at the aircraft's stop from past data (the real-time audit read the pose-free default branch)",
+    "Production version": "pre_arrival_departure @ 9e1a9f0 (2026-05-29; last logic change 9746ddf, 2026-03-20)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Lead marshaller and wing walkers in correct position",
+     "plain_name": "Lead marshaller and wing walkers in position",
+     "client_rule": {
+      "stage": "Arrival stage",
+      "check": "Lead marshaller and wing walkers in correct position",
+      "tier": "real-time",
+      "cameras": "Cone/Cone",
+      "pass_": "At least 2 wing-walkers are present (on both sides) on plane turnaround position for at least 10 minutes during pre-arrival and move along both sides of the plane with wands and hand signals during arrival",
+      "fail": "0 or 1 wing-walker detected with no obstacles on the side where a wing-walker wasn't detected or at least one of the wing-walkers didn't make hand-signals with wands",
+      "not_observed": "There was no airplane on video, prearrival stage is shorter than 10 minutes (4800 frames) or there was no arrival.",
+      "not_observed_blocked": "If Fail is not triggered and amount of frames with obstacle on either side is more than 65% of prearrival or arrival stage.",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 62,
+      "labelled": 68,
+      "percent": 91,
+      "fails_labelled": 49,
+      "fails_caught": 48
+     }
+    }
+   ],
+   "code_review_finding": "The lead marshaller and the wands are never checked; presence needs 90 s, not 10 minutes; the branch's Dockerfile lacks mmpose (how production builds it: to confirm).",
+   "sources": {
+    "technical_page": "docs/modules/lead-marshaller-and-wing-walkers-in-position.md",
+    "code": "external/_branches/lead-marshaller-and-wing-walkers-in-position@pre_arrival_departure",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "bl_rear_cone",
+   "internal_ids": "M05",
+   "plain_title": "Belt loader rear cone placed after the belt loader is in place",
+   "stages": [
+    "Post-arrival",
+    "Download"
+   ],
+   "stages_plain": [
+    "after the aircraft stops",
+    "unloading"
+   ],
+   "folder": "3 After the aircraft stops",
+   "output": "docs/handbook/system/modules/3 After the aircraft stops/Belt loader rear cone placed after the belt loader is in place.md",
+   "production_version": "main @ 12429f5",
+   "glance": {
+    "Checks": "M05 · Beltloader rear cone positioned after BL is in place",
+    "Stage": "Post-arrival, Download",
+    "Looks at": "from the aircraft's arrival until its departure; cones are counted only while a loader stands (stopping or stopped) at the door",
+    "Cameras": "aircraft: both cameras; jet: wing camera. The cone camera checks the front-door loader, the wing camera the rear-door loader",
+    "Uses": "General Model (GM) classes `cone`, `beltloader_cone`, `engine_cone`, `wing_cone` (the cone), `back_door`, `back_wheel`, `airplane_engine` (choosing the loader); tracks of the aircraft and belt loaders (status, door label); video frames: no",
+    "Own models": "none",
+    "Runs on": "CPU",
+    "Real time": "ready as is — works on frames already seen; a Pass is known once the cone has stood 10 s behind a loader that has been at the door for 60 s",
+    "Production version": "main @ 12429f5 (2025-06-19; last logic change d75f1f8, 2025-05-14)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Beltloader rear cone positioned after BL is in place to alert clearance",
+     "plain_name": "Belt loader rear cone placed after the belt loader is in place",
+     "client_rule": {
+      "stage": "Post-arrival stage",
+      "check": "Beltloader rear cone positioned after BL is in place",
+      "tier": "real-time",
+      "cameras": "Both/Wing",
+      "pass_": "Beltloader rear cone is seen at least 100 frames",
+      "fail": "Beltloader rear cone is detected less than 100 times",
+      "not_observed": "No stopped beltloader near to plane is detected",
+      "not_observed_blocked": "There were obstacles for 1 minute in total",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 62,
+      "labelled": 68,
+      "percent": 91,
+      "fails_labelled": 14,
+      "fails_caught": 12
+     }
+    }
+   ],
+   "code_review_finding": "Needs more than 80 frames in a row (10 s), the rule says 100 frames in total; the blocked-view Not observed is not implemented.",
+   "sources": {
+    "technical_page": "docs/modules/bl_rear_cone.md",
+    "code": "external/bl_rear_cone",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "hand-signals",
+   "internal_ids": "M13",
+   "plain_title": "Service vehicles guided to the aircraft with approved hand signals",
+   "stages": [
+    "Post-arrival"
+   ],
+   "stages_plain": [
+    "after the aircraft stops"
+   ],
+   "folder": "3 After the aircraft stops",
+   "output": "docs/handbook/system/modules/3 After the aircraft stops/Service vehicles guided to the aircraft with approved hand signals.md",
+   "production_version": "master @ 60c0faf",
+   "glance": {
+    "Checks": "M13 · All GSE guided into aircraft using approved hand signals",
+    "Stage": "Post-arrival",
+    "Looks at": "from the aircraft's arrival until its departure; for each loader, from 30 s to 5 s before it stops at the door",
+    "Cameras": "aircraft: both cameras; jet: wing camera. Front cargo door on the cone camera, rear door on the wing camera",
+    "Uses": "General Model (GM) classes `front_door` / `back_door`, `back_wheel`, `airplane_engine`; tracks of the aircraft, belt loaders and persons; video frames: yes",
+    "Own models": "none trained by the team; runs the stock HRNet-W48 pose model (mmpose, COCO keypoints) to find elbows and wrists",
+    "Runs on": "GPU",
+    "Real time": "needs a new first pass — a first pass reads ahead to average the door position; the door must be fixed from the past only",
+    "Production version": "master @ 60c0faf (2025-11-13; last logic change 6bd027f, 2025-07-30)"
+   },
+   "checks": [
+    {
+     "client_check_name": "All GSE guided into aircraft using approved hand signals",
+     "plain_name": "Service vehicles guided to the aircraft with approved hand signals",
+     "client_rule": {
+      "stage": "Post-arrival stage",
+      "check": "All GSE guided into aircraft using approved hand signals",
+      "tier": "post",
+      "cameras": "Both/Wing",
+      "pass_": "All beltloaders that come to the plane's open doors have a person guiding them with hand signals that are visible",
+      "fail": "No workers detected in ROI during approach Workers detected but no valid hand signals performed Insufficient signal duration",
+      "not_observed": "No beltloaders are seen approaching open doors, no plane appeared on the video",
+      "not_observed_blocked": "Large obstacles in center frame Side obstacles larger than 1.5x person height",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 65,
+      "labelled": 68,
+      "percent": 96,
+      "fails_labelled": 13,
+      "fails_caught": 13
+     }
+    }
+   ],
+   "code_review_finding": "The blocked-view Not observed is commented out; the driver filter is hard-coded to person id 0.",
+   "sources": {
+    "technical_page": "docs/modules/hand-signals.md",
+    "code": "external/hand-signals",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "post-arrival-aircraft-walk-around-inspection-completed-accurately",
+   "internal_ids": "M17",
+   "plain_title": "Walk-around inspection after arrival",
+   "stages": [
+    "Post-arrival"
+   ],
+   "stages_plain": [
+    "after the aircraft stops"
+   ],
+   "folder": "3 After the aircraft stops",
+   "output": "docs/handbook/system/modules/3 After the aircraft stops/Walk-around inspection after arrival.md",
+   "production_version": "tdv_cone @ a0d9ee4",
+   "glance": {
+    "Checks": "M17 · Post-arrival aircraft walk around inspection completed accurately",
+    "Stage": "Post-arrival",
+    "Looks at": "from the moment the aircraft stops until a belt loader stops at the aircraft, or at most 5 minutes",
+    "Cameras": "cone camera, aircraft only (not run for jets)",
+    "Uses": "tracks of the aircraft, persons and belt loaders; General Model (GM) aircraft-part and person boxes (aircraft outline), vehicle and `obstacle` / `side_obstacle` boxes (blocked view); video frames: yes",
+    "Own models": "walk-around CNN `best_model.pth` — scores each path drawing; it also runs stock YOLOv8m-pose (keypoints for distance), Depth Anything V2 and MobileSAM (aircraft outline)",
+    "Runs on": "GPU when available, else CPU; the worker settings file says CPU — to confirm",
+    "Real time": "post-processing only — whole paths are judged when the inspection window closes",
+    "Production version": "tdv_cone @ a0d9ee4 (2026-07-27)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Post-arrival aircraft walk around inspection completed accurately",
+     "plain_name": "Walk-around inspection after arrival",
+     "client_rule": {
+      "stage": "Post-arrival stage",
+      "check": "Post-arrival aircraft walk around inspection completed accurately",
+      "tier": "post",
+      "cameras": "Cone/-",
+      "pass_": "When trajectory prediction model outputs True for a worker's trajectory around the plane (preprocessed and transformed into image format)",
+      "fail": "The prediction module otputs False for each observed trajectory",
+      "not_observed": "No workers are visible",
+      "not_observed_blocked": "FOV is blocked (ratio of blocked frames all frames > 0.6)",
+      "notes": "We stop monitoring the trajectories after beltloader arrival or after 5 mins since airplane arrival"
+     },
+     "monthly_test": {
+      "correct": 42,
+      "labelled": 55,
+      "percent": 76,
+      "fails_labelled": 21,
+      "fails_caught": 17
+     }
+    }
+   ],
+   "code_review_finding": "Crashes instead of Not observed when the aircraft never stops; whether the July 2026 commits are deployed: to confirm.",
+   "sources": {
+    "technical_page": "docs/modules/post-arrival-aircraft-walk-around-inspection-completed-accurately.md",
+    "code": "external/_branches/post-arrival-aircraft-walk-around-inspection-completed-accurately@tdv_cone",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "3-stop-brake-check",
+   "internal_ids": "M01",
+   "plain_title": "Three-stop brake check",
+   "stages": [
+    "Post-arrival",
+    "Download"
+   ],
+   "stages_plain": [
+    "after the aircraft stops",
+    "unloading"
+   ],
+   "folder": "3 After the aircraft stops",
+   "output": "docs/handbook/system/modules/3 After the aircraft stops/Three-stop brake check.md",
+   "production_version": "master @ 14685f4",
+   "glance": {
+    "Checks": "M01 · 3 stop brake check",
+    "Stage": "Post-arrival, Download",
+    "Looks at": "from the aircraft's arrival until its departure; each loader is judged when it parks next to the aircraft",
+    "Cameras": "aircraft: both cameras; jet: wing camera (separate settings per camera)",
+    "Uses": "General Model (GM) classes `gse`, `pushback`, `trailer` (only to spot a blocked view); tracks of the aircraft and belt loaders (status, stop count); video frames: no",
+    "Own models": "none",
+    "Runs on": "CPU",
+    "Real time": "ready as is — a loader's stop count is final when it parks, so its verdict can be given at that moment",
+    "Production version": "master @ 14685f4 (2026-05-07; last logic change 05cfc12, 2025-02-18)"
+   },
+   "checks": [
+    {
+     "client_check_name": "3 stop brake check",
+     "plain_name": "Three-stop brake check",
+     "client_rule": {
+      "stage": "Post-arrival stage",
+      "check": "3 stop brake check",
+      "tier": "streaming",
+      "cameras": "Both/Wing",
+      "pass_": "All stopped loaders made 3 stops (before final 4-th)",
+      "fail": "At least one of the stopped loaders made < 3 stops",
+      "not_observed": "No loaders stops detected",
+      "not_observed_blocked": "No obstacles logic",
+      "notes": "If a loader is moving in reverse, the stops count is reset"
+     },
+     "monthly_test": {
+      "correct": 54,
+      "labelled": 68,
+      "percent": 79,
+      "fails_labelled": 43,
+      "fails_caught": 39
+     }
+    }
+   ],
+   "code_review_finding": "Reversing is never checked. The tracker resets the stop count after any stop of 3 s or more, so a long brake check wipes the earlier stops.",
+   "sources": {
+    "technical_page": "docs/modules/3-stop-brake-check.md",
+    "code": "external/3-stop-brake-check",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "all-cargo-bin-doors-opened-and-verified",
+   "internal_ids": "M03",
+   "plain_title": "All cargo bin doors opened and verified",
+   "stages": [
+    "Download"
+   ],
+   "stages_plain": [
+    "unloading"
+   ],
+   "folder": "4 Unloading and loading",
+   "output": "docs/handbook/system/modules/4 Unloading and loading/All cargo bin doors opened and verified.md",
+   "production_version": "bl_approach @ 3422bdc",
+   "glance": {
+    "Checks": "M03 · All cargo bin doors opened and verified",
+    "Stage": "Download",
+    "Looks at": "from the moment the aircraft stops until it departs; ends early 10 s after both conditions are met",
+    "Cameras": "cone camera (front cargo door) and wing camera (back cargo door) for aircraft; wing camera only for jets",
+    "Uses": "GM classes `front_door` (cone) or `back_door` (wing), `back_wheel` (cone); aircraft and belt loader tracks (with the tracker's front / back door label and stopped status); video frames: no",
+    "Own models": "none",
+    "Runs on": "CPU",
+    "Real time": "ready as is — one pass, no video frames; Pass is known as soon as both conditions hold, Fail at departure",
+    "Production version": "bl_approach @ 3422bdc (2026-04-14)"
+   },
+   "checks": [
+    {
+     "client_check_name": "All cargo bin doors opened and verified",
+     "plain_name": "All cargo bin doors opened and verified",
+     "client_rule": {
+      "stage": "Download stage",
+      "check": "All cargo bin doors opened and verified",
+      "tier": "post",
+      "cameras": "Both/Wing",
+      "pass_": "Open door is seen at least 480 frames (front door is checked on cone camera, back door is checked on wing camera) and a beltloader approached the target door (beltloader should be present near the door for at least 10 seconds)",
+      "fail": "The door is not detected as open for enough amount of frames or no beltloader has approached it and there were no obstacles",
+      "not_observed": "There was no arrival stage or pass condition is not triggered and an obstacle is registered in front of the camera for 480 frames after the plane has arrived and before it's departure",
+      "not_observed_blocked": "No obstacles logic",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 68,
+      "labelled": 68,
+      "percent": 100,
+      "fails_labelled": 4,
+      "fails_caught": 4
+     }
+    }
+   ],
+   "code_review_finding": "The obstacle check is called with `camera_config=None` and never fires, so a blocked view gives Fail instead of Not observed. An extra \"no pre-arrival stage\" case uses 90 frames where the comment says 90 s.",
+   "sources": {
+    "technical_page": "docs/modules/all-cargo-bin-doors-opened-and-verified.md",
+    "code": "external/_branches/all-cargo-bin-doors-opened-and-verified@bl_approach",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "gse-chocks",
+   "internal_ids": "M12",
+   "plain_title": "Motorized service vehicles parked and chocked",
+   "stages": [
+    "Download",
+    "Upload"
+   ],
+   "stages_plain": [
+    "unloading",
+    "loading"
+   ],
+   "folder": "4 Unloading and loading",
+   "output": "docs/handbook/system/modules/4 Unloading and loading/Motorized service vehicles parked and chocked.md",
+   "production_version": "per_component_improvement @ d3f92a5",
+   "glance": {
+    "Checks": "M12 · Motorized GSE parked and properly chocked",
+    "Stage": "Download, Upload",
+    "Looks at": "the whole video: each stop of each GSE, from the moment it stops until it drives away (or the video ends)",
+    "Cameras": "cone and wing camera for aircraft; wing camera only for jets (the code runs the same logic on both)",
+    "Uses": "General Model (GM) classes `chock` (evidence), `pushback`, `trailer`, `fuel_truck`, `cone`, `ladder` (obstacles); tracks of `gse` (with the tracker's motion counters and optical-flow points), `person` and `beltloader`; video frames: yes",
+    "Own models": "chock difference classifier (EfficientNet-B0, ours) — did a chock appear in the wheel area; RTMPose-l (stock pose model) — is a worker bending",
+    "Runs on": "CPU in the current image (`cpu_base`, `--device cpu` by default); the code can use a GPU",
+    "Real time": "ready, needs video frames — the verdict for each stop is known when the GSE drives away",
+    "Production version": "per_component_improvement @ d3f92a5 (2026-05-29; last logic change 426526b, 2026-03-24)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Motorized GSE parked and properly chocked",
+     "plain_name": "Motorized service vehicles parked and chocked",
+     "client_rule": {
+      "stage": "Upload stage",
+      "check": "Motorized GSE parked and properly chocked",
+      "tier": "streaming",
+      "cameras": "Both/Wing",
+      "pass_": "When GSE is considered parked and one of these conditions is met: Direct chock detection in ROI Human action (bending) detected for frontal orientation Frame difference analysis shows chocks present",
+      "fail": "",
+      "not_observed": "GSE is too far (height < min_observed_height) GSE is partially beyond frame Not parked long enough (park_duration < min_park_duration) Person stays on GSE too long",
+      "not_observed_blocked": "For orientation-based detection: obstacles cover >75% of wheel ROI For difference-based detection: environment not static or foreground obstacles present",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 55,
+      "labelled": 68,
+      "percent": 81,
+      "fails_labelled": 22,
+      "fails_caught": 18
+     }
+    }
+   ],
+   "code_review_finding": "The aircraft is never used, so any parked GSE counts. The client's Fail column is empty. Bending counts for every orientation, not only frontal.",
+   "sources": {
+    "technical_page": "docs/modules/gse-chocks.md",
+    "code": "external/_branches/gse-chocks@per_component_improvement",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "handrails-on-gse-being-used",
+   "internal_ids": "M14",
+   "plain_title": "Handrails on service vehicles being used",
+   "stages": [
+    "Download",
+    "Upload"
+   ],
+   "stages_plain": [
+    "unloading",
+    "loading"
+   ],
+   "folder": "4 Unloading and loading",
+   "output": "docs/handbook/system/modules/4 Unloading and loading/Handrails on service vehicles being used.md",
+   "production_version": "per_component_improvement @ f2c4793",
+   "glance": {
+    "Checks": "M14 · Handrails on GSE being used",
+    "Stage": "Download, Upload",
+    "Looks at": "from the moment the aircraft stops until it departs, only frames where the belt loader at the camera's door is stopped",
+    "Cameras": "cone camera (front belt loader) and wing camera (back belt loader) for aircraft; not used for jets",
+    "Uses": "General Model (GM) classes `person`, `front_door`, `back_door`, `airplane_engine`, `back_wheel`; tracks of the aircraft, belt loaders (front / back label, stopped status) and persons; video frames: yes, every frame",
+    "Own models": "handrail classifier (EfficientNet-B0) — extended or not; handrail segmentation (Unet MiT-B0); hand-contact classifier (EfficientNet-B0) — hand on the rail; plus the stock DWPose-l whole-body pose model",
+    "Runs on": "GPU (the pose model is set to CUDA only)",
+    "Real time": "ready, needs video frames — four models on every frame with a stopped belt loader; worker coverage is finalised only at the end",
+    "Production version": "per_component_improvement @ f2c4793 (2026-07-09)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Handrails on GSE being used",
+     "plain_name": "Handrails on service vehicles being used",
+     "client_rule": {
+      "stage": "Upload stage",
+      "check": "Handrails on GSE being used",
+      "tier": "streaming",
+      "cameras": "Both/-",
+      "pass_": "Every worker detected on the belt loader has made contact with the handrail while walking. The handrails are extended, providing a safe setup for workers, and no significant obstacles prevent detection.",
+      "fail": "At least one worker on the belt loader has not made contact with the handrail while walking, or handrail usage isn’t consistent across observed frames.",
+      "not_observed": "No belt loader is detected, or no workers are walking on it, possibly due to poor visibility, obstructions, or camera angles.",
+      "not_observed_blocked": "If handrail usage cannot be confirmed due to excessive obstacles, the view is considered \"Blocked.\" More than 80% of the belt loader area is obstructed, preventing a clear safety evaluation.",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 51,
+      "labelled": 56,
+      "percent": 91,
+      "fails_labelled": 45,
+      "fails_caught": 41
+     }
+    }
+   ],
+   "code_review_finding": "The blocked-view case is not implemented; the touch check without the pose model credits a touch to every worker seen on the belt loader in the last 2.5 s; the production branch lacks master's `pretrained=False` fix.",
+   "sources": {
+    "technical_page": "docs/modules/handrails-on-gse-being-used.md",
+    "code": "external/_branches/handrails-on-gse-being-used@per_component_improvement",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "safety-handrails-fully-extended",
+   "internal_ids": "M22",
+   "plain_title": "Safety handrails fully extended and used",
+   "stages": [
+    "Download",
+    "Upload"
+   ],
+   "stages_plain": [
+    "unloading",
+    "loading"
+   ],
+   "folder": "4 Unloading and loading",
+   "output": "docs/handbook/system/modules/4 Unloading and loading/Safety handrails fully extended and used.md",
+   "production_version": "master @ 8b9a2a9",
+   "glance": {
+    "Checks": "M22 · Safety handrails fully extended and used",
+    "Stage": "Download, Upload",
+    "Looks at": "from the moment the aircraft stops until it departs, only frames where the belt loader at the camera's door is stopped",
+    "Cameras": "cone camera (front belt loader) and wing camera (back belt loader) for aircraft; not used for jets",
+    "Uses": "General Model (GM) class `back_wheel` (cone camera: drops the rear belt loader); `person`, `trailer`, `gse` only for an on-screen \"camera blocked\" note; tracks of the aircraft and belt loaders (front / back label, stopped status); video frames: yes",
+    "Own models": "handrail classifier (EfficientNet-B0, ours; the same weights as M14) — handrails extended or not",
+    "Runs on": "GPU if available, otherwise CPU",
+    "Real time": "ready, needs video frames — one belt loader crop per second; each belt loader's result is final when it leaves (today computed at the end)",
+    "Production version": "master @ 8b9a2a9 (2025-06-19; last logic change c7c5b6d, 2025-02-18)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Safety handrails fully extended and used",
+     "plain_name": "Safety handrails fully extended and used",
+     "client_rule": {
+      "stage": "Upload stage",
+      "check": "Safety handrails fully extended and used",
+      "tier": "streaming",
+      "cameras": "Both/-",
+      "pass_": "ALL beltloaders detected for more than 8*60 frames (8 minutes) have extended ratio > 0.45",
+      "fail": "Any beltloader detected for more than 8*60 frames has extended ratio ≤ 0.45",
+      "not_observed": "Beltloader is not detected (near to plane)",
+      "not_observed_blocked": "No obstacles logic",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 55,
+      "labelled": 56,
+      "percent": 98,
+      "fails_labelled": 17,
+      "fails_caught": 16
+     }
+    }
+   ],
+   "code_review_finding": "Only checks that the handrails are extended, not used; the \"8 minutes\" is really 60 s.",
+   "sources": {
+    "technical_page": "docs/modules/safety-handrails-fully-extended.md",
+    "code": "external/safety-handrails-fully-extended",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "beltloader-chocks",
+   "internal_ids": "M04",
+   "plain_title": "Belt loader forward chock stays in place until the belt loader backs away",
+   "stages": [
+    "Download",
+    "Upload",
+    "Pre-departure"
+   ],
+   "stages_plain": [
+    "unloading",
+    "loading",
+    "before departure"
+   ],
+   "folder": "4 Unloading and loading",
+   "output": "docs/handbook/system/modules/4 Unloading and loading/Belt loader forward chock stays in place until the belt loader backs away.md",
+   "production_version": "master @ 7056099",
+   "glance": {
+    "Checks": "M04 · Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+    "Stage": "Download, Upload, Pre-departure",
+    "Looks at": "from the moment the aircraft stops until it departs, while the belt loader at the camera's door is stopping or stopped",
+    "Cameras": "cone camera (front belt loader) and wing camera (back belt loader) for aircraft; wing camera only for jets",
+    "Uses": "GM classes `chock` (evidence), `back_wheel`, `back_door`, `airplane_engine`, `airplane_wing` (belt loader choice, aircraft type); large vehicles, cones and persons only for an on-screen \"camera blocked\" note; tracks of the aircraft and belt loaders (front / back label, stopped status); video frames: no",
+    "Own models": "none",
+    "Runs on": "CPU",
+    "Real time": "ready as is — one pass over detections and tracks, no video frames; each belt loader's result is final when it leaves",
+    "Production version": "master @ 7056099 (2025-11-17)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+     "plain_name": "Belt loader forward chock stays in place until the belt loader backs away",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Belt loader forward chock remained in place until unit is backed up clear of aircraft",
+      "tier": "real-time",
+      "cameras": "Both/Wing",
+      "pass_": "All detected in video beltloaders parked and chocked. Chocks remain in place while beltloader is parked",
+      "fail": "At least one of the detected beltloaders stopped, but wasn't chocked",
+      "not_observed": "No loaders stops detected or there is an obstacle",
+      "not_observed_blocked": "FOV is blocked",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 60,
+      "labelled": 68,
+      "percent": 88,
+      "fails_labelled": 11,
+      "fails_caught": 10
+     }
+    }
+   ],
+   "code_review_finding": "Does not check that the chock stays until the belt loader backs away; obstacles do not change the verdict.",
+   "sources": {
+    "technical_page": "docs/modules/beltloader-chocks.md",
+    "code": "external/beltloader-chocks",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed",
+   "internal_ids": "M07",
+   "plain_title": "Conditioned air hose removed 10 minutes before departure and stowed",
+   "stages": [
+    "Pre-departure"
+   ],
+   "stages_plain": [
+    "before departure"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Conditioned air hose removed 10 minutes before departure and stowed.md",
+   "production_version": "new_logic @ 960bfe1",
+   "glance": {
+    "Checks": "M07 · Conditioned air removed 10 mins prior to departure and properly stowed",
+    "Stage": "Pre-departure",
+    "Looks at": "The hose from the moment the aircraft stops until its departure starts; the verdict is about the last 10 minutes before the departure and is given about 26 s after the aircraft starts moving",
+    "Cameras": "Cone camera, aircraft and jet (the code ignores the camera flag)",
+    "Uses": "General Model (GM) boxes: airplane_nose, airplane_wing, airplane_engine, and pushback, beltloader, gse, trailer, fuel_truck, air_conditioning, obstacle, side_obstacle, vehicle as obstacles. Tracks: airplane. Video frames: yes",
+    "Own models": "Conditioned-air hose detector (YOLO11s segmentation model trained on our hose images; only its boxes are used)",
+    "Runs on": "GPU (CPU if no GPU is present)",
+    "Real time": "ready, needs video frames — one pass; the detector needs a frame every 2 s and the verdict only looks back at time already seen",
+    "Production version": "new_logic @ 960bfe1 (2026-04-07)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Conditioned air removed 10 mins prior to departure and properly stowed",
+     "plain_name": "Conditioned air hose removed 10 minutes before departure and stowed",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Conditioned air removed 10 mins prior to departure and properly stowed",
+      "tier": "streaming",
+      "cameras": "Cone/Cone",
+      "pass_": "If the air conditioning hose was removed and properly stoved 10 mins or more before the departure.",
+      "fail": "If the air conditioning hose was used but wasn't removed and/or properly stoved 10 mins or more before the departure.",
+      "not_observed": "If the AC hose wasn't used OR if the aircraft nose/jet left engine wasn't seen throughout the video OR if the departure wasn't observed",
+      "not_observed_blocked": "Obstacles were present during the '10 min before departure' mark AND AC hose was not seen used, disconnected and stowed away previously",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 66,
+      "labelled": 68,
+      "percent": 97,
+      "fails_labelled": 4,
+      "fails_caught": 3
+     }
+    }
+   ],
+   "code_review_finding": "The production branch is a full rewrite (the architecture review describes the old code). For jets one test compares a horizontal box edge with a vertical one (`main.py:520`), likely a bug. \"Properly stowed\" is never checked on its own.",
+   "sources": {
+    "technical_page": "docs/modules/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed.md",
+    "code": "external/_branches/conditioned-air-removed-10-mins-prior-to-departure-and-properly-stowed@new_logic",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+   "internal_ids": "M08",
+   "plain_title": "Cones removed only after all service vehicles are clear of the aircraft and chocked",
+   "stages": [
+    "Pre-departure"
+   ],
+   "stages_plain": [
+    "before departure"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Cones removed only after all service vehicles are clear of the aircraft and chocked.md",
+   "production_version": "main @ e2a25ba",
+   "glance": {
+    "Checks": "M08 · Cones are removed only after all GSE is clear of A/C and chocked",
+    "Stage": "Pre-departure",
+    "Looks at": "The whole video up to the tracker's departure moment (about 10 s after the aircraft starts moving); what counts is the last cone sighting against the last BL presence at the aircraft",
+    "Cameras": "Cone camera for aircraft, wing camera for jets (client split); on the cone camera the code adds a tail-cone filter and a BL-behind-the-rear-wheel test",
+    "Uses": "General Model (GM) boxes: engine_cone, wing_cone, tail_cone, front_door, back_wheel, vehicle; gse, pushback, trailer, beltloader, fuel_truck (obstacle test only). Tracks: airplane, beltloader. Video frames: no (only for the annotated video)",
+    "Own models": "none (`weights/cones_v1.pt` is tracked in DVC but never loaded)",
+    "Runs on": "CPU",
+    "Real time": "ready as is — one pass over detections and tracks, no video frames; the verdict is given at the departure",
+    "Production version": "main @ e2a25ba (2025-11-28)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Cones are removed only after all GSE is clear of A/C and chocked",
+     "plain_name": "Cones removed only after all service vehicles are clear of the aircraft and chocked",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Cones are removed only after all GSE is clear of A/C and chocked",
+      "tier": "real-time",
+      "cameras": "Cone/Wing",
+      "pass_": "Cones were removed, and transport was far enough from aircraft and haven't approached plane after that.",
+      "fail": "Cones were removed, but transport was too close to aircraft or have approached after the removal.",
+      "not_observed": "Amount of cones detection is less than 200 frames",
+      "not_observed_blocked": "If amount of blocked frames is more than 65% of fullturn.",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 54,
+      "labelled": 67,
+      "percent": 81,
+      "fails_labelled": 11,
+      "fails_caught": 5
+     }
+    }
+   ],
+   "code_review_finding": "Chocks are never checked; \"all GSE\" means belt loaders only; cones still visible at departure give Pass; the 200-frame and 65 % blocked rules are missing; the obstacle branch rarely fires (a `break` bug).",
+   "sources": {
+    "technical_page": "docs/modules/cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked.md",
+    "code": "external/cones-are-removed-only-after-all-gse-is-clear-of-aircraft-and-chocked",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "pin-verification",
+   "internal_ids": "M16",
+   "plain_title": "Pushback driver checks the steering bypass pin",
+   "stages": [
+    "Pre-departure"
+   ],
+   "stages_plain": [
+    "before departure"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Pushback driver checks the steering bypass pin.md",
+   "production_version": "master @ 8e1863c",
+   "glance": {
+    "Checks": "M16 · Pushback operator verifies steering bypass pin installation",
+    "Stage": "Pre-departure",
+    "Looks at": "From the moment the pushback counts as attached until 10 s before the tracker's departure moment, only while the aircraft is stopped",
+    "Cameras": "Cone camera, aircraft only (not run for jets); the camera flag is ignored",
+    "Uses": "General Model (GM) boxes: pushback, airplane_nose, front_wheel; obstacles beltloader, gse, trailer, obstacle, side_obstacle, vehicle. Tracks: airplane, person. Video frames: yes (pose on workers near the wheel)",
+    "Own models": "none trained by us; a stock body-pose model (SimCC ResNet-50, COCO, via mmpose) gives each worker's keypoints",
+    "Runs on": "GPU (`cuda:0` is hard-coded)",
+    "Real time": "needs a small patch — a first pass reads the whole video to find the departure frame and where the pushback finally parks; this should come from a shared \"pushback attached\" event instead",
+    "Production version": "master @ 8e1863c (2025-06-19)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Pushback operator verifies steering bypass pin installation",
+     "plain_name": "Pushback driver checks the steering bypass pin",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Pushback operator verifies steering bypass pin installation",
+      "tier": "streaming",
+      "cameras": "Cone/-",
+      "pass_": "Worker bend near front wheel for 0.5 seconds or stood there for ≥3 seconds (consider it as pin verification) while pushback was on video",
+      "fail": "Found airplane => pushback => detected front wheel => NOT detected pin verification",
+      "not_observed": "Not observed airplane, pushback or front wheel",
+      "not_observed_blocked": "There were obstacles for 2 minutes total after the first detect of the pushback",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 42,
+      "labelled": 55,
+      "percent": 76,
+      "fails_labelled": 12,
+      "fails_caught": 9
+     }
+    }
+   ],
+   "code_review_finding": "Needs 1.5 s of bending or 2.5 s of standing (the rule: 0.5 s / 3 s); standing also needs a raised hand; the first pass reads ahead in the video.",
+   "sources": {
+    "technical_page": "docs/modules/pin-verification.md",
+    "code": "external/pin-verification",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "pre-departure-walk-around-completed",
+   "internal_ids": "M19",
+   "plain_title": "Walk-around inspection before departure",
+   "stages": [
+    "Pre-departure"
+   ],
+   "stages_plain": [
+    "before departure"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Walk-around inspection before departure.md",
+   "production_version": "tdv_cone @ e407de2",
+   "glance": {
+    "Checks": "M19 · Pre-departure walk around completed",
+    "Stage": "Pre-departure",
+    "Looks at": "Worker paths in a window that ends when the departure starts and begins 480 s (8 min) earlier, but not earlier than about 30 s before the last belt loader (BL) left; the verdict comes 30 s after the aircraft starts moving",
+    "Cameras": "Cone camera, aircraft only (not run for jets)",
+    "Uses": "Tracks: airplane, person, beltloader. General Model (GM) boxes: aircraft parts (nose, wing, engine, tail, wheels, doors), pushback and other vehicles. Video frames: yes, every frame",
+    "Own models": "Walk-around classifier: small Keras CNN (`best_acc.keras`, 224×224) that scores one path image. Stock models: YOLOv8m-pose (worker keypoints, for distance), Depth Anything V2 and MobileSAM (top-down picture of the aircraft)",
+    "Runs on": "GPU for pose, depth and segmentation; the CNN runs through TensorFlow on CPU",
+    "Real time": "post-processing only — the verdict judges the whole window at departure, and on Fail it re-reads up to 12.5 minutes of video",
+    "Production version": "tdv_cone @ e407de2 (2026-07-27)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Pre-departure walk around completed",
+     "plain_name": "Walk-around inspection before departure",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Pre-departure walk around completed",
+      "tier": "post",
+      "cameras": "Cone/-",
+      "pass_": "When trajectory prediction model outputs True for a worker's trajectory around the plane (preprocessed and transformed into image format)",
+      "fail": "The prediction module otputs False for each observed trajectory",
+      "not_observed": "No workers are visible",
+      "not_observed_blocked": "FOV is blocked (ratio of blocked frames all frames > 0.6)",
+      "notes": "we focus on the time 5 minutes before the departure of the plane, but not before the last beltloader leaves"
+     },
+     "monthly_test": {
+      "correct": 39,
+      "labelled": 55,
+      "percent": 71,
+      "fails_labelled": 27,
+      "fails_caught": 21
+     }
+    }
+   ],
+   "code_review_finding": "No workers seen gives Fail (the rule: Not observed); the blocked-view rule is commented out; the window is 8 minutes, not 5; its cv_common pin lacks a package it imports.",
+   "sources": {
+    "technical_page": "docs/modules/pre-departure-walk-around-completed.md",
+    "code": "external/_branches/pre-departure-walk-around-completed@tdv_cone",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "pushback-does-not-start-until-wing-walkers-are-in-place-and-ready",
+   "internal_ids": "M20",
+   "plain_title": "Pushback waits until the wing walkers are in place and ready",
+   "stages": [
+    "Pre-departure",
+    "Departure"
+   ],
+   "stages_plain": [
+    "before departure",
+    "departure and pushback"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Pushback waits until the wing walkers are in place and ready.md",
+   "production_version": "obstruction_plane_track @ 6979d19",
+   "glance": {
+    "Checks": "M20 · Pushback does not start until wing walkers are in place and ready",
+    "Stage": "Pre-departure, Departure",
+    "Looks at": "the first 30 s after the aircraft starts moving back, once it has stood still for 60 s (at the end of the video, 20 s are enough)",
+    "Cameras": "cone camera, for aircraft and jets (the code does not check the camera type)",
+    "Uses": "General Model (GM) classes: pushback, airplane_wing; belt loader, GSE (ground support equipment), trailer, fuel truck, air conditioning, vehicle, obstacle, side_obstacle as view blockers. Tracks: aircraft, persons. Video frames: no",
+    "Own models": "none",
+    "Runs on": "CPU",
+    "Real time": "ready as is — one pass, no video frames, decides about 30 s after the movement starts",
+    "Production version": "obstruction_plane_track @ 6979d19 (2026-04-10)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Pushback does not start until wing walkers are in place and ready",
+     "plain_name": "Pushback waits until the wing walkers are in place and ready",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Pushback does not start until wing walkers are in place and ready",
+      "tier": "streaming",
+      "cameras": "Cone/Cone",
+      "pass_": "Two wing walkers detected, one on each side of aircraft during the segment [departure frame, departure frame + 30 secs]. Wing walkers' trajectories are within degree_thres (50°) of aircraft's trajectory. Wing walkers' movement vectors are co-directed with aircraft's movement vector. Wing walkers are properly positioned relative to aircraft (left/right sides verified by position).",
+      "fail": "0 or 1 wing-walker detected in total with no obstacles on the side where a wing-walker wasn't detected",
+      "not_observed": "There was no departure stage.",
+      "not_observed_blocked": "If Fail is not triggered and amount of frames with obstacle on either side is more than 60% during [departure frame, departure frame + 30 secs].",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 56,
+      "labelled": 68,
+      "percent": 82,
+      "fails_labelled": 17,
+      "fails_caught": 16
+     }
+    }
+   ],
+   "code_review_finding": "The right-side test compares a horizontal position with the top edge of the aircraft box (`main.py:179`), likely a bug that makes it almost always true; it checks walking along after the pushback starts, not readiness before.",
+   "sources": {
+    "technical_page": "docs/modules/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready.md",
+    "code": "external/_branches/pushback-does-not-start-until-wing-walkers-are-in-place-and-ready@obstruction_plane_track",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "pushback-pathway-confirmed-clear-of-obstacles",
+   "internal_ids": "M21",
+   "plain_title": "Pushback path clear of obstacles",
+   "stages": [
+    "Pre-departure",
+    "Departure"
+   ],
+   "stages_plain": [
+    "before departure",
+    "departure and pushback"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Pushback path clear of obstacles.md",
+   "production_version": "master @ 104db85",
+   "glance": {
+    "Checks": "M21 · Pushback pathway confirmed clear of obstacles",
+    "Stage": "Pre-departure, Departure",
+    "Looks at": "moving-aircraft frames after arrival, up to 15 s after the tracker's departure moment; a crossing counts only from 15 s before to 15 s after that moment",
+    "Cameras": "cone camera, for aircraft and jets (the code does not check the camera type)",
+    "Uses": "General Model (GM) classes: airplane_tail, airplane_nose, pushback, belt loader, GSE (ground support equipment), fuel truck, trailer, cone, chock, ladder. Tracks: aircraft (with the tracker's arrival and departure moments). Video frames: no",
+    "Own models": "none (the MobileSAM pushback tracker was removed in January 2026)",
+    "Runs on": "CPU (no model; the Docker image uses the GPU base)",
+    "Real time": "ready as is — one pass, no video frames, decides 15 s after the tracker's departure moment",
+    "Production version": "master @ 104db85 (2026-01-22)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Pushback pathway confirmed clear of obstacles",
+     "plain_name": "Pushback path clear of obstacles",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Pushback pathway confirmed clear of obstacles",
+      "tier": "real-time",
+      "cameras": "Cone/Cone",
+      "pass_": "There is no GSE, trailer, fuel truck, beltloader, person, cone or chocks on the pushback pathway on the departure stage",
+      "fail": "There is any of the listed items on the pushback pathway on the departure stage",
+      "not_observed": "There is no departure stage or there is no airplane tail or there is no plane on video",
+      "not_observed_blocked": "If obstacles appeared for more than 30 seconds during departure stage (and 60 seconds prior to it)",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 61,
+      "labelled": 68,
+      "percent": 90,
+      "fails_labelled": 3,
+      "fails_caught": 0
+     }
+    }
+   ],
+   "code_review_finding": "Only the first crossing is kept; if it is more than 15 s before departure the verdict flips to Pass. People are not checked; the chock size limit (25 × 5 px) means chocks practically never count. Measured: 0 of 4 violations caught.",
+   "sources": {
+    "technical_page": "docs/modules/pushback-pathway-confirmed-clear-of-obstacles.md",
+    "code": "external/pushback-pathway-confirmed-clear-of-obstacles",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  },
+  {
+   "repository": "wing-walkers-in-proper-position-and-using-approved-wands",
+   "internal_ids": "M27",
+   "plain_title": "Wing walkers in position with approved wands during pushback",
+   "stages": [
+    "Pre-departure",
+    "Departure"
+   ],
+   "stages_plain": [
+    "before departure",
+    "departure and pushback"
+   ],
+   "folder": "5 Before departure",
+   "output": "docs/handbook/system/modules/5 Before departure/Wing walkers in position with approved wands during pushback.md",
+   "production_version": "obstruction_hand_signals @ 3460afc",
+   "glance": {
+    "Checks": "M27 · Wing walkers in proper position and using approved wands",
+    "Stage": "Pre-departure, Departure",
+    "Looks at": "the first 60 s after the aircraft starts moving back (at the end of the video, 20 s are enough)",
+    "Cameras": "cone camera, for aircraft and jets (the camera type is not checked; aircraft or jet is detected by the module)",
+    "Uses": "General Model (GM) classes: pushback, airplane_wing, airplane_engine; belt loader, GSE (ground support equipment), trailer, fuel truck, air conditioning, vehicle, obstacle, side_obstacle as view blockers. Tracks: aircraft, persons. Video frames: yes",
+    "Own models": "none in use; runs the public HRNet-W48 COCO pose model (mmpose). The in-house wand detector `wand_detector.pt` is in the repository but not loaded",
+    "Runs on": "GPU (CPU with `--device cpu`)",
+    "Real time": "ready, needs video frames — one pass, decides 60 s after the movement starts (an earlier audit rated it \"ready as is\", but on the older default branch without pose)",
+    "Production version": "obstruction_hand_signals @ 3460afc (2025-10-29)"
+   },
+   "checks": [
+    {
+     "client_check_name": "Wing walkers in proper position and using approved wands",
+     "plain_name": "Wing walkers in position with approved wands during pushback",
+     "client_rule": {
+      "stage": "Pre-departure stage",
+      "check": "Wing walkers in proper position and using approved wands",
+      "tier": "streaming",
+      "cameras": "Cone/Cone",
+      "pass_": "A wing walker with wands and hand signals was noticed walking along the plane for both sides during the segment [departure frame, departure frame + 60 secs]",
+      "fail": "If at least one part of task returns Fail.",
+      "not_observed": "There was no departure stage.",
+      "not_observed_blocked": "If Fail is not triggered and amount of frames with obstacle on either side is more than 60% during [departure frame, departure frame + 60 secs].",
+      "notes": ""
+     },
+     "monthly_test": {
+      "correct": 56,
+      "labelled": 68,
+      "percent": 82,
+      "fails_labelled": 15,
+      "fails_caught": 12
+     }
+    }
+   ],
+   "code_review_finding": "Wands are never detected (the detector line is commented out) although the report says \"approved wands\"; \"hand signals\" means a wrist at or above the elbow for about 1 s; the production branch runs a pose model on video frames.",
+   "sources": {
+    "technical_page": "docs/modules/wing-walkers-in-proper-position-and-using-approved-wands.md",
+    "code": "external/_branches/wing-walkers-in-proper-position-and-using-approved-wands@obstruction_hand_signals",
+    "client_rules": "docs/05_module_logic.md",
+    "code_review": "docs/analysis/module_review_2026-10.md",
+    "real_time": [
+     "docs/04_modules.md",
+     "docs/analysis/rt_module_selection.md",
+     "docs/analysis/rt_module_cost.md"
+    ]
+   }
+  }
+ ]
+}
