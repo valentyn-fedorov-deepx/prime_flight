@@ -192,10 +192,22 @@ change is two pose models instead of five and the real-time budget (60 → 9 ms 
 - The hand-signal part decides one of the 11 Fail labels (HwGR6Wvf7mE2K3, both models agree); the other Fails come from
   a missing walker or a blocked side, without the pose. 15 of the 55 videos do not depend on the pose at all.
 
-Fix in progress: record both models' arm keypoints on the same walkers (`scripts/ww_pose_record.py`: the module decides
-with HRNet; RTMPose-l on the CLAHE frame, on the raw frame, with flip test, and DWPose-l run on the same boxes) over the
-40 pose-dependent videos (`scripts/ww_pose_batch.py`), then replay the rule offline for any model and thresholds
-(`scripts/ww_pose_replay.py`; on KB04bkqBI7ms the replay gives the recorded verdicts of both runs). Target: the three
-thresholds (`handsignals.conf_thr`, the margins, `min_frames`) for RTMPose-l that give HRNet's verdicts on the 40 videos,
-recover the 11 passes and keep HwGR6Wvf7mE2K3 a Fail. New thresholds go to Oksana / Ihor with the verdict table before
-production; the fallback is HRNet in wing-walkers only.
+**Recalibration (2026-10-27).** Both models' arm keypoints recorded on the same walkers over the 40 pose-dependent videos
+(`scripts/ww_pose_record.py`: the module decides with HRNet; RTMPose-l on the CLAHE frame, on the raw frame, with flip
+test, and DWPose-l on the same boxes; `scripts/ww_pose_batch.py`), the rule replayed offline (`scripts/ww_pose_replay.py
+--sweep`; the replay gives the recorded verdicts of both runs on 40 of 40). Event level, 55 events:
+
+| pose model, thresholds | correct | same as HRNet | fail labels passed |
+|---|---|---|---|
+| HRNet, module (conf 0.2, margins × 1, 8 frames) | 47 | 55 | 0 |
+| RTMPose-l, module | 36 | 42 | 0 |
+| RTMPose-l flip / raw frame / DWPose-l, module | 37 / 35 / 35 | 43 / 43 / 43 | 0 |
+| **RTMPose-l, conf 0.15, margins × 1.5, 12 frames** | **47** | **53** | **0** |
+| RTMPose-l, conf 0.10–0.15, margins × 1.5–2, 6–12 frames | 46 | 52 | 1 (HwGR6Wvf7mE2K3) |
+
+At the best point the two events that differ from HRNet are KB04bkqBI7ms (label pass: fail → pass) and KOlRIvK7wCq1
+(label fail: fail → not observed). The optimum is narrow and the set has one hand-signal Fail label, so the thresholds
+(`handsignals.conf_thr` 0.15, margins × 1.5, `handsignals.min_frames` 12) are to be confirmed on the 24 unrun videos and
+on more labelled wing-walker violations before production; then to Oksana / Ihor with the verdict table. The fallback stays
+HRNet in wing-walkers only. Plain-language report: `docs/handbook/research/cv/2026-10 Why the wing walker check lost
+accuracy with the shared pose model, and how new thresholds bring it back.md`.

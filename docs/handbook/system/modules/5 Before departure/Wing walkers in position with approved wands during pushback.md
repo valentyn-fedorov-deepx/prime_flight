@@ -121,7 +121,10 @@ came from a missing walker or a blocked side.
 - **Sensitive to the pose model.** With one shared, faster pose model for all pose checks, this check fell from 47 to 36
   correct on 55 turnarounds of the monthly test. Every loss comes from the hand-signal rule on very small people (about
   57 pixels tall, an arm about 10 pixels): arm confidence sits near the 0.2 limit for both models, the old model puts a
-  wrist at elbow height about twice as often, and the tolerances were tuned on it. A recalibration is in progress.
+  wrist at elbow height about twice as often, and the tolerances were tuned on it. New thresholds for the shared model
+  bring it back to 47 of 55 — as many as the old model — with no labelled Fail turned into Pass: a confidence limit of
+  0.15 instead of 0.2, a wrist–elbow tolerance 1.5 times wider, and 12 frames (1.5 seconds) of raised arm instead of 8.
+  To be confirmed on more turnarounds before production (*Research / CV / Why the wing walker check lost accuracy with the shared pose model, and how new thresholds bring it back*).
 - **Storage.** An unused 255-megabyte pose model copy is stored; the weights list names the folder twice.
 
 ## In real time
@@ -135,10 +138,9 @@ own work 5.1 milliseconds alone, 8.3 on average with all checks; as a post-proce
 
 To lighten it for real time: one pose model shared by the pose checks, no full-picture copies. The shared model is 6 to
 7 times faster per call (about 58 against 9 milliseconds) and cut this module's total time by 24 % in the validation
-run, but costs verdicts until recalibrated (see Known problems). The recalibration records both models' arm points on
-the same walkers in the 40 turnarounds where pose matters and replays the rule offline, seeking a confidence limit,
-tolerances and minimum frames that win back the 11 lost Passes and keep the one hand-signal Fail. The values go to the
-accuracy reviewers with the verdict table before production; the fallback is the old model in this check.
+run. With the check's present thresholds it costs verdicts (36 instead of 47 of 55); with the new thresholds found by
+replaying the rule on both models' arm points in 40 turnarounds it gets 47 of 55 again (see Known problems). The values
+go to the accuracy reviewers with the verdict table before production; the fallback is the old model in this check.
 
 ## For developers
 

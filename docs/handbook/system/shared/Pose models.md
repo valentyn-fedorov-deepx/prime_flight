@@ -127,13 +127,13 @@ With the debris walk left on model C, every check except wing walkers keeps or g
 - Mirroring and the whole-body model do not help: both still give Fail there, and E scores lower still (median 0.12).
 - The hand-signal part decides only one of the 11 Fail labels (both models agree there); the other Fails come from a
   missing walker or a blocked side. 15 of the 55 recordings do not depend on the pose at all.
-- **Fix in progress**: record the arm points of both models on the same walkers over the 40 recordings that depend on
-  the pose (the check decides with A; D runs on the contrast-enhanced frame, on the raw frame and mirrored; E on the
-  same boxes), then replay the rule offline for any model and thresholds; on one recording the replay already gives the
-  recorded verdicts of both runs. Target: the three thresholds (minimum score, how far below the elbow a wrist may be,
-  how many frames) that give A's verdicts with D on the 40 recordings, win back the 11 Passes and keep the one Fail. New
-  thresholds go to Oksana and Ihor with the verdict table before production; the fallback is to keep A in this check
-  only.
+- **Fix found (27 October 2026):** we recorded the arm points of both models on the same walkers over the 40 recordings
+  that depend on the pose and replayed the rule offline with other thresholds (the replay gives exactly the recorded
+  verdicts of both models on all 40). With a minimum score of 0.15 instead of 0.2, a wrist–elbow tolerance 1.5 times
+  wider and 12 frames (1.5 seconds) instead of 8, model D gets 47 of 55 right — as many as A — with the same verdict as A
+  on 53 of 55 and no Fail label turned into Pass. Mirroring, the raw frame and model E do not help with today's
+  thresholds (35–37 of 55). The best setting is narrow and only one labelled Fail depends on the arm rule: to confirm on
+  more recordings before production; the fallback is to keep A in this check only.
 
 **Other problems**
 
@@ -148,7 +148,7 @@ With the debris walk left on model C, every check except wing walkers keeps or g
 
 ## What changes next
 
-1. Finish the wing walker re-tuning (above).
+1. Confirm the wing walker thresholds on more recordings (above).
 2. Run the remaining 24 recordings.
 3. Send the changed verdicts to Oksana and Ihor: a model change must not change what a verdict means without approval.
 4. Roll out model D check by check (each installs the runner at its start; the weights file is the one the service

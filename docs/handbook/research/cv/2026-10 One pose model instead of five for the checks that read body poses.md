@@ -130,11 +130,10 @@ Wing walkers walk at the wing tips while the aircraft is pushed back, to keep th
 - The hand-signal part decides only one of the 11 videos labelled Fail; the other Fails come from a missing walker or a
   blocked side. 15 of the 55 videos do not depend on the pose at all.
 
-**Fix in progress.** We record both models' arm points on the same walkers over the 40 videos that depend on the pose,
-then replay the rule offline for any model and thresholds; on one video the replay already reproduces both recorded
-verdicts. The target: the three settings (the score limit, the wrist-to-elbow margins, the minimum number of frames) that
-make the shared model give the large model's verdicts on the 40 videos, win back the 11 Passes and keep the one
-hand-signal Fail a Fail.
+**Fix found (27 October).** Recording both models' arm points on the same walkers over the 40 videos that depend on the
+pose and replaying the rule offline showed that three new settings bring the check back: a score limit of 0.15 instead of
+0.2, wrist-to-elbow margins 1.5 times wider and 12 frames instead of 8. The shared model then gets 47 of 55 right, as many
+as the large model, without turning a labelled Fail into a Pass. Details: *Research / CV / Why the wing walker check lost accuracy with the shared pose model, and how new thresholds bring it back*.
 
 ## What it means
 
