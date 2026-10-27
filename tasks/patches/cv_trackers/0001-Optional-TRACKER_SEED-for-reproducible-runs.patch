@@ -1,0 +1,37 @@
+From 7e1b867f855c686e0123c8b31dca2daf30ade597 Mon Sep 17 00:00:00 2001
+From: valentyn-fedorov-deepx <valentyn.fedorov@deepxhub.com>
+Date: Tue, 27 Oct 2026 13:22:30 +0200
+Subject: [PATCH 1/2] Optional TRACKER_SEED for reproducible runs
+
+---
+ tracker.py | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/tracker.py b/tracker.py
+index 99fcfce..12634f2 100644
+--- a/tracker.py
++++ b/tracker.py
+@@ -13,7 +13,7 @@ from cucim.skimage.restoration import denoise_tv_chambolle
+ from cv_common.common import (parse_config, bbox_rel, get_center, get_hw, is_overlap, add_offset,
+                               get_relative_intersection, bboxes_iou, xyxy_to_det_arr, bbox_area, check_output_path)
+ from cv_common.track import Track
+-from cv_common.tracked_object import Status
++from cv_common.tracked_object import Status, FeatureTracker
+ from cv_common.transport import Airplane, Vehicle
+ from cv_common.utils.plots import plot_one_box
+ from cv_common.log_utils import set_logging
+@@ -65,6 +65,11 @@ def replace_plane_arrival_frame(tracked_data, new_arrival_frame):
+ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None, device: str = None,
+            weights_dir: str = None, save_video: bool = False, cone_camera: bool = True):
+     start_time = time.time()
++
++    seed = os.getenv('TRACKER_SEED')
++    if seed is not None:  # reproducible runs: the key points sampled for optical flow, the colours of the points
++        np.random.seed(int(seed))
++        FeatureTracker._OF_color = np.random.randint(0, 255, FeatureTracker._OF_color.shape)
+     
+     # file_name = '.'.join([os.path.splitext(os.path.basename(source))[0], config['save_format']])
+     # video_output_path = os.path.join(output_path, file_name)
+-- 
+2.53.0.windows.2
+

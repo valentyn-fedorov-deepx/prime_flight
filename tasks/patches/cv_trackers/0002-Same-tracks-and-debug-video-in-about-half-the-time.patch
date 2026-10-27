@@ -1,0 +1,392 @@
+From f1add44e1640c3c3e5f339df5aa5193bdb2f1f47 Mon Sep 17 00:00:00 2001
+From: valentyn-fedorov-deepx <valentyn.fedorov@deepxhub.com>
+Date: Tue, 27 Oct 2026 13:22:31 +0200
+Subject: [PATCH 2/2] Same tracks and debug video in about half the time
+
+---
+ local_utils/speedups.py | 105 +++++++++++++++++++++++++++++++++++
+ tracker.py              | 118 ++++++++++++++++++++++++----------------
+ 2 files changed, 175 insertions(+), 48 deletions(-)
+ create mode 100644 local_utils/speedups.py
+
+diff --git a/local_utils/speedups.py b/local_utils/speedups.py
+new file mode 100644
+index 0000000..352ad9a
+--- /dev/null
++++ b/local_utils/speedups.py
+@@ -0,0 +1,105 @@
++"""Faster versions of work the tracker does on every frame, each giving exactly the same result as the code it replaces.
++
++- draw_obj_mask_roi: TrackedObject.draw_obj_mask restricted to the bounding box of the mask (the debug video pixels are
++  the same; the full-frame version allocates a 1920x1080 colour frame and runs three bitwise operations over the whole
++  frame for every object).
++- AsyncVideoWriter: cv2.VideoWriter whose encoding runs in a background thread (the same frames in the same order, so
++  the same file).
++- estimate_sigma_rgb: skimage estimate_sigma(image, average_sigmas=True, channel_axis=-1) computing only the diagonal
++  wavelet band it uses, one thread per channel (bit-identical result).
++"""
++import queue
++import threading
++from concurrent.futures import ThreadPoolExecutor
++
++import cv2
++import numpy as np
++
++
++def draw_obj_mask_roi(tracked_obj, img_to_draw, color=None):
++    """ Draws the object mask on the frame in place, only inside the bounding box of the mask.
++    Outside that box the full-frame TrackedObject.draw_obj_mask leaves every pixel unchanged
++    ((color & 0) | (pixel & 255)); inside it, the same three bitwise operations run on the box.
++    Args:
++        :param tracked_obj: TrackedObject (Airplane / Vehicle) with a segmentation mask
++        :param img_to_draw: BGR frame, modified in place
++        :param color: BGR color of the mask, (0, 255, 0) by default
++    Returns:
++        :return: the same frame
++    """
++    mask = tracked_obj._TrackedObject__segmenter.mask  # TrackedObject has no public accessor for the mask
++    if mask is None:
++        return img_to_draw
++    if color is None:
++        color = (0, 255, 0)
++    x, y, w, h = cv2.boundingRect(mask)
++    if w and h:
++        roi_mask = mask[y:y + h, x:x + w]
++        roi = img_to_draw[y:y + h, x:x + w]
++        color_image = np.full((h, w, 3), color, dtype=np.uint8)
++        fg = cv2.bitwise_or(color_image, color_image, mask=roi_mask)
++        bk = cv2.bitwise_or(roi, roi, mask=cv2.bitwise_not(roi_mask))
++        img_to_draw[y:y + h, x:x + w] = cv2.bitwise_or(fg, bk)
++    return img_to_draw
++
++
++class AsyncVideoWriter:
++    """ cv2.VideoWriter that encodes in a background thread. Frames are written in the order they are given;
++    a frame must not be changed after write(). release() writes the rest and closes the file. """
++
++    def __init__(self, *args, max_queue=16):
++        self._writer = cv2.VideoWriter(*args)
++        self._queue = queue.Queue(maxsize=max_queue)
++        self._error = None
++        self._thread = threading.Thread(target=self._run, name='video-writer', daemon=True)
++        self._thread.start()
++
++    def _run(self):
++        while True:
++            frame = self._queue.get()
++            if frame is None:
++                break
++            try:
++                self._writer.write(frame)
++            except Exception as e:  # raised in the caller's thread on the next write() or release()
++                self._error = e
++
++    def write(self, frame):
++        if self._error is not None:
++            raise self._error
++        self._queue.put(frame)
++
++    def release(self):
++        self._queue.put(None)
++        self._thread.join()
++        self._writer.release()
++        if self._error is not None:
++            raise self._error
++
++    def isOpened(self):
++        return self._writer.isOpened()
++
++
++_SIGMA_POOL = None
++
++
++def _channel_sigma(channel):
++    """ skimage _sigma_est_dwt(pywt.dwtn(channel, 'db2')['dd']) without the three sub-bands it drops: the same
++    PyWavelets routine in the same axis order (axis 0, then axis 1), so 'dd' is bit-identical. """
++    import pywt
++    import scipy.stats
++
++    xt = np.ascontiguousarray(np.asarray(channel).T, dtype=np.float64)  # axis 0 of the frame is now the last axis
++    d0 = np.ascontiguousarray(pywt.dwt(xt, 'db2', mode='symmetric', axis=1)[1].T)  # detail along the frame's axis 0
++    dd = pywt.dwt(d0, 'db2', mode='symmetric', axis=1)[1]  # then along axis 1 -> the 'dd' band
++    return np.median(np.abs(dd[dd != 0])) / scipy.stats.norm.ppf(0.75)
++
++
++def estimate_sigma_rgb(image):
++    """ Bit-identical to skimage estimate_sigma(image, average_sigmas=True, channel_axis=-1) for an HxWx3 frame:
++    the median does not depend on the order of the elements and the channel mean is taken in the same order. """
++    global _SIGMA_POOL
++    if _SIGMA_POOL is None:
++        _SIGMA_POOL = ThreadPoolExecutor(max_workers=3, thread_name_prefix='sigma')
++    sigmas = list(_SIGMA_POOL.map(_channel_sigma, [image[:, :, c] for c in range(image.shape[2])]))
++    return np.mean(sigmas)
+diff --git a/tracker.py b/tracker.py
+index 12634f2..363fa42 100644
+--- a/tracker.py
++++ b/tracker.py
+@@ -3,6 +3,7 @@ import logging
+ import os
+ import shutil
+ import time
++from concurrent.futures import ThreadPoolExecutor
+ import cv2
+ import torch
+ import cupy as cp
+@@ -19,17 +20,18 @@ from cv_common.utils.plots import plot_one_box
+ from cv_common.log_utils import set_logging
+ 
+ from local_utils.bl_utils import get_bl_type
++from local_utils.speedups import draw_obj_mask_roi, AsyncVideoWriter, estimate_sigma_rgb
+ 
+ from deep_sort_pytorch.utils.parser import get_config
+ from deep_sort_pytorch.deep_sort import DeepSort
+ 
+ from db_worker.ML_worker import VideoWorker
+ # from mobile_sam import sam_model_registry, SamPredictor
+-from skimage.restoration import estimate_sigma
+ 
+ from ultralytics import YOLO
+ 
+ config = parse_config()
++VERBOSE = os.getenv('TRACKER_VERBOSE', '0') == '1'  # per-frame prints and logs in the job log
+ 
+ 
+ def check_obstacles(tracked_obj, xyxy) -> (bool, list):
+@@ -60,6 +62,24 @@ def replace_plane_arrival_frame(tracked_data, new_arrival_frame):
+         tracked_data[0].state_dict['arrival_frame'] = new_arrival_frame
+ 
+ 
++def update_deepsort(deep_sort, n_detections, xywhs, confss, im0s, tentative=False):
++    """ One DeepSORT update: pass the detections or, without detections, age the tracks.
++    Args:
++        :param deep_sort: DeepSort instance
++        :param n_detections: number of detections
++        :param xywhs, confss: detections in DeepSORT input format
++        :param im0s: frame
++        :param tentative: also return the tentative tracks
++    Returns:
++        :return: confirmed outputs, or (confirmed outputs, tentative outputs) if tentative
++    """
++    if n_detections:
++        outputs = deep_sort.update(xywhs, confss, im0s)
++        return (outputs, deep_sort.get_tentative_tracks()) if tentative else outputs
++    deep_sort.increment_ages()
++    return ([], []) if tentative else []
++
++
+ # =========================================== Main function ================================================== #
+ 
+ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None, device: str = None,
+@@ -77,8 +97,8 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+     # print("video_output_path: ", video_output_path)
+     # print("save_video:", save_video)
+     if save_video:
+-        vid_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*config['fourcc']), config['fps'],
+-                                     (config['width'], config['height']))
++        vid_writer = AsyncVideoWriter(output_path, cv2.VideoWriter_fourcc(*config['fourcc']), config['fps'],
++                                      (config['width'], config['height']))
+         
+     out_dir = os.path.splitext(os.path.basename(source))[0]
+     out = os.path.join(output_path, out_dir)
+@@ -121,6 +141,11 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+         'gse': ['person', 'cone'],
+         'beltloader': ['person', 'cone', 'gse', 'pushback', 'trailer', 'ladder'],
+         'airplane': ['person', 'cone', 'gse', 'pushback', 'trailer', 'beltloader', 'ladder', 'fuel_truck']}
++    ignore_ids = {cls_name: {config['str2id'][ignore_cls] for ignore_cls in classes_to_ignore}
++                  for cls_name, classes_to_ignore in ignore_dict.items()}
++
++    # the three DeepSORT instances do not share state: they are updated in parallel threads
++    deepsort_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix='deepsort')
+ 
+     # initialize the SAM model
+     # model_type = "vit_t"
+@@ -155,7 +180,7 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+     airplane_data_buffer = []
+     accumulate_airplane_data = False
+     real_arrival_frame = None
+-    confirmed_workers_ids = []
++    confirmed_workers_ids = set()
+     
+     EST_SGM_DELAY = config['estimate_sigma_interval'] * config['fps'] # estimate sigma every N seconds
+     current_sigma = 0
+@@ -163,8 +188,9 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+     
+     frame_number = 0
+     for frame_number, ((path, img, im0s, vid_cap), frame_metadata) in enumerate(zip(dataset, metadata), 1):
+-        print()
+-        logging.info(f'Frame #{frame_number}:')
++        if VERBOSE:
++            print()
++            logging.info(f'Frame #{frame_number}:')
+         
+         # if not (
+         #     (frame_number >= 0 and frame_number <= 480) or
+@@ -173,7 +199,7 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+         # ):
+         #     continue
+         
+-        img_to_draw = im0s.copy()
++        img_to_draw = im0s.copy() if save_video else None
+ 
+         det = frame_metadata['general_model']
+ 
+@@ -201,8 +227,8 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                 conf = float(conf)
+ 
+                 # update bboxes_to_ignore if needed
+-                for cls_name, classes_to_ignore in ignore_dict.items():
+-                    if cls_id in [config['str2id'][ignore_cls] for ignore_cls in classes_to_ignore]:
++                for cls_name, ids_to_ignore in ignore_ids.items():
++                    if cls_id in ids_to_ignore:
+                         bboxes_to_ignore[cls_name].append(xyxy)
+ 
+                 # add airplane noses for Airplane updates
+@@ -259,41 +285,29 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+         
+         xywhs_beltloaders = torch.Tensor(bbox_xywh_beltloaders)
+         confss_beltloaders = torch.Tensor(confs_beltloaders)
+-
+-        if bbox_xywh_beltloaders is not None and len(bbox_xywh_beltloaders):  # beltloaders detected
+-            # Pass detections to DeepSORT
+-            outputs_beltloaders = bl_tracker.update(xywhs_beltloaders, confss_beltloaders, im0s)
+-        else:
+-            bl_tracker.increment_ages()
+-            outputs_beltloaders = []
+         # ------------------------- ------------------ ------------------------- #
+ 
+         # ------------------------- Update workers ------------------------- #
+         xywhs_workers = torch.Tensor(bbox_xywh_workers)
+         confss_workers = torch.Tensor(confs_workers)
+-
+-        if bbox_xywh_workers is not None and len(bbox_xywh_workers):  # workers detected
+-            # Pass detections to DeepSORT
+-            outputs_workers = workers_tracker.update(xywhs_workers, confss_workers, im0s)
+-            outputs_workers_tentative = workers_tracker.get_tentative_tracks()
+-        else:
+-            workers_tracker.increment_ages()
+-            outputs_workers = []
+-            outputs_workers_tentative = []
+         # ------------------------- -------------- ------------------------- #
+ 
+         # ------------------------- Update GSE ------------------------- #
+         xywhs_gse = torch.Tensor(bbox_xywh_gse)
+         confss_gse = torch.Tensor(confs_gse)
+-
+-        if bbox_xywh_gse is not None and len(bbox_xywh_gse):  # workers detected
+-            # Pass detections to DeepSORT
+-            outputs_gse = gse_tracker.update(xywhs_gse, confss_gse, im0s)
+-        else:
+-            gse_tracker.increment_ages()
+-            outputs_gse = []
+         # ------------------------- ---------- ------------------------- #
+ 
++        # Pass detections to DeepSORT: beltloaders, workers and GSE in parallel
++        bl_future = deepsort_pool.submit(update_deepsort, bl_tracker, len(bbox_xywh_beltloaders),
++                                         xywhs_beltloaders, confss_beltloaders, im0s)
++        workers_future = deepsort_pool.submit(update_deepsort, workers_tracker, len(bbox_xywh_workers),
++                                              xywhs_workers, confss_workers, im0s, tentative=True)
++        gse_future = deepsort_pool.submit(update_deepsort, gse_tracker, len(bbox_xywh_gse),
++                                          xywhs_gse, confss_gse, im0s)
++        outputs_beltloaders = bl_future.result()
++        outputs_workers, outputs_workers_tentative = workers_future.result()
++        outputs_gse = gse_future.result()
++
+         if (
+             len(airplane_det) or
+             len(outputs_gse) or
+@@ -306,15 +320,17 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                 # y2, x2 = min(config['height'], y1 + CROP_SIZE), min(config['width'], x1 + CROP_SIZE)
+                 # patch = im0s[y1:y2, x1:x2]
+                 patch = im0s
+-                current_sigma = estimate_sigma(patch, average_sigmas=True, channel_axis=-1)
++                current_sigma = estimate_sigma_rgb(patch)  # = estimate_sigma(patch, average_sigmas=True, channel_axis=-1)
+             
+             if current_sigma > 0.5:
+-                log_str = f'Apllying de-noising, the sigma is {current_sigma}'
+-                logging.info(log_str), print(log_str)
+-                img_array = cp.asarray(im0s.copy(), dtype=float)
++                if VERBOSE:
++                    log_str = f'Apllying de-noising, the sigma is {current_sigma}'
++                    logging.info(log_str), print(log_str)
++                img_array = cp.asarray(im0s, dtype=float)
+ 
+-                log_str = f'device for CuPy vector: {img_array.device}'
+-                logging.info(log_str), print(log_str)
++                if VERBOSE:
++                    log_str = f'device for CuPy vector: {img_array.device}'
++                    logging.info(log_str), print(log_str)
+ 
+                 img_to_track = cp.asnumpy(denoise_tv_chambolle(img_array, 
+                                                             weight=5, 
+@@ -323,12 +339,13 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                                                             channel_axis=-1)).astype(np.uint8)
+                 
+                 # log_str = f'After de-noising, the sigma is {estimate_sigma(img_to_track, average_sigmas=True, channel_axis=-1)}'
+-                logging.info(log_str), print(log_str)
++                if VERBOSE:
++                    logging.info(log_str), print(log_str)
+             else:
+-                img_to_track = im0s.copy()
++                img_to_track = im0s  # read only below, as im0s
+ 
+         else:
+-            img_to_track = im0s.copy()
++            img_to_track = im0s
+ 
+         # ------------------------- Define main airplane -------------------------
+         if len(airplane_det) > 0:  # track only largest plane <--> main
+@@ -463,10 +480,11 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                           f'bl_to_init = {bl_to_init}'
+                 logging.info(log_str), print(log_str)
+ 
+-        log_str = f'outputs_beltloaders = {outputs_beltloaders}\n' \
+-                  f'bl_obj_dict = {bl_obj_dict}\n' \
+-                  f'bl_labels_dict = {bl_labels_dict}'
+-        logging.info(log_str),  # print(log_str)
++        if VERBOSE:
++            log_str = f'outputs_beltloaders = {outputs_beltloaders}\n' \
++                      f'bl_obj_dict = {bl_obj_dict}\n' \
++                      f'bl_labels_dict = {bl_labels_dict}'
++            logging.info(log_str),  # print(log_str)
+         # ------------------------- ------------------------------ ------------------------- #
+ 
+         # ------------------------- Process workers detections ------------------------- #
+@@ -482,7 +500,7 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                         if tentative_track.cls_str == 'person' and tentative_track.tr_id == worker_id:
+                             confirmed_tracks.append(tentative_track)
+ 
+-            confirmed_workers_ids.append(worker_id)
++            confirmed_workers_ids.add(worker_id)
+ 
+             tracked_data.append(Track(worker_id, w_xyxy, 'person'))
+ 
+@@ -569,13 +587,13 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                 video_worker.model_pub(data=json_data, frame_id=frame_number)
+         # ------------------------- ---------------------- ------------------------- #
+ 
+-        prev_img_to_track = img_to_track.copy()
++        prev_img_to_track = img_to_track  # a new array every frame, read only
+ 
+         if save_video:
+             # draw tracked objects
+             for tr_obj in obj_to_show:
+                 tr_obj.draw_bbox(img_to_draw)
+-                img_to_draw = tr_obj.draw_obj_mask(img_to_draw, config['colors'][config['str2id'][tr_obj.class_name]])
++                img_to_draw = draw_obj_mask_roi(tr_obj, img_to_draw, config['colors'][config['str2id'][tr_obj.class_name]])
+                 tr_obj.draw_OF_points(img_to_draw)
+                 
+             for *w_xyxy, w_id in outputs_workers:
+@@ -601,6 +619,10 @@ def detect(source: str, output_path: str, video_worker=None, to_csv: bool = None
+                         cv2.LINE_AA)
+             vid_writer.write(img_to_draw)
+ 
++    deepsort_pool.shutdown()
++    if save_video:
++        vid_writer.release()  # encodes the queued frames and closes the file
++
+     # write the rest of the buffer to json
+     for frame_number, _, _, tracked_data, _ in tracked_data_buffer:
+         json_data = [tr_data.to_json() for tr_data in tracked_data]
+-- 
+2.53.0.windows.2
+

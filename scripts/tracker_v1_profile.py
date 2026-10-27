@@ -203,7 +203,9 @@ def main() -> int:
     except Exception as e:  # pragma: no cover
         print("DeepSort not wrapped:", e)
     trk.denoise_tv_chambolle = timed("denoise_tv_chambolle")(trk.denoise_tv_chambolle)
-    trk.estimate_sigma = timed("estimate_sigma")(trk.estimate_sigma)
+    for fn in ("estimate_sigma", "estimate_sigma_rgb"):  # the exact-speed-ups branch calls estimate_sigma_rgb
+        if hasattr(trk, fn):
+            setattr(trk, fn, timed("estimate_sigma")(getattr(trk, fn)))
     from cv_common.tracked_object import TrackedObject
 
     if a.pin == "prod":
@@ -222,6 +224,8 @@ def main() -> int:
     # the debug video: drawing per object and the encoder (cv2.VideoWriter is a C type, so the writer is wrapped)
     for name in ("draw_obj_mask", "draw_OF_points", "draw_bbox"):
         setattr(TrackedObject, name, timed(f"video.{name}")(getattr(TrackedObject, name)))
+    if hasattr(trk, "draw_obj_mask_roi"):  # the exact-speed-ups branch draws masks with its own function
+        trk.draw_obj_mask_roi = timed("video.draw_obj_mask")(trk.draw_obj_mask_roi)
     trk.plot_one_box = timed("video.plot_one_box")(trk.plot_one_box)
     _writer_cls = cv2.VideoWriter
     _encode = timed("video.encode")(lambda w, frame: w.write(frame))
