@@ -46,6 +46,21 @@ noise estimate), so it carries over to the 3.3-vCPU pod; the threaded part needs
 87-minute video; the computing part of time to result about 4.2 → 3.5 h; the trackers are 19 % of the pod time of a
 video, so about −9 % of the processing bill.
 
+## Versions to build with
+
+| | Commit | Note |
+|---|---|---|
+| cv_trackers base | **bd43c3c** (branch `optimization`, 2026-02-28) | the production commit |
+| patch 1 | 7e1b867 `Optional TRACKER_SEED for reproducible runs` | image A = bd43c3c + this |
+| patch 2 | f1add44 `Same tracks and debug video in about half the time` | image B = both patches |
+| cv_common | submodule pin **ac5098d2** (unchanged by the patches) | bd43c3c cannot run on ac5098d (its `update_params` calls need the `tracker_optimization` line), so the production image carries a `tracker_optimization` cv_common; the exact commit inside it is not known to us (the line's tip is **2759daf**, 2026-05-15 — the local proof ran on it) |
+| db_worker | submodule pin **5a4aa83** (unchanged) | the local proof ran on 5a4aa83 |
+
+Build A and B exactly the way the production tracker image is built (same Dockerfile and CI, same cv_common and
+db_worker) — only `tracker.py` and the new `local_utils/speedups.py` differ. Record `git -C cv_common rev-parse HEAD` and
+`git -C db_worker rev-parse HEAD` in both images. The patches use two cv_common internals — the tracked object's mask
+(`_TrackedObject__segmenter.mask`) and `FeatureTracker._OF_color` — present in ac5098d and in 2759daf alike.
+
 ## For the test on the cluster (Maksym)
 
 1. **Production itself is not reproducible:** cv_common samples optical-flow key points with the unseeded `np.random`
