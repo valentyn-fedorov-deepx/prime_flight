@@ -45,6 +45,28 @@ CALLS = defaultdict(int)
 PINS = {"master": "cv_trackers", "prod": "cv_trackers_prod"}
 
 
+def draw_obj_mask_roi(self, img_to_draw, color=None):
+    """TrackedObject.draw_obj_mask on the bounding box of the mask only: outside it the full-frame version leaves the
+    pixels unchanged ((colour & 0) | (pixel & 255)), inside it runs the same three bitwise operations; drawn in
+    place, as the caller reassigns the returned frame and holds no other reference to it."""
+    import cv2
+    import numpy as np
+    mask = self._TrackedObject__segmenter.mask
+    if mask is None:
+        return img_to_draw
+    if color is None:
+        color = (0, 255, 0)
+    x, y, w, h = cv2.boundingRect(mask)
+    if w and h:
+        roi_mask = mask[y:y + h, x:x + w]
+        roi = img_to_draw[y:y + h, x:x + w]
+        colour = np.full((h, w, 3), color, dtype=np.uint8)
+        fg = cv2.bitwise_or(colour, colour, mask=roi_mask)
+        bk = cv2.bitwise_or(roi, roi, mask=cv2.bitwise_not(roi_mask))
+        img_to_draw[y:y + h, x:x + w] = cv2.bitwise_or(fg, bk)
+    return img_to_draw
+
+
 def timed(name):
     def deco(fn):
         @functools.wraps(fn)
@@ -133,6 +155,9 @@ def main() -> int:
     ap.add_argument("--cone-camera", action="store_true")
     ap.add_argument("--device", default="0")
     ap.add_argument("--seed", type=int, default=None, help="np.random seed set when the first frame is pulled")
+    ap.add_argument("--fast-mask-draw", action="store_true",
+                    help="draw each object mask on its bounding box only (the same pixels as the full-frame draw)")
+    ap.add_argument("--variant", default="base", help="label of the debug video file")
     ap.add_argument("--save-video", action="store_true",
                     help="draw and encode the debug video, as the production job does by default (--write_video t)")
     ap.add_argument("--out", default=None, help="default out/tracker_v1_profile_<pin>.json")
@@ -187,6 +212,32 @@ def main() -> int:
         adapt_prod_pin_to_cv_common_2759daf(TrackedObject, ObjectSegmenter)
     TrackedObject.update_params = timed("tracked_object.update_params")(TrackedObject.update_params)
     VideoWorker.model_pub = timed("video_worker.model_pub")(VideoWorker.model_pub)
+    # the optical-flow point colours of the debug video are drawn at import from the unseeded np.random
+    # (tracked_object.py:103), so no two runs give the same video; a fixed palette makes the videos comparable
+    import numpy as np
+    import cv_common.tracked_object as cto
+    cto.FeatureTracker._OF_color = np.random.RandomState(12345).randint(0, 255, cto.FeatureTracker._OF_color.shape)
+    if a.fast_mask_draw:
+        TrackedObject.draw_obj_mask = draw_obj_mask_roi
+    # the debug video: drawing per object and the encoder (cv2.VideoWriter is a C type, so the writer is wrapped)
+    for name in ("draw_obj_mask", "draw_OF_points", "draw_bbox"):
+        setattr(TrackedObject, name, timed(f"video.{name}")(getattr(TrackedObject, name)))
+    trk.plot_one_box = timed("video.plot_one_box")(trk.plot_one_box)
+    _writer_cls = cv2.VideoWriter
+    _encode = timed("video.encode")(lambda w, frame: w.write(frame))
+
+    class TimedWriter:
+        def __init__(self, *args, **kw):
+            self._w = _writer_cls(*args, **kw)
+
+        def write(self, frame):
+            return _encode(self._w, frame)
+
+        def __getattr__(self, item):
+            return getattr(self._w, item)
+
+    trk.cv2.VideoWriter = TimedWriter
+    trk.logging.info = timed("logging.info")(trk.logging.info)
 
     class SlicedWorker(VideoWorker):
         def load_source(self, source=None):
@@ -221,7 +272,7 @@ def main() -> int:
     with torch.no_grad():
         trk.detect(
             source=a.video,
-            output_path=os.path.join(workdir, "out"),
+            output_path=os.path.join(workdir, f"debug_{a.variant}.mp4" if a.save_video else "out"),
             video_worker=vw,
             to_csv=False,
             device=a.device,
