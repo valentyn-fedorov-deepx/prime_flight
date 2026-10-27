@@ -168,6 +168,15 @@ verdicts merged over cameras, truth from the monthly report.
 With fod-walk left on MoveNet: pose time −78 % (9 696 → 2 141 s), module time −14 %. Every module except wing-walkers
 keeps or gains correct verdicts.
 
+**What it means for production.** The pose runs inside the module jobs, so the GM job does not change. On the five
+videos with production job times (`gs://cv-modules-logs`, 21–22.10: GM b6e1a3e, trackers, the module jobs) the five
+modules whose model changes (hand-signals, steering, lead-marshaller, wing-walkers, pin-verification) take 105 of 2 181
+pod minutes (5 %). With their local pose shares (job −13 %, −47 %, −31 %, −26 %, −3 %) the change saves about 21
+minutes, **≈ 1 % of the pod time** (0.5–7 minutes per video); if HRNet is relatively slower on the T4 than here, up to
+about 2–3 %. Time to result does not move: the modules run in parallel and none of these is the slowest (hand-signals
+6–9 min; the slowest are handrails-on-gse 47–74 min, safety-zone up to 51, safety-vests up to 35). The value of the
+change is two pose models instead of five and the real-time budget (60 → 9 ms per pose call), not post-processing time.
+
 ### Wing walkers: why it loses with RTMPose-l
 
 - All 12 losses are the hand-signal rule: the walkers of both sides are found (from the tracks' paths, no pose
