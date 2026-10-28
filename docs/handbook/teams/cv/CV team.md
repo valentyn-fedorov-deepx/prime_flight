@@ -11,7 +11,7 @@
 | Team lead | Valentyn Fedorov |
 | People | Valentyn Fedorov, Yurii Luchko, Vladyslav Ivashchuk |
 | Checks we look after | 30 checks of the client, in 27 modules (a module is the code of one or more checks) |
-| Main work in October 2026 | the faster General Model went to production; a tracker that is twice as fast with the same results is ready for the test on the cluster; one shared pose model for the checks that read body poses; the first checks for the real-time branch; this documentation |
+| Main work in October 2026 | the faster General Model went to production; a faster tracker with the same tracks (13 % less time in its first cluster run; the exact comparison is next); one shared pose model for the checks that read body poses; the first checks for the real-time branch; this documentation |
 
 ## What the team is responsible for
 

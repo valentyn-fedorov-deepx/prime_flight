@@ -87,10 +87,24 @@ class Build:
     def __init__(self, out: str):
         self.out = out
         self.made: list[str] = []
+        self.locked: list[str] = []  # open in another program (Word, Excel): kept as they were
 
-    def docx(self, rel_out: str, md: str, resdir: str | None = None) -> str:
+    def is_locked(self, path: str) -> bool:
+        if not os.path.exists(path):
+            return False
+        try:
+            io.open(path, "ab").close()
+            return False
+        except PermissionError:
+            self.locked.append(path)
+            self.made.append(path)
+            return True
+
+    def docx(self, rel_out: str, md: str, resdir: str | None = None) -> str | None:
         path = os.path.join(self.out, *rel_out.split("/"))
         os.makedirs(os.path.dirname(path), exist_ok=True)
+        if self.is_locked(path):
+            return None
         args = [f"--reference-doc={REF}"] + ([f"--resource-path={resdir}"] if resdir else [])
         pypandoc.convert_text(md.replace("<br>", "; "), "docx", format="gfm-raw_html", outputfile=path, extra_args=args)
         style_tables(path)
@@ -122,6 +136,8 @@ class Build:
             cell.font = Font(name="Arial", color="1F5FBF", underline="single")
         path = os.path.join(self.out, *rel_out.split("/"))
         os.makedirs(os.path.dirname(path), exist_ok=True)
+        if self.is_locked(path):
+            return
         wb.save(path)
         self.made.append(path)
 
@@ -191,6 +207,8 @@ def main() -> int:
             if rel == "system/System overview.md":
                 md = overview_numbers(md, data)
             out = b.docx(target(rel), with_meta(md, rel), resdir=dirpath)
+            if out is None:
+                continue
             if module:
                 png = os.path.join(WORK, safe(module["repository"]) + "_stages.png")
                 stage_bar(module["stages"], png, STAGE_LABELS)
@@ -232,6 +250,8 @@ def main() -> int:
             os.rmdir(dirpath)
     json.dump(now, io.open(manifest, "w", encoding="utf-8"), indent=1)
     print(f"{len(now)} files in {b.out}")
+    for p in b.locked:
+        print(f"not updated, open in another program: {os.path.relpath(p, b.out)}")
     return 0
 
 

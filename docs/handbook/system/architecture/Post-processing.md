@@ -23,8 +23,8 @@
    file goes to the bucket of results.
 6. **The tracker job** reads the General Model's file and follows the aircraft, the belt loaders, the service vehicles and
    the people from frame to frame; it finds when the aircraft arrived and when it left, and which belt loader serves
-   which door (*Shared parts / Tracker*). Its result file goes to the same bucket. It also draws a debug video that the
-   team watches.
+   which door (*Shared parts / Tracker*). Its result file goes to the same bucket. The job can also draw a debug video,
+   but production starts it with the video switched off.
 7. **The module jobs** — one per module, all at the same time — read both result files, and some also the video, and
    give the verdicts of their checks with one sentence for the client and a timeline (*Modules*).
 8. **Results.** The verdicts and timelines go to the database and the bucket of timelines; the website shows them.
@@ -104,5 +104,6 @@ Three facts that trip people up:
   `general_model_inferences_version_commit` (with the extension, e.g. `a0157a4.ndjson`).
 - Cluster: GKE node pool `gpu-pool`, Tesla T4, 3.3 vCPU, 8 GiB per job; `cpu-pool`, `merge-pool`, `technical-pool`.
 - General Model in production: `pf/q4-02-gm-exact-speedups-a0157a4` built as `b6e1a3e` (production code a0157a4 of
-  September 2025 with the October 2026 speed-ups); the branch head d4ae8e5 is not deployed. Tracker: bd43c3c.
+  September 2025 with the October 2026 speed-ups); the branch head d4ae8e5 is not deployed. Tracker: bd43c3c with cv_common 58b1b1f; production
+  starts it with `write_video=False` (the `--write_video` default in `model_starter.py` is true).
 - `db_worker.ML_worker.load_source` raises "Stream is not implemented yet" for rtsp and http sources.

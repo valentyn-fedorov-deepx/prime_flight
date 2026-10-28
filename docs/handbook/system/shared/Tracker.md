@@ -13,7 +13,7 @@ which cargo door. Checks read these answers to reach their verdict (Pass, Fail o
 |---|---|
 | In production | The version of February 2026, with a matching shared-library version whose exact revision is to confirm (Maksym Chernyshev) |
 | Last change | February 2026: new outline models for the aircraft and vehicles; the picture-noise check every 2 seconds instead of every frame |
-| Next step | A version with byte-for-byte the same tracks and debug video in about half the time; waiting for its cluster test (Maksym Chernyshev) |
+| Next step | A faster version with the same tracks. Its first cluster run (28 October 2026) took 13 % less time; the exact comparison, with the random numbers fixed on both sides, is next (Maksym Chernyshev) |
 | Who looks after it | Yurii Luchko and Valentyn |
 
 ## What it does
@@ -76,10 +76,12 @@ entry holds the track number, the box (the General Model's box for the aircraft,
 kind, a score that is always 0, the full internal state (39 fields for the aircraft, 34 for vehicles) and the door label.
 A recording gives 0.6–1.2 gigabytes before compression, mostly lists of motion points.
 
-**The debug video.** On by default: every frame with the boxes, outlines and motion points drawn on it. It changes
-nothing in the tracks but takes about 40 % of the tracker's time. People watch it, so it stays (decided 27 October 2026);
-the work is to draw it faster. The largest cost was the outlines (38 % of the time): each object created a full-size
-colour picture and processed the whole frame three times, though its outline covers a small part of it.
+**The debug video.** The job can draw every frame with the boxes, outlines and motion points on it. It is on by default,
+but production starts the job with it switched off, so production draws no debug video (checked in the production job
+settings, October 2026). The option stays for the runs where people watch it (decided 27 October 2026). It changes
+nothing in the tracks; when it is drawn it takes about 40 % of the tracker's time, mostly the outlines (38 %): each
+object created a full-size colour picture and processed the whole frame three times, though its outline covers a small
+part of it.
 
 ## How it works, step by step
 
@@ -103,23 +105,28 @@ colour picture and processed the whole frame three times, though its outline cov
   the computing time of a video. Real time allows 125 milliseconds per frame, so production is close to the limit.
 - **The new version** (October 2026) draws each outline only inside its box, writes the video in the background, updates
   the three trackers at the same time, computes only the part of the noise estimate it uses, makes no frame copies and
-  prints per-frame logs only on request. Production against it, on a quiet test machine:
+  prints per-frame logs only on request. Production against it:
 
-| Run | Tracks and debug video | Milliseconds per frame |
+| Run | Tracks | Time |
 |---|---|---|
-| Full 36-minute turnaround (17,280 frames) | identical byte for byte | 70.7 → 33.2 (−53 %); 20.4 → 9.6 minutes |
-| Busy 2.5-minute stretch, two rounds each | identical in all four runs | 83.0 → 42.5 (−49 %) |
+| Our machine, full 36-minute turnaround, with the debug video | identical byte for byte, and the debug video too | 70.7 → 33.2 milliseconds per frame (−53 %) |
+| Our machine, busy 2.5-minute stretch, with the debug video, two rounds each | identical in all four runs | 83.0 → 42.5 milliseconds per frame (−49 %) |
+| Our machine, the first 17 minutes of a 53-minute turnaround, without the debug video | identical byte for byte | 31.5 → 21.1 milliseconds per frame (−33 %) |
+| The cluster, five recordings of 53–110 minutes, without the debug video as in production (28 October 2026) | the same tracks and boxes on every frame; the moments of events moved by up to a few seconds, because neither run fixed its random numbers | 399 → 346 minutes in total (−13 %; −9 to −20 % per recording) |
 
-- About three quarters of the saving is less work, so it should carry over to the 3.3-core job. Estimate for production,
-  to confirm on the cluster: the tracker job about 1.3 → 0.65 hours per median recording, the computing part of time to
-  result about 4.2 → 3.5 hours, about 9 % off the processing bill.
+- Most of the saving on our machine was in drawing the debug video, which production does not draw. For production:
+  the tracker job about 1.3 → 1.13 hours per median recording, the computing part of time to result about 4.2 → 4.0
+  hours, about 2.5 % off the processing bill.
 - In the real-time worker the tracker needs about 2 processor cores to keep up (estimate from test-machine measurements).
 
 ## How good it is
 
 - How often identities swap or stops are missed has not been measured against hand-labelled turnarounds: not known yet
   (to confirm with Yurii Luchko).
-- Two production runs on the busy stretch: same identities and states; 6 of 3,186 object-frames differ in counters.
+- Two production runs that differ only in their random numbers: on a busy stretch, the same identities and states, with
+  6 of 3,186 object-frames differing in counters; on the first 17 minutes of a turnaround, identical until the tracker
+  first uses the aircraft's nose to find its outline (8 minutes 40 seconds in), then the same tracks and boxes, with the
+  arrival 0.25 seconds apart.
 - The February 2026 outline change kept the same 4 identities there, but the motion state differs on 2.8 % of
   object-frames: the new outlines move the start and end of stops.
 - The project's frame-by-frame version, with fixed random numbers, gives output byte-identical to production; the
@@ -158,9 +165,11 @@ colour picture and processed the whole frame three times, though its outline cov
 8. **Shared outline memory**: belt loaders and service vehicles share one stored outline result per frame. A service
    vehicle renewing its points on the same frame as a belt loader gets the wrong result, no points, and a frozen state
    until its next renewal.
-9. **Not repeatable**: points, and their colours in the debug video, are picked at random without a fixed starting value;
-   the vehicle look-matching network runs in training mode, so an object's look depends on the others in the frame. Two
-   runs differ slightly; the debug video always differs.
+9. **Not repeatable**: the points it follows, the 10 points that tell the outline model where an object is, and the
+   colours of the points in the debug video are picked at random without a fixed starting value; the vehicle
+   look-matching network runs in training mode, so an object's look depends on the others in the frame. Two runs give
+   the same tracks and boxes, but the moments of stops, arrival, departure and belt loaders at doors can move by up to a
+   few seconds; the debug video always differs.
 10. **Frame numbers by position**: a lost frame shifts all later ones. If a recording ends while the aircraft is stopping
     before its arrival, the last frames can land under wrong numbers (whether this happened in production: to confirm).
 11. **Small things**: it cannot work from boxes alone; "processed" is reported before the upload (effect to confirm);
@@ -168,11 +177,13 @@ colour picture and processed the whole frame three times, though its outline cov
 
 ## What changes next
 
-1. **Cluster test of the new version** (Maksym Chernyshev): production plus an option to fix the random numbers, against
-   the new version, both with the same fixed numbers on the five recordings of the General Model test. Expected:
-   identical tracks and debug video in about half the time.
+1. **Exact cluster comparison of the new version** (Maksym Chernyshev): production plus the option to fix the random
+   numbers, against the new version, both on the production shared library and with the same fixed numbers, on one or
+   two recordings. Expected: identical tracks. The first run (28 October, nothing fixed) already gave the same tracks
+   and boxes and 13 % less time.
 2. **Exact savings in the shared library** (a separate change): the grey picture once per frame instead of twice per
-   object, a faster in-box test, outlines drawn on their box.
+   object, a faster in-box test. Without the debug video these are where the remaining time is; they need the shared
+   library's production version, which we cannot read yet.
 3. **Not planned**: fixing the random numbers by default, which would change the points production picks.
 4. **Real time**: the frame-by-frame version with switches that trade exactness for speed, each after a verdict check.
    The real-time worker copies the aircraft track from the stage detector and follows only people, belt loaders and
@@ -182,10 +193,13 @@ colour picture and processed the whole frame three times, though its outline cov
 
 ## For developers
 
-- `dxgat/utils/cv_trackers`: production `optimization` @ `bd43c3c` (2026-02-28), `cv_common` from `tracker_optimization`
-  (≈ `2759daf`); default `master` @ `b5d350c`.
+- `dxgat/utils/cv_trackers`: production `optimization` @ `bd43c3c` (2026-02-28), `cv_common` **58b1b1f** in the
+  production image (Maksym, 2026-10-28; not readable for us — local proofs ran on `tracker_optimization` `2759daf`);
+  default `master` @ `b5d350c`.
 - Entry `db_worker/model_starter.py --model trackers` → `tracker.detect()`; `cone_camera` never passed
-  (`tracker.py:66`, `model_starter.py:166`). Door rule `local_utils/bl_utils.py`; state machine
+  (`tracker.py:66`, `model_starter.py:166`). Production jobs run with `write_video=False` (Namespace line of the job log
+  in `gs://cv-modules-logs`; the argparse default is true). Unseeded `np.random`: key points `tracked_object.py:132`,
+  segmenter prompt points `transport.py:79`, point colours `tracked_object.py:103`. Door rule `local_utils/bl_utils.py`; state machine
   `cv_common/tracked_object.py`; arrival and departure `cv_common/transport.py`; DeepSORT `deep_sort_pytorch/`.
 - Weights: `yolo11s-seg_plane.pt`, `yolo26s_seg_bl_gse_tr10_noalb.pt`, `scripted_ckpt.t7`, `mobile_sam.pt` (unused).
 - Keys `stopping_time_thres` 24, `moving_time_thres` 8, `proceeding_time_thres` 16, `init_dots_lifetime` 16/10/5,
@@ -193,5 +207,6 @@ colour picture and processed the whole frame three times, though its outline cov
   `min_iou_bl_type`.
 - Output `gs://cv-modules-topics/<video>/trackers<commit>.ndjson`.
 - New version: local branch `pf/q4-02-tracker-exact-speedups` (`7e1b867` `TRACKER_SEED`, `f1add44`); patches
-  `tasks/patches/cv_trackers/`; proof `scripts/tracker_exact_ab.py`. Sources `docs/models/trackers.md`,
+  `tasks/patches/cv_trackers/`; proof `scripts/tracker_exact_ab.py`. Cluster image `a6d6c53` (branch + font fix);
+  comparison `scripts/tracker_ndjson_diff.py`, results `out/tracker_cluster/<video>_diff.json`. Sources `docs/models/trackers.md`,
   `docs/analysis/tracker_current.md`, `tasks/notes/PF-Q4-02*.md`.

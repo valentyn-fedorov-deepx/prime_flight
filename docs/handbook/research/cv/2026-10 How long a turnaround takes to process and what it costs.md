@@ -11,8 +11,8 @@ storage, and 2.5 more go to merging the pieces. The processing itself, from the 
 hours**; the faster General Model, in production since October, brings it to about 4.2 hours (−13 %). Processing costs
 **1.84 to 4.59 dollars per hour of video**, depending on the aircraft type and the number of cameras; the faster General
 Model brings this to 1.60–4.05 dollars (10–13 % less). Of the machine time, the checks take 54 %, the General Model 27 %
-and the tracker 19 %. The faster tracker (ready, not yet in production) would save about 40 more minutes per video and
-about 9 % of the bill; one shared pose model, about 1 %.
+and the tracker 19 %. The faster tracker (tested on the cluster, not yet in production) saves about 10 more minutes per
+video and about 2.5 % of the bill; one shared pose model, about 1 %.
 
 ## The question
 
@@ -129,16 +129,17 @@ the total machine time (about 9 %).
 | Speed-up | State | Time (median video) | Cost |
 |---|---|---|---|
 | Faster General Model (same results, byte for byte) | Done, in production since October 2026 | General Model 2.4 → 1.76 hours; merged video to results 4.8 → 4.16 hours (−13 %) | 10–13 % less per hour of video |
-| Faster tracker (same results, byte for byte) | Ready; the cluster test is still to do | Estimate: tracker 1.3 → about 0.65 hours; merged video to results about 4.2 → 3.5 hours | Estimate: about 9 % less |
+| Faster tracker (same tracks) | First cluster run on 28 October 2026; the exact comparison is next | Tracker 1.3 → about 1.13 hours (−13 % measured on five videos); merged video to results about 4.2 → 4.0 hours | About 2.5 % less |
 | One shared pose model for the checks that read body poses | In progress (one check is being recalibrated) | No change: none of these checks is the slowest | About 1 % of the machine time (up to 2–3 %) |
 
 ## What it means
 
 - **Most of the wait is outside the processing.** About 12 of the 16.8 hours pass before the General Model starts.
   The roadmap's first quarter attacks exactly this: uploading the pieces while the camera is still recording.
-- **Inside the processing, each of the two exact speed-ups saves about 40 minutes** for the median video: the General
-  Model (done) and the tracker (ready). The checks' step ends when the slowest check ends: handrails, then safety zone
-  and safety vests.
+- **Inside the processing, the faster General Model saves about 40 minutes** for the median video (done), the faster
+  tracker about 10 (tested on the cluster). The tracker's speed-up was twice as large on our machine, but most of it
+  was in drawing a debug video that production does not draw. The checks' step ends when the slowest check ends:
+  handrails, then safety zone and safety vests.
 - **The checks are now the largest share of the machine time (54 %),** and seven of them take about 70 % of it. The
   next savings in cost are in those checks; the shared pose model saves only about 1 %.
 - **A second measurement of the General Model's effect agrees.** On four of the five test videos, the time from the
@@ -147,7 +148,7 @@ the total machine time (about 9 %).
 
 ## What is next
 
-1. The cluster test of the faster tracker, then production; then measure these timings and costs again.
+1. The exact cluster comparison of the faster tracker, then production; then measure these timings and costs again.
 2. Look at the slowest and largest checks: handrails on service vehicles, safety zone, safety vests.
 3. The upload during recording (the roadmap's first quarter), for the 9.5 hours before processing can start.
 
@@ -165,6 +166,6 @@ the total machine time (about 9 %).
 - Largest modules: handrails-on-gse-being-used, safety-zone-confirmed-clear, safety-vests-secured-to-body,
   pre-departure-walk-around-completed, hair-policy, gse-chocks, 3-stop-brake-check. Pose modules (105 min): hand-signals,
   steering, lead-marshaller, wing-walkers, pin-verification (`docs/analysis/pose_unification.md` §8).
-- Four-video whole-pipeline figures (processing −15 %, compute −9 %): `tasks/notes/PF-Q2-16.md`. Tracker estimate:
-  `tasks/notes/PF-Q4-02-tracker-mr.md`. Related tasks: PF-Q1-08 (Time to Result baseline), PF-Q1-01 (upload during
+- Four-video whole-pipeline figures (processing −15 %, compute −9 %): `tasks/notes/PF-Q2-16.md`. Tracker cluster run
+  (28.10, `trackersa6d6c53`, production jobs run with `write_video=False`): `tasks/notes/PF-Q4-02-tracker-mr.md`. Related tasks: PF-Q1-08 (Time to Result baseline), PF-Q1-01 (upload during
   recording), PF-Q2-16, PF-Q4-02.

@@ -9,9 +9,15 @@ of results and has to be measured on the monthly test instead (*How to measure a
 
 ## Why this needs care
 
-- **Randomness.** The shared code picks some points on objects at random (for following their movement), and draws the
-  colours of the debug video at random. Two runs of the same production code therefore differ. Both runs of a comparison
-  must start the random number generator from the same value.
+- **Randomness.** The shared code picks some points on objects at random (for following their movement, and for telling
+  the outline model where an object is), and draws the colours of the debug video at random. Two runs of the same
+  production code therefore differ: on whole turnarounds the tracks and boxes stay the same, but the moments of
+  arrival, departure and belt loaders at doors move by up to a few seconds. Both runs of a comparison must start the
+  random number generator from the same value — and a file that production wrote earlier, without such a value, can
+  never be the other side of an exact comparison.
+- **The settings production really uses.** Read the job's arguments in its production log before measuring. The
+  tracker's default draws a debug video, but production starts it with the video switched off; a speed-up measured with
+  the video was twice as large as the one production got.
 - **The video decoder.** Two decoders can return a slightly different number of frames from the same file. Both sides
   must use the same one.
 - **Compressed files.** The result files in the buckets are compressed, and the compressed file contains the time it was
@@ -28,8 +34,9 @@ of results and has to be measured on the monthly test instead (*How to measure a
 4. **Measure the time**, alternating: old, new, old, new.
 5. **Write down** what was changed and why it cannot change the result, the files compared with their checksums, and the
    times — in a research report and in the description of the merge request.
-6. **The test on the cluster.** The MLOps team builds an image of the new version. Both images run on the same five
-   videos; the unpacked result files must be identical; the job times show the real gain.
+6. **The test on the cluster.** The MLOps team builds two images: the old version with the option to fix the random
+   numbers, and the new version, both on the same shared code. Both run with the same fixed value on the same videos;
+   the unpacked result files must be identical; the job times show the real gain.
 
 ## How to see that it worked
 
@@ -41,6 +48,7 @@ frames. One different byte means the change is not exact: find the cause before 
 | What you see | Why | What to do |
 |---|---|---|
 | the outputs differ between two runs of the **same** version | randomness is not seeded | seed it at the same point in both runs |
+| the new version's file differs from the file production wrote | production's run was not seeded | rerun the old version with the seed option, on the same image, next to the new one |
 | the debug video differs but the result files are equal | the colours of the drawn points are random | fix the colours in both runs |
 | the compressed bucket files differ but the content is equal | the compressed file carries its write time | compare after unpacking |
 | a few frames more or less | different video decoders | use the same decoder on both sides |
