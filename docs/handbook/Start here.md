@@ -15,7 +15,7 @@ read, where things are and what to do in the first two weeks.
 | **2 System / Architecture** | how the system runs: after the turnaround (today), in real time (being built), at the gate | MLOps |
 | **2 System / Requirements** | the client's rule for every check: when it is Pass, Fail or Not observed | Lead with QA |
 | **2 System / Shared parts** | the General Model (the shared detector), the tracker, the stage detector, the pose models: what they do, their state | CV |
-| **2 System / Modules** | one page per check, by stage of the turnaround: logic, models, settings, accuracy, problems; the index of all checks | CV |
+| **2 System / Modules** | one page for each of the client's 31 checks, under the client's names and in the seven stages of the client's table: logic, models, settings, accuracy, problems; the index of all checks | CV |
 | **3 Research** / one folder per team | what we studied and measured: the question, what we did, what we found, what it means | each team |
 
 ## Where to find the answer

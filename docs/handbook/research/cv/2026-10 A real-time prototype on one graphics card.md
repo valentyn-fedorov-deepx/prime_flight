@@ -72,9 +72,9 @@ same turnaround a frame cost 44 milliseconds, so timing a budget on quiet footag
 
 | Check | Earlier run | Run with trimmed data | Report |
 |---|---|---|---|
-| Three-stop brake check (inside the main program, full data) | Not observed | Not observed | identical |
-| Pushback path clear of obstacles (own process, declared data only) | Pass | Pass | identical |
-| Pushback waits until the wing walkers are in place and ready (own process, declared data only) | Fail | Fail | identical |
+| 3 stop brake check (inside the main program, full data) | Not observed | Not observed | identical |
+| Pushback pathway confirmed clear of obstacles (own process, declared data only) | Pass | Pass | identical |
+| Pushback does not start until wing walkers are in place and ready (own process, declared data only) | Fail | Fail | identical |
 
 The three-stop result is Not observed because the belt loader stopped before the 10.5-minute stretch began; on the
 whole turnaround it is Fail, as in post-processing. The two pushback checks match post-processing of the whole turnaround.

@@ -41,14 +41,14 @@ this work.
 
 | Check | Model | What it looks for |
 |---|---|---|
-| Service vehicles guided to the aircraft with approved hand signals | A | the worker in front of the door during the 30 to 5 seconds before a belt loader stops there: a wrist at or above the elbow (5 pixels tolerance), both points scoring at least 0.2, on 8 frames (1 second) |
-| Lead marshaller and wing walkers in position | A | while the aircraft rolls in, every worker: a wrist above the elbow (score at least 0.2) is a signal frame |
-| Wing walkers in position with approved wands during pushback | A | in the first 60 seconds of the pushback, each walker: a wrist at most 4.8–8 % of the box height below the elbow, both points scoring at least 0.2, on 8 frames (1 second) or 20 % of the walker's frames if fewer |
-| Steering bypass pin installed | A | a worker who stops by the nose wheel within 4 minutes after the arrival: a 25-second clip of their points, from which a second model decides whether they installed the pin or used the bypass switch |
-| Pushback driver checks the steering bypass pin | B | workers by the nose wheel after the pushback tractor is attached: bending (a wrist below the hip, body angle at most 150°) or crouching (knee angle under 120°) for 1.5 seconds, or standing straight, feet still, with a hand at head height for 2.5 seconds, gives Pass |
-| Foreign object debris walk completed | C | every person before the aircraft arrives: do they face away from the camera (left shoulder left of the right one)? |
-| Motorized service vehicles parked and chocked | D | a worker at the lower part of a service vehicle whose height drops below 65 % of its maximum within 1 second has bent down to chock it; poses scoring under 0.3 are ignored |
-| Handrails on service vehicles being used | E | each worker on a belt loader: one hand within a few pixels of the handrail line for 5 frames in a row (4 in the left-side view) |
+| All GSE guided into aircraft using approved hand signals | A | the worker in front of the door during the 30 to 5 seconds before a belt loader stops there: a wrist at or above the elbow (5 pixels tolerance), both points scoring at least 0.2, on 8 frames (1 second) |
+| Lead marshaller and wing walkers in correct position | A | while the aircraft rolls in, every worker: a wrist above the elbow (score at least 0.2) is a signal frame |
+| Wing walkers in proper position and using approved wands | A | in the first 60 seconds of the pushback, each walker: a wrist at most 4.8–8 % of the box height below the elbow, both points scoring at least 0.2, on 8 frames (1 second) or 20 % of the walker's frames if fewer |
+| Steering by-pass pin installed, or steering otherwise bypassed | A | a worker who stops by the nose wheel within 4 minutes after the arrival: a 25-second clip of their points, from which a second model decides whether they installed the pin or used the bypass switch |
+| Pushback operator verifies steering bypass pin installation | B | workers by the nose wheel after the pushback tractor is attached: bending (a wrist below the hip, body angle at most 150°) or crouching (knee angle under 120°) for 1.5 seconds, or standing straight, feet still, with a hand at head height for 2.5 seconds, gives Pass |
+| FOD walk completed | C | every person before the aircraft arrives: do they face away from the camera (left shoulder left of the right one)? |
+| Motorized GSE parked and properly chocked | D | a worker at the lower part of a service vehicle whose height drops below 65 % of its maximum within 1 second has bent down to chock it; poses scoring under 0.3 are ignored |
+| Handrails on GSE being used | E | each worker on a belt loader: one hand within a few pixels of the handrail line for 5 frames in a row (4 in the left-side view) |
 
 ## The plan: two shared models
 

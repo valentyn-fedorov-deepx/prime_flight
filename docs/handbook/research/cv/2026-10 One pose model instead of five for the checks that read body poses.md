@@ -29,14 +29,14 @@ save?
 
 | Check (short name used below) | Pose model today |
 |---|---|
-| Service vehicles guided to the aircraft with approved hand signals (hand signals) | the large model (63.6 million learned values), run twice per person: as is and mirrored |
-| Steering bypass pin installed (steering pin) | the large model |
-| Lead marshaller and wing walkers in position (lead marshaller) | the large model |
-| Wing walkers in position with approved wands during pushback (wing walkers) | the large model |
-| Pushback driver checks the steering bypass pin (pin check) | the pin model (43.3 million), run twice per person |
-| Foreign object debris walk completed (debris walk) | the small model (6.3 million), one person at a time; only the order of the shoulders is read |
-| Motorized service vehicles parked and chocked (vehicle chocks) | **the shared model** (27.6 million) |
-| Handrails on service vehicles being used | the whole-body model (33.6 million; 133 points, with the hands) |
+| All GSE guided into aircraft using approved hand signals (hand signals) | the large model (63.6 million learned values), run twice per person: as is and mirrored |
+| Steering by-pass pin installed, or steering otherwise bypassed (steering pin) | the large model |
+| Lead marshaller and wing walkers in correct position (lead marshaller) | the large model |
+| Wing walkers in proper position and using approved wands (wing walkers) | the large model |
+| Pushback operator verifies steering bypass pin installation (pin check) | the pin model (43.3 million), run twice per person |
+| FOD walk completed (debris walk) | the small model (6.3 million), one person at a time; only the order of the shoulders is read |
+| Motorized GSE parked and properly chocked (vehicle chocks) | **the shared model** (27.6 million) |
+| Handrails on GSE being used | the whole-body model (33.6 million; 133 points, with the hands) |
 
 The handrails check needs the hands. The walk-around and safety vests checks use a pose model built into a detector and
 were not part of this test.

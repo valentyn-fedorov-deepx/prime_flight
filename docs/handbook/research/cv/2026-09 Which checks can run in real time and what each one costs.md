@@ -56,33 +56,33 @@ seconds in, and the recording ran 11 and a half minutes more.
 
 | Check | Runs live as written | Own work (milliseconds per frame) | Answer arrives |
 |---|---|---|---|
-| Chocks and cones ready before the aircraft arrives | yes | 0.09 | at arrival |
-| Crew present 10 minutes before the aircraft arrives | yes | 0.54 | arrival + 64 seconds |
-| Foreign object debris walk completed | yes, reads the video | 1.32 | at arrival |
-| Safety huddle at the huddle cone | yes, reads the video | 0.87 | arrival + 60 seconds |
-| Safety vests worn and fastened | yes, reads the video, answers at the end | 18.75 | recording closed |
-| Safety zone clear before the aircraft arrives | no: reads twice | — | — |
+| Chocks and cones available and staged for arrival | yes | 0.09 | at arrival |
+| Crew present 10 minutes prior to aircraft arrival | yes | 0.54 | arrival + 64 seconds |
+| FOD walk completed | yes, reads the video | 1.32 | at arrival |
+| Safety huddle conducted at huddle cone | yes, reads the video | 0.87 | arrival + 60 seconds |
+| Employees wearing safety vests secured to body | yes, reads the video, answers at the end | 18.75 | recording closed |
+| Safety zone confirmed clear | no: reads twice | — | — |
 | Hair policy | not hosted | — | — |
-| Aircraft wheel chocks (three verdicts) | no: reads twice | — | — |
-| Cones placed in the right positions on time | yes | 0.62 | departure + 10 seconds |
-| Steering bypass pin installed | yes, reads the video | 0.73 | arrival + 4 minutes 5 seconds |
-| Lead marshaller and wing walkers in position | yes, reads the video | 2.50 | arrival + 10 seconds |
-| Belt loader rear cone placed after the belt loader is in place | yes | 0.37 | at departure |
-| Service vehicles guided to the aircraft with approved hand signals | no: reads twice | — | — |
-| Walk-around inspection after arrival | not hosted | — | — |
-| Three-stop brake check | yes | 0.64 | at departure (the count is final when the belt loader parks, so it could answer then) |
+| The three wheel chock checks, one module: Nose gear chocks applied immediately; Main gear chocks removed only after aircraft is attached to pushback; Nose wheel chock removed from aircraft | no: reads twice | — | — |
+| Cones placed in proper positions and timely | yes | 0.62 | departure + 10 seconds |
+| Steering by-pass pin installed, or steering otherwise bypassed | yes, reads the video | 0.73 | arrival + 4 minutes 5 seconds |
+| Lead marshaller and wing walkers in correct position | yes, reads the video | 2.50 | arrival + 10 seconds |
+| Beltloader rear cone positioned after BL is in place | yes | 0.37 | at departure |
+| All GSE guided into aircraft using approved hand signals | no: reads twice | — | — |
+| Post-arrival aircraft walk around inspection completed accurately | not hosted | — | — |
+| 3 stop brake check | yes | 0.64 | at departure (the count is final when the belt loader parks, so it could answer then) |
 | All cargo bin doors opened and verified | yes | 0.87 | arrival + 2 minutes 44 seconds |
-| Motorized service vehicles parked and chocked | yes, reads the video, answers at the end | 3.25 | recording closed |
-| Handrails on service vehicles being used | yes, reads the video, answers at the end | 12.46 | recording closed |
+| Motorized GSE parked and properly chocked | yes, reads the video, answers at the end | 3.25 | recording closed |
+| Handrails on GSE being used | yes, reads the video, answers at the end | 12.46 | recording closed |
 | Safety handrails fully extended and used | yes, reads the video | 2.37 | at departure |
-| Belt loader forward chock stays in place until the belt loader backs away | yes | 0.34 | at departure |
-| Conditioned air hose removed 10 minutes before departure and stowed | yes, reads the video | 1.26 | departure + 10 seconds |
-| Cones removed only after all service vehicles are clear of the aircraft and chocked | yes | 1.54 | at departure |
-| Pushback driver checks the steering bypass pin | no: reads twice | — | — |
-| Walk-around inspection before departure | not hosted | — | — |
-| Pushback waits until the wing walkers are in place and ready | yes | 0.33 | departure + 14 seconds |
-| Pushback path clear of obstacles | yes | 0.48 | departure + 20 seconds |
-| Wing walkers in position with approved wands during pushback | yes, reads the video | 5.14 | departure + 44 seconds |
+| Belt loader forward chock remained in place until unit is backed up clear of aircraft | yes | 0.34 | at departure |
+| Conditioned air removed 10 mins prior to departure and properly stowed | yes, reads the video | 1.26 | departure + 10 seconds |
+| Cones are removed only after all GSE is clear of A/C and chocked | yes | 1.54 | at departure |
+| Pushback operator verifies steering bypass pin installation | no: reads twice | — | — |
+| Pre-departure walk around completed | not hosted | — | — |
+| Pushback does not start until wing walkers are in place and ready | yes | 0.33 | departure + 14 seconds |
+| Pushback pathway confirmed clear of obstacles | yes | 0.48 | departure + 20 seconds |
+| Wing walkers in proper position and using approved wands | yes, reads the video | 5.14 | departure + 44 seconds |
 
 ### The shared part is the bill
 

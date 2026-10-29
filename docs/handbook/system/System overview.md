@@ -42,7 +42,7 @@ Everything runs after the turnaround:
 | Merge and jobs | Google Cloud, one graphics card per job: merge, then the General Model, the tracker and one job per module | moving to Microsoft Azure | MLOps | Architecture / Post-processing |
 | General Model | the version of October 2026 | 26 % faster since October with the same results; next: fold the separate vehicle detector into it | CV | Shared parts / General Model |
 | Tracker | the version of February 2026 | a faster version with the same tracks took 13 % less time in its first cluster run; the exact comparison is next | CV | Shared parts / Tracker |
-| Checks | 27 modules for 30 checks, one job each | {{ACCURACY_RANGE}} correct by check on the monthly test; the differences from the client's rules are on each page | CV | Modules index |
+| Checks | the client's 31 checks: 27 modules give 29 of them, one job each (one module gives three); one check is combined from two others; one (seat belts) gets no verdict | {{ACCURACY_RANGE}} correct by check on the monthly test; the differences from the client's rules are on each page | CV | Modules index |
 | Stage detector | — | being built for the real-time branch | CV | Shared parts / Stage detector |
 | Real-time branch | — | the worker runs; the stage detector and the checks inside it are still placeholders | MLOps, CV | Architecture / Real-time |
 | Results, alerts, website | the database and the RampVision website | alerts being built | Backend | Teams / Backend |

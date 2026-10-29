@@ -48,33 +48,33 @@ blocked; the pushback path check reads them as possible obstacles on the path.
 
 | Check | Objects the rule is about | Aircraft parts | Other vehicles and equipment | Tracked objects | Reads the video |
 |---|---|---|---|---|---|
-| Chocks and cones ready before the aircraft arrives | cones, chocks | — | belt loaders, service vehicles, pushback, view-blockers | aircraft | no |
-| Crew present 10 minutes before the aircraft arrives | people | — | service vehicles, pushback, trailers | aircraft | no |
-| Foreign object debris walk completed | — | nose wheel, nose, tail | service vehicles, belt loaders, pushback | aircraft, people | yes |
-| Safety huddle at the huddle cone | cones | — | belt loaders, service vehicles, pushback, trailers, fuel trucks | aircraft, people | yes |
-| Safety vests worn and fastened | safety vests | — | — | people | yes |
-| Safety zone clear before the aircraft arrives | cones, people | nose wheel | pushback, belt loaders, service vehicles, fuel trucks, trailers, other vehicles, view-blockers | aircraft | yes, twice |
+| Chocks and cones available and staged for arrival | cones, chocks | — | belt loaders, service vehicles, pushback, view-blockers | aircraft | no |
+| Crew present 10 minutes prior to aircraft arrival | people | — | service vehicles, pushback, trailers | aircraft | no |
+| FOD walk completed | — | nose wheel, nose, tail | service vehicles, belt loaders, pushback | aircraft, people | yes |
+| Safety huddle conducted at huddle cone | cones | — | belt loaders, service vehicles, pushback, trailers, fuel trucks | aircraft, people | yes |
+| Employees wearing safety vests secured to body | safety vests | — | — | people | yes |
+| Safety zone confirmed clear | cones, people | nose wheel | pushback, belt loaders, service vehicles, fuel trucks, trailers, other vehicles, view-blockers | aircraft | yes, twice |
 | Hair policy | to confirm (protected code) | to confirm | to confirm | people | yes |
-| Aircraft wheel chocks (three verdicts) | chocks, cones, pushback | nose wheel, main wheels, nose, tow bar | trailers, fuel trucks, ladders, other vehicles, view-blockers | aircraft, people, service vehicles, belt loaders | yes, twice |
-| Cones placed in the right positions on time | wing, engine and tail cones, people | tail | service vehicles, pushback, trailers, belt loaders, fuel trucks, ladders | aircraft | no |
-| Steering bypass pin installed | people, chocks | nose wheel | — | aircraft, people | yes |
-| Lead marshaller and wing walkers in position | — | tail, wing | belt loaders, service vehicles, pushback, trailers, view-blockers | aircraft, people | no* |
-| Belt loader rear cone placed after the belt loader is in place | belt loader, engine, wing and other cones, belt loaders, rear cargo door, people | main wheels, engine | pushback, trailers, service vehicles, fuel trucks, ladders | aircraft, belt loaders | no |
-| Service vehicles guided to the aircraft with approved hand signals | front and rear cargo doors, people | main wheels, engine, wing | pushback, trailers, service vehicles, fuel trucks, ladders | aircraft, belt loaders, people | yes, twice |
-| Walk-around inspection after arrival | front and rear cargo doors | main wheels, tail, wing, engine | belt loaders, fuel trucks, service vehicles, ladders, trailers | aircraft, people, belt loaders | yes |
-| Three-stop brake check | — | — | service vehicles, pushback, trailers | aircraft, belt loaders | no |
+| The three wheel chock checks, one module: Nose gear chocks applied immediately; Main gear chocks removed only after aircraft is attached to pushback; Nose wheel chock removed from aircraft | chocks, cones, pushback | nose wheel, main wheels, nose, tow bar | trailers, fuel trucks, ladders, other vehicles, view-blockers | aircraft, people, service vehicles, belt loaders | yes, twice |
+| Cones placed in proper positions and timely | wing, engine and tail cones, people | tail | service vehicles, pushback, trailers, belt loaders, fuel trucks, ladders | aircraft | no |
+| Steering by-pass pin installed, or steering otherwise bypassed | people, chocks | nose wheel | — | aircraft, people | yes |
+| Lead marshaller and wing walkers in correct position | — | tail, wing | belt loaders, service vehicles, pushback, trailers, view-blockers | aircraft, people | no* |
+| Beltloader rear cone positioned after BL is in place | belt loader, engine, wing and other cones, belt loaders, rear cargo door, people | main wheels, engine | pushback, trailers, service vehicles, fuel trucks, ladders | aircraft, belt loaders | no |
+| All GSE guided into aircraft using approved hand signals | front and rear cargo doors, people | main wheels, engine, wing | pushback, trailers, service vehicles, fuel trucks, ladders | aircraft, belt loaders, people | yes, twice |
+| Post-arrival aircraft walk around inspection completed accurately | front and rear cargo doors | main wheels, tail, wing, engine | belt loaders, fuel trucks, service vehicles, ladders, trailers | aircraft, people, belt loaders | yes |
+| 3 stop brake check | — | — | service vehicles, pushback, trailers | aircraft, belt loaders | no |
 | All cargo bin doors opened and verified | front and rear cargo doors | — | service vehicles, pushback, trailers, fuel trucks, other vehicles, view-blockers | aircraft | no |
-| Motorized service vehicles parked and chocked | chocks, cones | — | pushback, trailers, fuel trucks, ladders | service vehicles, people, belt loaders | yes |
-| Handrails on service vehicles being used | people, rear cargo door | engine, main wheels | trailers, service vehicles | aircraft, people, belt loaders | yes |
+| Motorized GSE parked and properly chocked | chocks, cones | — | pushback, trailers, fuel trucks, ladders | service vehicles, people, belt loaders | yes |
+| Handrails on GSE being used | people, rear cargo door | engine, main wheels | trailers, service vehicles | aircraft, people, belt loaders | yes |
 | Safety handrails fully extended and used | people | main wheels | trailers, service vehicles | aircraft, belt loaders | yes |
-| Belt loader forward chock stays in place until the belt loader backs away | chocks, cones, belt loaders, rear cargo door, people | main wheels, engine, wing | pushback, trailers, service vehicles, fuel trucks, ladders | aircraft, belt loaders | no |
-| Conditioned air hose removed 10 minutes before departure and stowed | the hose (its own detector) | nose wheel, nose | trailers, service vehicles, belt loaders, pushback | aircraft | yes |
-| Cones removed only after all service vehicles are clear of the aircraft and chocked | engine, wing and tail cones, front cargo door, service vehicles, belt loaders | main wheels | pushback, trailers, fuel trucks, other vehicles | aircraft, belt loaders | no |
-| Pushback driver checks the steering bypass pin | pushback | nose, nose wheel | belt loaders, service vehicles, trailers, other vehicles, view-blockers | aircraft, people | yes, twice |
-| Walk-around inspection before departure | cones | engine, tail, nose | belt loaders, service vehicles, pushback, trailers | aircraft, people, belt loaders | yes |
-| Pushback waits until the wing walkers are in place and ready | pushback | tail, wing, nose wheel | belt loaders, service vehicles, trailers, view-blockers | aircraft, people | no |
-| Pushback path clear of obstacles | pushback, cones, chocks | tail, nose | belt loaders, service vehicles, fuel trucks, trailers, ladders | aircraft | no |
-| Wing walkers in position with approved wands during pushback | — | engine, wing, nose, tail | pushback, belt loaders, service vehicles, trailers, view-blockers | aircraft, people | no* |
+| Belt loader forward chock remained in place until unit is backed up clear of aircraft | chocks, cones, belt loaders, rear cargo door, people | main wheels, engine, wing | pushback, trailers, service vehicles, fuel trucks, ladders | aircraft, belt loaders | no |
+| Conditioned air removed 10 mins prior to departure and properly stowed | the hose (its own detector) | nose wheel, nose | trailers, service vehicles, belt loaders, pushback | aircraft | yes |
+| Cones are removed only after all GSE is clear of A/C and chocked | engine, wing and tail cones, front cargo door, service vehicles, belt loaders | main wheels | pushback, trailers, fuel trucks, other vehicles | aircraft, belt loaders | no |
+| Pushback operator verifies steering bypass pin installation | pushback | nose, nose wheel | belt loaders, service vehicles, trailers, other vehicles, view-blockers | aircraft, people | yes, twice |
+| Pre-departure walk around completed | cones | engine, tail, nose | belt loaders, service vehicles, pushback, trailers | aircraft, people, belt loaders | yes |
+| Pushback does not start until wing walkers are in place and ready | pushback | tail, wing, nose wheel | belt loaders, service vehicles, trailers, view-blockers | aircraft, people | no |
+| Pushback pathway confirmed clear of obstacles | pushback, cones, chocks | tail, nose | belt loaders, service vehicles, fuel trucks, trailers, ladders | aircraft | no |
+| Wing walkers in proper position and using approved wands | — | engine, wing, nose, tail | pushback, belt loaders, service vehicles, trailers, view-blockers | aircraft, people | no* |
 
 \* The analysis read each repository's default branch. For these two checks the branch that runs in production and in
 the monthly test adds a pose model (it finds a person's joints) and reads the video. Where the check pages of this

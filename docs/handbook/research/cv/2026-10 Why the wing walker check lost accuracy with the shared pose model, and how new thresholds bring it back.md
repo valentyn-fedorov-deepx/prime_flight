@@ -5,8 +5,7 @@ turnarounds before production*
 
 ## In short
 
-When all checks that read body poses were switched to one shared, faster pose model, the check *Wing walkers in position
-with approved wands during pushback* fell from 47 to 36 correct verdicts out of 55 turnarounds of the monthly test. Every
+When all checks that read body poses were switched to one shared, faster pose model, the check *Wing walkers in proper position and using approved wands* fell from 47 to 36 correct verdicts out of 55 turnarounds of the monthly test. Every
 loss came from one rule: "the wing walker raises an arm" (a wrist at or above the elbow). The people in these videos are
 tiny — about 57 pixels tall — and the two pose models place the wrist and the elbow differently at that size; the rule's
 thresholds had been tuned on the old model. We recorded both models on the same people in 40 turnarounds and replayed

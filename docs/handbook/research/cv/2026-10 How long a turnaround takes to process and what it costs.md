@@ -74,13 +74,13 @@ The largest check modules on these five videos:
 
 | Check | Machine minutes |
 |---|---|
-| Handrails on service vehicles being used | 194 |
-| Safety zone clear before the aircraft arrives | 167 |
-| Safety vests worn and fastened | 138 |
-| Walk-around inspection before departure | 110 |
+| Handrails on GSE being used | 194 |
+| Safety zone confirmed clear | 167 |
+| Employees wearing safety vests secured to body | 138 |
+| Pre-departure walk around completed | 110 |
 | Hair policy | 95 |
-| Motorized service vehicles parked and chocked | 76 |
-| Three-stop brake check | 57 |
+| Motorized GSE parked and properly chocked | 76 |
+| 3 stop brake check | 57 |
 
 These seven take 837 of the 1 186 check minutes, about 70 %. The five checks whose pose model (the model that finds a
 person's joints) could be replaced by one shared model take 105 of the 2 181 minutes, about 5 %.

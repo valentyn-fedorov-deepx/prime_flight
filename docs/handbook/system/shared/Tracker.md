@@ -141,7 +141,7 @@ part of it.
   lead marshaller and wing walkers, safety huddle, safety zone, steering bypass pin.
 - Door labels: belt loader forward chock, belt loader rear cone, handrails on service vehicles, safety handrails,
   aircraft wheel chocks.
-- Motorized service vehicles parked and chocked reads four internal counters of service vehicles.
+- Motorized GSE parked and properly chocked reads four internal counters of service vehicles.
 - Checks load the whole internal state back, and newer shared-library versions refuse unknown fields: every field must
   stay, and adding one breaks them.
 

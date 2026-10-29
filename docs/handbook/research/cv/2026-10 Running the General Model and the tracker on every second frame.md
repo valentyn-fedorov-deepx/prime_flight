@@ -68,9 +68,9 @@ the next frame is cheap.
 
 | Check | Turnarounds | Same verdict as every frame | Correct against the label: every frame → every second frame |
 |---|---|---|---|
-| Three-stop brake check | 15 | 13 | 10 → 12 |
-| Pushback waits until the wing walkers are in place and ready | 15 | 14 | 13 → 12 |
-| Pushback path clear of obstacles | 15 | 15 | 13 → 13 |
+| 3 stop brake check | 15 | 13 | 10 → 12 |
+| Pushback does not start until wing walkers are in place and ready | 15 | 14 | 13 → 12 |
+| Pushback pathway confirmed clear of obstacles | 15 | 15 | 13 → 13 |
 | **Total** | **45** | **42 (93 %)** | **36 → 37 (80.0 % → 82.2 %)** |
 
 Three verdicts changed. Both three-stop changes moved to the client's label (one Fail became Pass, one Pass became Fail).

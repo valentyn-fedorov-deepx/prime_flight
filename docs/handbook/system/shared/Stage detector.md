@@ -19,7 +19,7 @@ design, a placeholder and a few pieces of code, not as working software.
 
 ## What it does
 
-- **Gating.** Only the checks of the current stage run: 4 to 9 at a time instead of all 27 on every frame. In a study
+- **Gating.** Only the checks of the current stage run: 4 to 9 at a time instead of all 27 modules on every frame. In a study
   of August 2026, time windows alone saved 73–76 % of the frames the checks process, with no risk of missing anything.
 - **One owner of the moments.** Every check takes the arrival, the departure, the belt loader moments and the pushback
   attachment from the same place, instead of working them out itself.
